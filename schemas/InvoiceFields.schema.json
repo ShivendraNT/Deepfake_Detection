@@ -1,0 +1,55 @@
+{
+  "additionalProperties": false,
+  "description": "Fields extracted by regex from invoice text (T08). Lists because invoices can repeat.",
+  "properties": {
+    "ifsc_codes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Ifsc Codes",
+      "type": "array"
+    },
+    "account_numbers": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Account Numbers",
+      "type": "array"
+    },
+    "upi_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Upi Ids",
+      "type": "array"
+    },
+    "gstins": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Gstins",
+      "type": "array"
+    },
+    "amounts_inr": {
+      "items": {
+        "type": "integer"
+      },
+      "title": "Amounts Inr",
+      "type": "array"
+    },
+    "invoice_number": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Invoice Number"
+    }
+  },
+  "title": "InvoiceFields",
+  "type": "object"
+}

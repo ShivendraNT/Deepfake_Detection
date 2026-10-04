@@ -1,0 +1,58 @@
+{
+  "id": "case_s08",
+  "title": "Kaveri bank change from look-alike domain",
+  "kind": "PAYMENT",
+  "created_at": "2026-10-05T10:00:00+05:30",
+  "created_by": "emp_priya",
+  "txn": {
+    "id": "txn_s08",
+    "vendor_id": "V001",
+    "beneficiary_name": "Kaveri Demo Packaging Pvt Ltd",
+    "account_number": "99996666006200",
+    "ifsc": "FAKE0000620",
+    "beneficiary_bank": "Fictional Bank E",
+    "amount_inr": 205000,
+    "rail": "NEFT",
+    "debit_account_masked": "••••1234",
+    "created_by": "emp_priya",
+    "created_at": "2026-10-05T10:00:00+05:30"
+  },
+  "evidence": [
+    {
+      "id": "ev_ad4bfbd8e38f71cb",
+      "case_id": "case_s08",
+      "channel": "email",
+      "filename": "03_lookalike_kaveri.eml",
+      "media_type": "message/rfc822",
+      "sha256": "ad4bfbd8e38f71cb28fb044a70632c837acbfb521657dd12f58cf39a7016ae86",
+      "size_bytes": 637,
+      "captured_at": "2026-10-05T09:50:00+05:30",
+      "submitted_by": "emp_priya",
+      "storage_uri": "file://data/demo/emails/03_lookalike_kaveri.eml",
+      "analysis_runs": []
+    }
+  ],
+  "signals": [
+    {
+      "id": "sig_s08a",
+      "code": "EMAIL_LOOKALIKE_DOMAIN",
+      "group": "sender_auth",
+      "target": "VERIFY_HOLD_IF_FLOOR_GE_VERIFY",
+      "strength": "strong",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_ad4bfbd8e38f71cb"
+      ],
+      "detector": "fixture",
+      "detail": {
+        "imitates": "kaveri-packaging.example"
+      }
+    }
+  ],
+  "grey_reasons": [],
+  "callbacks": [],
+  "linked_call_ids": [],
+  "status": "OPEN",
+  "queue": "MAKER",
+  "notes": []
+}

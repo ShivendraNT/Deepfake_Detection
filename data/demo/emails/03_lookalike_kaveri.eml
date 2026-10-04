@@ -1,0 +1,12 @@
+Authentication-Results: mx.demo-industries.example; spf=pass smtp.mailfrom=kaveri-packagimg.example; dkim=pass header.d=kaveri-packagimg.example; dmarc=pass header.from=kaveri-packagimg.example
+Return-Path: <billing@kaveri-packagimg.example>
+From: Kaveri Billing <billing@kaveri-packagimg.example>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: URGENT: overdue invoice KDP/2026/0917
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e03@demo.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Priya, this invoice is overdue. Please pay today to avoid supply stop.

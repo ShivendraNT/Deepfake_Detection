@@ -1,0 +1,79 @@
+{
+  "$defs": {
+    "CustodyEvent": {
+      "enum": [
+        "INTAKE",
+        "ANALYSIS",
+        "DECISION",
+        "STATUS_CHANGE",
+        "EXPORT",
+        "ANCHOR"
+      ],
+      "title": "CustodyEvent",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "row_hash = SHA-256(prev_hash ‖ canonical_json(row without row_hash)).",
+  "properties": {
+    "seq": {
+      "minimum": 1,
+      "title": "Seq",
+      "type": "integer"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "evidence_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Evidence Id"
+    },
+    "event": {
+      "$ref": "#/$defs/CustodyEvent"
+    },
+    "actor": {
+      "title": "Actor",
+      "type": "string"
+    },
+    "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+    },
+    "payload": {
+      "additionalProperties": true,
+      "title": "Payload",
+      "type": "object"
+    },
+    "prev_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Prev Hash",
+      "type": "string"
+    },
+    "row_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Row Hash",
+      "type": "string"
+    }
+  },
+  "required": [
+    "seq",
+    "case_id",
+    "event",
+    "actor",
+    "at",
+    "prev_hash",
+    "row_hash"
+  ],
+  "title": "CustodyRow",
+  "type": "object"
+}

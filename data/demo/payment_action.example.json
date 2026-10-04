@@ -1,0 +1,18 @@
+{
+  "id": "txn_s07",
+  "vendor_id": "V002",
+  "beneficiary_name": "Narmada Demo Logistics LLP",
+  "account_number": "99997777009917",
+  "ifsc": "FAKD0000991",
+  "upi_id": null,
+  "beneficiary_bank": "Fictional Bank D",
+  "amount_inr": 284000,
+  "rail": "NEFT",
+  "debit_account_masked": "••••1234",
+  "requested_by_employee_id": null,
+  "bank_shown_payee_name": null,
+  "created_by": "emp_priya",
+  "created_at": "2026-10-05T10:00:00+05:30",
+  "utr": null,
+  "sent_at": null
+}

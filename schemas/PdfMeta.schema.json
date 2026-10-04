@@ -1,0 +1,71 @@
+{
+  "additionalProperties": false,
+  "properties": {
+    "eof_count": {
+      "minimum": 0,
+      "title": "Eof Count",
+      "type": "integer"
+    },
+    "incremental_updates": {
+      "minimum": 0,
+      "title": "Incremental Updates",
+      "type": "integer"
+    },
+    "producer": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Producer"
+    },
+    "creator": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Creator"
+    },
+    "creation_date": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Creation Date"
+    },
+    "mod_date": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Mod Date"
+    }
+  },
+  "required": [
+    "eof_count",
+    "incremental_updates"
+  ],
+  "title": "PdfMeta",
+  "type": "object"
+}

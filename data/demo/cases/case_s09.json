@@ -1,0 +1,22 @@
+{
+  "id": "case_s09",
+  "title": "Tapti asks to change phone number on file",
+  "kind": "MASTER_CHANGE",
+  "created_at": "2026-10-05T10:00:00+05:30",
+  "created_by": "emp_priya",
+  "master_change": {
+    "target": "vendor_phone",
+    "vendor_id": "V004",
+    "old_value": "+91-00000-10004",
+    "new_value": "+91-00000-99999",
+    "requested_via": "email from orders@tapti-supplies.example"
+  },
+  "evidence": [],
+  "signals": [],
+  "grey_reasons": [],
+  "callbacks": [],
+  "linked_call_ids": [],
+  "status": "OPEN",
+  "queue": "MAKER",
+  "notes": []
+}

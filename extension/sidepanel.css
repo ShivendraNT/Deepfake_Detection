@@ -1,0 +1,2 @@
+/* Side panel styles (T10). Band colours must also carry text (never colour alone). */
+:root { --pass: #1b7f3b; --verify: #b26a00; --hold: #b00020; font-family: system-ui, sans-serif; }

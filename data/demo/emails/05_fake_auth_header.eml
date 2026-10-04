@@ -1,0 +1,13 @@
+Authentication-Results: mx.demo-industries.example; spf=fail smtp.mailfrom=narmada-logistics.example; dkim=none header.d=narmada-logistics.example; dmarc=fail header.from=narmada-logistics.example
+Authentication-Results: mx.demo-industries.example; spf=pass smtp.mailfrom=narmada-logistics.example; dkim=pass header.d=narmada-logistics.example; dmarc=pass header.from=narmada-logistics.example
+Return-Path: <payments@narmada-logistics.example>
+From: Narmada Payments <payments@narmada-logistics.example>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Bank change confirmation
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e05@demo.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Our bank has changed. Please update and pay to the new account today.

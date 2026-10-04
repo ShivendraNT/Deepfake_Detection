@@ -1,0 +1,248 @@
+{
+  "$defs": {
+    "GreyReason": {
+      "enum": [
+        "PARSE_FAILURE",
+        "DETECTOR_ERROR",
+        "SPEECH_TOO_SHORT",
+        "UNSUPPORTED_LANGUAGE",
+        "CONFLICTING_TXN_DATA"
+      ],
+      "title": "GreyReason",
+      "type": "string"
+    },
+    "ReasonCode": {
+      "description": "Every reason the system can show. T14 must give each one EN + HI text.",
+      "enum": [
+        "FLOOR_K1_KNOWN_IN_PATTERN",
+        "FLOOR_K2_OUT_OF_PATTERN",
+        "FLOOR_N1_NEW_SMALL",
+        "FLOOR_N2_NEW_LARGE",
+        "FLOOR_C1_BANK_CHANGED",
+        "FLOOR_T1_TRUST_ANCHOR",
+        "FLOOR_D1_DATA_REQUEST",
+        "FLOOR_NONE",
+        "EMAIL_AUTH_PASS",
+        "EMAIL_DMARC_FAIL",
+        "EMAIL_LOOKALIKE_DOMAIN",
+        "EMAIL_BANK_NOT_BANK_IN",
+        "EMAIL_REPLYTO_MISMATCH",
+        "EMAIL_FREEMAIL_CORPORATE",
+        "DOC_NO_ISSUES",
+        "DOC_ACCOUNT_MISMATCH",
+        "DOC_PDF_EDITED",
+        "VOICE_NO_SIGNS",
+        "VOICE_INCONCLUSIVE",
+        "VOICE_LIKELY_SYNTHETIC",
+        "ASK_NEW_ACCOUNT",
+        "ASK_CREDENTIAL",
+        "ASK_REMOTE_ACCESS",
+        "ASK_SECRECY",
+        "ASK_BYPASS",
+        "ASK_UNUSUAL_PAYMENT_METHOD",
+        "ASK_PAYEE_CHANGE",
+        "STYLE_PRESSURE",
+        "WATCHLIST_HIT",
+        "MULTI_GROUP_STRONG",
+        "GREY_FLAG",
+        "OOB_DENIED",
+        "OOB_APPROVED"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "Signal": {
+      "additionalProperties": false,
+      "description": "A single finding. group/target/strength MUST match SIGNAL_TABLE (validated).\n\nBuild it with Signal.make(code, source=..., evidence_ids=[...]) so you never type\ngroup/target/strength by hand.",
+      "properties": {
+        "id": {
+          "pattern": "^sig_[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "group": {
+          "$ref": "#/$defs/SignalGroup"
+        },
+        "target": {
+          "$ref": "#/$defs/TargetRule"
+        },
+        "strength": {
+          "$ref": "#/$defs/Strength"
+        },
+        "source": {
+          "$ref": "#/$defs/SignalSource"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "detector": {
+          "default": "unknown",
+          "title": "Detector",
+          "type": "string"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "detail": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Detail",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "group",
+        "target",
+        "strength",
+        "source"
+      ],
+      "title": "Signal",
+      "type": "object"
+    },
+    "SignalGroup": {
+      "enum": [
+        "sender_auth",
+        "document",
+        "media",
+        "ask",
+        "style",
+        "watchlist"
+      ],
+      "title": "SignalGroup",
+      "type": "string"
+    },
+    "SignalSource": {
+      "enum": [
+        "deterministic",
+        "ml",
+        "llm",
+        "human"
+      ],
+      "title": "SignalSource",
+      "type": "string"
+    },
+    "Strength": {
+      "enum": [
+        "weak",
+        "strong"
+      ],
+      "title": "Strength",
+      "type": "string"
+    },
+    "TargetRule": {
+      "description": "How a signal maps to a target band. Evaluated ONLY in satyapan.policy.targets.",
+      "enum": [
+        "NONE",
+        "VERIFY",
+        "HOLD",
+        "VERIFY_HOLD_IF_FLOOR_GE_VERIFY",
+        "PLUS_ONE",
+        "HOLD_IF_MONEY_ELSE_VERIFY"
+      ],
+      "title": "TargetRule",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "What every detector returns. `artifacts` holds parsed fields for the UI/report.",
+  "properties": {
+    "detector": {
+      "title": "Detector",
+      "type": "string"
+    },
+    "version": {
+      "title": "Version",
+      "type": "string"
+    },
+    "evidence_id": {
+      "anyOf": [
+        {
+          "pattern": "^ev_[A-Za-z0-9_\\-]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Evidence Id"
+    },
+    "signals": {
+      "items": {
+        "$ref": "#/$defs/Signal"
+      },
+      "title": "Signals",
+      "type": "array"
+    },
+    "grey_reasons": {
+      "items": {
+        "$ref": "#/$defs/GreyReason"
+      },
+      "title": "Grey Reasons",
+      "type": "array"
+    },
+    "artifacts": {
+      "additionalProperties": true,
+      "title": "Artifacts",
+      "type": "object"
+    },
+    "duration_ms": {
+      "default": 0.0,
+      "title": "Duration Ms",
+      "type": "number"
+    },
+    "error": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Error"
+    }
+  },
+  "required": [
+    "detector",
+    "version"
+  ],
+  "title": "DetectorOutput",
+  "type": "object"
+}

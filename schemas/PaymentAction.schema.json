@@ -1,0 +1,171 @@
+{
+  "$defs": {
+    "PaymentRail": {
+      "enum": [
+        "NEFT",
+        "RTGS",
+        "IMPS",
+        "UPI"
+      ],
+      "title": "PaymentRail",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A pending (or already-sent) payment. The maker types this in; nobody parses it from email.\n\nExample JSON (see data/demo/cases/*.json):\n    {\"id\": \"txn_s07\", \"vendor_id\": \"V002\", \"beneficiary_name\": \"Narmada Demo Logistics\",\n     \"account_number\": \"99992222009917\", \"ifsc\": \"FAKC0000991\", \"upi_id\": null,\n     \"amount_inr\": 284000, \"rail\": \"NEFT\", \"debit_account_masked\": \"••••1234\",\n     \"requested_by_employee_id\": null, \"bank_shown_payee_name\": null,\n     \"created_by\": \"emp_priya\", \"created_at\": \"2026-10-05T10:00:00+05:30\"}",
+  "properties": {
+    "id": {
+      "pattern": "^txn_[A-Za-z0-9_\\-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "vendor_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Vendor Id"
+    },
+    "beneficiary_name": {
+      "title": "Beneficiary Name",
+      "type": "string"
+    },
+    "account_number": {
+      "anyOf": [
+        {
+          "pattern": "^\\d{9,18}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Account Number"
+    },
+    "ifsc": {
+      "anyOf": [
+        {
+          "pattern": "^[A-Z]{4}0[A-Z0-9]{6}$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Ifsc"
+    },
+    "upi_id": {
+      "anyOf": [
+        {
+          "pattern": "^[\\w.\\-]+@[a-z]+$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Upi Id"
+    },
+    "beneficiary_bank": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Beneficiary Bank"
+    },
+    "amount_inr": {
+      "minimum": 0,
+      "title": "Amount Inr",
+      "type": "integer"
+    },
+    "rail": {
+      "$ref": "#/$defs/PaymentRail"
+    },
+    "debit_account_masked": {
+      "default": "••••0000",
+      "title": "Debit Account Masked",
+      "type": "string"
+    },
+    "requested_by_employee_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Requested By Employee Id"
+    },
+    "bank_shown_payee_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bank Shown Payee Name"
+    },
+    "created_by": {
+      "title": "Created By",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "utr": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Utr"
+    },
+    "sent_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Sent At"
+    }
+  },
+  "required": [
+    "id",
+    "beneficiary_name",
+    "amount_inr",
+    "rail",
+    "created_by",
+    "created_at"
+  ],
+  "title": "PaymentAction",
+  "type": "object"
+}

@@ -1,0 +1,101 @@
+{
+  "id": "case_s12",
+  "title": "Golden hour: ₹6.2 lakh already sent to a mule account",
+  "kind": "PAYMENT",
+  "created_at": "2026-10-05T10:00:00+05:30",
+  "created_by": "emp_priya",
+  "txn": {
+    "id": "txn_s12",
+    "vendor_id": "V001",
+    "beneficiary_name": "Kaveri Demo Packaging Pvt Ltd",
+    "account_number": "99996666006200",
+    "ifsc": "FAKE0000620",
+    "beneficiary_bank": "Fictional Bank E",
+    "amount_inr": 620000,
+    "rail": "NEFT",
+    "debit_account_masked": "••••1234",
+    "created_by": "emp_priya",
+    "created_at": "2026-10-05T10:00:00+05:30",
+    "utr": "FAKEUTR620001",
+    "sent_at": "2026-10-04T16:42:00+05:30"
+  },
+  "evidence": [
+    {
+      "id": "ev_9dc3902525c03ade",
+      "case_id": "case_s12",
+      "channel": "pdf",
+      "filename": "inv_kaveri_edited_bank.pdf",
+      "media_type": "application/pdf",
+      "sha256": "9dc3902525c03adeb4e306b1f12fa8ce1cb8f52d29795add65ec3cdb596197f8",
+      "size_bytes": 1406,
+      "captured_at": "2026-10-05T09:50:00+05:30",
+      "submitted_by": "emp_priya",
+      "storage_uri": "file://data/demo/invoices/inv_kaveri_edited_bank.pdf",
+      "analysis_runs": []
+    },
+    {
+      "id": "ev_ad4bfbd8e38f71cb",
+      "case_id": "case_s12",
+      "channel": "email",
+      "filename": "03_lookalike_kaveri.eml",
+      "media_type": "message/rfc822",
+      "sha256": "ad4bfbd8e38f71cb28fb044a70632c837acbfb521657dd12f58cf39a7016ae86",
+      "size_bytes": 637,
+      "captured_at": "2026-10-05T09:50:00+05:30",
+      "submitted_by": "emp_priya",
+      "storage_uri": "file://data/demo/emails/03_lookalike_kaveri.eml",
+      "analysis_runs": []
+    }
+  ],
+  "signals": [
+    {
+      "id": "sig_s12a",
+      "code": "DOC_ACCOUNT_MISMATCH",
+      "group": "document",
+      "target": "VERIFY",
+      "strength": "strong",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_9dc3902525c03ade"
+      ],
+      "detector": "fixture",
+      "detail": {
+        "field": "account"
+      }
+    },
+    {
+      "id": "sig_s12b",
+      "code": "DOC_PDF_EDITED",
+      "group": "document",
+      "target": "VERIFY",
+      "strength": "weak",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_9dc3902525c03ade"
+      ],
+      "detector": "fixture",
+      "detail": {}
+    },
+    {
+      "id": "sig_s12c",
+      "code": "EMAIL_LOOKALIKE_DOMAIN",
+      "group": "sender_auth",
+      "target": "VERIFY_HOLD_IF_FLOOR_GE_VERIFY",
+      "strength": "strong",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_ad4bfbd8e38f71cb"
+      ],
+      "detector": "fixture",
+      "detail": {
+        "imitates": "kaveri-packaging.example"
+      }
+    }
+  ],
+  "grey_reasons": [],
+  "callbacks": [],
+  "linked_call_ids": [],
+  "status": "CONFIRMED_FRAUD",
+  "queue": "MAKER",
+  "notes": []
+}

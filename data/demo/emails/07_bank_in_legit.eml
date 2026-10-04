@@ -1,0 +1,12 @@
+Authentication-Results: mx.demo-industries.example; spf=pass smtp.mailfrom=fictionalbanka.bank.in; dkim=pass header.d=fictionalbanka.bank.in; dmarc=pass header.from=fictionalbanka.bank.in
+Return-Path: <alerts@fictionalbanka.bank.in>
+From: Fictional Bank A <alerts@fictionalbanka.bank.in>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Monthly statement available
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e07@demo.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Your monthly statement is available in net banking. We never ask for your OTP.

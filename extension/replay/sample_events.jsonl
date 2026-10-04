@@ -1,0 +1,11 @@
+{"type": "status", "call_id": "call_demo_meet_1", "message": "Protection on: listening to this tab only"}
+{"type": "voice", "call_id": "call_demo_meet_1", "window_index": 0, "label": "no_signs", "consecutive_over_hi": 0}
+{"type": "transcript", "call_id": "call_demo_meet_1", "chunk_index": 0, "t_start_s": 0.0, "text": "Priya, this is Rajesh. Confidential acquisition hai.", "language": "hi"}
+{"type": "voice", "call_id": "call_demo_meet_1", "window_index": 1, "label": "inconclusive", "consecutive_over_hi": 1}
+{"type": "transcript", "call_id": "call_demo_meet_1", "chunk_index": 1, "t_start_s": 10.0, "text": "Wire 48.5 lakh to this escrow account today, kisi ko mat batana.", "language": "hi"}
+{"type": "ask", "call_id": "call_demo_meet_1", "chunk_index": 1, "ask_type": "A1", "reason_code": "ASK_NEW_ACCOUNT", "span_text": "escrow account"}
+{"type": "ask", "call_id": "call_demo_meet_1", "chunk_index": 1, "ask_type": "A4", "reason_code": "ASK_SECRECY", "span_text": "kisi ko mat batana"}
+{"type": "voice", "call_id": "call_demo_meet_1", "window_index": 2, "label": "likely_synthetic", "consecutive_over_hi": 2}
+{"type": "band", "call_id": "call_demo_meet_1", "band": "HOLD", "reason_codes": ["FLOOR_NONE", "VOICE_LIKELY_SYNTHETIC", "ASK_NEW_ACCOUNT", "ASK_SECRECY", "MULTI_GROUP_STRONG"], "suggested_line": "I'll process it once it's raised in the system with your login."}
+{"type": "transcript", "call_id": "call_demo_meet_1", "chunk_index": 2, "t_start_s": 20.0, "text": "Don't loop in Arjun, skip the approval.", "language": "en"}
+{"type": "ask", "call_id": "call_demo_meet_1", "chunk_index": 2, "ask_type": "A5", "reason_code": "ASK_BYPASS", "span_text": "skip the approval"}

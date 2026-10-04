@@ -1,0 +1,74 @@
+{
+  "case_s01": {
+    "rules_only": "PASS",
+    "full": "PASS",
+    "region": "baseline",
+    "title": "Kaveri monthly invoice (routine)"
+  },
+  "case_s02": {
+    "rules_only": "PASS",
+    "full": "VERIFY",
+    "region": "R2",
+    "title": "Kaveri 'overdue' reminder from look-alike domain"
+  },
+  "case_s03": {
+    "rules_only": "PASS",
+    "full": "VERIFY",
+    "region": "R2",
+    "title": "Small new payee + voice note flagged synthetic"
+  },
+  "case_s04": {
+    "rules_only": "PASS",
+    "full": "HOLD",
+    "region": "R2",
+    "title": "'Send payroll file and share the OTP' request"
+  },
+  "case_s05": {
+    "rules_only": "VERIFY",
+    "full": "VERIFY",
+    "region": "floor only",
+    "title": "Godavari invoice after 6 months dormant"
+  },
+  "case_s06": {
+    "rules_only": "VERIFY",
+    "full": "HOLD",
+    "region": "R1/R3",
+    "title": "'CFO' on Meet: confidential escrow ₹48.5 lakh (Moment 1)"
+  },
+  "case_s07": {
+    "rules_only": "VERIFY",
+    "full": "VERIFY",
+    "region": "floor catches it",
+    "title": "Narmada bank change, every detector green (Moment 2)"
+  },
+  "case_s08": {
+    "rules_only": "VERIFY",
+    "full": "HOLD",
+    "region": "R3",
+    "title": "Kaveri bank change from look-alike domain"
+  },
+  "case_s09": {
+    "rules_only": "HOLD",
+    "full": "HOLD",
+    "region": "floor only",
+    "title": "Tapti asks to change phone number on file"
+  },
+  "case_s10": {
+    "rules_only": "PASS",
+    "full": "VERIFY",
+    "region": "R4",
+    "title": "Tapti UPI payment from a watch-listed sender"
+  },
+  "case_s11": {
+    "rules_only": "PASS",
+    "full": "VERIFY",
+    "region": "R2 (LLM capped)",
+    "title": "Narmada invoice email containing a prompt injection"
+  },
+  "case_s12": {
+    "rules_only": "VERIFY",
+    "full": "HOLD",
+    "region": "golden hour",
+    "title": "Golden hour: ₹6.2 lakh already sent to a mule account"
+  }
+}

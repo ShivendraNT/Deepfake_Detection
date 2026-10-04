@@ -1,0 +1,7 @@
+description = "Review the current branch against its task spec and the invariants"
+prompt = """
+Changed files:
+!{git diff --stat main...HEAD}
+
+Review this branch as described in docs/harness/PROMPTS.md section 4 (scope, signatures, raise-only bands, Signal.make, network only in adapters, no secrets/real data/media, makers never see scores, no auto-reporting, tests not weakened). Run make check. End with APPROVE or REQUEST CHANGES.
+"""

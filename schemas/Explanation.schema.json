@@ -1,0 +1,131 @@
+{
+  "$defs": {
+    "Band": {
+      "description": "Risk band. Ordered PASS < VERIFY < HOLD. Use satyapan.policy.bands to compare.",
+      "enum": [
+        "PASS",
+        "VERIFY",
+        "HOLD"
+      ],
+      "title": "Band",
+      "type": "string"
+    },
+    "FaithfulnessResult": {
+      "additionalProperties": false,
+      "properties": {
+        "ok": {
+          "title": "Ok",
+          "type": "boolean"
+        },
+        "failures": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Failures",
+          "type": "array"
+        }
+      },
+      "required": [
+        "ok"
+      ],
+      "title": "FaithfulnessResult",
+      "type": "object"
+    },
+    "Lang": {
+      "enum": [
+        "en",
+        "hi"
+      ],
+      "title": "Lang",
+      "type": "string"
+    },
+    "ReasonCode": {
+      "description": "Every reason the system can show. T14 must give each one EN + HI text.",
+      "enum": [
+        "FLOOR_K1_KNOWN_IN_PATTERN",
+        "FLOOR_K2_OUT_OF_PATTERN",
+        "FLOOR_N1_NEW_SMALL",
+        "FLOOR_N2_NEW_LARGE",
+        "FLOOR_C1_BANK_CHANGED",
+        "FLOOR_T1_TRUST_ANCHOR",
+        "FLOOR_D1_DATA_REQUEST",
+        "FLOOR_NONE",
+        "EMAIL_AUTH_PASS",
+        "EMAIL_DMARC_FAIL",
+        "EMAIL_LOOKALIKE_DOMAIN",
+        "EMAIL_BANK_NOT_BANK_IN",
+        "EMAIL_REPLYTO_MISMATCH",
+        "EMAIL_FREEMAIL_CORPORATE",
+        "DOC_NO_ISSUES",
+        "DOC_ACCOUNT_MISMATCH",
+        "DOC_PDF_EDITED",
+        "VOICE_NO_SIGNS",
+        "VOICE_INCONCLUSIVE",
+        "VOICE_LIKELY_SYNTHETIC",
+        "ASK_NEW_ACCOUNT",
+        "ASK_CREDENTIAL",
+        "ASK_REMOTE_ACCESS",
+        "ASK_SECRECY",
+        "ASK_BYPASS",
+        "ASK_UNUSUAL_PAYMENT_METHOD",
+        "ASK_PAYEE_CHANGE",
+        "STYLE_PRESSURE",
+        "WATCHLIST_HIT",
+        "MULTI_GROUP_STRONG",
+        "GREY_FLAG",
+        "OOB_DENIED",
+        "OOB_APPROVED"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "lang": {
+      "$ref": "#/$defs/Lang"
+    },
+    "band": {
+      "$ref": "#/$defs/Band"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "source": {
+      "enum": [
+        "template",
+        "llm"
+      ],
+      "title": "Source",
+      "type": "string"
+    },
+    "reason_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "faithfulness": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/FaithfulnessResult"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    }
+  },
+  "required": [
+    "lang",
+    "band",
+    "text",
+    "source",
+    "reason_codes"
+  ],
+  "title": "Explanation",
+  "type": "object"
+}

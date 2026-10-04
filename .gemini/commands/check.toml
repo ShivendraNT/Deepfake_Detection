@@ -1,0 +1,7 @@
+description = "Run make check and explain failures"
+prompt = """
+Output of make check:
+!{make check 2>&1 | tail -60}
+
+If it says ALL GREEN, say so and stop. Otherwise list each failure with file:line and a one-sentence cause, and propose the smallest fix in source code (never in tests). Do not edit until I confirm.
+"""

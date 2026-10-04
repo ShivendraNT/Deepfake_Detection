@@ -1,0 +1,8 @@
+description = "Start or continue a task, e.g. /task T05"
+prompt = """
+Work on task {{args}} in this repo, following AGENTS.md exactly.
+1. Read the spec docs/tasks/{{args}}-*.md and its test file in tests/tasks/ (name starts with the lower-case task id). Read ONLY the files the spec lists.
+2. If the spec's "Agent plan" section is empty, write a plan of at most 8 small steps there; otherwise continue with the first unticked step.
+3. Run `make task T={{args}}`, implement ONE step, run it again, and stop to report.
+Never edit tests, contracts, policy or invariants. Never paste real data or secrets.
+"""

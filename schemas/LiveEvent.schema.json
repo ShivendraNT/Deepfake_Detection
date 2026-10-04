@@ -1,0 +1,296 @@
+{
+  "$defs": {
+    "AskEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "ask",
+          "default": "ask",
+          "title": "Type",
+          "type": "string"
+        },
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "chunk_index": {
+          "title": "Chunk Index",
+          "type": "integer"
+        },
+        "ask_type": {
+          "$ref": "#/$defs/AskType"
+        },
+        "reason_code": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "span_text": {
+          "title": "Span Text",
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "chunk_index",
+        "ask_type",
+        "reason_code",
+        "span_text"
+      ],
+      "title": "AskEvent",
+      "type": "object"
+    },
+    "AskType": {
+      "enum": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "A7"
+      ],
+      "title": "AskType",
+      "type": "string"
+    },
+    "Band": {
+      "description": "Risk band. Ordered PASS < VERIFY < HOLD. Use satyapan.policy.bands to compare.",
+      "enum": [
+        "PASS",
+        "VERIFY",
+        "HOLD"
+      ],
+      "title": "Band",
+      "type": "string"
+    },
+    "BandEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "band",
+          "default": "band",
+          "title": "Type",
+          "type": "string"
+        },
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "band": {
+          "$ref": "#/$defs/Band"
+        },
+        "reason_codes": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "suggested_line": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Suggested Line"
+        }
+      },
+      "required": [
+        "call_id",
+        "band",
+        "reason_codes"
+      ],
+      "title": "BandEvent",
+      "type": "object"
+    },
+    "ReasonCode": {
+      "description": "Every reason the system can show. T14 must give each one EN + HI text.",
+      "enum": [
+        "FLOOR_K1_KNOWN_IN_PATTERN",
+        "FLOOR_K2_OUT_OF_PATTERN",
+        "FLOOR_N1_NEW_SMALL",
+        "FLOOR_N2_NEW_LARGE",
+        "FLOOR_C1_BANK_CHANGED",
+        "FLOOR_T1_TRUST_ANCHOR",
+        "FLOOR_D1_DATA_REQUEST",
+        "FLOOR_NONE",
+        "EMAIL_AUTH_PASS",
+        "EMAIL_DMARC_FAIL",
+        "EMAIL_LOOKALIKE_DOMAIN",
+        "EMAIL_BANK_NOT_BANK_IN",
+        "EMAIL_REPLYTO_MISMATCH",
+        "EMAIL_FREEMAIL_CORPORATE",
+        "DOC_NO_ISSUES",
+        "DOC_ACCOUNT_MISMATCH",
+        "DOC_PDF_EDITED",
+        "VOICE_NO_SIGNS",
+        "VOICE_INCONCLUSIVE",
+        "VOICE_LIKELY_SYNTHETIC",
+        "ASK_NEW_ACCOUNT",
+        "ASK_CREDENTIAL",
+        "ASK_REMOTE_ACCESS",
+        "ASK_SECRECY",
+        "ASK_BYPASS",
+        "ASK_UNUSUAL_PAYMENT_METHOD",
+        "ASK_PAYEE_CHANGE",
+        "STYLE_PRESSURE",
+        "WATCHLIST_HIT",
+        "MULTI_GROUP_STRONG",
+        "GREY_FLAG",
+        "OOB_DENIED",
+        "OOB_APPROVED"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "StatusEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "status",
+          "default": "status",
+          "title": "Type",
+          "type": "string"
+        },
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "message": {
+          "title": "Message",
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "message"
+      ],
+      "title": "StatusEvent",
+      "type": "object"
+    },
+    "TranscriptEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "transcript",
+          "default": "transcript",
+          "title": "Type",
+          "type": "string"
+        },
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "chunk_index": {
+          "title": "Chunk Index",
+          "type": "integer"
+        },
+        "t_start_s": {
+          "title": "T Start S",
+          "type": "number"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "language": {
+          "default": "unknown",
+          "title": "Language",
+          "type": "string"
+        }
+      },
+      "required": [
+        "call_id",
+        "chunk_index",
+        "t_start_s",
+        "text"
+      ],
+      "title": "TranscriptEvent",
+      "type": "object"
+    },
+    "VoiceEvent": {
+      "additionalProperties": false,
+      "properties": {
+        "type": {
+          "const": "voice",
+          "default": "voice",
+          "title": "Type",
+          "type": "string"
+        },
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "window_index": {
+          "title": "Window Index",
+          "type": "integer"
+        },
+        "label": {
+          "$ref": "#/$defs/VoiceLabel"
+        },
+        "consecutive_over_hi": {
+          "default": 0,
+          "title": "Consecutive Over Hi",
+          "type": "integer"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "call_id",
+        "window_index",
+        "label"
+      ],
+      "title": "VoiceEvent",
+      "type": "object"
+    },
+    "VoiceLabel": {
+      "enum": [
+        "likely_synthetic",
+        "inconclusive",
+        "no_signs"
+      ],
+      "title": "VoiceLabel",
+      "type": "string"
+    }
+  },
+  "discriminator": {
+    "mapping": {
+      "ask": "#/$defs/AskEvent",
+      "band": "#/$defs/BandEvent",
+      "status": "#/$defs/StatusEvent",
+      "transcript": "#/$defs/TranscriptEvent",
+      "voice": "#/$defs/VoiceEvent"
+    },
+    "propertyName": "type"
+  },
+  "oneOf": [
+    {
+      "$ref": "#/$defs/VoiceEvent"
+    },
+    {
+      "$ref": "#/$defs/TranscriptEvent"
+    },
+    {
+      "$ref": "#/$defs/AskEvent"
+    },
+    {
+      "$ref": "#/$defs/BandEvent"
+    },
+    {
+      "$ref": "#/$defs/StatusEvent"
+    }
+  ]
+}

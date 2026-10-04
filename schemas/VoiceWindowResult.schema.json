@@ -1,0 +1,51 @@
+{
+  "additionalProperties": false,
+  "description": "One 5-second window scored on-device by the extension.",
+  "properties": {
+    "call_id": {
+      "title": "Call Id",
+      "type": "string"
+    },
+    "window_index": {
+      "minimum": 0,
+      "title": "Window Index",
+      "type": "integer"
+    },
+    "t_start_s": {
+      "minimum": 0,
+      "title": "T Start S",
+      "type": "number"
+    },
+    "t_end_s": {
+      "minimum": 0,
+      "title": "T End S",
+      "type": "number"
+    },
+    "score": {
+      "maximum": 1.0,
+      "minimum": 0.0,
+      "title": "Score",
+      "type": "number"
+    },
+    "speech_seconds": {
+      "minimum": 0,
+      "title": "Speech Seconds",
+      "type": "number"
+    },
+    "model_version": {
+      "title": "Model Version",
+      "type": "string"
+    }
+  },
+  "required": [
+    "call_id",
+    "window_index",
+    "t_start_s",
+    "t_end_s",
+    "score",
+    "speech_seconds",
+    "model_version"
+  ],
+  "title": "VoiceWindowResult",
+  "type": "object"
+}

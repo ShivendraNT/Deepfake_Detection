@@ -1,0 +1,49 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+*.egg-info/
+dist/
+build/
+
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Runtime data
+vault_data/
+*.db
+*.sqlite
+
+# Models and media (never commit — licenses + personal data)
+*.onnx
+*.wav
+*.mp3
+*.ogg
+*.opus
+*.m4a
+*.mp4
+*.webm
+*.flac
+extension/models/*
+!extension/models/README.md
+
+# Research data (license: never commit dataset text or paraphrases)
+research/_data/
+
+# Signed consent forms
+docs/consent/signed/
+
+# Node
+node_modules/
+console/dist/
+
+# OS / editors
+.DS_Store
+.idea/
+.vscode/

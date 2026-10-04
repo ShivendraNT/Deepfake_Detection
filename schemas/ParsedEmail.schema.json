@@ -1,0 +1,218 @@
+{
+  "$defs": {
+    "AttachmentMeta": {
+      "additionalProperties": false,
+      "properties": {
+        "filename": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Filename"
+        },
+        "media_type": {
+          "title": "Media Type",
+          "type": "string"
+        },
+        "size_bytes": {
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        }
+      },
+      "required": [
+        "filename",
+        "media_type",
+        "size_bytes",
+        "sha256"
+      ],
+      "title": "AttachmentMeta",
+      "type": "object"
+    },
+    "AuthResults": {
+      "additionalProperties": false,
+      "description": "Values from the TRUSTED Authentication-Results header only (added by our own MTA).",
+      "properties": {
+        "authserv_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Authserv Id"
+        },
+        "spf": {
+          "default": "unknown",
+          "enum": [
+            "pass",
+            "fail",
+            "none",
+            "softfail",
+            "neutral",
+            "temperror",
+            "permerror",
+            "policy",
+            "unknown"
+          ],
+          "title": "Spf",
+          "type": "string"
+        },
+        "dkim": {
+          "default": "unknown",
+          "enum": [
+            "pass",
+            "fail",
+            "none",
+            "softfail",
+            "neutral",
+            "temperror",
+            "permerror",
+            "policy",
+            "unknown"
+          ],
+          "title": "Dkim",
+          "type": "string"
+        },
+        "dmarc": {
+          "default": "unknown",
+          "enum": [
+            "pass",
+            "fail",
+            "none",
+            "softfail",
+            "neutral",
+            "temperror",
+            "permerror",
+            "policy",
+            "unknown"
+          ],
+          "title": "Dmarc",
+          "type": "string"
+        },
+        "trusted": {
+          "default": false,
+          "title": "Trusted",
+          "type": "boolean"
+        },
+        "untrusted_headers_seen": {
+          "default": 0,
+          "title": "Untrusted Headers Seen",
+          "type": "integer"
+        }
+      },
+      "title": "AuthResults",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "message_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Message Id"
+    },
+    "subject": {
+      "default": "",
+      "title": "Subject",
+      "type": "string"
+    },
+    "from_addr": {
+      "title": "From Addr",
+      "type": "string"
+    },
+    "from_display_name": {
+      "default": "",
+      "title": "From Display Name",
+      "type": "string"
+    },
+    "from_domain": {
+      "title": "From Domain",
+      "type": "string"
+    },
+    "reply_to_domain": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Reply To Domain"
+    },
+    "return_path_domain": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Return Path Domain"
+    },
+    "to": {
+      "items": {
+        "type": "string"
+      },
+      "title": "To",
+      "type": "array"
+    },
+    "date": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Date"
+    },
+    "auth": {
+      "$ref": "#/$defs/AuthResults"
+    },
+    "body_text": {
+      "default": "",
+      "title": "Body Text",
+      "type": "string"
+    },
+    "attachments": {
+      "items": {
+        "$ref": "#/$defs/AttachmentMeta"
+      },
+      "title": "Attachments",
+      "type": "array"
+    }
+  },
+  "required": [
+    "from_addr",
+    "from_domain",
+    "auth"
+  ],
+  "title": "ParsedEmail",
+  "type": "object"
+}

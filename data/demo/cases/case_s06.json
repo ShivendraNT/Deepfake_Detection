@@ -1,0 +1,108 @@
+{
+  "id": "case_s06",
+  "title": "'CFO' on Meet: confidential escrow ₹48.5 lakh (Moment 1)",
+  "kind": "PAYMENT",
+  "created_at": "2026-10-05T10:00:00+05:30",
+  "created_by": "emp_priya",
+  "txn": {
+    "id": "txn_s06",
+    "beneficiary_name": "Escrow Account (claimed)",
+    "account_number": "99998888004821",
+    "ifsc": "FAKM0000482",
+    "beneficiary_bank": "Fictional Coastal Bank",
+    "amount_inr": 4850000,
+    "rail": "RTGS",
+    "debit_account_masked": "••••1234",
+    "requested_by_employee_id": "emp_rajesh",
+    "created_by": "emp_priya",
+    "created_at": "2026-10-05T10:00:00+05:30"
+  },
+  "evidence": [
+    {
+      "id": "ev_291e9b9620e7a223",
+      "case_id": "case_s06",
+      "channel": "whatsapp_text",
+      "filename": "cfo_escrow_chat.txt",
+      "media_type": "text/plain",
+      "sha256": "291e9b9620e7a223728ddcccedc8b62c3b7d10f619e8b423572eaa2df67dde51",
+      "size_bytes": 655,
+      "captured_at": "2026-10-05T09:50:00+05:30",
+      "submitted_by": "emp_priya",
+      "storage_uri": "file://data/demo/whatsapp/cfo_escrow_chat.txt",
+      "excerpt": "Aaj hi 48.5 lakh escrow account mein transfer karna hai. Arjun ko mat batana.",
+      "analysis_runs": []
+    }
+  ],
+  "signals": [
+    {
+      "id": "sig_s06a",
+      "code": "VOICE_LIKELY_SYNTHETIC",
+      "group": "media",
+      "target": "PLUS_ONE",
+      "strength": "strong",
+      "source": "ml",
+      "evidence_ids": [
+        "ev_291e9b9620e7a223"
+      ],
+      "detector": "fixture",
+      "score": 0.95,
+      "detail": {
+        "windows": 3,
+        "consecutive_over_hi": 2
+      }
+    },
+    {
+      "id": "sig_s06b",
+      "code": "ASK_NEW_ACCOUNT",
+      "group": "ask",
+      "target": "VERIFY",
+      "strength": "weak",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_291e9b9620e7a223"
+      ],
+      "detector": "fixture",
+      "detail": {
+        "ask_type": "A1"
+      }
+    },
+    {
+      "id": "sig_s06c",
+      "code": "ASK_SECRECY",
+      "group": "ask",
+      "target": "HOLD_IF_MONEY_ELSE_VERIFY",
+      "strength": "strong",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_291e9b9620e7a223"
+      ],
+      "detector": "fixture",
+      "detail": {
+        "ask_type": "A4"
+      }
+    },
+    {
+      "id": "sig_s06d",
+      "code": "ASK_BYPASS",
+      "group": "ask",
+      "target": "HOLD_IF_MONEY_ELSE_VERIFY",
+      "strength": "strong",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_291e9b9620e7a223"
+      ],
+      "detector": "fixture",
+      "detail": {
+        "ask_type": "A5"
+      }
+    }
+  ],
+  "grey_reasons": [],
+  "callbacks": [],
+  "linked_call_ids": [
+    "call_demo_meet_1"
+  ],
+  "status": "OPEN",
+  "queue": "MAKER",
+  "notes": []
+}

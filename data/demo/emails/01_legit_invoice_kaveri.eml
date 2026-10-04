@@ -1,0 +1,45 @@
+Authentication-Results: mx.demo-industries.example; spf=pass smtp.mailfrom=kaveri-packaging.example; dkim=pass header.d=kaveri-packaging.example; dmarc=pass header.from=kaveri-packaging.example
+Return-Path: <billing@kaveri-packaging.example>
+From: Kaveri Billing <billing@kaveri-packaging.example>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Invoice KDP/2026/0917 for September
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e01@demo.example>
+MIME-Version: 1.0
+Content-Type: multipart/mixed; boundary="==SATYAPAN_DEMO_BOUNDARY=="
+
+--==SATYAPAN_DEMO_BOUNDARY==
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Dear Priya,
+Please find attached invoice KDP/2026/0917 for Rs. 2,10,000.
+Payment to our registered account as usual.
+Regards, Kaveri Billing
+--==SATYAPAN_DEMO_BOUNDARY==
+Content-Type: application/pdf; name="inv_kaveri_ok.pdf"
+Content-Disposition: attachment; filename="inv_kaveri_ok.pdf"
+Content-Transfer-Encoding: base64
+
+JVBERi0xLjQKMSAwIG9iago8PCAvVHlwZSAvQ2F0YWxvZyAvUGFnZXMgMiAwIFIgPj4KZW5kb2Jq
+CjIgMCBvYmoKPDwgL1R5cGUgL1BhZ2VzIC9LaWRzIFszIDAgUl0gL0NvdW50IDEgPj4KZW5kb2Jq
+CjMgMCBvYmoKPDwgL1R5cGUgL1BhZ2UgL1BhcmVudCAyIDAgUiAvTWVkaWFCb3ggWzAgMCA1OTUg
+ODQyXSAvUmVzb3VyY2VzIDw8IC9Gb250IDw8IC9GMSA1IDAgUiA+PiA+PiAvQ29udGVudHMgNCAw
+IFIgPj4KZW5kb2JqCjQgMCBvYmoKPDwgL0xlbmd0aCAzOTAgPj4Kc3RyZWFtCkJUIC9GMSAxMSBU
+ZiA1MCA4MDAgVGQgMTUgVEwgKFRBWCBJTlZPSUNFICAtICBLYXZlcmkgRGVtbyBQYWNrYWdpbmcg
+UHZ0IEx0ZCAgXChTWU5USEVUSUMgREVNTyBET0NVTUVOVFwpKSAnIChHU1RJTjogMDBGQUtFVjAw
+MDFBMVo1KSAnIChJbnZvaWNlIE5vOiBLRFAvMjAyNi8wOTE3KSAnIChCaWxsIHRvOiBTYXR5YXBh
+biBEZW1vIEluZHVzdHJpZXMgUHZ0IEx0ZCkgJyAoRGVzY3JpcHRpb246IFNlcnZpY2VzIGZvciBT
+ZXB0ZW1iZXIgMjAyNikgJyAoVG90YWwgQW1vdW50OiBScy4gMiwxMCwwMDApICcgKFBheW1lbnQg
+ZGV0YWlsczopICcgKEFjY291bnQgTm86IDk5OTkwMDAwMDAxMTExICAgSUZTQzogRkFLQTAwMDAx
+MTEpICcgKENvbnRhY3Q6ICs5MS0wMDAwMC0xMDAwMSkgJyBFVAplbmRzdHJlYW0KZW5kb2JqCjUg
+MCBvYmoKPDwgL1R5cGUgL0ZvbnQgL1N1YnR5cGUgL1R5cGUxIC9CYXNlRm9udCAvSGVsdmV0aWNh
+ID4+CmVuZG9iago2IDAgb2JqCjw8IC9Qcm9kdWNlciAoU2F0eWFwYW5EZW1vUERGIDEuMCkgL0Ny
+ZWF0b3IgKG1ha2VfZGVtb19kYXRhLnB5KSAvQ3JlYXRpb25EYXRlIChEOjIwMjYwOTI4MTAzMDAw
+KzA1JzMwJykgL01vZERhdGUgKEQ6MjAyNjA5MjgxMDMwMDArMDUnMzAnKSA+PgplbmRvYmoKeHJl
+ZgowIDcKMDAwMDAwMDAwMCA2NTUzNSBmIAowMDAwMDAwMDA5IDAwMDAwIG4gCjAwMDAwMDAwNTgg
+MDAwMDAgbiAKMDAwMDAwMDExNSAwMDAwMCBuIAowMDAwMDAwMjQxIDAwMDAwIG4gCjAwMDAwMDA2
+ODIgMDAwMDAgbiAKMDAwMDAwMDc1MiAwMDAwMCBuIAp0cmFpbGVyCjw8IC9TaXplIDcgL1Jvb3Qg
+MSAwIFIgL0luZm8gNiAwIFIgPj4Kc3RhcnR4cmVmCjkwOQolJUVPRgo=
+
+--==SATYAPAN_DEMO_BOUNDARY==--

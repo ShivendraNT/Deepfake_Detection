@@ -1,0 +1,12 @@
+Authentication-Results: mx.demo-industries.example; spf=pass smtp.mailfrom=gmail.com; dkim=pass header.d=gmail.com; dmarc=pass header.from=gmail.com
+Return-Path: <sunil.mehra.demo.fake@gmail.com>
+From: Sunil Mehra <sunil.mehra.demo.fake@gmail.com>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Quick task - need gift cards
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e08@demo.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Priya, I am in a meeting. Buy 10 gift cards for a client and send me the codes.

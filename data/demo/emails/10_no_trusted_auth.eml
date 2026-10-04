@@ -1,0 +1,12 @@
+Authentication-Results: mx.other-provider.example; spf=pass smtp.mailfrom=tapti-supplies.example; dkim=pass header.d=tapti-supplies.example; dmarc=pass header.from=tapti-supplies.example
+Return-Path: <bounce@amazonses.com>
+From: Tapti Supplies <orders@tapti-supplies.example>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Order confirmation
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e10@demo.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Your stationery order is confirmed.

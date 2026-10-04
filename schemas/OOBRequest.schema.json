@@ -1,0 +1,122 @@
+{
+  "$defs": {
+    "OOBResult": {
+      "enum": [
+        "PENDING",
+        "APPROVED",
+        "DENIED",
+        "EXPIRED"
+      ],
+      "title": "OOBResult",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "OOB-Confirm: 'Did you ask for this payment?' sent to the claimed requester (T12).\n\nThe raw token is NEVER stored; only its SHA-256 (`token_sha256`).\nbinding_hash = SHA-256(case_id ‖ amount ‖ beneficiary_hash ‖ nonce).",
+  "properties": {
+    "id": {
+      "pattern": "^oob_[A-Za-z0-9_\\-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "requester_employee_id": {
+      "title": "Requester Employee Id",
+      "type": "string"
+    },
+    "sent_to_email": {
+      "title": "Sent To Email",
+      "type": "string"
+    },
+    "message_text": {
+      "title": "Message Text",
+      "type": "string"
+    },
+    "binding_hash": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Binding Hash",
+      "type": "string"
+    },
+    "nonce": {
+      "title": "Nonce",
+      "type": "string"
+    },
+    "token_sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Token Sha256",
+      "type": "string"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "expires_at": {
+      "format": "date-time",
+      "title": "Expires At",
+      "type": "string"
+    },
+    "result": {
+      "$ref": "#/$defs/OOBResult",
+      "default": "PENDING"
+    },
+    "responded_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Responded At"
+    },
+    "responded_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Responded By"
+    },
+    "channels": {
+      "items": {
+        "enum": [
+          "ses",
+          "in_app"
+        ],
+        "type": "string"
+      },
+      "title": "Channels",
+      "type": "array"
+    },
+    "spent": {
+      "default": false,
+      "title": "Spent",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "id",
+    "case_id",
+    "requester_employee_id",
+    "sent_to_email",
+    "message_text",
+    "binding_hash",
+    "nonce",
+    "token_sha256",
+    "created_at",
+    "expires_at"
+  ],
+  "title": "OOBRequest",
+  "type": "object"
+}

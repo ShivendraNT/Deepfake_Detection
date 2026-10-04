@@ -1,0 +1,95 @@
+{
+  "$defs": {
+    "BankAccount": {
+      "additionalProperties": false,
+      "properties": {
+        "account_number": {
+          "pattern": "^\\d{9,18}$",
+          "title": "Account Number",
+          "type": "string"
+        },
+        "ifsc": {
+          "pattern": "^[A-Z]{4}0[A-Z0-9]{6}$",
+          "title": "Ifsc",
+          "type": "string"
+        },
+        "bank_name": {
+          "title": "Bank Name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "account_number",
+        "ifsc",
+        "bank_name"
+      ],
+      "title": "BankAccount",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "vendor_id": {
+      "pattern": "^V\\d{3,}$",
+      "title": "Vendor Id",
+      "type": "string"
+    },
+    "legal_name": {
+      "title": "Legal Name",
+      "type": "string"
+    },
+    "gstin": {
+      "anyOf": [
+        {
+          "pattern": "^\\d{2}[A-Z]{5}\\d{4}[A-Z][1-9A-Z]Z[0-9A-Z]$",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Gstin"
+    },
+    "status": {
+      "default": "active",
+      "enum": [
+        "active",
+        "inactive"
+      ],
+      "title": "Status",
+      "type": "string"
+    },
+    "email_domain": {
+      "title": "Email Domain",
+      "type": "string"
+    },
+    "phone_on_file": {
+      "title": "Phone On File",
+      "type": "string"
+    },
+    "accounts": {
+      "items": {
+        "$ref": "#/$defs/BankAccount"
+      },
+      "title": "Accounts",
+      "type": "array"
+    },
+    "upi_ids": {
+      "items": {
+        "pattern": "^[\\w.\\-]+@[a-z]+$",
+        "type": "string"
+      },
+      "title": "Upi Ids",
+      "type": "array"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "legal_name",
+    "email_domain",
+    "phone_on_file"
+  ],
+  "title": "Vendor",
+  "type": "object"
+}

@@ -1,0 +1,56 @@
+{
+  "$defs": {
+    "AskType": {
+      "enum": [
+        "A1",
+        "A2",
+        "A3",
+        "A4",
+        "A5",
+        "A6",
+        "A7"
+      ],
+      "title": "AskType",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One detected 'ask' (A1-A7) in a text. Produced by satyapan.asks.extractor (T05).",
+  "properties": {
+    "ask_type": {
+      "$ref": "#/$defs/AskType"
+    },
+    "start": {
+      "minimum": 0,
+      "title": "Start",
+      "type": "integer"
+    },
+    "end": {
+      "minimum": 0,
+      "title": "End",
+      "type": "integer"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "lexicon_id": {
+      "title": "Lexicon Id",
+      "type": "string"
+    },
+    "script": {
+      "default": "latin",
+      "title": "Script",
+      "type": "string"
+    }
+  },
+  "required": [
+    "ask_type",
+    "start",
+    "end",
+    "text",
+    "lexicon_id"
+  ],
+  "title": "AskSpan",
+  "type": "object"
+}

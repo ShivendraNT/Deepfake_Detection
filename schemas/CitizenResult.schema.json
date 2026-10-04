@@ -1,0 +1,45 @@
+{
+  "$defs": {
+    "Band": {
+      "description": "Risk band. Ordered PASS < VERIFY < HOLD. Use satyapan.policy.bands to compare.",
+      "enum": [
+        "PASS",
+        "VERIFY",
+        "HOLD"
+      ],
+      "title": "Band",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Coarse output for the citizen page (T24): band + action only, never scores.",
+  "properties": {
+    "band": {
+      "$ref": "#/$defs/Band"
+    },
+    "action_text": {
+      "title": "Action Text",
+      "type": "string"
+    },
+    "rule_hits": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Rule Hits",
+      "type": "array"
+    },
+    "links": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Links",
+      "type": "object"
+    }
+  },
+  "required": [
+    "band",
+    "action_text"
+  ],
+  "title": "CitizenResult",
+  "type": "object"
+}

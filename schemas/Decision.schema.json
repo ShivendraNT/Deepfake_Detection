@@ -1,0 +1,256 @@
+{
+  "$defs": {
+    "ActionType": {
+      "description": "Floor action types from the vendor-master comparison (ARCHITECTURE.md, floor table).",
+      "enum": [
+        "K1",
+        "K2",
+        "N1",
+        "N2",
+        "C1",
+        "T1",
+        "D1",
+        "NONE"
+      ],
+      "title": "ActionType",
+      "type": "string"
+    },
+    "Band": {
+      "description": "Risk band. Ordered PASS < VERIFY < HOLD. Use satyapan.policy.bands to compare.",
+      "enum": [
+        "PASS",
+        "VERIFY",
+        "HOLD"
+      ],
+      "title": "Band",
+      "type": "string"
+    },
+    "CaseStatus": {
+      "enum": [
+        "OPEN",
+        "CLEARED",
+        "SUSPECTED_FRAUD",
+        "CONFIRMED_FRAUD",
+        "OVERRIDDEN"
+      ],
+      "title": "CaseStatus",
+      "type": "string"
+    },
+    "ClearanceMethod": {
+      "enum": [
+        "CALLBACK_MASTER_NUMBER",
+        "OOB_CONFIRM",
+        "BANK_NAME_MATCH",
+        "CHECKER_CALLBACK",
+        "SECURITY_ACK",
+        "SECOND_APPROVER"
+      ],
+      "title": "ClearanceMethod",
+      "type": "string"
+    },
+    "ClearanceRequirement": {
+      "additionalProperties": false,
+      "description": "What must happen before the payment may proceed. Clearing never lowers the band.",
+      "properties": {
+        "band": {
+          "$ref": "#/$defs/Band"
+        },
+        "who": {
+          "items": {
+            "$ref": "#/$defs/Role"
+          },
+          "title": "Who",
+          "type": "array"
+        },
+        "methods": {
+          "items": {
+            "$ref": "#/$defs/ClearanceMethod"
+          },
+          "title": "Methods",
+          "type": "array"
+        },
+        "mode": {
+          "default": "none",
+          "enum": [
+            "any",
+            "all",
+            "none"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "callback_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Callback Number"
+        },
+        "callback_number_source": {
+          "anyOf": [
+            {
+              "enum": [
+                "vendor_master",
+                "vendor_master_old",
+                "directory",
+                "independent_source"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Callback Number Source"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "band"
+      ],
+      "title": "ClearanceRequirement",
+      "type": "object"
+    },
+    "Queue": {
+      "enum": [
+        "MAKER",
+        "CHECKER_REVIEW"
+      ],
+      "title": "Queue",
+      "type": "string"
+    },
+    "ReasonCode": {
+      "description": "Every reason the system can show. T14 must give each one EN + HI text.",
+      "enum": [
+        "FLOOR_K1_KNOWN_IN_PATTERN",
+        "FLOOR_K2_OUT_OF_PATTERN",
+        "FLOOR_N1_NEW_SMALL",
+        "FLOOR_N2_NEW_LARGE",
+        "FLOOR_C1_BANK_CHANGED",
+        "FLOOR_T1_TRUST_ANCHOR",
+        "FLOOR_D1_DATA_REQUEST",
+        "FLOOR_NONE",
+        "EMAIL_AUTH_PASS",
+        "EMAIL_DMARC_FAIL",
+        "EMAIL_LOOKALIKE_DOMAIN",
+        "EMAIL_BANK_NOT_BANK_IN",
+        "EMAIL_REPLYTO_MISMATCH",
+        "EMAIL_FREEMAIL_CORPORATE",
+        "DOC_NO_ISSUES",
+        "DOC_ACCOUNT_MISMATCH",
+        "DOC_PDF_EDITED",
+        "VOICE_NO_SIGNS",
+        "VOICE_INCONCLUSIVE",
+        "VOICE_LIKELY_SYNTHETIC",
+        "ASK_NEW_ACCOUNT",
+        "ASK_CREDENTIAL",
+        "ASK_REMOTE_ACCESS",
+        "ASK_SECRECY",
+        "ASK_BYPASS",
+        "ASK_UNUSUAL_PAYMENT_METHOD",
+        "ASK_PAYEE_CHANGE",
+        "STYLE_PRESSURE",
+        "WATCHLIST_HIT",
+        "MULTI_GROUP_STRONG",
+        "GREY_FLAG",
+        "OOB_DENIED",
+        "OOB_APPROVED"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "Role": {
+      "enum": [
+        "maker",
+        "checker",
+        "security",
+        "requester",
+        "system"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Output of satyapan.policy.engine.decide(). Only the policy engine creates these.",
+  "properties": {
+    "band": {
+      "$ref": "#/$defs/Band"
+    },
+    "floor_band": {
+      "$ref": "#/$defs/Band"
+    },
+    "action_type": {
+      "$ref": "#/$defs/ActionType"
+    },
+    "reason_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Reason Codes",
+      "type": "array"
+    },
+    "info_codes": {
+      "items": {
+        "$ref": "#/$defs/ReasonCode"
+      },
+      "title": "Info Codes",
+      "type": "array"
+    },
+    "clearance": {
+      "$ref": "#/$defs/ClearanceRequirement"
+    },
+    "queue": {
+      "$ref": "#/$defs/Queue",
+      "default": "MAKER"
+    },
+    "suggested_status": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/CaseStatus"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "grey": {
+      "default": false,
+      "title": "Grey",
+      "type": "boolean"
+    },
+    "policy_version": {
+      "title": "Policy Version",
+      "type": "string"
+    },
+    "decided_at": {
+      "format": "date-time",
+      "title": "Decided At",
+      "type": "string"
+    }
+  },
+  "required": [
+    "band",
+    "floor_band",
+    "action_type",
+    "reason_codes",
+    "clearance",
+    "policy_version",
+    "decided_at"
+  ],
+  "title": "Decision",
+  "type": "object"
+}

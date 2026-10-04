@@ -1,0 +1,106 @@
+{
+  "$defs": {
+    "CallbackOutcome": {
+      "enum": [
+        "CONFIRMED",
+        "DENIED",
+        "NO_ANSWER"
+      ],
+      "title": "CallbackOutcome",
+      "type": "string"
+    },
+    "Role": {
+      "enum": [
+        "maker",
+        "checker",
+        "security",
+        "requester",
+        "system"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "A logged callback. The number MUST come from the master/directory, never a message.",
+  "properties": {
+    "id": {
+      "pattern": "^cb_[A-Za-z0-9_\\-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "performed_by": {
+      "title": "Performed By",
+      "type": "string"
+    },
+    "performed_as": {
+      "$ref": "#/$defs/Role"
+    },
+    "number_dialed": {
+      "title": "Number Dialed",
+      "type": "string"
+    },
+    "number_source": {
+      "enum": [
+        "vendor_master",
+        "vendor_master_old",
+        "directory"
+      ],
+      "title": "Number Source",
+      "type": "string"
+    },
+    "outcome": {
+      "$ref": "#/$defs/CallbackOutcome"
+    },
+    "confirmed_by_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Confirmed By Name"
+    },
+    "bank_shown_payee_name": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Bank Shown Payee Name"
+    },
+    "at": {
+      "format": "date-time",
+      "title": "At",
+      "type": "string"
+    },
+    "notes": {
+      "default": "",
+      "title": "Notes",
+      "type": "string"
+    }
+  },
+  "required": [
+    "id",
+    "case_id",
+    "performed_by",
+    "performed_as",
+    "number_dialed",
+    "number_source",
+    "outcome",
+    "at"
+  ],
+  "title": "CallbackRecord",
+  "type": "object"
+}

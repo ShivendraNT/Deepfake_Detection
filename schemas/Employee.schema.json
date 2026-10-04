@@ -1,0 +1,66 @@
+{
+  "$defs": {
+    "Role": {
+      "enum": [
+        "maker",
+        "checker",
+        "security",
+        "requester",
+        "system"
+      ],
+      "title": "Role",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "employee_id": {
+      "pattern": "^emp_[a-z0-9_]+$",
+      "title": "Employee Id",
+      "type": "string"
+    },
+    "name": {
+      "title": "Name",
+      "type": "string"
+    },
+    "email": {
+      "title": "Email",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "roles": {
+      "items": {
+        "$ref": "#/$defs/Role"
+      },
+      "title": "Roles",
+      "type": "array"
+    },
+    "phone_on_file": {
+      "title": "Phone On File",
+      "type": "string"
+    },
+    "is_senior_approver": {
+      "default": false,
+      "title": "Is Senior Approver",
+      "type": "boolean"
+    },
+    "active": {
+      "default": true,
+      "title": "Active",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "employee_id",
+    "name",
+    "email",
+    "title",
+    "roles",
+    "phone_on_file"
+  ],
+  "title": "Employee",
+  "type": "object"
+}

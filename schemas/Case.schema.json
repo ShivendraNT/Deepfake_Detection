@@ -1,0 +1,1149 @@
+{
+  "$defs": {
+    "ActionType": {
+      "description": "Floor action types from the vendor-master comparison (ARCHITECTURE.md, floor table).",
+      "enum": [
+        "K1",
+        "K2",
+        "N1",
+        "N2",
+        "C1",
+        "T1",
+        "D1",
+        "NONE"
+      ],
+      "title": "ActionType",
+      "type": "string"
+    },
+    "AnalysisRun": {
+      "additionalProperties": false,
+      "properties": {
+        "detector": {
+          "title": "Detector",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "detector",
+        "version"
+      ],
+      "title": "AnalysisRun",
+      "type": "object"
+    },
+    "Band": {
+      "description": "Risk band. Ordered PASS < VERIFY < HOLD. Use satyapan.policy.bands to compare.",
+      "enum": [
+        "PASS",
+        "VERIFY",
+        "HOLD"
+      ],
+      "title": "Band",
+      "type": "string"
+    },
+    "CallbackOutcome": {
+      "enum": [
+        "CONFIRMED",
+        "DENIED",
+        "NO_ANSWER"
+      ],
+      "title": "CallbackOutcome",
+      "type": "string"
+    },
+    "CallbackRecord": {
+      "additionalProperties": false,
+      "description": "A logged callback. The number MUST come from the master/directory, never a message.",
+      "properties": {
+        "id": {
+          "pattern": "^cb_[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "case_id": {
+          "title": "Case Id",
+          "type": "string"
+        },
+        "performed_by": {
+          "title": "Performed By",
+          "type": "string"
+        },
+        "performed_as": {
+          "$ref": "#/$defs/Role"
+        },
+        "number_dialed": {
+          "title": "Number Dialed",
+          "type": "string"
+        },
+        "number_source": {
+          "enum": [
+            "vendor_master",
+            "vendor_master_old",
+            "directory"
+          ],
+          "title": "Number Source",
+          "type": "string"
+        },
+        "outcome": {
+          "$ref": "#/$defs/CallbackOutcome"
+        },
+        "confirmed_by_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Confirmed By Name"
+        },
+        "bank_shown_payee_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bank Shown Payee Name"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "notes": {
+          "default": "",
+          "title": "Notes",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "case_id",
+        "performed_by",
+        "performed_as",
+        "number_dialed",
+        "number_source",
+        "outcome",
+        "at"
+      ],
+      "title": "CallbackRecord",
+      "type": "object"
+    },
+    "CaseKind": {
+      "enum": [
+        "PAYMENT",
+        "MASTER_CHANGE",
+        "DATA_REQUEST",
+        "LIVE_CALL"
+      ],
+      "title": "CaseKind",
+      "type": "string"
+    },
+    "CaseStatus": {
+      "enum": [
+        "OPEN",
+        "CLEARED",
+        "SUSPECTED_FRAUD",
+        "CONFIRMED_FRAUD",
+        "OVERRIDDEN"
+      ],
+      "title": "CaseStatus",
+      "type": "string"
+    },
+    "Channel": {
+      "enum": [
+        "email",
+        "pdf",
+        "voice_note",
+        "call_recording",
+        "live_call",
+        "whatsapp_text",
+        "manual"
+      ],
+      "title": "Channel",
+      "type": "string"
+    },
+    "ClearanceMethod": {
+      "enum": [
+        "CALLBACK_MASTER_NUMBER",
+        "OOB_CONFIRM",
+        "BANK_NAME_MATCH",
+        "CHECKER_CALLBACK",
+        "SECURITY_ACK",
+        "SECOND_APPROVER"
+      ],
+      "title": "ClearanceMethod",
+      "type": "string"
+    },
+    "ClearanceRequirement": {
+      "additionalProperties": false,
+      "description": "What must happen before the payment may proceed. Clearing never lowers the band.",
+      "properties": {
+        "band": {
+          "$ref": "#/$defs/Band"
+        },
+        "who": {
+          "items": {
+            "$ref": "#/$defs/Role"
+          },
+          "title": "Who",
+          "type": "array"
+        },
+        "methods": {
+          "items": {
+            "$ref": "#/$defs/ClearanceMethod"
+          },
+          "title": "Methods",
+          "type": "array"
+        },
+        "mode": {
+          "default": "none",
+          "enum": [
+            "any",
+            "all",
+            "none"
+          ],
+          "title": "Mode",
+          "type": "string"
+        },
+        "callback_number": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Callback Number"
+        },
+        "callback_number_source": {
+          "anyOf": [
+            {
+              "enum": [
+                "vendor_master",
+                "vendor_master_old",
+                "directory",
+                "independent_source"
+              ],
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Callback Number Source"
+        },
+        "notes": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Notes",
+          "type": "array"
+        }
+      },
+      "required": [
+        "band"
+      ],
+      "title": "ClearanceRequirement",
+      "type": "object"
+    },
+    "Decision": {
+      "additionalProperties": false,
+      "description": "Output of satyapan.policy.engine.decide(). Only the policy engine creates these.",
+      "properties": {
+        "band": {
+          "$ref": "#/$defs/Band"
+        },
+        "floor_band": {
+          "$ref": "#/$defs/Band"
+        },
+        "action_type": {
+          "$ref": "#/$defs/ActionType"
+        },
+        "reason_codes": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Reason Codes",
+          "type": "array"
+        },
+        "info_codes": {
+          "items": {
+            "$ref": "#/$defs/ReasonCode"
+          },
+          "title": "Info Codes",
+          "type": "array"
+        },
+        "clearance": {
+          "$ref": "#/$defs/ClearanceRequirement"
+        },
+        "queue": {
+          "$ref": "#/$defs/Queue",
+          "default": "MAKER"
+        },
+        "suggested_status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/CaseStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "grey": {
+          "default": false,
+          "title": "Grey",
+          "type": "boolean"
+        },
+        "policy_version": {
+          "title": "Policy Version",
+          "type": "string"
+        },
+        "decided_at": {
+          "format": "date-time",
+          "title": "Decided At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "band",
+        "floor_band",
+        "action_type",
+        "reason_codes",
+        "clearance",
+        "policy_version",
+        "decided_at"
+      ],
+      "title": "Decision",
+      "type": "object"
+    },
+    "Evidence": {
+      "additionalProperties": false,
+      "description": "One piece of attacker-controllable input, hashed at intake BEFORE any parsing.",
+      "properties": {
+        "id": {
+          "pattern": "^ev_[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "case_id": {
+          "title": "Case Id",
+          "type": "string"
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel"
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Filename"
+        },
+        "media_type": {
+          "default": "application/octet-stream",
+          "title": "Media Type",
+          "type": "string"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "size_bytes": {
+          "minimum": 0,
+          "title": "Size Bytes",
+          "type": "integer"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "submitted_by": {
+          "title": "Submitted By",
+          "type": "string"
+        },
+        "storage_uri": {
+          "title": "Storage Uri",
+          "type": "string"
+        },
+        "excerpt": {
+          "anyOf": [
+            {
+              "maxLength": 300,
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Excerpt"
+        },
+        "analysis_runs": {
+          "items": {
+            "$ref": "#/$defs/AnalysisRun"
+          },
+          "title": "Analysis Runs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "case_id",
+        "channel",
+        "sha256",
+        "size_bytes",
+        "captured_at",
+        "submitted_by",
+        "storage_uri"
+      ],
+      "title": "Evidence",
+      "type": "object"
+    },
+    "GreyReason": {
+      "enum": [
+        "PARSE_FAILURE",
+        "DETECTOR_ERROR",
+        "SPEECH_TOO_SHORT",
+        "UNSUPPORTED_LANGUAGE",
+        "CONFLICTING_TXN_DATA"
+      ],
+      "title": "GreyReason",
+      "type": "string"
+    },
+    "MasterChange": {
+      "additionalProperties": false,
+      "description": "A requested change to a trust anchor (T1). Always floor HOLD.",
+      "properties": {
+        "target": {
+          "enum": [
+            "vendor_phone",
+            "vendor_email",
+            "vendor_bank",
+            "approver_list"
+          ],
+          "title": "Target",
+          "type": "string"
+        },
+        "vendor_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vendor Id"
+        },
+        "old_value": {
+          "title": "Old Value",
+          "type": "string"
+        },
+        "new_value": {
+          "title": "New Value",
+          "type": "string"
+        },
+        "requested_via": {
+          "title": "Requested Via",
+          "type": "string"
+        }
+      },
+      "required": [
+        "target",
+        "old_value",
+        "new_value",
+        "requested_via"
+      ],
+      "title": "MasterChange",
+      "type": "object"
+    },
+    "OOBRequest": {
+      "additionalProperties": false,
+      "description": "OOB-Confirm: 'Did you ask for this payment?' sent to the claimed requester (T12).\n\nThe raw token is NEVER stored; only its SHA-256 (`token_sha256`).\nbinding_hash = SHA-256(case_id ‖ amount ‖ beneficiary_hash ‖ nonce).",
+      "properties": {
+        "id": {
+          "pattern": "^oob_[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "case_id": {
+          "title": "Case Id",
+          "type": "string"
+        },
+        "requester_employee_id": {
+          "title": "Requester Employee Id",
+          "type": "string"
+        },
+        "sent_to_email": {
+          "title": "Sent To Email",
+          "type": "string"
+        },
+        "message_text": {
+          "title": "Message Text",
+          "type": "string"
+        },
+        "binding_hash": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Binding Hash",
+          "type": "string"
+        },
+        "nonce": {
+          "title": "Nonce",
+          "type": "string"
+        },
+        "token_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Token Sha256",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "expires_at": {
+          "format": "date-time",
+          "title": "Expires At",
+          "type": "string"
+        },
+        "result": {
+          "$ref": "#/$defs/OOBResult",
+          "default": "PENDING"
+        },
+        "responded_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Responded At"
+        },
+        "responded_by": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Responded By"
+        },
+        "channels": {
+          "items": {
+            "enum": [
+              "ses",
+              "in_app"
+            ],
+            "type": "string"
+          },
+          "title": "Channels",
+          "type": "array"
+        },
+        "spent": {
+          "default": false,
+          "title": "Spent",
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "case_id",
+        "requester_employee_id",
+        "sent_to_email",
+        "message_text",
+        "binding_hash",
+        "nonce",
+        "token_sha256",
+        "created_at",
+        "expires_at"
+      ],
+      "title": "OOBRequest",
+      "type": "object"
+    },
+    "OOBResult": {
+      "enum": [
+        "PENDING",
+        "APPROVED",
+        "DENIED",
+        "EXPIRED"
+      ],
+      "title": "OOBResult",
+      "type": "string"
+    },
+    "OverrideRecord": {
+      "additionalProperties": false,
+      "description": "Urgent legitimate payment override: two distinct senior approvers, reason, 48 h review.",
+      "properties": {
+        "approver_ids": {
+          "items": {
+            "type": "string"
+          },
+          "minItems": 2,
+          "title": "Approver Ids",
+          "type": "array"
+        },
+        "reason": {
+          "minLength": 10,
+          "title": "Reason",
+          "type": "string"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        },
+        "review_due_at": {
+          "format": "date-time",
+          "title": "Review Due At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "approver_ids",
+        "reason",
+        "at",
+        "review_due_at"
+      ],
+      "title": "OverrideRecord",
+      "type": "object"
+    },
+    "PaymentAction": {
+      "additionalProperties": false,
+      "description": "A pending (or already-sent) payment. The maker types this in; nobody parses it from email.\n\nExample JSON (see data/demo/cases/*.json):\n    {\"id\": \"txn_s07\", \"vendor_id\": \"V002\", \"beneficiary_name\": \"Narmada Demo Logistics\",\n     \"account_number\": \"99992222009917\", \"ifsc\": \"FAKC0000991\", \"upi_id\": null,\n     \"amount_inr\": 284000, \"rail\": \"NEFT\", \"debit_account_masked\": \"••••1234\",\n     \"requested_by_employee_id\": null, \"bank_shown_payee_name\": null,\n     \"created_by\": \"emp_priya\", \"created_at\": \"2026-10-05T10:00:00+05:30\"}",
+      "properties": {
+        "id": {
+          "pattern": "^txn_[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "vendor_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Vendor Id"
+        },
+        "beneficiary_name": {
+          "title": "Beneficiary Name",
+          "type": "string"
+        },
+        "account_number": {
+          "anyOf": [
+            {
+              "pattern": "^\\d{9,18}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Account Number"
+        },
+        "ifsc": {
+          "anyOf": [
+            {
+              "pattern": "^[A-Z]{4}0[A-Z0-9]{6}$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ifsc"
+        },
+        "upi_id": {
+          "anyOf": [
+            {
+              "pattern": "^[\\w.\\-]+@[a-z]+$",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Upi Id"
+        },
+        "beneficiary_bank": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Beneficiary Bank"
+        },
+        "amount_inr": {
+          "minimum": 0,
+          "title": "Amount Inr",
+          "type": "integer"
+        },
+        "rail": {
+          "$ref": "#/$defs/PaymentRail"
+        },
+        "debit_account_masked": {
+          "default": "••••0000",
+          "title": "Debit Account Masked",
+          "type": "string"
+        },
+        "requested_by_employee_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Requested By Employee Id"
+        },
+        "bank_shown_payee_name": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Bank Shown Payee Name"
+        },
+        "created_by": {
+          "title": "Created By",
+          "type": "string"
+        },
+        "created_at": {
+          "format": "date-time",
+          "title": "Created At",
+          "type": "string"
+        },
+        "utr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Utr"
+        },
+        "sent_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Sent At"
+        }
+      },
+      "required": [
+        "id",
+        "beneficiary_name",
+        "amount_inr",
+        "rail",
+        "created_by",
+        "created_at"
+      ],
+      "title": "PaymentAction",
+      "type": "object"
+    },
+    "PaymentRail": {
+      "enum": [
+        "NEFT",
+        "RTGS",
+        "IMPS",
+        "UPI"
+      ],
+      "title": "PaymentRail",
+      "type": "string"
+    },
+    "Queue": {
+      "enum": [
+        "MAKER",
+        "CHECKER_REVIEW"
+      ],
+      "title": "Queue",
+      "type": "string"
+    },
+    "ReasonCode": {
+      "description": "Every reason the system can show. T14 must give each one EN + HI text.",
+      "enum": [
+        "FLOOR_K1_KNOWN_IN_PATTERN",
+        "FLOOR_K2_OUT_OF_PATTERN",
+        "FLOOR_N1_NEW_SMALL",
+        "FLOOR_N2_NEW_LARGE",
+        "FLOOR_C1_BANK_CHANGED",
+        "FLOOR_T1_TRUST_ANCHOR",
+        "FLOOR_D1_DATA_REQUEST",
+        "FLOOR_NONE",
+        "EMAIL_AUTH_PASS",
+        "EMAIL_DMARC_FAIL",
+        "EMAIL_LOOKALIKE_DOMAIN",
+        "EMAIL_BANK_NOT_BANK_IN",
+        "EMAIL_REPLYTO_MISMATCH",
+        "EMAIL_FREEMAIL_CORPORATE",
+        "DOC_NO_ISSUES",
+        "DOC_ACCOUNT_MISMATCH",
+        "DOC_PDF_EDITED",
+        "VOICE_NO_SIGNS",
+        "VOICE_INCONCLUSIVE",
+        "VOICE_LIKELY_SYNTHETIC",
+        "ASK_NEW_ACCOUNT",
+        "ASK_CREDENTIAL",
+        "ASK_REMOTE_ACCESS",
+        "ASK_SECRECY",
+        "ASK_BYPASS",
+        "ASK_UNUSUAL_PAYMENT_METHOD",
+        "ASK_PAYEE_CHANGE",
+        "STYLE_PRESSURE",
+        "WATCHLIST_HIT",
+        "MULTI_GROUP_STRONG",
+        "GREY_FLAG",
+        "OOB_DENIED",
+        "OOB_APPROVED"
+      ],
+      "title": "ReasonCode",
+      "type": "string"
+    },
+    "Role": {
+      "enum": [
+        "maker",
+        "checker",
+        "security",
+        "requester",
+        "system"
+      ],
+      "title": "Role",
+      "type": "string"
+    },
+    "Signal": {
+      "additionalProperties": false,
+      "description": "A single finding. group/target/strength MUST match SIGNAL_TABLE (validated).\n\nBuild it with Signal.make(code, source=..., evidence_ids=[...]) so you never type\ngroup/target/strength by hand.",
+      "properties": {
+        "id": {
+          "pattern": "^sig_[A-Za-z0-9_\\-]+$",
+          "title": "Id",
+          "type": "string"
+        },
+        "code": {
+          "$ref": "#/$defs/ReasonCode"
+        },
+        "group": {
+          "$ref": "#/$defs/SignalGroup"
+        },
+        "target": {
+          "$ref": "#/$defs/TargetRule"
+        },
+        "strength": {
+          "$ref": "#/$defs/Strength"
+        },
+        "source": {
+          "$ref": "#/$defs/SignalSource"
+        },
+        "evidence_ids": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Evidence Ids",
+          "type": "array"
+        },
+        "detector": {
+          "default": "unknown",
+          "title": "Detector",
+          "type": "string"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        },
+        "detail": {
+          "additionalProperties": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "number"
+              },
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "title": "Detail",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "code",
+        "group",
+        "target",
+        "strength",
+        "source"
+      ],
+      "title": "Signal",
+      "type": "object"
+    },
+    "SignalGroup": {
+      "enum": [
+        "sender_auth",
+        "document",
+        "media",
+        "ask",
+        "style",
+        "watchlist"
+      ],
+      "title": "SignalGroup",
+      "type": "string"
+    },
+    "SignalSource": {
+      "enum": [
+        "deterministic",
+        "ml",
+        "llm",
+        "human"
+      ],
+      "title": "SignalSource",
+      "type": "string"
+    },
+    "Strength": {
+      "enum": [
+        "weak",
+        "strong"
+      ],
+      "title": "Strength",
+      "type": "string"
+    },
+    "TargetRule": {
+      "description": "How a signal maps to a target band. Evaluated ONLY in satyapan.policy.targets.",
+      "enum": [
+        "NONE",
+        "VERIFY",
+        "HOLD",
+        "VERIFY_HOLD_IF_FLOOR_GE_VERIFY",
+        "PLUS_ONE",
+        "HOLD_IF_MONEY_ELSE_VERIFY"
+      ],
+      "title": "TargetRule",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "id": {
+      "pattern": "^case_[A-Za-z0-9_\\-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "title": {
+      "title": "Title",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/CaseKind"
+    },
+    "created_at": {
+      "format": "date-time",
+      "title": "Created At",
+      "type": "string"
+    },
+    "created_by": {
+      "title": "Created By",
+      "type": "string"
+    },
+    "txn": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/PaymentAction"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "master_change": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/MasterChange"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "evidence": {
+      "items": {
+        "$ref": "#/$defs/Evidence"
+      },
+      "title": "Evidence",
+      "type": "array"
+    },
+    "signals": {
+      "items": {
+        "$ref": "#/$defs/Signal"
+      },
+      "title": "Signals",
+      "type": "array"
+    },
+    "grey_reasons": {
+      "items": {
+        "$ref": "#/$defs/GreyReason"
+      },
+      "title": "Grey Reasons",
+      "type": "array"
+    },
+    "oob": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OOBRequest"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "callbacks": {
+      "items": {
+        "$ref": "#/$defs/CallbackRecord"
+      },
+      "title": "Callbacks",
+      "type": "array"
+    },
+    "linked_call_ids": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Linked Call Ids",
+      "type": "array"
+    },
+    "status": {
+      "$ref": "#/$defs/CaseStatus",
+      "default": "OPEN"
+    },
+    "queue": {
+      "$ref": "#/$defs/Queue",
+      "default": "MAKER"
+    },
+    "decision": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Decision"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "override": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/OverrideRecord"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "security_acknowledged_by": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Security Acknowledged By"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "title",
+    "kind",
+    "created_at",
+    "created_by"
+  ],
+  "title": "Case",
+  "type": "object"
+}

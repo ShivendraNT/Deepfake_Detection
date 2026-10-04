@@ -1,0 +1,46 @@
+{
+  "id": "case_s04",
+  "title": "'Send payroll file and share the OTP' request",
+  "kind": "DATA_REQUEST",
+  "created_at": "2026-10-05T10:00:00+05:30",
+  "created_by": "emp_priya",
+  "evidence": [
+    {
+      "id": "ev_291e9b9620e7a223",
+      "case_id": "case_s04",
+      "channel": "whatsapp_text",
+      "filename": "cfo_escrow_chat.txt",
+      "media_type": "text/plain",
+      "sha256": "291e9b9620e7a223728ddcccedc8b62c3b7d10f619e8b423572eaa2df67dde51",
+      "size_bytes": 655,
+      "captured_at": "2026-10-05T09:50:00+05:30",
+      "submitted_by": "emp_priya",
+      "storage_uri": "file://data/demo/whatsapp/cfo_escrow_chat.txt",
+      "excerpt": "Bas OTP aaye toh mujhe bata dena.",
+      "analysis_runs": []
+    }
+  ],
+  "signals": [
+    {
+      "id": "sig_s04a",
+      "code": "ASK_CREDENTIAL",
+      "group": "ask",
+      "target": "HOLD",
+      "strength": "strong",
+      "source": "deterministic",
+      "evidence_ids": [
+        "ev_291e9b9620e7a223"
+      ],
+      "detector": "fixture",
+      "detail": {
+        "ask_type": "A2"
+      }
+    }
+  ],
+  "grey_reasons": [],
+  "callbacks": [],
+  "linked_call_ids": [],
+  "status": "OPEN",
+  "queue": "MAKER",
+  "notes": []
+}

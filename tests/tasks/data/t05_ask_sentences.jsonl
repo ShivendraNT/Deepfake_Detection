@@ -1,0 +1,30 @@
+{"text": "Please transfer the amount to our new account today.", "asks": ["A1"], "lang": "en"}
+{"text": "Move the funds to the escrow account I shared.", "asks": ["A1"], "lang": "en"}
+{"text": "Naye account mein paisa daal dijiye aaj hi.", "asks": ["A1"], "lang": "hi-Latn"}
+{"text": "Can you share the OTP you just received?", "asks": ["A2"], "lang": "en"}
+{"text": "OTP batao jaldi, verification ke liye chahiye.", "asks": ["A2"], "lang": "hi-Latn"}
+{"text": "आपके फोन पर आया ओटीपी बताइए।", "asks": ["A2"], "lang": "hi-Deva"}
+{"text": "Tell me your card CVV to stop the block.", "asks": ["A2"], "lang": "en"}
+{"text": "Install AnyDesk so our engineer can help you.", "asks": ["A3"], "lang": "en"}
+{"text": "TeamViewer download kar lijiye, main screen dekh lunga.", "asks": ["A3"], "lang": "hi-Latn"}
+{"text": "Keep this confidential, it is a sensitive acquisition.", "asks": ["A4"], "lang": "en"}
+{"text": "Arjun ko mat batana, kisi ko mat batana abhi.", "asks": ["A4"], "lang": "hi-Latn"}
+{"text": "किसी को मत बताना, यह गोपनीय है।", "asks": ["A4"], "lang": "hi-Deva"}
+{"text": "Don't loop in the finance manager on this one.", "asks": ["A4"], "lang": "en"}
+{"text": "Skip the approval this time, I will sign later.", "asks": ["A5"], "lang": "en"}
+{"text": "No need for PO, just release the payment.", "asks": ["A5"], "lang": "en"}
+{"text": "Buy gift cards worth 50,000 and send the codes.", "asks": ["A6"], "lang": "en"}
+{"text": "Pay the fee in USDT to this wallet.", "asks": ["A6"], "lang": "en"}
+{"text": "We have changed our bank details, please update.", "asks": ["A7"], "lang": "en"}
+{"text": "Our updated bank account is attached, use it from now.", "asks": ["A7"], "lang": "en"}
+{"text": "Confidential deal: wire to the new account and don't tell anyone.", "asks": ["A1", "A4"], "lang": "en"}
+{"text": "Approval skip karo aur escrow account mein bhejo.", "asks": ["A1", "A5"], "lang": "hi-Latn"}
+{"text": "The invoice for September is attached.", "asks": [], "lang": "en"}
+{"text": "Please confirm receipt of the goods.", "asks": [], "lang": "en"}
+{"text": "Payment ho gaya kya? Receipt bhej dena.", "asks": [], "lang": "hi-Latn"}
+{"text": "Meeting kal 11 baje hai, agenda bhej raha hoon.", "asks": [], "lang": "hi-Latn"}
+{"text": "कृपया सितंबर का बिल देख लीजिए।", "asks": [], "lang": "hi-Deva"}
+{"text": "Our account manager will visit next week.", "asks": [], "lang": "en"}
+{"text": "Never share your OTP with anyone, says the bank.", "asks": ["A2"], "lang": "en", "note": "known false positive: warnings mention OTP; deterministic extractor flags it (raise-only, acceptable)"}
+{"text": "Thanks for the quick approval process.", "asks": [], "lang": "en"}
+{"text": "The PIN code of our new office is 110042.", "asks": ["A2"], "lang": "en", "note": "known false positive: 'PIN code' (postal). T05 should fix with a negative lookahead and change this label to []"}

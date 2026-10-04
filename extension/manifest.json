@@ -1,0 +1,14 @@
+{
+  "manifest_version": 3,
+  "name": "Satyapan Call Guard (demo)",
+  "version": "0.1.0",
+  "description": "Scores the remote party's audio in a Meet/Teams tab for synthetic voice on-device and shows 'ask' alerts. Demo build.",
+  "permissions": ["tabCapture", "offscreen", "sidePanel", "storage", "activeTab"],
+  "host_permissions": ["http://127.0.0.1:8000/*", "http://localhost:8000/*"],
+  "background": { "service_worker": "service_worker.js", "type": "module" },
+  "side_panel": { "default_path": "sidepanel.html" },
+  "action": { "default_title": "Satyapan: protect this call" },
+  "content_security_policy": {
+    "extension_pages": "script-src 'self' 'wasm-unsafe-eval'; object-src 'self'"
+  }
+}

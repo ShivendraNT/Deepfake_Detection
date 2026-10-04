@@ -1,0 +1,16 @@
+Authentication-Results: mx.demo-industries.example; spf=pass smtp.mailfrom=narmada-logistics.example; dkim=pass header.d=narmada-logistics.example; dmarc=pass header.from=narmada-logistics.example
+Return-Path: <accounts@narmada-logistics.example>
+From: Narmada Accounts <accounts@narmada-logistics.example>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Updated bank details for October payments
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e02@demo.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Hello Priya ji,
+We have changed our bank account due to an internal audit.
+Please use the new account from this month: A/c 99997777009917, IFSC FAKD0000991, Fictional Bank D.
+Kindly process invoice NDL-2026-1009 today itself.
+Thanks, Accounts

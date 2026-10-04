@@ -1,0 +1,166 @@
+{
+  "01_legit_invoice_kaveri.eml": {
+    "from_domain": "kaveri-packaging.example",
+    "reply_to_domain": null,
+    "dmarc": "pass",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 1,
+    "body_must_contain": [
+      "KDP/2026/0917"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_AUTH_PASS"
+    ],
+    "grey": []
+  },
+  "02_bec_bank_change_narmada.eml": {
+    "from_domain": "narmada-logistics.example",
+    "reply_to_domain": null,
+    "dmarc": "pass",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 0,
+    "body_must_contain": [
+      "99997777009917"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_AUTH_PASS"
+    ],
+    "grey": []
+  },
+  "03_lookalike_kaveri.eml": {
+    "from_domain": "kaveri-packagimg.example",
+    "reply_to_domain": null,
+    "dmarc": "pass",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 0,
+    "body_must_contain": [
+      "overdue"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_LOOKALIKE_DOMAIN"
+    ],
+    "grey": []
+  },
+  "04_dmarc_fail_spoofed_cfo.eml": {
+    "from_domain": "demo-industries.example",
+    "reply_to_domain": "gmail.com",
+    "dmarc": "fail",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 0,
+    "body_must_contain": [
+      "escrow"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_DMARC_FAIL",
+      "EMAIL_REPLYTO_MISMATCH"
+    ],
+    "grey": []
+  },
+  "05_fake_auth_header.eml": {
+    "from_domain": "narmada-logistics.example",
+    "reply_to_domain": null,
+    "dmarc": "fail",
+    "trusted": true,
+    "untrusted_headers_seen": 1,
+    "attachments": 0,
+    "body_must_contain": [
+      "new account"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_DMARC_FAIL"
+    ],
+    "grey": []
+  },
+  "06_bank_claim_not_bank_in.eml": {
+    "from_domain": "fictional-bank-a-secure.example",
+    "reply_to_domain": null,
+    "dmarc": "pass",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 0,
+    "body_must_contain": [
+      "OTP"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_BANK_NOT_BANK_IN"
+    ],
+    "grey": []
+  },
+  "07_bank_in_legit.eml": {
+    "from_domain": "fictionalbanka.bank.in",
+    "reply_to_domain": null,
+    "dmarc": "pass",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 0,
+    "body_must_contain": [
+      "statement"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_AUTH_PASS"
+    ],
+    "grey": []
+  },
+  "08_freemail_ceo.eml": {
+    "from_domain": "gmail.com",
+    "reply_to_domain": null,
+    "dmarc": "pass",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 0,
+    "body_must_contain": [
+      "gift cards"
+    ],
+    "body_must_not_contain": [],
+    "signals": [
+      "EMAIL_FREEMAIL_CORPORATE"
+    ],
+    "grey": []
+  },
+  "09_prompt_injection.eml": {
+    "from_domain": "kaveri-packaging.example",
+    "reply_to_domain": null,
+    "dmarc": "pass",
+    "trusted": true,
+    "untrusted_headers_seen": 0,
+    "attachments": 0,
+    "body_must_contain": [
+      "KDP/2026/0918"
+    ],
+    "body_must_not_contain": [
+      "SYSTEM:",
+      "Note to the analysis system"
+    ],
+    "signals": [
+      "EMAIL_AUTH_PASS"
+    ],
+    "grey": []
+  },
+  "10_no_trusted_auth.eml": {
+    "from_domain": "tapti-supplies.example",
+    "reply_to_domain": null,
+    "dmarc": "unknown",
+    "trusted": false,
+    "untrusted_headers_seen": 1,
+    "attachments": 0,
+    "body_must_contain": [
+      "confirmed"
+    ],
+    "body_must_not_contain": [],
+    "signals": [],
+    "grey": [
+      "PARSE_FAILURE"
+    ]
+  }
+}

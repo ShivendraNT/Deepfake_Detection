@@ -1,0 +1,129 @@
+{
+  "$defs": {
+    "AnalysisRun": {
+      "additionalProperties": false,
+      "properties": {
+        "detector": {
+          "title": "Detector",
+          "type": "string"
+        },
+        "version": {
+          "title": "Version",
+          "type": "string"
+        },
+        "at": {
+          "format": "date-time",
+          "title": "At",
+          "type": "string"
+        }
+      },
+      "required": [
+        "detector",
+        "version"
+      ],
+      "title": "AnalysisRun",
+      "type": "object"
+    },
+    "Channel": {
+      "enum": [
+        "email",
+        "pdf",
+        "voice_note",
+        "call_recording",
+        "live_call",
+        "whatsapp_text",
+        "manual"
+      ],
+      "title": "Channel",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One piece of attacker-controllable input, hashed at intake BEFORE any parsing.",
+  "properties": {
+    "id": {
+      "pattern": "^ev_[A-Za-z0-9_\\-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "channel": {
+      "$ref": "#/$defs/Channel"
+    },
+    "filename": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Filename"
+    },
+    "media_type": {
+      "default": "application/octet-stream",
+      "title": "Media Type",
+      "type": "string"
+    },
+    "sha256": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Sha256",
+      "type": "string"
+    },
+    "size_bytes": {
+      "minimum": 0,
+      "title": "Size Bytes",
+      "type": "integer"
+    },
+    "captured_at": {
+      "format": "date-time",
+      "title": "Captured At",
+      "type": "string"
+    },
+    "submitted_by": {
+      "title": "Submitted By",
+      "type": "string"
+    },
+    "storage_uri": {
+      "title": "Storage Uri",
+      "type": "string"
+    },
+    "excerpt": {
+      "anyOf": [
+        {
+          "maxLength": 300,
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Excerpt"
+    },
+    "analysis_runs": {
+      "items": {
+        "$ref": "#/$defs/AnalysisRun"
+      },
+      "title": "Analysis Runs",
+      "type": "array"
+    }
+  },
+  "required": [
+    "id",
+    "case_id",
+    "channel",
+    "sha256",
+    "size_bytes",
+    "captured_at",
+    "submitted_by",
+    "storage_uri"
+  ],
+  "title": "Evidence",
+  "type": "object"
+}

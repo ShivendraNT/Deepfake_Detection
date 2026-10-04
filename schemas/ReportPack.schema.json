@@ -1,0 +1,325 @@
+{
+  "$defs": {
+    "Channel": {
+      "enum": [
+        "email",
+        "pdf",
+        "voice_note",
+        "call_recording",
+        "live_call",
+        "whatsapp_text",
+        "manual"
+      ],
+      "title": "Channel",
+      "type": "string"
+    },
+    "EmailDraft": {
+      "additionalProperties": false,
+      "properties": {
+        "to_hint": {
+          "title": "To Hint",
+          "type": "string"
+        },
+        "subject": {
+          "title": "Subject",
+          "type": "string"
+        },
+        "body": {
+          "title": "Body",
+          "type": "string"
+        }
+      },
+      "required": [
+        "to_hint",
+        "subject",
+        "body"
+      ],
+      "title": "EmailDraft",
+      "type": "object"
+    },
+    "EvidenceIndexItem": {
+      "additionalProperties": false,
+      "properties": {
+        "evidence_id": {
+          "title": "Evidence Id",
+          "type": "string"
+        },
+        "filename": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Filename"
+        },
+        "sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Sha256",
+          "type": "string"
+        },
+        "captured_at": {
+          "format": "date-time",
+          "title": "Captured At",
+          "type": "string"
+        },
+        "channel": {
+          "$ref": "#/$defs/Channel"
+        },
+        "submitted_by": {
+          "title": "Submitted By",
+          "type": "string"
+        },
+        "analysis_runs": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Analysis Runs",
+          "type": "array"
+        }
+      },
+      "required": [
+        "evidence_id",
+        "filename",
+        "sha256",
+        "captured_at",
+        "channel",
+        "submitted_by"
+      ],
+      "title": "EvidenceIndexItem",
+      "type": "object"
+    },
+    "NcrpField": {
+      "additionalProperties": false,
+      "properties": {
+        "label": {
+          "title": "Label",
+          "type": "string"
+        },
+        "value": {
+          "title": "Value",
+          "type": "string"
+        }
+      },
+      "required": [
+        "label",
+        "value"
+      ],
+      "title": "NcrpField",
+      "type": "object"
+    },
+    "TransactionFacts": {
+      "additionalProperties": false,
+      "description": "UTR-first facts. These are what freeze money in the golden hour — not media hashes.",
+      "properties": {
+        "utr": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Utr"
+        },
+        "amount_inr": {
+          "title": "Amount Inr",
+          "type": "integer"
+        },
+        "sent_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Sent At"
+        },
+        "rail": {
+          "title": "Rail",
+          "type": "string"
+        },
+        "debit_account_masked": {
+          "title": "Debit Account Masked",
+          "type": "string"
+        },
+        "beneficiary_name": {
+          "title": "Beneficiary Name",
+          "type": "string"
+        },
+        "beneficiary_account": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Beneficiary Account"
+        },
+        "beneficiary_ifsc": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Beneficiary Ifsc"
+        },
+        "beneficiary_upi": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Beneficiary Upi"
+        },
+        "beneficiary_bank": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "title": "Beneficiary Bank"
+        }
+      },
+      "required": [
+        "utr",
+        "amount_inr",
+        "sent_at",
+        "rail",
+        "debit_account_masked",
+        "beneficiary_name",
+        "beneficiary_account",
+        "beneficiary_ifsc",
+        "beneficiary_upi",
+        "beneficiary_bank"
+      ],
+      "title": "TransactionFacts",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "properties": {
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "variant": {
+      "enum": [
+        "ATTEMPTED",
+        "MONEY_SENT"
+      ],
+      "title": "Variant",
+      "type": "string"
+    },
+    "generated_at": {
+      "format": "date-time",
+      "title": "Generated At",
+      "type": "string"
+    },
+    "generated_by": {
+      "title": "Generated By",
+      "type": "string"
+    },
+    "facts": {
+      "$ref": "#/$defs/TransactionFacts"
+    },
+    "call_script_1930": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "title": "Call Script 1930"
+    },
+    "bank_email": {
+      "$ref": "#/$defs/EmailDraft"
+    },
+    "ncrp_draft": {
+      "items": {
+        "$ref": "#/$defs/NcrpField"
+      },
+      "title": "Ncrp Draft",
+      "type": "array"
+    },
+    "chakshu_note": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Chakshu Note"
+    },
+    "evidence_index": {
+      "items": {
+        "$ref": "#/$defs/EvidenceIndexItem"
+      },
+      "title": "Evidence Index",
+      "type": "array"
+    },
+    "custody_head": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Custody Head"
+    },
+    "sec63_helper": {
+      "title": "Sec63 Helper",
+      "type": "string"
+    },
+    "submission": {
+      "const": "MANUAL_ONLY",
+      "default": "MANUAL_ONLY",
+      "title": "Submission",
+      "type": "string"
+    },
+    "disclaimer": {
+      "default": "Draft only. Nothing has been submitted. A human must review and submit via 1930 / cybercrime.gov.in / your bank.",
+      "title": "Disclaimer",
+      "type": "string"
+    }
+  },
+  "required": [
+    "case_id",
+    "variant",
+    "generated_at",
+    "generated_by",
+    "facts",
+    "call_script_1930",
+    "bank_email",
+    "ncrp_draft",
+    "evidence_index",
+    "sec63_helper"
+  ],
+  "title": "ReportPack",
+  "type": "object"
+}

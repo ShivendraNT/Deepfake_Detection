@@ -1,0 +1,8 @@
+{
+  "tau_hi": 0.9,
+  "tau_lo": 0.6,
+  "model_version": "pascu-xlsr-l7-UNCALIBRATED",
+  "calibration_set_sha256": null,
+  "calibrated": false,
+  "note": "PLACEHOLDER. T18 replaces these with tau_hi = score at 1% FPR and tau_lo = 5% FPR on the Meet-captured bonafide calibration split. The UI must show 'uncalibrated' while calibrated=false."
+}

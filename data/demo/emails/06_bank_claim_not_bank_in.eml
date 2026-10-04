@@ -1,0 +1,12 @@
+Authentication-Results: mx.demo-industries.example; spf=pass smtp.mailfrom=fictional-bank-a-secure.example; dkim=pass header.d=fictional-bank-a-secure.example; dmarc=pass header.from=fictional-bank-a-secure.example
+Return-Path: <alerts@fictional-bank-a-secure.example>
+From: Fictional Bank A Alerts <alerts@fictional-bank-a-secure.example>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Your bank KYC expires today
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e06@demo.example>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Dear customer, your KYC expires today. Share the OTP sent to your phone to continue.

@@ -1,0 +1,6 @@
+vendor_id,legal_name,gstin,status,email_domain,phone_on_file,account_number,ifsc,bank_name,upi_id
+V001,Kaveri Demo Packaging Pvt Ltd,00FAKEV0001A1Z5,active,kaveri-packaging.example,+91-00000-10001,99990000001111,FAKA0000111,Fictional Bank A,
+V002,Narmada Demo Logistics LLP,00FAKEV0002B1Z6,active,narmada-logistics.example,+91-00000-10002,99990000002222,FAKB0000222,Fictional Bank B,
+V003,Godavari Demo IT Services Pvt Ltd,00FAKEV0003C1Z7,active,godavari-it.example,+91-00000-10003,99990000003333,FAKA0000333,Fictional Bank A,
+V004,Tapti Demo Office Supplies,00FAKEV0004D1Z8,active,tapti-supplies.example,+91-00000-10004,99990000004444,FAKC0000444,Fictional Bank C,tapti.supplies@fakeupi
+V005,Sabarmati Demo Catering,00FAKEV0005E1Z9,inactive,sabarmati-catering.example,+91-00000-10005,99990000005555,FAKB0000555,Fictional Bank B,

@@ -1,0 +1,6 @@
+employee_id,name,email,title,roles,phone_on_file,is_senior_approver
+emp_priya,Priya Sharma,priya@demo-industries.example,AP Executive,maker,+91-00000-20001,false
+emp_arjun,Arjun Nair,arjun@demo-industries.example,Finance Manager,checker|maker,+91-00000-20002,false
+emp_rajesh,Rajesh Iyer,rajesh@demo-industries.example,CFO,requester|checker,+91-00000-20003,true
+emp_meera,Meera Joshi,meera@demo-industries.example,Security Lead,security,+91-00000-20004,false
+emp_sunil,Sunil Mehra,sunil@demo-industries.example,CEO,requester,+91-00000-20005,true

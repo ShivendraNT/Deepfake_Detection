@@ -1,0 +1,13 @@
+Authentication-Results: mx.demo-industries.example; spf=fail smtp.mailfrom=demo-industries.example; dkim=none header.d=demo-industries.example; dmarc=fail header.from=demo-industries.example
+Return-Path: <bounce@mailer-xyz.example>
+From: Rajesh Iyer <rajesh@demo-industries.example>
+To: Priya Sharma <priya@demo-industries.example>
+Subject: Confidential - escrow payment today
+Date: Mon, 05 Oct 2026 09:30:00 +0530
+Message-ID: <e04@demo.example>
+MIME-Version: 1.0
+Reply-To: rajesh.cfo.office@gmail.com
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
+
+Priya, confidential acquisition. Wire Rs 48,50,000 to the escrow account I will share. Keep this between us, don't loop in Arjun.

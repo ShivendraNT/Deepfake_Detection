@@ -1,0 +1,171 @@
+{
+  "EMAIL_AUTH_PASS": {
+    "group": "sender_auth",
+    "target": "NONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "EMAIL_DMARC_FAIL": {
+    "group": "sender_auth",
+    "target": "VERIFY_HOLD_IF_FLOOR_GE_VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "EMAIL_LOOKALIKE_DOMAIN": {
+    "group": "sender_auth",
+    "target": "VERIFY_HOLD_IF_FLOOR_GE_VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "EMAIL_BANK_NOT_BANK_IN": {
+    "group": "sender_auth",
+    "target": "VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "EMAIL_REPLYTO_MISMATCH": {
+    "group": "sender_auth",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "EMAIL_FREEMAIL_CORPORATE": {
+    "group": "sender_auth",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "DOC_NO_ISSUES": {
+    "group": "document",
+    "target": "NONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "DOC_ACCOUNT_MISMATCH": {
+    "group": "document",
+    "target": "VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "DOC_PDF_EDITED": {
+    "group": "document",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "VOICE_NO_SIGNS": {
+    "group": "media",
+    "target": "NONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
+  "VOICE_INCONCLUSIVE": {
+    "group": "media",
+    "target": "NONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
+  "VOICE_LIKELY_SYNTHETIC": {
+    "group": "media",
+    "target": "PLUS_ONE",
+    "strength": "strong",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
+  "ASK_NEW_ACCOUNT": {
+    "group": "ask",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "ASK_CREDENTIAL": {
+    "group": "ask",
+    "target": "HOLD",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "ASK_REMOTE_ACCESS": {
+    "group": "ask",
+    "target": "HOLD",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "ASK_SECRECY": {
+    "group": "ask",
+    "target": "HOLD_IF_MONEY_ELSE_VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "ASK_BYPASS": {
+    "group": "ask",
+    "target": "HOLD_IF_MONEY_ELSE_VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "ASK_UNUSUAL_PAYMENT_METHOD": {
+    "group": "ask",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "ASK_PAYEE_CHANGE": {
+    "group": "ask",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "STYLE_PRESSURE": {
+    "group": "style",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "llm",
+      "ml"
+    ]
+  },
+  "WATCHLIST_HIT": {
+    "group": "watchlist",
+    "target": "PLUS_ONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  }
+}

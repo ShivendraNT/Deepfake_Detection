@@ -1,0 +1,139 @@
+{
+  "inv_kaveri_ok.pdf": {
+    "vendor_id": "V001",
+    "fields": {
+      "ifsc_codes": [
+        "FAKA0000111"
+      ],
+      "account_numbers": [
+        "99990000001111"
+      ],
+      "upi_ids": [],
+      "gstins": [
+        "00FAKEV0001A1Z5"
+      ],
+      "amounts_inr": [
+        210000
+      ],
+      "invoice_number": "KDP/2026/0917"
+    },
+    "eof_count": 1,
+    "signals": [
+      "DOC_NO_ISSUES"
+    ]
+  },
+  "inv_narmada_changed_bank.pdf": {
+    "vendor_id": "V002",
+    "fields": {
+      "ifsc_codes": [
+        "FAKD0000991"
+      ],
+      "account_numbers": [
+        "99997777009917"
+      ],
+      "upi_ids": [],
+      "gstins": [
+        "00FAKEV0002B1Z6"
+      ],
+      "amounts_inr": [
+        284000
+      ],
+      "invoice_number": "NDL-2026-1009"
+    },
+    "eof_count": 1,
+    "signals": [
+      "DOC_ACCOUNT_MISMATCH"
+    ]
+  },
+  "inv_tapti_upi_ok.pdf": {
+    "vendor_id": "V004",
+    "fields": {
+      "ifsc_codes": [],
+      "account_numbers": [],
+      "upi_ids": [
+        "tapti.supplies@fakeupi"
+      ],
+      "gstins": [
+        "00FAKEV0004D1Z8"
+      ],
+      "amounts_inr": [
+        11800
+      ],
+      "invoice_number": "TOS-7781"
+    },
+    "eof_count": 1,
+    "signals": [
+      "DOC_NO_ISSUES"
+    ]
+  },
+  "inv_godavari_ok.pdf": {
+    "vendor_id": "V003",
+    "fields": {
+      "ifsc_codes": [
+        "FAKA0000333"
+      ],
+      "account_numbers": [
+        "99990000003333"
+      ],
+      "upi_ids": [],
+      "gstins": [
+        "00FAKEV0003C1Z7"
+      ],
+      "amounts_inr": [
+        95000
+      ],
+      "invoice_number": "GIT/26/044"
+    },
+    "eof_count": 1,
+    "signals": [
+      "DOC_NO_ISSUES"
+    ]
+  },
+  "inv_kaveri_edited_amount.pdf": {
+    "vendor_id": "V001",
+    "fields": {
+      "ifsc_codes": [
+        "FAKA0000111"
+      ],
+      "account_numbers": [
+        "99990000001111"
+      ],
+      "upi_ids": [],
+      "gstins": [
+        "00FAKEV0001A1Z5"
+      ],
+      "amounts_inr": [
+        295000
+      ],
+      "invoice_number": "KDP/2026/0919"
+    },
+    "eof_count": 2,
+    "signals": [
+      "DOC_PDF_EDITED"
+    ]
+  },
+  "inv_kaveri_edited_bank.pdf": {
+    "vendor_id": "V001",
+    "fields": {
+      "ifsc_codes": [
+        "FAKE0000620"
+      ],
+      "account_numbers": [
+        "99996666006200"
+      ],
+      "upi_ids": [],
+      "gstins": [
+        "00FAKEV0001A1Z5"
+      ],
+      "amounts_inr": [
+        620000
+      ],
+      "invoice_number": "KDP/2026/0920"
+    },
+    "eof_count": 2,
+    "signals": [
+      "DOC_ACCOUNT_MISMATCH",
+      "DOC_PDF_EDITED"
+    ]
+  }
+}
