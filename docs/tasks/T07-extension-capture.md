@@ -103,36 +103,49 @@ Static tests green; manual acceptance noted with the measured latency; `make che
   `extension/lib/audio_window.js`, `extension/lib/pcm_worklet.js`, `extension/lib/thresholds.js`,
   `extension/tests/audio_window.test.mjs`, `scripts/sync_ext_thresholds.mjs`.
 
+- **D9 (review amendment, 06 Oct).** Vendor onnxruntime-web **1.20.1** (`ort.wasm.min.mjs`,
+  `ort-wasm-simd-threaded.{mjs,wasm}`), the version Pascu ships; 1.14 cannot load `logreg.onnx`
+  (ONNX IR 10). onnxruntime-web cannot read the ZipMap output `output_probability`, so
+  `scripts/prepare_ext_models.py` (approved extra file) derives `extension/models/logreg_prob.onnx`
+  (git-ignored) exposing the `probabilities` tensor [N,2].
+
 ### Steps
-- [ ] **1. Models + input format (human + agent).** Shivendra downloads `model.onnx` and `logreg.onnx`
+- [x] **1. Models + input format (human + agent).** Shivendra downloads `model.onnx` and `logreg.onnx`
   into `extension/models/` by hand (licence: no redistribution). Agent reads the Pascu plugin's
   scoring code to record in this spec: input tensor name/shape/dtype, normalisation, which output
   is P(synthetic). Confirm `git status` does not show the .onnx files. *Check:* notes written here.
-- [ ] **2. Pure windowing module + node tests.** `lib/audio_window.js`: `createWindower({sampleRate:16000,
+  **Notes (from Pascu `popup.js` + `onnxWorker.js`, checked against the .onnx graphs):**
+  `model.onnx` (IR 6, opset 11): input `input` float32 `[1, n]` = raw 16 kHz mono samples, **no
+  normalisation**; output `output` float32 `[1, T, 1024]` (T≈249 for 5 s); ignore 2nd output.
+  Mean-pool over T → `[1, 1024]`. `logreg.onnx` (IR 10, ai.onnx.ml LinearClassifier, LOGISTIC):
+  input `X` `[N, 1024]`; `output_label` int64 (1 = deepfake), `output_probability` = ZipMap
+  (unreadable in ort-web; Pascu only reads the label). We use `logreg_prob.onnx` → `probabilities`
+  `[N, 2]`, **column 1 = P(synthetic)**. Verified: JS (ort-web 1.20.1) == Python onnxruntime.
+- [x] **2. Pure windowing module + node tests.** `lib/audio_window.js`: `createWindower({sampleRate:16000,
   windowSeconds:5})` that takes Float32 frames and returns full 5 s windows (hop 5 s), with
   `t_start_s/t_end_s`. Also `speechSeconds(window)`: energy VAD on 30 ms frames (RMS threshold).
   Tests in `tests/audio_window.test.mjs` (synthetic sine/silence arrays, no audio files).
   *Check:* `make ext-test` green.
-- [ ] **3. Service worker.** Remove `STUB(T07)`. In `action.onClicked`, call `chrome.sidePanel.open({tabId})`
+- [x] **3. Service worker.** Remove `STUB(T07)`. In `action.onClicked`, call `chrome.sidePanel.open({tabId})`
   and `chrome.tabCapture.getMediaStreamId({targetTabId})` **before any other await** (user-gesture
   rule). Ensure a single offscreen doc (`chrome.runtime.getContexts` check, then
   `chrome.offscreen.createDocument({reasons:["USER_MEDIA"]})`). `callId = "call_" + Date.now()`,
   saved in `chrome.storage.session` `{callId, tabId}`. Send start-capture. Relay offscreen →
   panel using the D4 shape. Handle `stop-capture` and `tabs.onRemoved` (stop + close the offscreen doc).
   Clicking again on a tab that's already captured = stop (toggle). *Check:* T07 test 1 green.
-- [ ] **4. Offscreen capture + passthrough.** Remove `STUB(T07)`. `getUserMedia({audio:{mandatory:
+- [x] **4. Offscreen capture + passthrough.** Remove `STUB(T07)`. `getUserMedia({audio:{mandatory:
   {chromeMediaSource:'tab', chromeMediaSourceId}}, video:false})`. **First line after it:**
   `passCtx.createMediaStreamSource(media).connect(passCtx.destination)`. Then the 16 kHz analysis
   graph (D1/D2) → worklet → windower. Tab audio only, never the mic. *Check:* T07 test 2 green.
-- [ ] **5. ONNX scorer.** Vendor onnxruntime-web (D8; ask before any `npm install`). `lib/onnx_scorer.js`:
+- [x] **5. ONNX scorer.** Vendor onnxruntime-web (D8; ask before any `npm install`). `lib/onnx_scorer.js`:
   `loadScorer()` (wasm, `ort.env.wasm.wasmPaths` set to `chrome.runtime.getURL("vendor/")`,
   single-thread) → `score(Float32Array) -> number in [0,1]`, following the step 1 notes. Load
   failure → D5. Log `ms/window` with `performance.now()`.
-- [ ] **6. Classify + emit.** For each window: score → push into `scores[]`, add to `speechTotal` →
+- [x] **6. Classify + emit.** For each window: score → push into `scores[]`, add to `speechTotal` →
   `classifyWindows(scores, {tauHi, tauLo}, speechTotal)` → send the voice-window message (D3) →
   `postVoiceWindows(callId, [VoiceWindowResult])` with `model_version` from thresholds (D6).
   Call `startCall(callId)` once at the start.
-- [ ] **7. 10 s chunks for T11.** Run MediaRecorder in **stop/restart cycles of 10 s**, NOT
+- [x] **7. 10 s chunks for T11.** Run MediaRecorder in **stop/restart cycles of 10 s**, NOT
   `start(10000)` timeslices: timeslice blobs after the first have no WebM header and can't be
   decoded by Whisper. `postChunk(callId, i, blob)` (D6).
 - [ ] **8. Verify + manual acceptance.** `make task T=T07`, `make ext-test`, `make check` all green.

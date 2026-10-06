@@ -15,7 +15,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T04 | Domain checks + email signals | Kartikey | todo | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
 | T05 | Ask extractor v1.0 (A1-A7) | Saarika | todo | T01 | [spec](tasks/T05-ask-extractor.md) | freeze + tag for research when done |
 | T06 | Console UI shell | Saksham | todo | T01 | [spec](tasks/T06-console-ui.md) | |
-| T07 | Extension capture core | Shivendra | todo | — | [spec](tasks/T07-extension-capture.md) | manifest + voice_rules.js pre-done |
+| T07 | Extension capture core | Shivendra | in-progress | — | [spec](tasks/T07-extension-capture.md) | steps 1-7 code done + reviewed; step 8 manual Meet test pending |
 | T08 | Invoice/PDF checker | Kartikey | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
 | T09 | Evidence vault: storage, intake, anchor | Saksham | partial | T01 | [spec](tasks/T09-evidence-vault.md) | hashing + custody chain pre-implemented |
 | T10 | Extension side panel UI | Saarika | todo | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | build from replay file |
@@ -46,3 +46,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 
 ## Notes log
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
+06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
