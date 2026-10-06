@@ -9,7 +9,7 @@ the custody chain, and the chain head is anchored outside our DB (S3 Object Lock
 anchors folder as fallback).
 
 ## Owner
-B3. Effort ≈ 4 h (+1 h for real S3 if credits exist).
+Saksham. Effort ≈ 4 h (+1 h for real S3 if credits exist).
 
 ## Depends on
 T01 (done).

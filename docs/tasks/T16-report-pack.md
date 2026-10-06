@@ -6,7 +6,7 @@ on line 1, a bank fraud-desk email, an NCRP complaint draft (copyable fields), a
 evidence index (JSON + printable HTML) and a BSA Sec 63 helper template. Never auto-submitted.
 
 ## Owner
-B2. Effort ≈ 5 h.
+Kartikey. Effort ≈ 5 h.
 
 ## Depends on
 T09 (evidence index uses vault data — fixtures already have hashes), T13 (statuses). The builder

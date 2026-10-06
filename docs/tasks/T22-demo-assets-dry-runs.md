@@ -6,7 +6,7 @@ pre-generated clone clips (local only), fixture emails/invoices, the offline "de
 dry-run log.
 
 ## Owner
-L + all. Effort ≈ 1 day across the team.
+Shivendra + all. Effort ≈ 1 day across the team.
 
 ## Depends on
 T07-T17 (the demo path).

@@ -5,7 +5,7 @@ The paper's main result: recall@1%FPR (and 5%) with 95% CIs per detector × cond
 drop-difference tests for H1/H2, residual exposure per attack set, and `figures/money.png`.
 
 ## Owner
-L. Effort ≈ 0.5 day.
+Shivendra. Effort ≈ 0.5 day.
 
 ## Depends on
 T19 (scores, thresholds, metrics), T20 (attack sets scored by D2/D3/D4).

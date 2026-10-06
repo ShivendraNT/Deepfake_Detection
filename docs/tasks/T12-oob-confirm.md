@@ -7,7 +7,7 @@ case, amount and beneficiary. Only the logged-in requester can answer. DENIED �
 SUSPECTED_FRAUD (the policy engine already does this when `case.oob.result == DENIED`).
 
 ## Owner
-B3. Effort ≈ 5 h. Backend part needs only T02; console page needs T06.
+Saksham. Effort ≈ 5 h. Backend part needs only T02; console page needs T06.
 
 ## Depends on
 T02 (done), T06 (for the CFO console page).

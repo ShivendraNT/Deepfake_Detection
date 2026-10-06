@@ -6,7 +6,7 @@ not on `.bank.in`, free-mail pretending to be corporate, Reply-To/Return-Path mi
 `ParsedEmail` into raise-only `Signal`s.
 
 ## Owner
-B2. Effort ≈ 3 h. `domains.py` can start right away; `signals.py` needs T03.
+Kartikey. Effort ≈ 3 h. `domains.py` can start right away; `signals.py` needs T03.
 
 ## Depends on
 T01 (done); T03 for `signals.py` and the fixture tests.
@@ -17,7 +17,7 @@ T01 (done); T03 for `signals.py` and the fixture tests.
 - `src/satyapan/email/signals.py` — `email_signals`
 
 ## Do not touch
-Contracts, policy, tests, fixtures, `email/parser.py` (T03's file — ask B2/T03 owner for fixes).
+Contracts, policy, tests, fixtures, `email/parser.py` (T03's file — T03 is also yours, fix it there).
 
 ## Interfaces
 ```python

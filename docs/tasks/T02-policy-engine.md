@@ -8,7 +8,7 @@ raise-only escalation lattice, clearance requirements and role permissions — w
 tests and 3+ hypothesis property tests.
 
 ## Owner
-L. Already done. Any change needs the leader and must keep `tests/invariants/` green.
+Shivendra. Already done. Any change needs the leader and must keep `tests/invariants/` green.
 
 ## Depends on
 T01.

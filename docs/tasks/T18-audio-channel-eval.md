@@ -6,7 +6,7 @@ An honest voice-detector number for the slide and the real thresholds: EER throu
 τ_hi (1% FPR) / τ_lo (5% FPR) fitted on ~200 Meet-captured bonafide team windows.
 
 ## Owner
-B3 (script) + L (thresholds, data). Effort ≈ 1 day incl. recording.
+Saarika (script, evaluation, recording) + Shivendra (thresholds, data). Effort ≈ 1 day incl. recording.
 
 ## Depends on
 T07 (model + Meet capture path).

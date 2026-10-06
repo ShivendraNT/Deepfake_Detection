@@ -8,7 +8,7 @@ rules, 1930 tap-to-call, NCRP and Chakshu links, and a WhatsApp trusted-contact 
 no forensic dashboard.
 
 ## Owner
-B3. Effort ≈ 4 h.
+Saksham. Effort ≈ 4 h.
 
 ## Depends on
 T05 (ask extractor), T14 (text style).

@@ -6,7 +6,7 @@ of normals (P0) and ask-obfuscation (P2) with open models on Kaggle, filter them
 third-family judge + 200-pair human audit with Cohen's κ), and report discard stats. Text stays private.
 
 ## Owner
-L. Effort ≈ 1 day (mostly GPU time).
+Shivendra. Effort ≈ 1 day (mostly GPU time).
 
 ## Depends on
 T19 (splits, loader). **Email the ICFD authors first** (defensive robustness evaluation).

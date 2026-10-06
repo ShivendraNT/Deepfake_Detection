@@ -6,7 +6,7 @@ for ICFD-31k's official splits, the TF-IDF baseline (D2) on CPU, the fine-tuned 
 on Kaggle, and a clean-test results table with CIs. Thresholds come from VALIDATION only.
 
 ## Owner
-B2 (metrics, loader, D2, notebook from spec) + L (review, D3 run). Effort ≈ 1.5 days.
+Kartikey (metrics, loader, D2, run_clean) + Shivendra (review, D3 run). Effort ≈ 1.5 days.
 
 ## Depends on
 T05 frozen (D4 = `satyapan.asks.extractor.ask_score`, lexicon v1.0 tagged).

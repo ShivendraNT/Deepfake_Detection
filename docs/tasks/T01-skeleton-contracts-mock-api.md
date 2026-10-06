@@ -8,7 +8,7 @@ load from `data/demo/`, and `GET /cases` returns them with decisions from the re
 Everyone else builds against these contracts and this API.
 
 ## Owner
-L (leader). Already done.
+Shivendra. Already done.
 
 ## Depends on
 Nothing.

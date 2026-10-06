@@ -1,7 +1,24 @@
 # AGENTS.md — rules for every AI coding agent (and every human)
 
-This is the ONE canonical instruction file. opencode, Copilot and Codex read it directly.
+This is the ONE canonical instruction file. Antigravity, opencode, Copilot and Codex read it directly.
 Claude Code reads it via `CLAUDE.md`, Gemini CLI via `GEMINI.md`. Do not duplicate rules elsewhere.
+
+## 0. FIRST: who are you working with? (every new session)
+
+Before anything else in a new session, if the human has not told you their name yet, ask exactly:
+**"Hi! Who am I working with — Shivendra, Saarika, Kartikey or Saksham?"**
+Then read that person's file and follow it for the whole session:
+
+| Name | File | Role |
+|---|---|---|
+| Shivendra | `team/MASTER.md` | tech lead — critical path, research, all merges |
+| Saarika | `team/Saarika.md` | ask extractor, side panel, voice calibration, deck |
+| Kartikey | `team/Kartikey.md` | email / invoice / voice checkers, report pack, research metrics |
+| Saksham | `team/Saksham.md` | console, evidence vault, OOB-Confirm, workflows, explanations |
+
+After reading it, check `docs/STATUS.md`, then tell them in simple words: (1) their next task and
+step, (2) which model to use for it (each file's section 2), (3) the exact prompt or command.
+One step at a time. Never assign them a task owned by someone else without the lead's OK.
 
 ## 1. What this project is (30 seconds)
 

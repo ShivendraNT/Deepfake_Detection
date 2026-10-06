@@ -6,7 +6,7 @@ template explanation for a decision. This is what the maker reads; the LLM summa
 optional prose on top and falls back to this.
 
 ## Owner
-B1. Effort ≈ 3 h.
+Saksham. Effort ≈ 3 h.
 
 ## Depends on
 T02 (done).

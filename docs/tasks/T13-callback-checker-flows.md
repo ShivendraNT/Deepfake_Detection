@@ -6,7 +6,7 @@ requirement is met, let only the right role clear or change status, support the 
 urgent override, and keep a 30-day watchlist of flagged senders/calls.
 
 ## Owner
-B3. Effort ≈ 6 h.
+Saksham. Effort ≈ 6 h.
 
 ## Depends on
 T02 (done), T06 (console buttons; backend can start now).

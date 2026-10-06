@@ -5,7 +5,7 @@ Read the invoice PDF's text layer, extract IFSC / account / UPI / GSTIN / amount
 with regex, read PDF edit metadata, and compare with the vendor master. Output raise-only signals.
 
 ## Owner
-B2. Effort ≈ 4 h.
+Kartikey. Effort ≈ 4 h.
 
 ## Depends on
 T01 (done). T03 helps (email attachments) but is not required for the tests.

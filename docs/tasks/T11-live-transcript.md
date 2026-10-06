@@ -7,7 +7,7 @@ windows, re-decided by the policy engine, and pushed to the side panel as server
 with ask chips ≤ 13 s after the ask is spoken. No LLM in this loop.
 
 ## Owner
-L. Effort ≈ 1 day. Critical path.
+Shivendra. Effort ≈ 1 day. Critical path.
 
 ## Depends on
 T05 (ask extractor), T07 (chunks + voice windows from the extension).

@@ -6,7 +6,7 @@ On a Meet/Teams tab, after one click, capture ONLY the tab's audio, keep it audi
 `lib/voice_rules.js`, and emit window results to the side panel and the backend.
 
 ## Owner
-L. Effort ≈ 1 day. Critical path.
+Shivendra. Effort ≈ 1 day. Critical path.
 
 ## Depends on
 Nothing (backend `/live/{id}/voice` is glue already; full live path is T11).

@@ -5,7 +5,7 @@ Five slides that tell the v3 story honestly (problem → insight → live demo �
 CIs → India + AWS + roadmap) and a backup recording of a full successful run.
 
 ## Owner
-B1 + L. Effort ≈ 4 h.
+Saarika + Shivendra. Effort ≈ 4 h.
 
 ## Depends on
 T18 (voice numbers), T21 (money figure), T22 (recording).

@@ -6,7 +6,7 @@ window rule as the extension), a transcript (Transcribe hi-IN/en-IN in AWS mode,
 Whisper), and ask signals from the transcript.
 
 ## Owner
-B1. Effort ≈ 6 h.
+Kartikey. Effort ≈ 6 h.
 
 ## Depends on
 T07 (model files + input format), T01 (done). T05 for asks (tests use the seed lexicon).

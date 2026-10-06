@@ -5,7 +5,7 @@ Turn raw `.eml` bytes into a `ParsedEmail`: sender domains, the TRUSTED Authenti
 verdicts, a clean plain-text body (no hidden injection text) and attachment metadata.
 
 ## Owner
-B2 (beginner). Effort ≈ 3 h.
+Kartikey. Effort ≈ 3 h.
 
 ## Depends on
 T01 (done).

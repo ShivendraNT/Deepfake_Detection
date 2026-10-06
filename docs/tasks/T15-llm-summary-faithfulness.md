@@ -6,7 +6,7 @@ change the band and is accepted only if it passes a faithfulness checker; otherw
 is shown. Report the injection red-team as numbers.
 
 ## Owner
-L. Effort ≈ 6 h.
+Shivendra. Effort ≈ 6 h.
 
 ## Depends on
 T02 (done), T14 (templates for fallback).

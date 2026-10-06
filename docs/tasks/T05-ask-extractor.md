@@ -5,7 +5,7 @@ Deterministic lexicon + regex extractor for the seven attacker-invariant asks. I
 module (C5) AND research detector D4, so once done it is FROZEN and tagged.
 
 ## Owner
-B1. Effort ≈ 1 day (most time = writing good test sentences and patterns).
+Saarika. Effort ≈ 1 day (most time = writing good test sentences and patterns).
 
 ## Depends on
 T01 (done).

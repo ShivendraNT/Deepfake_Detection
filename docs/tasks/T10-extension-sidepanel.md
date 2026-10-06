@@ -6,7 +6,7 @@ line card, "Confirm with…" (OOB) and "Link to payment" buttons, and a visible 
 indicator. Built and tested from `extension/replay/sample_events.jsonl` — no live call needed.
 
 ## Owner
-B1. Effort ≈ 1 day.
+Saarika. Effort ≈ 1 day.
 
 ## Depends on
 T07 only for the event contract (already fixed in `schemas/LiveEvent.schema.json`).
