@@ -1,0 +1,172 @@
+{"id": "ask-001", "lang": "en", "asks": ["A1"], "channel": "call", "style": "direct", "text": "Priya, for the land deal we need ₹18,40,000 parked in the escrow account today. I am sending the account details on WhatsApp, please do the RTGS before 3."}
+{"id": "ask-002", "lang": "en", "asks": ["A1"], "channel": "email", "style": "direct", "text": "The auditors have frozen our usual account for a few days, so route this payment to the holding account below until it is released. A/c 99991234500017, IFSC FAKE0001234."}
+{"id": "ask-003", "lang": "en", "asks": ["A1"], "channel": "whatsapp", "style": "direct", "text": "Can you move 9.5 lakh to the account I just texted you? It is for the acquisition advance, I will explain later."}
+{"id": "ask-004", "lang": "en", "asks": ["A1"], "channel": "email", "style": "direct", "text": "Please add the beneficiary in the attached letter and release ₹6,75,000 to it today; it is a one-time settlement account for the arbitration."}
+{"id": "ask-005", "lang": "en", "asks": ["A1"], "channel": "call", "style": "indirect", "text": "The bank's fraud desk says our current account is compromised. Move the balance to the secure account they have set up, number 99990000555501, before end of day."}
+{"id": "ask-006", "lang": "en", "asks": ["A1"], "channel": "email", "style": "direct", "text": "Add a new payee called Demo Advisory Partners and send them 4 lakh as the retainer, details below."}
+{"id": "ask-007", "lang": "en", "asks": ["A1"], "channel": "call", "style": "paraphrase", "text": "I need you to wire the deposit to our lawyer's client account, not the usual vendor. I will forward you the details."}
+{"id": "ask-008", "lang": "en", "asks": ["A1"], "channel": "whatsapp", "style": "paraphrase", "text": "Kindly transfer the token amount to the account mentioned in my next message, it belongs to the seller's agent."}
+{"id": "ask-009", "lang": "en", "asks": ["A1"], "channel": "email", "style": "direct", "text": "There is a new account for the Singapore subsidiary; send the first tranche of ₹22 lakh there."}
+{"id": "ask-010", "lang": "en", "asks": ["A1"], "channel": "call", "style": "direct", "text": "Just do a quick NEFT of 3.2 lakh to the account number I am typing in the chat now."}
+{"id": "ask-011", "lang": "en", "asks": ["A1"], "channel": "email", "style": "indirect", "text": "The funds need to sit in a neutral account till the deal closes. I have opened one, please transfer it now."}
+{"id": "ask-012", "lang": "hi-Latn", "asks": ["A1"], "channel": "whatsapp", "style": "code-mixed", "text": "Priya ji, ek naya account bhej raha hoon, usme aaj hi 12 lakh daal do, deal ka advance hai."}
+{"id": "ask-013", "lang": "hi-Latn", "asks": ["A1"], "channel": "whatsapp", "style": "code-mixed", "text": "Is baar payment purane account mein mat karna, maine naya safe account diya hai usme bhejo."}
+{"id": "ask-014", "lang": "hi-Latn", "asks": ["A1"], "channel": "call", "style": "code-mixed", "text": "Beneficiary add kar lo, naam Demo Consultancy hai, aur 5,40,000 transfer kar do aaj shaam tak."}
+{"id": "ask-015", "lang": "hi-Latn", "asks": ["A1"], "channel": "whatsapp", "style": "code-mixed", "text": "Escrow account ki details WhatsApp pe daal di hain, RTGS kar dena jaldi."}
+{"id": "ask-016", "lang": "hi-Latn", "asks": ["A1"], "channel": "call", "style": "indirect", "text": "Bank wale bol rahe hain account compromise ho gaya hai, saara fund is secure account mein shift karna padega."}
+{"id": "ask-017", "lang": "hi-Latn", "asks": ["A1"], "channel": "whatsapp", "style": "paraphrase", "text": "Ye payment vendor ko nahi, seedha is account mein jayega jo main abhi bhej raha hoon."}
+{"id": "ask-018", "lang": "hi-Latn", "asks": ["A1"], "channel": "call", "style": "code-mixed", "text": "Acquisition ka token amount is naye account mein transfer karo, baaki baad mein samjhata hoon."}
+{"id": "ask-019", "lang": "hi-Deva", "asks": ["A1"], "channel": "whatsapp", "style": "direct", "text": "प्रिया, एक नया खाता भेज रहा हूँ, उसमें आज ही 8 लाख ट्रांसफर कर दो।"}
+{"id": "ask-020", "lang": "hi-Deva", "asks": ["A1"], "channel": "email", "style": "indirect", "text": "डील पूरी होने तक पैसा इस सुरक्षित खाते में रखना है, अभी ट्रांसफर करें।"}
+{"id": "ask-021", "lang": "hi-Deva", "asks": ["A1"], "channel": "email", "style": "direct", "text": "नया लाभार्थी जोड़कर उसे 4,50,000 रुपये भेज दीजिए, विवरण नीचे है।"}
+{"id": "ask-022", "lang": "hi-Deva", "asks": ["A1"], "channel": "call", "style": "indirect", "text": "बैंक के अधिकारी ने कहा है कि खाता असुरक्षित है, पूरी राशि इस नए खाते में डाल दो।"}
+{"id": "ask-023", "lang": "hi-Deva", "asks": ["A1"], "channel": "email", "style": "paraphrase", "text": "यह भुगतान सामान्य विक्रेता को नहीं, बल्कि वकील के एस्क्रो खाते में करना है।"}
+{"id": "ask-024", "lang": "en", "asks": ["A2"], "channel": "call", "style": "indirect", "text": "You will get a six digit code on your phone in a minute, just read it out to me so I can complete the verification."}
+{"id": "ask-025", "lang": "en", "asks": ["A2"], "channel": "call", "style": "paraphrase", "text": "What is the number that just came by SMS? I need it to authorise the transfer from my side."}
+{"id": "ask-026", "lang": "en", "asks": ["A2"], "channel": "whatsapp", "style": "paraphrase", "text": "Please send me the token code from the banking app, the CFO wants me to approve the batch remotely."}
+{"id": "ask-027", "lang": "en", "asks": ["A2"], "channel": "email", "style": "direct", "text": "Share the login password for the net banking portal, I will upload the file myself."}
+{"id": "ask-028", "lang": "en", "asks": ["A2"], "channel": "whatsapp", "style": "indirect", "text": "Can you forward the verification message you just got from the bank? Just screenshot it to me."}
+{"id": "ask-029", "lang": "en", "asks": ["A2"], "channel": "call", "style": "direct", "text": "To unblock your corporate card I will need the CVV on the back and the expiry date."}
+{"id": "ask-030", "lang": "en", "asks": ["A2"], "channel": "call", "style": "direct", "text": "Tell me the PIN for the company debit card, I am at the vendor's office and need to pay."}
+{"id": "ask-031", "lang": "en", "asks": ["A2"], "channel": "whatsapp", "style": "paraphrase", "text": "Type the code from the authenticator app into this chat so I can log in on your behalf."}
+{"id": "ask-032", "lang": "en", "asks": ["A2"], "channel": "call", "style": "direct", "text": "The portal is asking for the one-time password sent to your mobile. Go ahead and give it to me."}
+{"id": "ask-033", "lang": "en", "asks": ["A2"], "channel": "whatsapp", "style": "direct", "text": "Drop me the user ID and password for the GST portal, I will file it tonight."}
+{"id": "ask-034", "lang": "en", "asks": ["A2"], "channel": "call", "style": "indirect", "text": "Just read me the digits that came on your phone, it is the bank calling to confirm."}
+{"id": "ask-035", "lang": "hi-Latn", "asks": ["A2"], "channel": "call", "style": "code-mixed", "text": "Aapke phone pe ek OTP aaya hoga, jaldi se bata do, transaction confirm karna hai."}
+{"id": "ask-036", "lang": "hi-Latn", "asks": ["A2"], "channel": "whatsapp", "style": "code-mixed", "text": "Jo 6 digit ka code abhi SMS mein aaya hai woh mujhe WhatsApp kar do."}
+{"id": "ask-037", "lang": "hi-Latn", "asks": ["A2"], "channel": "whatsapp", "style": "code-mixed", "text": "Net banking ka password bhej do na, main yahan se payment kar deta hoon."}
+{"id": "ask-038", "lang": "hi-Latn", "asks": ["A2"], "channel": "call", "style": "paraphrase", "text": "Card ke peeche jo 3 number hain woh bata dijiye, verification ke liye chahiye."}
+{"id": "ask-039", "lang": "hi-Latn", "asks": ["A2"], "channel": "call", "style": "paraphrase", "text": "Bank se jo message aaya usme ka code padh ke sunao zara."}
+{"id": "ask-040", "lang": "hi-Latn", "asks": ["A2"], "channel": "whatsapp", "style": "code-mixed", "text": "ATM pin kya hai company card ka? Mujhe abhi chahiye."}
+{"id": "ask-041", "lang": "hi-Latn", "asks": ["A2"], "channel": "whatsapp", "style": "code-mixed", "text": "Authenticator wala code type karke bhej do, main login kar leta hoon."}
+{"id": "ask-042", "lang": "hi-Deva", "asks": ["A2"], "channel": "call", "style": "direct", "text": "आपके फ़ोन पर जो ओटीपी आया है, वह मुझे बता दीजिए।"}
+{"id": "ask-043", "lang": "hi-Deva", "asks": ["A2"], "channel": "call", "style": "paraphrase", "text": "बैंक से आया छह अंकों का कोड पढ़कर सुनाइए, लेन-देन पूरा करना है।"}
+{"id": "ask-044", "lang": "hi-Deva", "asks": ["A2"], "channel": "whatsapp", "style": "direct", "text": "नेट बैंकिंग का पासवर्ड मुझे भेज दो, मैं खुद भुगतान कर दूँगा।"}
+{"id": "ask-045", "lang": "hi-Deva", "asks": ["A2"], "channel": "call", "style": "direct", "text": "कार्ड के पीछे लिखा सीवीवी नंबर बताइए, सत्यापन के लिए ज़रूरी है।"}
+{"id": "ask-046", "lang": "hi-Deva", "asks": ["A2"], "channel": "whatsapp", "style": "direct", "text": "कंपनी डेबिट कार्ड का पिन क्या है? अभी चाहिए।"}
+{"id": "ask-047", "lang": "en", "asks": ["A3"], "channel": "email", "style": "direct", "text": "Please install the remote support app from the link I sent so our IT team can fix the payment portal issue."}
+{"id": "ask-048", "lang": "en", "asks": ["A3"], "channel": "call", "style": "direct", "text": "Share your screen with me on the call and open the banking portal, I will guide you through the upload."}
+{"id": "ask-049", "lang": "en", "asks": ["A3"], "channel": "whatsapp", "style": "paraphrase", "text": "Download the helpdesk tool from this link and tell me the 9-digit ID it shows."}
+{"id": "ask-050", "lang": "en", "asks": ["A3"], "channel": "call", "style": "indirect", "text": "Can you give me access to your desktop for five minutes? I will do the vendor upload myself."}
+{"id": "ask-051", "lang": "en", "asks": ["A3"], "channel": "whatsapp", "style": "direct", "text": "Install the attached APK, it is the new bank security app, and then accept the connection request."}
+{"id": "ask-052", "lang": "en", "asks": ["A3"], "channel": "call", "style": "direct", "text": "I am from the bank's tech support. Open the screen sharing app and allow control so I can reverse the failed transaction."}
+{"id": "ask-053", "lang": "en", "asks": ["A3"], "channel": "call", "style": "direct", "text": "Start screen sharing and keep the net banking tab open; I will walk you through approving it."}
+{"id": "ask-054", "lang": "en", "asks": ["A3"], "channel": "call", "style": "indirect", "text": "Let me take control of your laptop remotely, it will be faster than explaining."}
+{"id": "ask-055", "lang": "en", "asks": ["A3"], "channel": "email", "style": "paraphrase", "text": "Click the link and allow the browser extension to install, it lets our team view the portal along with you."}
+{"id": "ask-056", "lang": "hi-Latn", "asks": ["A3"], "channel": "whatsapp", "style": "code-mixed", "text": "Ek app ka link bheja hai, install karke jo code aaye woh bata do, main remotely theek kar dunga."}
+{"id": "ask-057", "lang": "hi-Latn", "asks": ["A3"], "channel": "call", "style": "code-mixed", "text": "Screen share karo aur bank ka portal kholo, main batata hoon kya karna hai."}
+{"id": "ask-058", "lang": "hi-Latn", "asks": ["A3"], "channel": "call", "style": "code-mixed", "text": "Apne laptop ka control mujhe de do 5 minute ke liye, main upload kar deta hoon."}
+{"id": "ask-059", "lang": "hi-Latn", "asks": ["A3"], "channel": "whatsapp", "style": "code-mixed", "text": "Ye support app download karo, phir accept pe click karna jab request aaye."}
+{"id": "ask-060", "lang": "hi-Latn", "asks": ["A3"], "channel": "call", "style": "code-mixed", "text": "Phone pe screen sharing on karo, main dekh ke guide karunga."}
+{"id": "ask-061", "lang": "hi-Latn", "asks": ["A3"], "channel": "call", "style": "code-mixed", "text": "Remote access wala software install kar lo, IT team aapke system pe aake fix karegi."}
+{"id": "ask-062", "lang": "hi-Deva", "asks": ["A3"], "channel": "whatsapp", "style": "direct", "text": "लिंक से सपोर्ट ऐप इंस्टॉल कीजिए और कनेक्शन अनुरोध स्वीकार कर लीजिए।"}
+{"id": "ask-063", "lang": "hi-Deva", "asks": ["A3"], "channel": "call", "style": "direct", "text": "अपनी स्क्रीन शेयर कीजिए और बैंक पोर्टल खोलिए, मैं बताता हूँ क्या करना है।"}
+{"id": "ask-064", "lang": "hi-Deva", "asks": ["A3"], "channel": "call", "style": "indirect", "text": "पाँच मिनट के लिए अपने कंप्यूटर का नियंत्रण मुझे दे दीजिए।"}
+{"id": "ask-065", "lang": "hi-Deva", "asks": ["A3"], "channel": "call", "style": "direct", "text": "यह रिमोट एक्सेस सॉफ़्टवेयर डाउनलोड करके जो आईडी दिखे वह बताइए।"}
+{"id": "ask-066", "lang": "hi-Deva", "asks": ["A3"], "channel": "call", "style": "direct", "text": "फ़ोन पर स्क्रीन शेयरिंग चालू करो, मैं देखकर मदद करूँगा।"}
+{"id": "ask-067", "lang": "en", "asks": ["A4"], "channel": "email", "style": "direct", "text": "Keep this between us for now. The board has not announced the acquisition and I do not want Arjun asking questions."}
+{"id": "ask-068", "lang": "en", "asks": ["A4"], "channel": "whatsapp", "style": "direct", "text": "Don't mention this transfer to anyone in accounts until I am back on Monday."}
+{"id": "ask-069", "lang": "en", "asks": ["A4"], "channel": "email", "style": "indirect", "text": "There is no need to call me back on my office line, I am in back-to-back meetings. Just handle it."}
+{"id": "ask-070", "lang": "en", "asks": ["A4"], "channel": "email", "style": "direct", "text": "This is strictly confidential, do not discuss it with your manager or the auditors."}
+{"id": "ask-071", "lang": "en", "asks": ["A4"], "channel": "email", "style": "indirect", "text": "Please don't loop in the CFO's office on this one, he is travelling and it will only delay things."}
+{"id": "ask-072", "lang": "en", "asks": ["A4"], "channel": "email", "style": "paraphrase", "text": "I trust only you with this, so don't forward this email to anyone."}
+{"id": "ask-073", "lang": "en", "asks": ["A4"], "channel": "whatsapp", "style": "paraphrase", "text": "If anyone asks, just say it is a routine vendor payment."}
+{"id": "ask-074", "lang": "en", "asks": ["A4"], "channel": "whatsapp", "style": "direct", "text": "Delete this chat once the payment is done."}
+{"id": "ask-075", "lang": "en", "asks": ["A4"], "channel": "whatsapp", "style": "indirect", "text": "You won't be able to reach me on my phone, I am in a meeting with the investors. Reply only here."}
+{"id": "ask-076", "lang": "hi-Latn", "asks": ["A4"], "channel": "whatsapp", "style": "code-mixed", "text": "Ye baat abhi kisi ko mat batana, Arjun ko bhi nahi."}
+{"id": "ask-077", "lang": "hi-Latn", "asks": ["A4"], "channel": "whatsapp", "style": "code-mixed", "text": "Is deal ki khabar apne tak hi rakhna, abhi public nahi hui hai."}
+{"id": "ask-078", "lang": "hi-Latn", "asks": ["A4"], "channel": "whatsapp", "style": "code-mixed", "text": "Office wale number pe call mat karna, main meeting mein hoon, yahin reply karo."}
+{"id": "ask-079", "lang": "hi-Latn", "asks": ["A4"], "channel": "whatsapp", "style": "code-mixed", "text": "Accounts team ko loop mein mat lena, baad mein main khud bata dunga."}
+{"id": "ask-080", "lang": "hi-Latn", "asks": ["A4"], "channel": "whatsapp", "style": "paraphrase", "text": "Koi pooche toh bol dena normal vendor payment hai."}
+{"id": "ask-081", "lang": "hi-Latn", "asks": ["A4"], "channel": "whatsapp", "style": "code-mixed", "text": "Payment hone ke baad ye chat delete kar dena please."}
+{"id": "ask-082", "lang": "hi-Latn", "asks": ["A4"], "channel": "call", "style": "code-mixed", "text": "Bilkul confidential hai, manager se bhi discuss mat karna."}
+{"id": "ask-083", "lang": "hi-Deva", "asks": ["A4"], "channel": "whatsapp", "style": "direct", "text": "यह बात अभी किसी को मत बताना, अर्जुन को भी नहीं।"}
+{"id": "ask-084", "lang": "hi-Deva", "asks": ["A4"], "channel": "whatsapp", "style": "direct", "text": "इस सौदे की बात अपने तक ही रखना, अभी घोषणा नहीं हुई है।"}
+{"id": "ask-085", "lang": "hi-Deva", "asks": ["A4"], "channel": "whatsapp", "style": "indirect", "text": "ऑफ़िस वाले नंबर पर फ़ोन मत करना, यहीं जवाब दो।"}
+{"id": "ask-086", "lang": "hi-Deva", "asks": ["A4"], "channel": "whatsapp", "style": "paraphrase", "text": "कोई पूछे तो कह देना कि यह सामान्य विक्रेता भुगतान है।"}
+{"id": "ask-087", "lang": "hi-Deva", "asks": ["A4"], "channel": "whatsapp", "style": "direct", "text": "भुगतान होने के बाद यह संदेश मिटा देना।"}
+{"id": "ask-088", "lang": "en", "asks": ["A5"], "channel": "email", "style": "direct", "text": "Skip the usual approval for this one, I will sign off on the paperwork later."}
+{"id": "ask-089", "lang": "en", "asks": ["A5"], "channel": "call", "style": "direct", "text": "There is no time for the checker to review it, release it from your login directly."}
+{"id": "ask-090", "lang": "en", "asks": ["A5"], "channel": "email", "style": "direct", "text": "Process it without a PO, the purchase order will follow next week."}
+{"id": "ask-091", "lang": "en", "asks": ["A5"], "channel": "call", "style": "direct", "text": "Don't wait for the callback verification, the vendor is a friend of mine."}
+{"id": "ask-092", "lang": "en", "asks": ["A5"], "channel": "email", "style": "paraphrase", "text": "Just push it through as an exception, we will regularise it in the system tomorrow."}
+{"id": "ask-093", "lang": "en", "asks": ["A5"], "channel": "email", "style": "direct", "text": "Bypass the dual authorisation this time, the second approver is on leave."}
+{"id": "ask-094", "lang": "en", "asks": ["A5", "A7"], "channel": "whatsapp", "style": "indirect", "text": "You don't need to raise a ticket for the bank change, just update it directly in the master."}
+{"id": "ask-095", "lang": "en", "asks": ["A5"], "channel": "whatsapp", "style": "paraphrase", "text": "Mark it as approved on my behalf, I am unable to log in from the airport."}
+{"id": "ask-096", "lang": "en", "asks": ["A5"], "channel": "email", "style": "indirect", "text": "Split it into smaller amounts so it does not need the board approval."}
+{"id": "ask-097", "lang": "en", "asks": ["A5"], "channel": "email", "style": "paraphrase", "text": "No need to match it against the invoice, just release the advance."}
+{"id": "ask-098", "lang": "hi-Latn", "asks": ["A5"], "channel": "call", "style": "code-mixed", "text": "Approval ka wait mat karo, abhi release kar do, main baad mein sign kar dunga."}
+{"id": "ask-099", "lang": "hi-Latn", "asks": ["A5"], "channel": "whatsapp", "style": "code-mixed", "text": "Checker ko bhejne ki zarurat nahi, apne login se hi payment kar do."}
+{"id": "ask-100", "lang": "hi-Latn", "asks": ["A5"], "channel": "whatsapp", "style": "code-mixed", "text": "PO baad mein bana lenge, pehle payment nikaal do."}
+{"id": "ask-101", "lang": "hi-Latn", "asks": ["A5"], "channel": "call", "style": "code-mixed", "text": "Callback verification skip kar do, vendor apna hi aadmi hai."}
+{"id": "ask-102", "lang": "hi-Latn", "asks": ["A5"], "channel": "whatsapp", "style": "code-mixed", "text": "Amount ko chhote hisson mein tod do taaki approval na lage."}
+{"id": "ask-103", "lang": "hi-Latn", "asks": ["A5"], "channel": "whatsapp", "style": "code-mixed", "text": "Exception mein daal ke process kar do, system mein kal theek kar denge."}
+{"id": "ask-104", "lang": "hi-Deva", "asks": ["A5"], "channel": "email", "style": "direct", "text": "इस बार अनुमोदन की प्रतीक्षा मत कीजिए, अभी भुगतान जारी कर दीजिए।"}
+{"id": "ask-105", "lang": "hi-Deva", "asks": ["A5"], "channel": "whatsapp", "style": "direct", "text": "चेकर को भेजने की ज़रूरत नहीं, अपने लॉगिन से ही भुगतान कर दो।"}
+{"id": "ask-106", "lang": "hi-Deva", "asks": ["A5"], "channel": "whatsapp", "style": "direct", "text": "खरीद आदेश बाद में बन जाएगा, पहले भुगतान कर दो।"}
+{"id": "ask-107", "lang": "hi-Deva", "asks": ["A5"], "channel": "whatsapp", "style": "indirect", "text": "राशि को छोटे-छोटे हिस्सों में बाँट दो ताकि बोर्ड की मंज़ूरी न लगे।"}
+{"id": "ask-108", "lang": "hi-Deva", "asks": ["A5"], "channel": "call", "style": "direct", "text": "कॉलबैक सत्यापन छोड़ दो, विक्रेता भरोसेमंद है।"}
+{"id": "ask-109", "lang": "en", "asks": ["A6"], "channel": "whatsapp", "style": "direct", "text": "I need ten e-gift vouchers of ₹10,000 each for a client meeting. Buy them and send me the codes."}
+{"id": "ask-110", "lang": "en", "asks": ["A6"], "channel": "whatsapp", "style": "direct", "text": "Pick up shopping gift cards worth 50k on the company card and WhatsApp me photos of the scratched codes."}
+{"id": "ask-111", "lang": "en", "asks": ["A6"], "channel": "email", "style": "direct", "text": "The vendor only accepts USDT for this shipment; transfer the equivalent of 3 lakh to the wallet address below."}
+{"id": "ask-112", "lang": "en", "asks": ["A6"], "channel": "call", "style": "direct", "text": "Approve the collect request that will pop up on your UPI app, it is the refund being processed."}
+{"id": "ask-113", "lang": "en", "asks": ["A6"], "channel": "whatsapp", "style": "direct", "text": "Scan this QR code to receive the refund of ₹18,500."}
+{"id": "ask-114", "lang": "en", "asks": ["A6"], "channel": "email", "style": "direct", "text": "Send the payment in Bitcoin to this wallet, the bank route is too slow."}
+{"id": "ask-115", "lang": "en", "asks": ["A6"], "channel": "email", "style": "paraphrase", "text": "Please recharge twenty app store cards of 5,000 each for the dealer incentive and email me the codes."}
+{"id": "ask-116", "lang": "en", "asks": ["A6"], "channel": "call", "style": "indirect", "text": "You will get a payment request from demo.refund@fakeupi, just accept it from your phone."}
+{"id": "ask-117", "lang": "en", "asks": ["A6"], "channel": "whatsapp", "style": "direct", "text": "Buy crypto worth ₹2 lakh on any exchange and send it to the wallet ID I will share."}
+{"id": "ask-118", "lang": "en", "asks": ["A6", "A4"], "channel": "whatsapp", "style": "indirect", "text": "For the Diwali surprise for the team, get gift cards and send me the codes quietly."}
+{"id": "ask-119", "lang": "hi-Latn", "asks": ["A6"], "channel": "whatsapp", "style": "code-mixed", "text": "Client ke liye gift vouchers chahiye, 10 voucher le lo 5,000 ke aur codes mujhe bhej do."}
+{"id": "ask-120", "lang": "hi-Latn", "asks": ["A6"], "channel": "call", "style": "code-mixed", "text": "UPI pe ek collect request aayegi, usko approve kar dena, refund hai."}
+{"id": "ask-121", "lang": "hi-Latn", "asks": ["A6"], "channel": "whatsapp", "style": "code-mixed", "text": "Ye QR scan karo, paisa aapke account mein aa jayega."}
+{"id": "ask-122", "lang": "hi-Latn", "asks": ["A6"], "channel": "whatsapp", "style": "code-mixed", "text": "Payment crypto mein karna hai, USDT wallet ka address bhej raha hoon."}
+{"id": "ask-123", "lang": "hi-Latn", "asks": ["A6"], "channel": "whatsapp", "style": "code-mixed", "text": "Gift cards kharid ke unke codes scratch karke photo bhej do."}
+{"id": "ask-124", "lang": "hi-Latn", "asks": ["A6"], "channel": "call", "style": "code-mixed", "text": "Refund ke liye request accept karo UPI app mein, bas."}
+{"id": "ask-125", "lang": "hi-Deva", "asks": ["A6"], "channel": "whatsapp", "style": "direct", "text": "क्लाइंट के लिए दस गिफ्ट वाउचर खरीदकर उनके कोड मुझे भेज दीजिए।"}
+{"id": "ask-126", "lang": "hi-Deva", "asks": ["A6"], "channel": "call", "style": "direct", "text": "यूपीआई पर आई कलेक्ट रिक्वेस्ट को स्वीकार कर लीजिए, यह रिफ़ंड है।"}
+{"id": "ask-127", "lang": "hi-Deva", "asks": ["A6"], "channel": "whatsapp", "style": "direct", "text": "यह क्यूआर कोड स्कैन कीजिए, रिफ़ंड आपके खाते में आ जाएगा।"}
+{"id": "ask-128", "lang": "hi-Deva", "asks": ["A6"], "channel": "email", "style": "direct", "text": "भुगतान क्रिप्टो में करना है, नीचे दिए वॉलेट पते पर भेजिए।"}
+{"id": "ask-129", "lang": "hi-Deva", "asks": ["A6"], "channel": "whatsapp", "style": "direct", "text": "गिफ्ट कार्ड खरीदकर उनके कोड की फ़ोटो भेज दो।"}
+{"id": "ask-130", "lang": "en", "asks": ["A7"], "channel": "email", "style": "direct", "text": "Please note our bank details have changed. Kindly make all future payments to the account below."}
+{"id": "ask-131", "lang": "en", "asks": ["A7"], "channel": "email", "style": "indirect", "text": "Our old account is under an internal audit, so please update our records and remit the pending invoice to the new account."}
+{"id": "ask-132", "lang": "en", "asks": ["A7"], "channel": "email", "style": "paraphrase", "text": "We have moved our banking to Fictional Bank D; the updated cancelled cheque is attached for your vendor master."}
+{"id": "ask-133", "lang": "en", "asks": ["A7"], "channel": "email", "style": "paraphrase", "text": "Kindly use the revised remittance instructions on the attached letterhead for invoice INV-2291."}
+{"id": "ask-134", "lang": "en", "asks": ["A7"], "channel": "email", "style": "indirect", "text": "The account on your file is no longer operational. Payments sent there will bounce, so use the one below."}
+{"id": "ask-135", "lang": "en", "asks": ["A7"], "channel": "email", "style": "direct", "text": "Update our beneficiary details before the next run: A/c 99990000777712, IFSC FAKD0000771."}
+{"id": "ask-136", "lang": "en", "asks": ["A7"], "channel": "email", "style": "paraphrase", "text": "Due to a merger, our receiving account has changed. Please confirm once you have updated it."}
+{"id": "ask-137", "lang": "en", "asks": ["A7"], "channel": "email", "style": "direct", "text": "Kindly stop payments to our previous account with immediate effect and use the new details."}
+{"id": "ask-138", "lang": "en", "asks": ["A7"], "channel": "email", "style": "paraphrase", "text": "Our finance team has switched banks this quarter, please pay this month's statement into the new account."}
+{"id": "ask-139", "lang": "en", "asks": ["A7"], "channel": "whatsapp", "style": "direct", "text": "Hi, this is Ravi from Narmada Demo Logistics. We have changed our UPI ID, please use narmada.new@fakeupi going forward."}
+{"id": "ask-140", "lang": "hi-Latn", "asks": ["A7"], "channel": "whatsapp", "style": "code-mixed", "text": "Humara bank account change ho gaya hai, agla payment naye account mein karna."}
+{"id": "ask-141", "lang": "hi-Latn", "asks": ["A7"], "channel": "email", "style": "code-mixed", "text": "Purane account mein payment mat bhejiye, audit chal raha hai, naya account details attach hai."}
+{"id": "ask-142", "lang": "hi-Latn", "asks": ["A7"], "channel": "whatsapp", "style": "code-mixed", "text": "Vendor master mein humari bank details update kar dijiye, cancelled cheque bhej diya hai."}
+{"id": "ask-143", "lang": "hi-Latn", "asks": ["A7"], "channel": "email", "style": "code-mixed", "text": "Ab se saari payments naye IFSC wale account mein jayengi, please note kar lein."}
+{"id": "ask-144", "lang": "hi-Latn", "asks": ["A7"], "channel": "whatsapp", "style": "code-mixed", "text": "Humne bank badal liya hai, is mahine ka payment naye khate mein daal dena."}
+{"id": "ask-145", "lang": "hi-Latn", "asks": ["A7"], "channel": "whatsapp", "style": "code-mixed", "text": "UPI ID change hai ab, purana wala band ho gaya."}
+{"id": "ask-146", "lang": "hi-Deva", "asks": ["A7"], "channel": "email", "style": "direct", "text": "हमारे बैंक खाते का विवरण बदल गया है, कृपया आगे से नए खाते में भुगतान करें।"}
+{"id": "ask-147", "lang": "hi-Deva", "asks": ["A7"], "channel": "email", "style": "direct", "text": "पुराने खाते में भुगतान न भेजें, उसकी जगह संलग्न नए खाते का उपयोग करें।"}
+{"id": "ask-148", "lang": "hi-Deva", "asks": ["A7"], "channel": "email", "style": "direct", "text": "कृपया अपने रिकॉर्ड में हमारा नया खाता नंबर और आईएफ़एससी अपडेट कर लें।"}
+{"id": "ask-149", "lang": "hi-Deva", "asks": ["A7"], "channel": "email", "style": "paraphrase", "text": "विलय के कारण हमारा प्राप्ति खाता बदल गया है, अगला भुगतान नए खाते में करें।"}
+{"id": "ask-150", "lang": "hi-Deva", "asks": ["A7"], "channel": "email", "style": "direct", "text": "अब से सभी भुगतान नीचे दिए गए खाते में भेजें, पुराना खाता बंद हो गया है।"}
+{"id": "ask-151", "lang": "en", "asks": ["A4", "A1"], "channel": "email", "style": "direct", "text": "Arjun is not to know about this. Transfer ₹14 lakh to the escrow account below today and delete this mail after."}
+{"id": "ask-152", "lang": "en", "asks": ["A7", "A5"], "channel": "email", "style": "direct", "text": "Our bank has changed and the auditors are sitting on the old account, so please pay INV-4410 to the new account and skip the callback this time, we are in a hurry."}
+{"id": "ask-153", "lang": "en", "asks": ["A6", "A4"], "channel": "whatsapp", "style": "direct", "text": "I am stuck in a meeting. Buy five gift cards and send me the codes. Don't call, just text."}
+{"id": "ask-154", "lang": "en", "asks": ["A3", "A2"], "channel": "call", "style": "direct", "text": "The bank's security team will call you. Install their support app and read them the OTP when it arrives."}
+{"id": "ask-155", "lang": "hi-Latn", "asks": ["A1", "A4"], "channel": "whatsapp", "style": "code-mixed", "text": "Bhai, naya account bhej raha hoon, usme 7 lakh daal do. Kisi ko batana mat, CFO sir ka personal kaam hai."}
+{"id": "ask-156", "lang": "hi-Latn", "asks": ["A5", "A1"], "channel": "whatsapp", "style": "code-mixed", "text": "Approval baad mein le lenge, abhi naye account mein transfer karo."}
+{"id": "ask-157", "lang": "hi-Latn", "asks": ["A7", "A5"], "channel": "whatsapp", "style": "code-mixed", "text": "Vendor ka bank change hua hai, details update karo aur aaj hi payment nikalo, callback ki zarurat nahi."}
+{"id": "ask-158", "lang": "hi-Deva", "asks": ["A4", "A1"], "channel": "whatsapp", "style": "direct", "text": "मैं मीटिंग में हूँ, फ़ोन मत करना। नए खाते में 9 लाख भेज दो और यह बात किसी को मत बताना।"}
+{"id": "ask-159", "lang": "hi-Latn", "asks": ["A3", "A2"], "channel": "call", "style": "code-mixed", "text": "Screen share karo aur OTP aaye toh mujhe bata dena, main payment complete kar dunga."}
+{"id": "ask-160", "lang": "en", "asks": ["A4", "A6"], "channel": "email", "style": "direct", "text": "Please keep this quiet: the vendor wants this one paid in USDT, wallet address attached."}
+{"id": "ask-161", "lang": "en", "asks": ["A5", "A1"], "channel": "email", "style": "direct", "text": "Skip the PO and the second approval; just wire the advance to the new beneficiary I have added."}
+{"id": "ask-162", "lang": "en", "asks": ["A7", "A5"], "channel": "email", "style": "indirect", "text": "Our account details are updated as per the attached letter. Please process today itself without the usual verification call, our MD has already confirmed."}
+{"id": "ask-163", "lang": "hi-Deva", "asks": ["A2", "A5"], "channel": "whatsapp", "style": "direct", "text": "पासवर्ड भेज दो और चेकर से अनुमोदन मत लेना, मैं खुद देख लूँगा।"}
+{"id": "ask-164", "lang": "en", "asks": ["A1", "A5", "A4"], "channel": "call", "style": "indirect", "text": "The CFO is on a flight and asked me to tell you: release the payment to the new account, don't wait for his sign-off, and don't call him."}
+{"id": "ask-165", "lang": "en", "asks": ["A2"], "channel": "call", "style": "direct", "text": "Kindly confirm the OTP received on your registered mobile to complete the beneficiary update for your vendor."}
+{"id": "ask-166", "lang": "en", "asks": ["A2"], "channel": "call", "style": "indirect", "text": "Whatever comes on your phone in the next minute, just tell me, it is how the bank confirms it is really you."}
+{"id": "ask-167", "lang": "en", "asks": ["A4"], "channel": "email", "style": "indirect", "text": "Let's keep finance out of this until the deal is signed."}
+{"id": "ask-168", "lang": "en", "asks": ["A1"], "channel": "call", "style": "indirect", "text": "The money can't go to the usual place this time; I will give you somewhere else to send it."}
+{"id": "ask-169", "lang": "en", "asks": ["A4", "A5"], "channel": "whatsapp", "style": "indirect", "text": "Can you handle this one yourself? Arjun tends to slow these things down, no need to involve him."}
+{"id": "ask-170", "lang": "hi-Latn", "asks": ["A7"], "channel": "whatsapp", "style": "indirect", "text": "Bas aaj se purane details use mat karna, jo maine bheje hain wahi chalenge."}
+{"id": "ask-171", "lang": "hi-Latn", "asks": ["A2"], "channel": "call", "style": "indirect", "text": "Code aaya? Bolo jaldi."}
+{"id": "ask-172", "lang": "hi-Deva", "asks": ["A4"], "channel": "whatsapp", "style": "indirect", "text": "मेरे कहे बिना किसी को कुछ मत बताना।"}
