@@ -10,3 +10,6 @@ Pascu et al., "Audio deepfake detection in the browser" (arXiv 2606.30780), repo
 - `*.onnx` is git-ignored.
 - Backup if the license is refused: server-side scoring with a permissively licensed SSL
   detector (verify its license first) — see docs/DECISIONS.md ADR-009.
+- After downloading, run once: `uv run --with onnx python scripts/prepare_ext_models.py`.
+  It writes `logreg_prob.onnx` (same model without the ZipMap output, which onnxruntime-web
+  cannot read). The extension loads `model.onnx` + `logreg_prob.onnx`.

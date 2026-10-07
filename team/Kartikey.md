@@ -102,6 +102,8 @@ cd ~/Desktop/Deepfake_Detection && gemini      # log in with Google when asked
 
 Spec files: `docs/tasks/T03-…`, `T04-…`, `T08-…`, `T17-…`, `T16-…`, `T19-…`. The spec is always the final word on details.
 
+> **Only the tasks in this table are yours** (T03, T04, T08, T17, T16, T19). Never start, edit or open a PR for anyone else's task — not even to help. Not yours: Saarika's: T05, T10, T18, T23 — T05 is done, never touch `src/satyapan/asks/`; Saksham's: T06, T09, T12, T13, T14, T24; Shivendra's: T07, T11, T15, T20, T21. If an agent suggests one of these, stop and ask Shivendra.
+
 ### 4b. Hand-offs (who needs what from whom)
 - **You → Saksham:** none blocking. **Saksham → you:** his T09 (vault) and T13 (statuses) are used by your T16. Write T16 against the fixture first; when his PRs merge, `git pull` and run `make task T=T16` again. Sync with him for 10 min on Day 3.
 - **Saarika → you:** the tag `lexicon-v1.0` (end of Day 2). Until then do the metrics + loader parts of T19.

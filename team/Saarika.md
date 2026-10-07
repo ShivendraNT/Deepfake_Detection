@@ -98,13 +98,15 @@ cd ~/Desktop/Deepfake_Detection && gemini      # log in with Google when asked
 
 | # | Task | What you build | Time | Can start | 🤝 With Shivendra |
 |---|---|---|---|---|---|
-| 1 | **T05** | Ask extractor A1–A7 (EN / Hinglish / Hindi) | ~1 day | now | kickoff, review, freeze |
-| 2 | **T10** | Extension side panel (what the user sees mid-call) | ~1 day | now (built from a replay file) | first live Meet test with his T07 |
+| 1 | **T05** ✅ done | Ask extractor A1–A7 (EN / Hinglish / Hindi) | ~1 day | — | kickoff, review, freeze |
+| 2 | **T10** ✅ done | Extension side panel (what the user sees mid-call) | ~1 day | — | first live Meet test with his T07 |
 | 3 | **T18** | Voice-detector channel evaluation + thresholds | ~1 day | after T07 works | recording session + threshold fit |
 | 4 | **T23** | Pitch deck (5 slides) + backup recording | ~½ day | after T18, T21, T22 | build + rehearse together |
 | ★ | **T22** | Demo dry runs — you operate the side panel + console | Day 3–4 | after T10 | every dry run |
 
 Spec files: `docs/tasks/T05-ask-extractor.md`, `T10-extension-sidepanel.md`, `T18-audio-channel-eval.md`, `T23-pitch-deck.md`, `T22-demo-assets-dry-runs.md`. The spec is always the final word on details.
+
+> **Only the tasks in this table are yours** (T05, T10, T18, T23 + operator in T22). Never start, edit or open a PR for anyone else's task — not even to help. Not yours: Kartikey's: T03, T04, T08, T16, T17, T19; Saksham's: T06, T09, T12, T13, T14, T24; Shivendra's: T07, T11, T15, T20, T21. If an agent suggests one of these, stop and ask Shivendra.
 
 ### 4b. 🤝 Pair checkpoints with Shivendra (put these in your calendar)
 

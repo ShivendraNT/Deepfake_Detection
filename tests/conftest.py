@@ -6,6 +6,9 @@
    NotImplementedError is a FAILURE, so you see red until you implement it.
 3. Tasks marked `done` in docs/STATUS.md are always strict (a done task may never skip).
 4. Unit tests cannot open network connections (mark a test @pytest.mark.network to allow it).
+   Loopback (`127.0.0.1` / `::1` / `localhost`) is allowed: it is how asyncio builds its
+   in-process self-pipe (Windows `socket.socketpair` fallback) and reaches nothing outside
+   the machine. Real hostnames stay blocked.
 """
 
 from __future__ import annotations
@@ -90,19 +93,38 @@ def pytest_runtest_makereport(item: pytest.Item, call: pytest.CallInfo[None]):  
     rep.longrepr = (str(item.path), item.location[1] or 0, f"Skipped: {task} not implemented yet")
 
 
+_BLOCKED = (
+    "Network access is disabled in unit tests. Use a fake adapter "
+    "(satyapan.adapters.base) or mark the test @pytest.mark.network."
+)
+
+
+def _is_loopback(address: object) -> bool:
+    """True for an in-process/loopback peer (asyncio self-pipe, local fixtures)."""
+    if not isinstance(address, tuple) or not address or not isinstance(address[0], str):
+        return False
+    host = address[0]
+    return host == "localhost" or host == "::1" or host.startswith("127.")
+
+
 @pytest.fixture(autouse=True)
 def _no_network(request: pytest.FixtureRequest, monkeypatch: pytest.MonkeyPatch) -> None:
     if request.node.get_closest_marker("network"):
         return
 
-    def guard(*args: object, **kwargs: object) -> None:
-        raise RuntimeError(
-            "Network access is disabled in unit tests. Use a fake adapter "
-            "(satyapan.adapters.base) or mark the test @pytest.mark.network."
-        )
+    real_connect = socket.socket.connect
 
-    monkeypatch.setattr(socket.socket, "connect", guard)
-    monkeypatch.setattr(socket, "create_connection", guard)
+    def guard_connect(self: socket.socket, address: object) -> None:
+        if _is_loopback(address):
+            real_connect(self, address)  # type: ignore[arg-type]
+            return
+        raise RuntimeError(_BLOCKED)
+
+    def guard_blocked(*args: object, **kwargs: object) -> None:
+        raise RuntimeError(_BLOCKED)
+
+    monkeypatch.setattr(socket.socket, "connect", guard_connect)
+    monkeypatch.setattr(socket, "create_connection", guard_blocked)
 
 
 # ---------------------------------------------------------------- shared fixtures

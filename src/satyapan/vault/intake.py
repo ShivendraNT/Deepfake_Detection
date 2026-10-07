@@ -7,9 +7,11 @@ from __future__ import annotations
 
 from datetime import datetime
 
-from satyapan.contracts.enums import Channel
-from satyapan.contracts.evidence import Evidence
+from satyapan.contracts.common import utcnow
+from satyapan.contracts.enums import Channel, CustodyEvent
+from satyapan.contracts.evidence import EXCERPT_MAX_CHARS, Evidence
 from satyapan.vault.custody import CustodyLog
+from satyapan.vault.hashing import sha256_bytes
 from satyapan.vault.storage import BlobStore
 
 
@@ -34,4 +36,32 @@ def intake(
                   "channel": channel.value, "filename": filename})
     5. return Evidence(...) with excerpt truncated to EXCERPT_MAX_CHARS.
     """
-    raise NotImplementedError("T09: see docs/tasks/T09-evidence-vault.md")
+    sha = sha256_bytes(data)  # FIRST: fingerprint the raw bytes before anything parses them
+    uri = store.put(f"{case_id}/{sha}", data, media_type)
+    evidence_id = f"ev_{sha[:16]}"
+    log.append(
+        case_id=case_id,
+        event=CustodyEvent.INTAKE,
+        actor=submitted_by,
+        evidence_id=evidence_id,
+        payload={
+            "sha256": sha,
+            "size": len(data),
+            "uri": uri,
+            "channel": channel.value,
+            "filename": filename,
+        },
+    )
+    return Evidence(
+        id=evidence_id,
+        case_id=case_id,
+        channel=channel,
+        filename=filename,
+        media_type=media_type,
+        sha256=sha,
+        size_bytes=len(data),
+        captured_at=now or utcnow(),
+        submitted_by=submitted_by,
+        storage_uri=uri,
+        excerpt=excerpt[:EXCERPT_MAX_CHARS] if excerpt else None,
+    )
