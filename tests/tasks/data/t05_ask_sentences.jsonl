@@ -27,4 +27,78 @@
 {"text": "Our account manager will visit next week.", "asks": [], "lang": "en"}
 {"text": "Never share your OTP with anyone, says the bank.", "asks": ["A2"], "lang": "en", "note": "known false positive: warnings mention OTP; deterministic extractor flags it (raise-only, acceptable)"}
 {"text": "Thanks for the quick approval process.", "asks": [], "lang": "en"}
-{"text": "The PIN code of our new office is 110042.", "asks": ["A2"], "lang": "en", "note": "known false positive: 'PIN code' (postal). T05 should fix with a negative lookahead and change this label to []"}
+{"text": "The PIN code of our new office is 110042.", "asks": [], "lang": "en", "note": "fixed: negative lookahead keeps postal 'PIN code' clean"}
+{"text": "Please transfer the balance to the new account I shared below.", "asks": ["A1"], "lang": "en"}
+{"text": "Wire the amount to the escrow wallet today, it is our safe account.", "asks": ["A1"], "lang": "en"}
+{"text": "Move our payment to a different account this cycle.", "asks": ["A1"], "lang": "en"}
+{"text": "Share the OTP you received on your phone.", "asks": ["A2"], "lang": "en"}
+{"text": "Tell me your PIN for the transaction.", "asks": ["A2"], "lang": "en"}
+{"text": "Send me the CVV number and the card number.", "asks": ["A2"], "lang": "en"}
+{"text": "Install RustDesk and share the session code.", "asks": ["A3"], "lang": "en"}
+{"text": "Please enable screen share on your laptop.", "asks": ["A3"], "lang": "en"}
+{"text": "Open Quick Support so I can fix the server.", "asks": ["A3"], "lang": "en"}
+{"text": "Keep this confidential until the deal closes.", "asks": ["A4"], "lang": "en"}
+{"text": "Don't mention this to anyone in the branch.", "asks": ["A4"], "lang": "en"}
+{"text": "Keep this quiet, our audit team should not know yet.", "asks": ["A4"], "lang": "en"}
+{"text": "This is a secret matter, do not inform the vendor.", "asks": ["A4"], "lang": "en"}
+{"text": "Bypass the verification step, I am in a hurry.", "asks": ["A5"], "lang": "en"}
+{"text": "No need for the PO, the boss already approved.", "asks": ["A5"], "lang": "en"}
+{"text": "Skip the checker approval on this file.", "asks": ["A5"], "lang": "en"}
+{"text": "Purchase gift cards from the mall and share the codes.", "asks": ["A6"], "lang": "en"}
+{"text": "Send 500 USDT to this wallet address.", "asks": ["A6"], "lang": "en"}
+{"text": "We accept payment in crypto for urgent clearance.", "asks": ["A6"], "lang": "en"}
+{"text": "Our changed bank details are in the letterhead.", "asks": ["A7"], "lang": "en"}
+{"text": "Please note our new bank details for the next remittance.", "asks": ["A7"], "lang": "en"}
+{"text": "Update the payee details for our vendor account today.", "asks": ["A7"], "lang": "en"}
+{"text": "Naya account share kar raha hoon, isme transfer kar dijiye.", "asks": ["A1"], "lang": "hi-Latn"}
+{"text": "Escrow account mein payment bhej dijiye abhi.", "asks": ["A1"], "lang": "hi-Latn"}
+{"text": "Nayi account me paisa daal do, verification ke baad.", "asks": ["A1"], "lang": "hi-Latn"}
+{"text": "OTP bata do jaldi, bank call kar raha hai.", "asks": ["A2"], "lang": "hi-Latn"}
+{"text": "Pin bata dijiye, transaction ke liye chahiye.", "asks": ["A2"], "lang": "hi-Latn"}
+{"text": "Password share karo apna, abhi block ho raha hai.", "asks": ["A2"], "lang": "hi-Latn"}
+{"text": "AnyDesk download kar lijiye ji, main madad karunga.", "asks": ["A3"], "lang": "hi-Latn"}
+{"text": "TeamViewer install kar lo laptop pe.", "asks": ["A3"], "lang": "hi-Latn"}
+{"text": "Remote access app download karo aur code batao.", "asks": ["A3"], "lang": "hi-Latn"}
+{"text": "Kisi ko nahi batana yeh baat, bahut zaruri hai.", "asks": ["A4"], "lang": "hi-Latn"}
+{"text": "Yeh baat gopeeniya rakhni hai, kisi ko mat batana.", "asks": ["A4"], "lang": "hi-Latn"}
+{"text": "Mat batana isko abhi, udhar udhar ho jayega.", "asks": ["A4"], "lang": "hi-Latn"}
+{"text": "Approval skip kar do, late ho raha hai.", "asks": ["A5"], "lang": "hi-Latn"}
+{"text": "Bina approval ke release kar do paise.", "asks": ["A5"], "lang": "hi-Latn"}
+{"text": "Process skip karo aur file aage bhej do.", "asks": ["A5"], "lang": "hi-Latn"}
+{"text": "Gift card khareed lo market se aur code bhej do.", "asks": ["A6"], "lang": "hi-Latn"}
+{"text": "USDT bhej do is wallet par abhi.", "asks": ["A6"], "lang": "hi-Latn"}
+{"text": "UPI collect karo isse, woh jaldi karega.", "asks": ["A6"], "lang": "hi-Latn"}
+{"text": "Bank details badal gaye hain, naya IFsC dekho.", "asks": ["A7"], "lang": "hi-Latn"}
+{"text": "Account update kariye ji, details naye hain.", "asks": ["A7"], "lang": "hi-Latn"}
+{"text": "Khata update karo system mein, vendor badal gaya.", "asks": ["A7"], "lang": "hi-Latn"}
+{"text": "कृपया ओटीपी बताइए, सब कुछ रुक जाएगा।", "asks": ["A2"], "lang": "hi-Deva"}
+{"text": "आपका पिन बताइए, लिमिट हटानी है।", "asks": ["A2"], "lang": "hi-Deva"}
+{"text": "एनीडेस्क खोलकर स्क्रीन शेयर करें।", "asks": ["A3"], "lang": "hi-Deva"}
+{"text": "यह बहुत गोपनीय है, किसी को मत बताना।", "asks": ["A4"], "lang": "hi-Deva"}
+{"text": "अप्रूवल छोड़ दो, मुझे जल्दी है।", "asks": ["A5"], "lang": "hi-Deva"}
+{"text": "नया खाता दिया है, इसी में भेजो।", "asks": ["A1"], "lang": "hi-Deva"}
+{"text": "बैंक विवरण बदल गया है, कृपया अपडेट करें।", "asks": ["A7"], "lang": "hi-Deva"}
+{"text": "गिफ्ट कार्ड खरीदकर कोड भेजो।", "asks": ["A6"], "lang": "hi-Deva"}
+{"text": "कृपया पिन भेजिए, तुरंत करना है।", "asks": ["A2"], "lang": "hi-Deva"}
+{"text": "किसी को मत बताना यह बात, बहुत जरूरी है।", "asks": ["A4"], "lang": "hi-Deva"}
+{"text": "नया अकाउंट है, इसी में पैसा डालो।", "asks": ["A1"], "lang": "hi-Deva"}
+{"text": "बैंक खाता अपडेट कर दीजिए, जानकारी बदल गई।", "asks": ["A7"], "lang": "hi-Deva"}
+{"text": "Keep this quiet and wire the funds to the new account.", "asks": ["A1", "A4"], "lang": "en"}
+{"text": "Approval skip karo aur nayi account me daal do.", "asks": ["A1", "A5"], "lang": "hi-Latn"}
+{"text": "OTP bhejo aur kisi ko mat batana.", "asks": ["A2", "A4"], "lang": "hi-Latn"}
+{"text": "The quarterly statement is attached for your review.", "asks": [], "lang": "en"}
+{"text": "Please find the invoice and GST details below.", "asks": [], "lang": "en"}
+{"text": "The notice board was replaced last week.", "asks": [], "lang": "en"}
+{"text": "The meeting is at the old office address.", "asks": [], "lang": "en"}
+{"text": "Can you resend the payment receipt from March?", "asks": [], "lang": "en"}
+{"text": "Thanks for approving the purchase order yesterday.", "asks": [], "lang": "en"}
+{"text": "The new office furniture arrived this morning.", "asks": [], "lang": "en"}
+{"text": "Kindly share the agenda for tomorrow's call.", "asks": [], "lang": "en"}
+{"text": "Payment receipt bhej dena kal tak please.", "asks": [], "lang": "hi-Latn"}
+{"text": "Invoice mein total 48,500 hai.", "asks": [], "lang": "hi-Latn"}
+{"text": "Software update download hua hai maine.", "asks": [], "lang": "hi-Latn"}
+{"text": "Kal ki meeting cancel ho gayi hai.", "asks": [], "lang": "hi-Latn"}
+{"text": "कृपया बिल अगले हफ्ते देख लीजिएगा।", "asks": [], "lang": "hi-Deva"}
+{"text": "मीटिंग कल सुबह दस बजे है।", "asks": [], "lang": "hi-Deva"}
+{"text": "Enter the PIN code on the keypad to lock the screen.", "asks": [], "lang": "en", "note": "tricky: PIN code is not a credential ask"}
+{"text": "We never ask for your MPIN with anyone, says the bank.", "asks": ["A2"], "lang": "en", "note": "warning text still flags MPIN; raise-only acceptable"}
