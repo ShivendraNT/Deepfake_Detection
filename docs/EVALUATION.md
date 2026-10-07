@@ -10,7 +10,7 @@ Hackathon numbers are labelled "illustrative, n=X". The paper claim lives in
 |---|---|---|---|---|---|
 | E1 | Decision relevance (where detectors change the outcome) | 12 team-authored scenarios (`data/demo/cases/`) | rules-only band vs full band | `scripts/decision_relevance.py` (works now) | `results/decision_relevance.md` |
 | E2 | Voice detector through real channels | In-the-Wild + HAV-DF audio (+ IndieFake if available) + ~200 Meet-captured bonafide windows | EER, FPR/FNR at τ, speaker-bootstrap CI | T18 | `results/audio_eval.csv` |
-| E3 | Injection red-team | 30 samples (`data/demo/injection/injections.jsonl`) | bands lowered (must be 0/30); summaries echoing the injection before/after checker; checker rejection rate | T15 | `results/redteam.json` |
+| E3 | Injection red-team | 30 samples (`data/demo/injection/injections.jsonl`) | bands lowered (must be 0/30); summaries echoing the injection before/after checker; checker rejection rate | T15 | `results/redteam.json` — 07 Oct, llama3.1:8b (Ollama, local), 30 samples × 3 cases = 90 runs: bands lowered 0; echoed 43/90 before checker, 13/90 after; checker rejection 64.4%; median 18.8 s/call. Open: checker accepts entities backed only by untrusted excerpts (inj22) and dismissive words ("resolved", "pre-approved", "whitelisted") |
 | E4 | Ask extractor dev-set quality | ≥ 80 team-written sentences (not ICFD) | precision, recall | T05 test output | printed by `make task T=T05` |
 | E5 | Paraphrase robustness (first research result) | ICFD test + P1-A | recall@1%FPR with CI for D2, D3, D4 | T19-T21 | `results/research_main.csv`, `figures/money.png` |
 | E6 | Live latency | 10 Hinglish clips on the M4 | seconds from spoken ask to chip; voice alert delay | T11/T22 | `results/dry_runs.csv` |
