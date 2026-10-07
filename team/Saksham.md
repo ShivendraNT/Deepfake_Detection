@@ -109,6 +109,8 @@ cd ~/Desktop/Deepfake_Detection && gemini      # log in with Google when asked
 
 Spec files: `docs/tasks/T09-…`, `T06-…`, `T12-…`, `T13-…`, `T14-…`, `T24-…`. The spec is always the final word on details.
 
+> **Only the tasks in this table are yours** (T09, T06, T12, T13, T14, T24). Never start, edit or open a PR for anyone else's task — not even to help. Not yours: Saarika's: T05, T10, T18, T23; Kartikey's: T03, T04, T08, T16, T17, T19; Shivendra's: T07, T11, T15, T20, T21. If an agent suggests one of these, stop and ask Shivendra.
+
 ### 4b. Hand-offs (who needs what from whom)
 - **You → Kartikey:** your T09 (vault) and T13 (statuses) are used in his T16 report pack. Merge them early; 10-min sync with him on Day 3.
 - **You → Shivendra:** your T14 templates are the fallback text for his LLM summary (T15) — finish T14 by Day 3 morning.
