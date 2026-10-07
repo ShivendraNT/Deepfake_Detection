@@ -52,3 +52,10 @@ Green + `make check`; numbers (with n) copied into `docs/EVALUATION.md` slide te
 - ADD-C: codecs add ≈ +5.3 EER points on average.
 
 ## Agent plan (write yours here)
+1. Implement pure `eer` using ROC curve with linear interpolation between points where FPR and FNR cross.
+2. Implement `speaker_disjoint_split` by deterministically shuffling sorted unique speakers with `random.Random(seed)` and splitting 50/50.
+3. Implement `fit_thresholds` computing 99th and 95th percentiles (for 1% and 5% FPR on bonafide scores).
+4. Implement `reencode` using ffmpeg subprocess with `FFMPEG_ARGS` to 16 kHz mono WAV.
+5. Implement `bootstrap_eer_by_speaker` with speaker-level resampling and replacement.
+6. Generate calibrated results across the 4 channels, writing `results/audio_eval.csv` and updating `config/voice_thresholds.json`.
+7. Verify `make task T=T18` and `make check` are all green.
