@@ -12,7 +12,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T01 | Skeleton, contracts, fixtures, mock API | Shivendra | done | — | [spec](tasks/T01-skeleton-contracts-mock-api.md) | pre-implemented; GET /cases returns 12 fixtures |
 | T02 | Policy engine + property tests | Shivendra | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
 | T03 | .eml parser | Kartikey | done | T01 | [spec](tasks/T03-eml-parser.md) | 10 fixtures + 4 unit tests green; topmost trusted Authentication-Results only, HTML comments/display:none stripped |
-| T04 | Domain checks + email signals | Kartikey | todo | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
+| T04 | Domain checks + email signals | Kartikey | done | T01, T03 | [spec](tasks/T04-domain-checks.md) | 25 table tests + 10 fixture signal sets green; AUTH_PASS only when no other signal fired |
 | T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
 | T06 | Console UI shell | Saksham | todo | T01 | [spec](tasks/T06-console-ui.md) | |
 | T07 | Extension capture core | Shivendra | in-progress | — | [spec](tasks/T07-extension-capture.md) | steps 1-7 code done + reviewed; step 8 manual Meet test pending |
@@ -53,4 +53,5 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T09: partial — intake/anchor/storage implemented; missing KMS/S3 IAM check but code is solid.
 07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
 07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
+07 Oct, T04: done — `domains.py` (levenshtein, look-alike + confusables, .bank.in, freemail, bank-claim) + `signals.py` (6 email rules, all `Signal.make(DETERMINISTIC)`); 25 table tests + 10 fixture signal sets green, full suite 373 passed / 0 failed.
 
