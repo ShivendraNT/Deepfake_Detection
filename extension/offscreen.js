@@ -164,10 +164,16 @@ function relayEvents(callId, events, keep = () => true) {
 }
 
 function uploadChunk(callId, index, blob) {
+    const recordedAt = performance.now(); // chunk ended; T11 step 6 latency = this -> events back
     chunkQueue = chunkQueue
         .then(() => callReady)
         .then(() => postChunk(callId, index, blob))
-        .then((events) => relayEvents(callId, events))
+        .then((events) => {
+            const ms = performance.now() - recordedAt;
+            const asks = (events || []).filter((e) => e.type === "ask").map((e) => e.ask_type);
+            console.log(`chunk ${index}: ${ms.toFixed(0)} ms chunk-end -> events; asks=[${asks}]`);
+            relayEvents(callId, events);
+        })
         .catch(() => {}); // D6: backend is optional
 }
 
