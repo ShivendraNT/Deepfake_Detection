@@ -6,6 +6,7 @@ No LLM in the loop: alert text comes from templates (latency budget §5.5 in ARC
 from __future__ import annotations
 
 import asyncio
+import threading
 from dataclasses import dataclass, field
 
 from satyapan.adapters.base import Transcriber
@@ -43,22 +44,54 @@ class LiveSession:
     asks: list[AskSpan] = field(default_factory=list)
     voice_windows: list[VoiceWindowResult] = field(default_factory=list)
     last_band: Band = Band.PASS
+    # Routes run handle_chunk/handle_voice in worker threads; one call's updates never interleave.
+    lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
 
 @dataclass
 class EventBus:
-    """Per-call asyncio queues for server-sent events."""
+    """Per-call asyncio queues for server-sent events.
+
+    publish() may run in a worker thread (the routes run Whisper off the event loop), and
+    asyncio.Queue is not thread-safe, so each queue remembers the loop it was created on and
+    events are handed to that loop with call_soon_threadsafe.
+    """
 
     queues: dict[str, list[asyncio.Queue[LiveEvent]]] = field(default_factory=dict)
+    _loops: dict[int, asyncio.AbstractEventLoop | None] = field(default_factory=dict, repr=False)
+    _lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
     def publish(self, call_id: str, event: LiveEvent) -> None:
-        for q in self.queues.get(call_id, []):
-            q.put_nowait(event)
+        with self._lock:
+            targets = [(q, self._loops.get(id(q))) for q in self.queues.get(call_id, [])]
+        for q, loop in targets:
+            if loop is None or _running_loop() is loop:
+                q.put_nowait(event)
+            elif not loop.is_closed():
+                loop.call_soon_threadsafe(q.put_nowait, event)
 
     def subscribe(self, call_id: str) -> asyncio.Queue[LiveEvent]:
         q: asyncio.Queue[LiveEvent] = asyncio.Queue()
-        self.queues.setdefault(call_id, []).append(q)
+        with self._lock:
+            self.queues.setdefault(call_id, []).append(q)
+            self._loops[id(q)] = _running_loop()
         return q
+
+    def unsubscribe(self, call_id: str, q: asyncio.Queue[LiveEvent]) -> None:
+        with self._lock:
+            subs = self.queues.get(call_id, [])
+            if q in subs:
+                subs.remove(q)
+            if not subs:
+                self.queues.pop(call_id, None)
+            self._loops.pop(id(q), None)
+
+
+def _running_loop() -> asyncio.AbstractEventLoop | None:
+    try:
+        return asyncio.get_running_loop()
+    except RuntimeError:
+        return None
 
 
 @dataclass
@@ -90,6 +123,13 @@ class LiveService:
         update case.signals with ask_signals; re-decide; if band changed -> BandEvent with
         reason codes and SUGGESTED_LINES[EN]. Publish every event on the bus and return them."""
         session = self.sessions[call_id]
+        with session.lock:
+            return self._handle_chunk(session, chunk_index, audio, mime)
+
+    def _handle_chunk(
+        self, session: LiveSession, chunk_index: int, audio: bytes, mime: str
+    ) -> list[LiveEvent]:
+        call_id = session.call_id
         res = self.transcriber.transcribe(audio, mime)
         session.transcript.append(res.text)
         events: list[LiveEvent] = [
@@ -131,6 +171,13 @@ class LiveService:
         session = self.sessions[call_id]
         if not windows:
             return []
+        with session.lock:
+            return self._handle_voice(session, windows)
+
+    def _handle_voice(
+        self, session: LiveSession, windows: list[VoiceWindowResult]
+    ) -> list[LiveEvent]:
+        call_id = session.call_id
         by_index = {w.window_index: w for w in session.voice_windows}
         by_index.update({w.window_index: w for w in windows})
         session.voice_windows = [by_index[i] for i in sorted(by_index)]
