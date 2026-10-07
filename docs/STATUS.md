@@ -21,7 +21,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T10 | Extension side panel UI | Saarika | todo | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | build from replay file |
 | T11 | Live transcript path | Shivendra | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
 | T12 | OOB-Confirm | Saksham | done | T02, T06 | [spec](tasks/T12-oob-confirm.md) | token hashed + bound, DENIED → HOLD/SUSPECTED_FRAUD, OobInbox screen; 8/9 strict green (`test_api_flow` blocked by the pre-existing Windows TestClient/network-guard issue) |
-| T13 | Callback logging + checker flows | Saksham | todo | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
+| T13 | Callback logging + checker flows | Saksham | done | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | trusted-number callbacks, clearance evaluation, HOLD clear + security ack, 2-approver override, 30-day watchlist, VerifyPanel; 9/9 strict green |
 | T14 | Explanation templates EN/HI | Saksham | todo | T02 | [spec](tasks/T14-explanation-templates.md) | |
 | T15 | Bedrock summary + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |

@@ -1,5 +1,5 @@
 // PRE-IMPLEMENTED typed API client. All requests carry the DEMO identity headers.
-import type { Case, CaseSummary, DemoUser } from "./types";
+import type { Case, CaseStatus, CaseSummary, DemoUser } from "./types";
 
 const BASE = "/api";
 
@@ -31,6 +31,35 @@ export const api = {
   respondOob: (user: DemoUser, token: string, approve: boolean) =>
     fetch(`${BASE}/oob/respond`, { method: "POST", headers: headers(user), body: JSON.stringify({ token, approve }) }).then(
       json<{ result: string }>,
+    ),
+  // T13: callbacks / clear / status / security ack
+  addCallback: (
+    user: DemoUser,
+    id: string,
+    body: {
+      number_dialed: string;
+      outcome: "CONFIRMED" | "DENIED" | "NO_ANSWER";
+      confirmed_by_name?: string | null;
+      bank_shown_payee_name?: string | null;
+      notes?: string;
+    },
+  ) =>
+    fetch(`${BASE}/cases/${id}/callbacks`, {
+      method: "POST",
+      headers: headers(user),
+      body: JSON.stringify(body),
+    }).then(json<Case>),
+  clearCase: (user: DemoUser, id: string) =>
+    fetch(`${BASE}/cases/${id}/clear`, { method: "POST", headers: headers(user) }).then(json<Case>),
+  setCaseStatus: (user: DemoUser, id: string, status: CaseStatus) =>
+    fetch(`${BASE}/cases/${id}/status`, {
+      method: "POST",
+      headers: headers(user),
+      body: JSON.stringify({ status }),
+    }).then(json<Case>),
+  securityAck: (user: DemoUser, id: string) =>
+    fetch(`${BASE}/cases/${id}/security-ack`, { method: "POST", headers: headers(user) }).then(
+      json<Case>,
     ),
 };
 
