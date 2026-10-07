@@ -18,7 +18,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T07 | Extension capture core | L | todo | — | [spec](tasks/T07-extension-capture.md) | manifest + voice_rules.js pre-done |
 | T08 | Invoice/PDF checker | B2 | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
 | T09 | Evidence vault: storage, intake, anchor | B3 | partial | T01 | [spec](tasks/T09-evidence-vault.md) | hashing + custody chain pre-implemented |
-| T10 | Extension side panel UI | B1 | todo | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | build from replay file |
+| T10 | Extension side panel UI | B1 | done | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | pure reducer + panel DOM + replay dev mode |
 | T11 | Live transcript path | L | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
 | T12 | OOB-Confirm | B3 | todo | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
 | T13 | Callback logging + checker flows | B3 | todo | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
@@ -46,3 +46,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 ## Notes log
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
 07 Oct, T05: ask extractor v1.0 done (n=92, P=0.927, R=0.950 on 3 scripts).
+07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
