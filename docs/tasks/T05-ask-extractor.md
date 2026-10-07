@@ -63,3 +63,10 @@ Green + `make check`; LEXICON_VERSION 1.0.0; STATUS note with P/R and n; leader 
 - Asks A1-A7 definitions: `docs/RESEARCH_PROTOCOL.md` §2
 
 ## Agent plan (write yours here)
+1. Implement `normalise` using `unicodedata.normalize('NFC', text)`, replacing curly quotes, and collapsing whitespace.
+2. Implement `extract_asks` iterating through `LEXICON`. Use `re.IGNORECASE` and `.finditer`. Set `script` to `devanagari` if it contains U+0900..U+097F, else `latin`.
+3. Merge overlapping spans of the same `AskType`.
+4. Implement `ask_signals` and `ask_score`.
+5. Enhance `tests/tasks/data/t05_ask_sentences.jsonl` with $\geq$ 80 labelled sentences (English, Hinglish, Devanagari) including negative and tricky examples.
+6. Extend `LEXICON` in `src/satyapan/asks/lexicon.py` to achieve $\geq 0.90$ precision and $\geq 0.85$ recall.
+7. Update `LEXICON_VERSION` to `1.0.0` and commit the changes for review.
