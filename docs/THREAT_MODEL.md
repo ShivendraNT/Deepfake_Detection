@@ -41,7 +41,7 @@ Out of scope: compromise of the backend host, of the bank, or of the browser its
 | OOB token replay / forwarding | single-use nonce, 10-minute expiry, binding = SHA-256(case ‖ amount ‖ beneficiary ‖ nonce), raw token never stored | T12 tests |
 | Evidence tampering after capture | SHA-256 at intake; hash-chained custody; head anchored to S3 Object Lock | `tests/invariants/test_custody_chain.py`; T09 |
 | Detector outage hides risk | any detector error → GREY → ≥ VERIFY + checker queue | `pipeline.py` |
-| Data leaves India | AWS mode uses ap-south-1 only; Bedrock `in.` profile | `settings.py`; DATA_POLICY |
+| Data leaves India | AWS mode uses ap-south-1 only; LLM runs locally (Ollama) | `settings.py`; DATA_POLICY |
 | Team leaks data to free coding agents | AGENTS.md rule 10; fake fixtures; `.env` read denied in opencode config | `opencode.json` |
 
 ## 3. Residual risks (say them honestly)

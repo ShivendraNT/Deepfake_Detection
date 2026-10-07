@@ -43,7 +43,7 @@ per secondary summaries — *verify on the PIB text*.
 |---|---|---|---|---|
 | Live Meet audio (remote party) | on-device (voice score); transcript: local whisper (demo) or Transcribe ap-south-1 (AWS mode) | **not stored** unless the user taps "save last 30 s as evidence" | saved clips 30 days; longer only if case is suspected/confirmed fraud | employer: s.7(i) employment / safeguarding from loss; counterparty: transient processing; retention relies on s.17(1)(c) offence-prevention exemption |
 | Emails, invoices, voice notes | backend (Mac in demo; ap-south-1 in prod) | S3 ap-south-1, SSE | 90 days or life of case + export | same |
-| LLM summaries | Bedrock `in.` profile (Mumbai/Hyderabad) | case DB | life of case | same |
+| LLM summaries | local Ollama model on the backend machine (nothing leaves it) | case DB | life of case | same |
 | Employee directory, vendor master | backend | DB | while the contract lasts | contract / employment |
 
 Everywhere: no consent banner is relied on for counterparties; the extension shows the *user* a

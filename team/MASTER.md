@@ -21,6 +21,7 @@ You build the hardest, most connected parts (live-call capture → live transcri
 | **Antigravity → Claude Opus** | newest Opus in the dropdown | **Independent second reviewer** on teammates' PRs (a different context from Claude Code catches different things); architecture questions. Same "authority" role you gave the team. |
 | **Antigravity → Gemini Pro** | newest Gemini Pro | Parallel chores in the Agent Manager while Claude Code works: demo fixtures, doc updates, deck text, small console tweaks. |
 | Kaggle (2×T4, free) | — | T19 D3 fine-tune, T20 paraphrase generation (vLLM). |
+| Ollama (free, local on the M4) | `llama3.1:8b` (`llama3.2` if too slow) | T15 case summaries + red-team (`ollama serve`; no paid LLM service). |
 | Colab (free) | — | T22 voice-clone clips (F5-TTS / XTTS-v2) from **consenting** voices only. |
 | opencode / Copilot | free models | Only if everything else is rate-limited. |
 
@@ -31,7 +32,7 @@ You build the hardest, most connected parts (live-call capture → live transcri
 - [ ] **Email Pascu et al.** about the browser-plugin repo license (ONNX weights, no license file). Fallback: server-side scoring on the MacBook.
 - [ ] **Ask the organisers** for judging criteria + whether AWS usage is scored + demo format/time.
 - [ ] **GitHub:** add Saarika, Kartikey, Saksham as collaborators; Settings → Branches → protect `main` (require PR, no force push).
-- [ ] **AWS:** account/credits, region `ap-south-1`, Bedrock model access for Claude Haiku (in-country inference profile), S3 bucket with Object Lock (**GOVERNANCE**), SES sandbox verified addresses. Put keys only in your local `.env`.
+- [ ] **AWS:** account/credits, region `ap-south-1`, S3 bucket with Object Lock (**GOVERNANCE**), SES sandbox verified addresses. Put keys only in your local `.env`.
 - [ ] **Consent forms:** print `docs/consent/VOICE_CLONE_CONSENT_TEMPLATE.md` ×4; signed copies stay offline.
 - [ ] **Dataset links** for Saarika (In-the-Wild, HAV-DF) and Kartikey (ICFD-31k download instructions) — share in the group, never commit data.
 - [ ] **Local cleanup (optional):** you made worktrees for t03/t05/t09, which now belong to others. `git worktree remove ~/Desktop/sat-t03` (same for t05, t09), then `git branch -D t03-eml-parser t05-ask-extractor t09-evidence-vault`. Keep `~/Desktop/sat-t07` for T07.
@@ -88,8 +89,8 @@ Tab audio via `chrome.tabCapture` → offscreen doc → passthrough to speakers 
 ### T11 — Live transcript path (Day 2)
 10 s MediaRecorder chunks → `LiveService.handle_chunk` → mlx-whisper turbo locally → T05 `extract_asks` → policy re-decision → SSE to the panel. **No LLM in this loop.** Target ask-chip latency ≤ 13 s (P6).
 
-### T15 — Bedrock summary + faithfulness + red-team (Day 3)
-Claude Haiku via Bedrock Converse (`in.` profile, no tools, 5 s timeout) → `check_faithfulness` (every claim must cite an evidence id that supports it) → fall back to Saksham's T14 templates. Extend injections 12 → 30, `scripts/redteam.py` → `results/redteam.json`. Invariant: summaries can never change the band.
+### T15 — Local LLM summary (Ollama) + faithfulness + red-team (Day 3)
+Free local LLM via Ollama `/api/chat` (`llama3.1:8b` on the M4, `llama3.2` if too slow; no tools, no streaming, 30 s timeout) → `check_faithfulness` (every claim must cite an evidence id that supports it) → fall back to Saksham's T14 templates. Extend injections 12 → 30 (each with a `canary`), `scripts/redteam.py --llm ollama|fake` → `results/redteam.json`. The 3 `summarize` tests wait on T14. Invariant: summaries can never change the band.
 
 ### T19 (your part) — review + D3 on Kaggle (Day 3)
 Review Kartikey's metrics/loader carefully (paper depends on them). Write the D3 config, tag `prereg-v1`, run XLM-R-base / MuRIL-base / RoBERTa-base on Kaggle, download score CSVs only.
@@ -127,7 +128,7 @@ Consent → clone clips on Colab (local only) → pre-test through real Meet cap
 |---|---|
 | Pascu model license unanswered / ONNX fails in browser | score windows server-side on the MacBook (same rule), keep extension UI |
 | mlx-whisper too slow | Amazon Transcribe streaming hi-IN/en-IN, or smaller Whisper |
-| Bedrock access/credits missing | template explanations only (T14) — the product works without the LLM |
+| Ollama not running / model too slow | template explanations only (T14) — the product works without the LLM |
 | ICFD authors don't reply in time | run T19 clean results only; present T20/T21 as pre-registered next step |
 | Live Meet fails during judging | `demo_call.html` offline tab, then backup recording |
 | A teammate blocked > half a day | take the task in Claude Code yourself or re-assign; the spec makes handover easy |

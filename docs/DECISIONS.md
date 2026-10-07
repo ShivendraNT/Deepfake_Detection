@@ -104,3 +104,11 @@ a bank impersonation.
 ### ADR-019 No trusted Authentication-Results → GREY
 **Decision:** if our own MTA's header is missing, the email gets `PARSE_FAILURE` grey (≥ VERIFY).
 **Why:** we cannot evaluate sender auth; failing open would let header stripping lower scrutiny.
+
+### ADR-020 Local LLM (Ollama) instead of Bedrock — supersedes the Bedrock part of ADR-011
+**Decision:** the optional case summary (T15) runs on a local model through Ollama
+(`llama3.1:8b` by default, `SATYAPAN_LLM_MODEL`), via `adapters/ollama_llm.py`. Bedrock is dropped.
+**Why:** no paid services for the hackathon; also no prompt or evidence excerpt leaves the laptop.
+The safety design is unchanged: no tools, constant system prompt, band never from the LLM, and the
+faithfulness checker gates every summary (templates are the fallback). Cost: slower (~10-25 s per
+summary on the M4), so it stays out of the live-call loop as before.

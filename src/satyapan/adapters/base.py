@@ -27,7 +27,7 @@ class Transcriber(Protocol):
 
 class LLMClient(Protocol):
     def complete(self, system: str, user: str, max_tokens: int) -> str:
-        """Return model text. Must raise TimeoutError after settings.aws_timeout_s."""
+        """Return model text. Must raise (e.g. TimeoutError) after settings.llm_timeout_s."""
         ...
 
 

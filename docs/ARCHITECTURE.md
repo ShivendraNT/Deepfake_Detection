@@ -30,8 +30,8 @@ flowchart LR
   console -- HTTP JSON --> api[FastAPI backend<br/>satyapan.api]
   ext -- 10 s audio chunks,<br/>voice window scores --> api
   api -- SSE events --> ext
-  api --> aws[(AWS ap-south-1<br/>S3 Object Lock, Bedrock,<br/>Transcribe, SES)]
-  api --> local[(Local fallbacks<br/>vault_data/, templates,<br/>mlx-whisper, in-app inbox)]
+  api --> aws[(AWS ap-south-1<br/>S3 Object Lock,<br/>Transcribe, SES)]
+  api --> local[(Local<br/>Ollama LLM, vault_data/, templates,<br/>mlx-whisper, in-app inbox)]
 ```
 
 ## 2. Thesis in one paragraph
@@ -56,7 +56,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | C8 | Style classifier | ML, optional | raise-only, capped at VERIFY (not in MVP) |
 | C9 | **Policy engine** | deterministic | floor table + escalation lattice + clearance. **The only component that sets the band** |
 | C10 | Verification workflows | deterministic + human | callback logging, OOB-Confirm, checker HOLD flow, status changes, override, watchlist |
-| C11 | Explainer | template + optional LLM | EN/HI templates (authoritative); Bedrock summary behind the faithfulness checker |
+| C11 | Explainer | template + optional LLM | EN/HI templates (authoritative); local Ollama summary behind the faithfulness checker |
 | C12 | Report pack | template | 1930 script, bank email, NCRP draft, evidence index, Sec 63 helper. Human-triggered |
 | C13 | Chrome extension | browser | tabCapture → offscreen → ONNX + chunk upload; side panel UI |
 
@@ -79,7 +79,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/adapters/base.py` | interfaces + fakes | T01 | done |
 | `src/satyapan/adapters/s3_store.py` | AWS S3 | T09 | todo |
 | `src/satyapan/adapters/ses_mailer.py` | AWS SES | T12 | todo |
-| `src/satyapan/adapters/bedrock_llm.py` | AWS Bedrock | T15 | todo |
+| `src/satyapan/adapters/ollama_llm.py` | local LLM (Ollama) | T15 | todo |
 | `src/satyapan/adapters/transcribe_aws.py` | AWS Transcribe | T17 | todo |
 | `src/satyapan/adapters/transcribe_whisper.py` | C7 local | T11 | todo |
 | `src/satyapan/email/parser.py` | C3 | T03 | todo |
@@ -336,12 +336,13 @@ a BSA Sec 63 certificate" — nothing about origin authenticity. RFC 3161 TSA is
 | AWS service (ap-south-1) | Used for | Local fallback (demo never depends on cloud) | Adapter / task |
 |---|---|---|---|
 | S3 + versioning + Object Lock | evidence blobs; chain-head anchors | `vault_data/` folder + head shown in UI | `adapters/s3_store.py` / T09 |
-| Bedrock — Claude Haiku 4.5 via the `in.` India inference profile (check the model ID in the console) | case summary EN/HI | template explanation | `adapters/bedrock_llm.py` / T15 |
 | Transcribe (hi-IN, en-IN) | uploaded voice notes (batch) | mlx-whisper on the M4 | `adapters/transcribe_aws.py` / T17 |
 | SES (sandbox, verified team addresses) | OOB-Confirm emails | in-app inbox on the CFO screen | `adapters/ses_mailer.py` / T12 |
 
 Not used: Textract (no Hindi), Rekognition Face Liveness (wrong tool for a remote caller),
-Amazon Connect (bank persona, future work), Lambda/API Gateway (not needed).
+Amazon Connect (bank persona, future work), Lambda/API Gateway (not needed), Bedrock (replaced
+by a free local LLM: Ollama `llama3.1:8b` on the M4, `adapters/ollama_llm.py` / T15, 30 s
+timeout, template fallback — no paid LLM service).
 Every AWS call: 5 s timeout, automatic local fallback. Budget alarm: US$5 on day 1.
 `SATYAPAN_AWS_MODE=on` enables AWS; default is off.
 

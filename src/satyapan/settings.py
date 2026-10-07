@@ -22,9 +22,14 @@ class Settings:
     aws_mode: bool = field(default_factory=lambda: _env("SATYAPAN_AWS_MODE", "off") == "on")
     aws_region: str = field(default_factory=lambda: _env("AWS_REGION", "ap-south-1"))
     s3_bucket: str = field(default_factory=lambda: _env("SATYAPAN_S3_BUCKET", ""))
-    bedrock_model_id: str = field(default_factory=lambda: _env("SATYAPAN_BEDROCK_MODEL_ID", ""))
     ses_sender: str = field(default_factory=lambda: _env("SATYAPAN_SES_SENDER", ""))
     aws_timeout_s: float = 5.0  # every AWS call times out fast and falls back
+    # Local LLM (Ollama, free). T15 summaries; any error/timeout -> template fallback.
+    llm_model: str = field(default_factory=lambda: _env("SATYAPAN_LLM_MODEL", "llama3.1:8b"))
+    ollama_url: str = field(
+        default_factory=lambda: _env("SATYAPAN_OLLAMA_URL", "http://127.0.0.1:11434")
+    )
+    llm_timeout_s: float = 30.0  # a local 8B model needs ~30 s for a summary
     data_dir: Path = field(
         default_factory=lambda: Path(_env("SATYAPAN_DATA_DIR", str(REPO_ROOT / "data" / "demo")))
     )

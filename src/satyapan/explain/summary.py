@@ -6,6 +6,9 @@ from satyapan.adapters.base import LLMClient
 from satyapan.contracts.case import Case, Decision
 from satyapan.contracts.enums import Lang
 from satyapan.contracts.explain import Explanation
+from satyapan.explain.faithfulness import check_faithfulness
+from satyapan.explain.prompt import build_llm_request, evidence_items_from_case
+from satyapan.explain.templates import explain_template
 
 
 def summarize(
@@ -23,4 +26,23 @@ def summarize(
     6. ok -> Explanation(source="llm", faithfulness=result) ; else template with faithfulness=result
     The band in the returned Explanation is ALWAYS decision.band (never parsed from LLM text).
     """
-    raise NotImplementedError("T15: see docs/tasks/T15-llm-summary-faithfulness.md")
+    template = explain_template(decision, lang)
+    if llm is None:
+        return template
+    items = evidence_items_from_case(case, decision)
+    req = build_llm_request(decision.band.value, lang, items)
+    try:
+        text = llm.complete(req.system, req.user_json, req.max_tokens)
+    except Exception:  # any LLM failure (timeout, HTTP, model down) -> authoritative template
+        return template
+    result = check_faithfulness(text, items, has_verified_clearance)
+    if not result.ok:
+        return template.model_copy(update={"faithfulness": result})
+    return Explanation(
+        lang=lang,
+        band=decision.band,  # never parsed from the LLM text
+        text=text.strip(),
+        source="llm",
+        reason_codes=decision.reason_codes,
+        faithfulness=result,
+    )

@@ -23,7 +23,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T12 | OOB-Confirm | Saksham | todo | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
 | T13 | Callback logging + checker flows | Saksham | todo | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
 | T14 | Explanation templates EN/HI | Saksham | todo | T02 | [spec](tasks/T14-explanation-templates.md) | |
-| T15 | Bedrock summary + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
+| T15 | Local LLM summary (Ollama) + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done; Ollama local, free; summarize tests wait on T14 |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
 | T17 | Voice uploads path | Kartikey | todo | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | |
 | T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | done | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
