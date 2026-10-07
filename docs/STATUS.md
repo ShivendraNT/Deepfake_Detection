@@ -13,7 +13,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T02 | Policy engine + property tests | Shivendra | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
 | T03 | .eml parser | Kartikey | todo | T01 | [spec](tasks/T03-eml-parser.md) | |
 | T04 | Domain checks + email signals | Kartikey | todo | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
-| T05 | Ask extractor v1.0 (A1-A7) | Saarika | todo | T01 | [spec](tasks/T05-ask-extractor.md) | freeze + tag for research when done |
+| T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | ready for research freeze |
 | T06 | Console UI shell | Saksham | todo | T01 | [spec](tasks/T06-console-ui.md) | |
 | T07 | Extension capture core | Shivendra | todo | — | [spec](tasks/T07-extension-capture.md) | manifest + voice_rules.js pre-done |
 | T08 | Invoice/PDF checker | Kartikey | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
