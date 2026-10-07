@@ -11,7 +11,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 |---|---|---|---|---|---|---|
 | T01 | Skeleton, contracts, fixtures, mock API | Shivendra | done | — | [spec](tasks/T01-skeleton-contracts-mock-api.md) | pre-implemented; GET /cases returns 12 fixtures |
 | T02 | Policy engine + property tests | Shivendra | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
-| T03 | .eml parser | Kartikey | todo | T01 | [spec](tasks/T03-eml-parser.md) | |
+| T03 | .eml parser | Kartikey | done | T01 | [spec](tasks/T03-eml-parser.md) | 10 fixtures + 4 unit tests green; topmost trusted Authentication-Results only, HTML comments/display:none stripped |
 | T04 | Domain checks + email signals | Kartikey | todo | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
 | T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
 | T06 | Console UI shell | Saksham | todo | T01 | [spec](tasks/T06-console-ui.md) | |
@@ -51,3 +51,5 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
 07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
 07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
+07 Oct, T03: done — 10 fixtures + 4 unit tests green (`uv run pytest --task T03`); lint/format/mypy green. Note for Shivendra: on this Windows box 17 pre-existing failures remain (starlette TestClient hits the no-network socket guard, harness test reads files as cp1252) — verified identical on clean `main`, not caused by T03.
+
