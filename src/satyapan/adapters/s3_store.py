@@ -23,8 +23,8 @@ class S3Storage:
     def __init__(self, settings: Settings) -> None:
         # boto3 is optional: import it only when AWS mode is actually on, so the app and the
         # unit tests import this module safely without the extra installed.
-        import boto3  # noqa: PLC0415
-        from botocore.config import Config  # noqa: PLC0415
+        import boto3  # type: ignore[import-not-found]  # noqa: PLC0415
+        from botocore.config import Config  # type: ignore[import-not-found]  # noqa: PLC0415
 
         self.bucket = settings.s3_bucket
         self.client = boto3.client(
