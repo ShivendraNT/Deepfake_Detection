@@ -9,6 +9,7 @@ import { DEMO_USERS } from "./api";
 import type { DemoUser } from "./types";
 import { CaseList } from "./components/CaseList";
 import { CaseView } from "./components/CaseView";
+import { OobInbox } from "./components/OobInbox";
 import { RoleSwitcher } from "./components/RoleSwitcher";
 
 export default function App() {
@@ -41,7 +42,10 @@ export default function App() {
           <h2 className="mb-2 text-sm font-semibold uppercase tracking-wider text-slate-500">
             Case Details
           </h2>
-          <CaseView user={user} caseId={selectedId} />
+          <OobInbox user={user} />
+          <div className="mt-4">
+            <CaseView user={user} caseId={selectedId} />
+          </div>
         </section>
       </main>
     </div>
