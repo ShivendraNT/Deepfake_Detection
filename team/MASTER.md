@@ -80,7 +80,7 @@ Review all of Saarika's PRs yourself (live during the checkpoints where possible
 Tab audio via `chrome.tabCapture` → offscreen doc → passthrough to speakers **first** → 16 kHz mono → 5 s windows → Pascu ONNX (XLS-R layer-7, 101M) in onnxruntime-web → `voice_rules.js` → events to side panel + backend. Spec: `docs/tasks/T07-extension-capture.md`. Measure ms/window on the M4 and log in STATUS. Model files git-ignored; tell Kartikey where they are (T17).
 
 **T07 to-do (steps 1-7 done + reviewed, commit a8a9b86; step 8 left):**
-- [ ] `uv run --with onnx python scripts/prepare_ext_models.py` on any machine with fresh model downloads (makes `logreg_prob.onnx`).
+- [x] `uv run --with onnx python scripts/prepare_ext_models.py` — `extension/models/logreg_prob.onnx` exists.
 - [ ] Step 8 manual test: `chrome://extensions` → Load unpacked `extension/` → Meet call with a teammate → click the action. Check (a) you still hear them, (b) a `ms/window` line ~every 5 s in the offscreen console (inspect it from `chrome://extensions`), (c) no score in side-panel messages, (d) ms/window on the M4 (Node measured ~2.8 s; must stay under 5 s).
 - [ ] Write (a)-(d) into `docs/STATUS.md` notes, tick step 8 in the spec, set T07 `done`, commit.
 - [ ] Delete the local backup branch: `git branch -D t07-backup-before-squash` (never push it — it holds 38 MB of old ORT files).
@@ -88,6 +88,23 @@ Tab audio via `chrome.tabCapture` → offscreen doc → passthrough to speakers 
 
 ### T11 — Live transcript path (Day 2)
 10 s MediaRecorder chunks → `LiveService.handle_chunk` → mlx-whisper turbo locally → T05 `extract_asks` → policy re-decision → SSE to the panel. **No LLM in this loop.** Target ask-chip latency ≤ 13 s (P6).
+
+**T11 to-do (steps 1-5 + offscreen upload done, branch `t11-live-transcript`; step 6 left):**
+One session (~30 min) covers this AND T07 step 8: both need the extension running in Chrome.
+- [ ] **Warm-up (downloads the ~1.6 GB model once):**
+  `ffmpeg -f lavfi -i anullsrc=d=2 -y /tmp/s.wav && PYTHONPATH=src uv run python -c "from satyapan.adapters.transcribe_whisper import WhisperTranscriber as W; print(W().transcribe(open('/tmp/s.wav','rb').read(), 'audio/wav'))"`
+  then `make run`.
+- [ ] **Clips (data hygiene, AGENTS §10):** record 10 Hinglish asks in YOUR own voice (or a consenting
+  teammate's), e.g. the lines in `tests/tasks/test_t11_live.py`. Fake names/amounts only. Keep them
+  out of the repo (`~/satyapan-clips/`). Each clip: ~3 s silence, the ask, ~3 s silence.
+- [ ] **Run:** `chrome://extensions` → reload `extension/` → open a clip as a tab (`file:///…/clip01.wav`)
+  → click the action → play. Any tab can be captured, so no Meet call is needed for T11.
+- [ ] **Read the numbers:** offscreen console (`chrome://extensions` → *Inspect views: offscreen.html*)
+  prints `chunk N: X ms chunk-end -> events; asks=[…]`. Spoken-ask → chip ≈ (seconds from the ask
+  ending to that chunk's end, ≤ 10) + X. Pass = ≤ 13 s, so X must stay ≤ ~3 s.
+- [ ] Log each clip in `results/t11_latency.csv` (header already there). Not `dry_runs.csv`: that file
+  is T22's artifact and creating it early turns its test from skipped to failing.
+- [ ] STATUS: T11 note with median + max seconds and failed clips; set `done`. Merge PR into `main`.
 
 ### T15 — Local LLM summary (Ollama) + faithfulness + red-team (Day 3)
 Free local LLM via Ollama `/api/chat` (`llama3.1:8b` on the M4, `llama3.2` if too slow; no tools, no streaming, 30 s timeout) → `check_faithfulness` (every claim must cite an evidence id that supports it) → fall back to Saksham's T14 templates. Extend injections 12 → 30 (each with a `canary`), `scripts/redteam.py --llm ollama|fake` → `results/redteam.json`. The 3 `summarize` tests wait on T14. Invariant: summaries can never change the band.

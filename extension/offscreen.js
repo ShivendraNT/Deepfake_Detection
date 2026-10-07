@@ -12,7 +12,10 @@ let activeCallId = null;
 let windower = null;
 let scores = [];
 let speechTotal = 0;
-let chunkIndex = 0;
+// Resolves once POST /live/{id}/start has answered, so chunk/voice POSTs never reach an
+// unknown call. Chunks are uploaded one at a time so the backend sees them in order.
+let callReady = Promise.resolve();
+let chunkQueue = Promise.resolve();
 let recorderInterval = null;
 let modelLoaded = false;
 let unavailableSent = false;
@@ -65,7 +68,6 @@ async function startCapture(streamId, callId) {
         windower = createWindower({ sampleRate: 16000, windowSeconds: 5 });
         scores = [];
         speechTotal = 0;
-        chunkIndex = 0;
         unavailableSent = false;
         windowQueue = Promise.resolve();
 
@@ -80,7 +82,8 @@ async function startCapture(streamId, callId) {
         analysisSrc.connect(workletNode);
         workletNode.connect(analysisCtx.destination);
 
-        startCall(callId).catch(console.error);
+        callReady = startCall(callId).catch((e) => console.error("startCall failed:", e));
+        chunkQueue = Promise.resolve();
 
         // MediaRecorder stop/restart cycles of 10s
         startChunkRecording(media, callId);
@@ -143,21 +146,47 @@ async function processWindow(win, callId) {
         model_version: THRESHOLDS.modelVersion
     };
     
-    postVoiceWindows(callId, [voiceWindowResult]).catch(e => {
-        // D6: Backend is optional. Ignore failures.
-    });
+    // D6: Backend is optional. Ignore failures. On-device voice events already reach the panel,
+    // so only relay what the backend adds (band changes).
+    callReady
+        .then(() => postVoiceWindows(callId, [voiceWindowResult]))
+        .then((events) => relayEvents(callId, events, (e) => e.type !== "voice"))
+        .catch(() => {});
+}
+
+// Backend LiveEvents (transcript / ask / band) go straight to the side panel, which applies any
+// runtime message that has a `type`.
+function relayEvents(callId, events, keep = () => true) {
+    if (activeCallId !== callId || !Array.isArray(events)) return;
+    for (const event of events) {
+        if (keep(event)) chrome.runtime.sendMessage(event).catch(() => {});
+    }
+}
+
+function uploadChunk(callId, index, blob) {
+    const recordedAt = performance.now(); // chunk ended; T11 step 6 latency = this -> events back
+    chunkQueue = chunkQueue
+        .then(() => callReady)
+        .then(() => postChunk(callId, index, blob))
+        .then((events) => {
+            const ms = performance.now() - recordedAt;
+            const asks = (events || []).filter((e) => e.type === "ask").map((e) => e.ask_type);
+            console.log(`chunk ${index}: ${ms.toFixed(0)} ms chunk-end -> events; asks=[${asks}]`);
+            relayEvents(callId, events);
+        })
+        .catch(() => {}); // D6: backend is optional
 }
 
 function startChunkRecording(media, callId) {
-    // 10s cycles
+    // 10 s stop/restart cycles: each blob is a complete WebM file Whisper can decode on its own.
+    let nextIndex = 0; // per call, so a restart never reuses or resets another call's indices
     const recordCycle = () => {
         if (!mediaStream) return;
         
         mediaRecorder = new MediaRecorder(media, { mimeType: "audio/webm;codecs=opus" });
         mediaRecorder.ondataavailable = (e) => {
             if (e.data && e.data.size > 0) {
-                postChunk(callId, chunkIndex, e.data).catch(() => {});
-                chunkIndex++;
+                uploadChunk(callId, nextIndex++, e.data);
             }
         };
         mediaRecorder.onstop = () => {

@@ -8,6 +8,7 @@ from collections.abc import AsyncIterator
 from typing import Any
 
 from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
 
 from satyapan.api.auth import Actor, get_actor, get_state
@@ -34,9 +35,11 @@ async def chunk(
     state: AppState = Depends(get_state),
 ) -> list[dict[str, Any]]:
     data = await audio.read()
-    events = state.live().handle_chunk(
-        call_id, chunk_index, data, audio.content_type or "audio/webm"
+    # Whisper takes seconds: run it in a worker thread so SSE and other requests keep flowing.
+    events = await run_in_threadpool(
+        state.live().handle_chunk, call_id, chunk_index, data, audio.content_type or "audio/webm"
     )
+    state.repo.put(state.live().sessions[call_id].case)
     return [e.model_dump(mode="json") for e in events]
 
 
@@ -45,19 +48,24 @@ def voice(
     call_id: str, windows: list[VoiceWindowResult], state: AppState = Depends(get_state)
 ) -> list[dict[str, Any]]:
     events = state.live().handle_voice(call_id, windows)
+    state.repo.put(state.live().sessions[call_id].case)
     return [e.model_dump(mode="json") for e in events]
 
 
 @router.get("/{call_id}/events")
 async def events(call_id: str, state: AppState = Depends(get_state)) -> StreamingResponse:
-    queue = state.live().bus.subscribe(call_id)
+    bus = state.live().bus
+    queue = bus.subscribe(call_id)
 
     async def gen() -> AsyncIterator[str]:
-        while True:
-            try:
-                ev = await asyncio.wait_for(queue.get(), timeout=15)
-                yield f"data: {ev.model_dump_json()}\n\n"
-            except TimeoutError:
-                yield ": keep-alive\n\n"
+        try:
+            while True:
+                try:
+                    ev = await asyncio.wait_for(queue.get(), timeout=15)
+                    yield f"data: {ev.model_dump_json()}\n\n"
+                except TimeoutError:
+                    yield ": keep-alive\n\n"
+        finally:
+            bus.unsubscribe(call_id, queue)  # client went away
 
     return StreamingResponse(gen(), media_type="text/event-stream")
