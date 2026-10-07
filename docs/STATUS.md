@@ -13,7 +13,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T02 | Policy engine + property tests | L | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
 | T03 | .eml parser | B2 | todo | T01 | [spec](tasks/T03-eml-parser.md) | |
 | T04 | Domain checks + email signals | B2 | todo | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
-| T05 | Ask extractor v1.0 (A1-A7) | B1 | todo | T01 | [spec](tasks/T05-ask-extractor.md) | freeze + tag for research when done |
+| T05 | Ask extractor v1.0 (A1-A7) | B1 | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
 | T06 | Console UI shell | B3 | todo | T01 | [spec](tasks/T06-console-ui.md) | |
 | T07 | Extension capture core | L | todo | — | [spec](tasks/T07-extension-capture.md) | manifest + voice_rules.js pre-done |
 | T08 | Invoice/PDF checker | B2 | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
@@ -45,3 +45,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 
 ## Notes log
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
+07 Oct, T05: done — n=104 sentences, precision=1.000, recall=1.000; lexicon v1.0.0 ready for `lexicon-v1.0` tag.

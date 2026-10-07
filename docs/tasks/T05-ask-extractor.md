@@ -63,3 +63,11 @@ Green + `make check`; LEXICON_VERSION 1.0.0; STATUS note with P/R and n; leader 
 - Asks A1-A7 definitions: `docs/RESEARCH_PROTOCOL.md` §2
 
 ## Agent plan (write yours here)
+1. Extend `LEXICON` to >=8 entries per ask type across en/hi-Latn/hi-Deva; fix A2 `pin` with a `(?!\s*code)` lookahead.
+2. Implement `normalise` (NFC, curly quotes, whitespace collapse, strip).
+3. Implement `extract_asks` (finditer over LEXICON, merge overlapping same-type spans, script tag, sort by (start, ask_type)).
+4. Implement `ask_signals` (one Signal per distinct ask type via `ASK_TO_REASON`, `Signal.make`, deterministic source) and `ask_score`.
+5. Extend `t05_ask_sentences.jsonl` to >=80 rows: every type in en+hi-Latn, >=10 hi-Deva, negatives (normal finance talk), tricky rows ("PIN code" relabeled `[]`).
+6. Relabel the "PIN code" row's `asks` to `[]`.
+7. Sanity-check patterns with a Node regex harness, then run `make task T=T05` and `make check` when Python/uv is available.
+8. Create `research/LEXICON_LOG.md`; set `LEXICON_VERSION = "1.0.0"`; STATUS note with P/R.
