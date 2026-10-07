@@ -71,3 +71,30 @@ Expected values for all 10 fixtures: `data/demo/emails/expected.json`.
 - RFC 8601 (Authentication-Results): https://www.rfc-editor.org/rfc/rfc8601
 
 ## Agent plan (write yours here)
+
+1. `extract_attachments`: `email.message_from_bytes(raw, policy=email.policy.default)` +
+   `msg.iter_attachments()`; content via `part.get_content()` (str → encode) →
+   `(get_filename(), get_content_type(), bytes)`. Green: `test_attachment_sha256`.
+2. `parse_auth_results`: loop header values in order; authserv-id = text before the first `;`
+   (strip, lower-case compare). First value matching `trusted_authserv_id` wins and sets
+   `trusted=True` + `authserv_id`; every other value increments `untrusted_headers_seen`.
+   Verdicts from `re.finditer(r"\b(spf|dkim|dmarc)=(\w+)")` on the trusted value only, kept only
+   if they are valid `AuthVerdict` values, else `"unknown"`. No match → `AuthResults(trusted=False)`
+   (authserv_id stays `None`, verdicts `"unknown"`).
+3. `_domain(addr)` helper: part after the last `@`, lower-cased, `None` when there is no `@`.
+   `parse_eml`: `msg.get_all("Authentication-Results", [])` → step 2;
+   `email.utils.parseaddr` for From / Reply-To / Return-Path. No From header, or a From without
+   `@` → `ValueError`.
+4. Other headers: `subject` (`str(msg["Subject"] or "")`), `from_display_name`, `to`
+   (`msg.get_addresses("To")` → address list), `message_id`, `date`
+   (`parsedate_to_datetime`, `None` on failure, naive → `UTC`).
+5. Body: `msg.get_body(preferencelist=("plain", "html"))`. `text/plain` → stripped as-is.
+   `text/html` → remove `<!-- … -->` comments, remove whole elements styled
+   `display:none` / `visibility:hidden` (up to their close tag, else up to the next `</`),
+   strip tags, `html.unescape`, collapse whitespace to single spaces.
+6. Attachments → `AttachmentMeta(filename, media_type, size_bytes, sha256)`; wire everything
+   into `ParsedEmail`.
+7. Run the acceptance tests (`make task T=T03` ≡ `uv run pytest --task T03 -q`; `make` is not
+   installed on this Windows box, so the `uv` form is used), then `uv run ruff check .`,
+   `uv run ruff format --check .`, `uv run mypy`, `uv run pytest`.
+8. Update `docs/STATUS.md` (in-progress → done + note) and commit `T03: …`.

@@ -11,7 +11,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 |---|---|---|---|---|---|---|
 | T01 | Skeleton, contracts, fixtures, mock API | Shivendra | done | — | [spec](tasks/T01-skeleton-contracts-mock-api.md) | pre-implemented; GET /cases returns 12 fixtures |
 | T02 | Policy engine + property tests | Shivendra | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
-| T03 | .eml parser | Kartikey | todo | T01 | [spec](tasks/T03-eml-parser.md) | |
+| T03 | .eml parser | Kartikey | done | T01 | [spec](tasks/T03-eml-parser.md) | 10 fixtures + 4 unit tests green; topmost trusted Authentication-Results only, HTML comments/display:none stripped |
 | T04 | Domain checks + email signals | Kartikey | todo | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
 | T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
 | T06 | Console UI shell | Saksham | todo | T01 | [spec](tasks/T06-console-ui.md) | |
@@ -49,3 +49,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
 07 Oct, T05: done — n=104 sentences, precision=1.000, recall=1.000; lexicon v1.0.0 ready for `lexicon-v1.0` tag.
 07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
+07 Oct, T03: done — 10 fixtures + 4 unit tests green (`uv run pytest --task T03`); lint/format/mypy green. Note for Shivendra: on this Windows box 17 pre-existing failures remain (starlette TestClient hits the no-network socket guard, harness test reads files as cp1252) — verified identical on clean `main`, not caused by T03.
