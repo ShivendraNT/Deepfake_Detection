@@ -22,7 +22,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T11 | Live transcript path | Shivendra | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
 | T12 | OOB-Confirm | Saksham | todo | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
 | T13 | Callback logging + checker flows | Saksham | todo | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
-| T14 | Explanation templates EN/HI | Saksham | todo | T02 | [spec](tasks/T14-explanation-templates.md) | |
+| T14 | Explanation templates EN/HI | Saksham | partial | T02 | [spec](tasks/T14-explanation-templates.md) | 33/33 codes EN + Devanagari HI, `reason_text` + `explain_template` done; 36/36 tests + full suite green (Windows: conftest loopback + UTF-8 harness fixes included); Hindi reviewed by an agent pass (16 fixes) - human Hindi-speaker sign-off still pending |
 | T15 | Bedrock summary + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
 | T17 | Voice uploads path | Kartikey | todo | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | |
@@ -49,3 +49,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
 07 Oct, T05: done — n=104 sentences, precision=1.000, recall=1.000; lexicon v1.0.0 ready for `lexicon-v1.0` tag.
 07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
+07 Oct, T14: all 33 reason codes written in EN + Hindi (agent proofread pass, 16 Hindi fixes); `reason_text`/`explain_template` + `GET /cases/{id}/explanation?lang=hi` = 200; 36/36 T14 tests and full suite green. Needs a Hindi speaker's sign-off before `done`.
