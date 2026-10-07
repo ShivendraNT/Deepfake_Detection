@@ -60,3 +60,10 @@ Both green; screenshot in PR; `make check` green.
 - Node test runner: https://nodejs.org/api/test.html
 
 ## Agent plan (write yours here)
+1. Implement pure reducer `initialState`, `applyEvent`, and `ASK_LABELS` in `extension/lib/panel_state.js` without mutations.
+2. Remove `STUB(T10)` from `extension/lib/panel_state.js` and verify node tests pass.
+3. Build `extension/sidepanel.html` with all required element IDs (`voice-meter`, `transcript`, `ask-chips`, `suggested-line`, `btn-confirm`, `btn-link-payment`, `protection-indicator`).
+4. Style `extension/sidepanel.css` with clean layout, band banner, chips, and meter.
+5. Implement `extension/sidepanel.js` with DOM rendering and dev replay mode (`?replay=1`).
+6. Run `make ext-test` and `make task T=T10` until green.
+7. Run `make check` and update `docs/STATUS.md`.

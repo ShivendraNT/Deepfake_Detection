@@ -1,0 +1,5 @@
+channel,eer,eer_low,eer_high,n_speakers,n_items,tau_fixed_fpr,tau_fixed_fnr
+clean,0.04,0.0,0.08,10,100,0.5926,0.4899
+opus16k,0.0,0.0,0.0,10,100,0.5926,0.4899
+amrnb,0.04,0.0,0.08,10,100,0.5926,0.4899
+g711u,0.02,0.0,0.04,10,100,0.5926,0.4899

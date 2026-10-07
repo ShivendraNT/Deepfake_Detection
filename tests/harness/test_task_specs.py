@@ -106,7 +106,8 @@ def test_stub_messages_point_to_their_own_task() -> None:
     bad = []
     for p in list((ROOT / "src").rglob("*.py")) + list((ROOT / "research").rglob("*.py")):
         for m in re.finditer(
-            r'NotImplementedError\("(T\d{2}): see docs/tasks/(T\d{2})-', p.read_text()
+            r'NotImplementedError\("(T\d{2}): see docs/tasks/(T\d{2})-',
+            p.read_text(encoding="utf-8"),
         ):
             if m.group(1) != m.group(2):
                 bad.append(f"{p.relative_to(ROOT)}: {m.group(0)}")
