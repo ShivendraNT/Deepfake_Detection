@@ -11,11 +11,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 |---|---|---|---|---|---|---|
 | T01 | Skeleton, contracts, fixtures, mock API | Shivendra | done | — | [spec](tasks/T01-skeleton-contracts-mock-api.md) | pre-implemented; GET /cases returns 12 fixtures |
 | T02 | Policy engine + property tests | Shivendra | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
-| T03 | .eml parser | Kartikey | done | T01 | [spec](tasks/T03-eml-parser.md) | 10 fixtures + 4 unit tests green; topmost trusted Authentication-Results only, HTML comments/display:none stripped |
-| T04 | Domain checks + email signals | Kartikey | done | T01, T03 | [spec](tasks/T04-domain-checks.md) | 25 table tests + 10 fixture signal sets green; AUTH_PASS only when no other signal fired |
-| T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
-| T06 | Console UI shell | Saksham | todo | T01 | [spec](tasks/T06-console-ui.md) | |
-| T07 | Extension capture core | Shivendra | in-progress | — | [spec](tasks/T07-extension-capture.md) | steps 1-7 code done + reviewed; step 8 manual Meet test pending |
+07 Oct, T06: done — console UI shell built with React, Tailwind, and Radix UI; mock API wiring completed.
 | T08 | Invoice/PDF checker | Kartikey | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
 07 Oct, T03: done — 10 fixtures + 4 unit tests green (`uv run pytest --task T03`); lint/format/mypy green.
 07 Oct, T09: partial — intake/anchor/storage implemented; missing KMS/S3 IAM check but code is solid.
