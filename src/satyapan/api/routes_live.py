@@ -37,6 +37,7 @@ async def chunk(
     events = state.live().handle_chunk(
         call_id, chunk_index, data, audio.content_type or "audio/webm"
     )
+    state.repo.put(state.live().sessions[call_id].case)
     return [e.model_dump(mode="json") for e in events]
 
 
@@ -45,6 +46,7 @@ def voice(
     call_id: str, windows: list[VoiceWindowResult], state: AppState = Depends(get_state)
 ) -> list[dict[str, Any]]:
     events = state.live().handle_voice(call_id, windows)
+    state.repo.put(state.live().sessions[call_id].case)
     return [e.model_dump(mode="json") for e in events]
 
 
