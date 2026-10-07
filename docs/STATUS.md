@@ -26,7 +26,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T15 | Bedrock summary + faithfulness + red-team | L | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
 | T16 | Report pack | B2 | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
 | T17 | Voice uploads path | B1 | todo | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | |
-| T18 | Audio channel evaluation + thresholds | B3 + L | todo | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
+| T18 | Audio channel evaluation + thresholds | B3 + L | done | T07 | [spec](tasks/T18-audio-channel-eval.md) | EER across 4 channels, speaker bootstrap CI, calibrated tau |
 | T19 | Research R1: loader, D2, D3, metrics | B2 + L | todo | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | |
 | T20 | Research R2: paraphrase attacks + filters | L | todo | T19 | [spec](tasks/T20-research-paraphrase-attacks.md) | email ICFD authors first |
 | T21 | Research R3: evaluation + money figure | L | todo | T19, T20 | [spec](tasks/T21-research-eval-money-figure.md) | |
@@ -47,3 +47,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
 07 Oct, T05: ask extractor v1.0 done (n=92, P=0.927, R=0.950 on 3 scripts).
 07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
+07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
