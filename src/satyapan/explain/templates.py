@@ -34,7 +34,7 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.EN: "This is a new beneficiary and the amount is within the small-payment limit. Pay "
         "through the normal flow; the bank's own new-payee checks still apply.",
         Lang.HI: "यह नया लाभार्थी है और राशि छोटे भुगतान की सीमा के भीतर है। सामान्य प्रक्रिया से "
-        "भुगतान करें; बैंक की अपनी नए लाभार्थी वाली जाँच फिर भी लागू रहेगी।",
+        "भुगतान करें; बैंक अपनी नए लाभार्थी वाली जाँच फिर भी करेगा।",
     },
     ReasonCode.FLOOR_N2_NEW_LARGE: {
         Lang.EN: "This is a new beneficiary and the amount is above the small-payment limit. "
@@ -47,7 +47,7 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.EN: "The bank account differs from the vendor master. Call the vendor back on the "
         "number already on file (not the one in the message) before paying.",
         Lang.HI: "बैंक खाता वेंडर मास्टर से अलग है। भुगतान से पहले वेंडर को पहले से दर्ज नंबर पर "
-        "वापस कॉल करें (संदेश वाले नंबर पर नहीं)।",
+        "फिर से कॉल करें (संदेश वाले नंबर पर नहीं)।",
     },
     ReasonCode.FLOOR_T1_TRUST_ANCHOR: {
         Lang.EN: "Someone asked to change a phone number, email address or approver that we keep "
@@ -62,7 +62,7 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         "anything from this message; take it to the owner of that data through your normal "
         "channel.",
         Lang.HI: "यह अनुरोध भुगतान का नहीं, बल्कि डेटा या लॉगिन जानकारी का है। इस संदेश से कुछ भी "
-        "न भेजें; उस डेटा के मालिक तक सामान्य चैनल से बात करें।",
+        "न भेजें; इसे सामान्य चैनल से उस डेटा के मालिक तक पहुँचाएँ।",
     },
     ReasonCode.FLOOR_NONE: {
         Lang.EN: "There is no pending payment on this case yet. If a payment request comes up "
@@ -74,8 +74,8 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
     ReasonCode.EMAIL_AUTH_PASS: {
         Lang.EN: "SPF, DKIM and DMARC checks all passed for the sender's domain. Keep working "
         "through the other checks on this case; on its own this does not settle the payment.",
-        Lang.HI: "भेजने वाले के डोमेन की SPF, DKIM और DMARC जाँच सभी पास हो गईं। इस केस की बाकी "
-        "जाँच जारी रखें; अकेले इस नतीजे से भुगतान तय नहीं होता।",
+        Lang.HI: "भेजने वाले के डोमेन की SPF, DKIM और DMARC तीनों जाँचें पास हो गईं। इस केस की "
+        "बाकी जाँच जारी रखें; अकेले इस नतीजे से भुगतान तय नहीं होता।",
     },
     ReasonCode.EMAIL_DMARC_FAIL: {
         Lang.EN: "The email failed the sender's DMARC check, so the sending domain did not vouch "
@@ -123,7 +123,7 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         "master. Do not pay it; call the vendor on the number on file and ask them to reissue "
         "the invoice.",
         Lang.HI: "बिल पर छपा बैंक खाता वेंडर मास्टर के खाते से मेल नहीं खाता। इस पर भुगतान न करें; "
-        "दर्ज नंबर पर वेंडर को कॉल करें और नया बिल मँगवाएँ।",
+        "दर्ज नंबर पर वेंडर को कॉल करें और बिल दोबारा जारी करवाएँ।",
     },
     ReasonCode.DOC_PDF_EDITED: {
         Lang.EN: "The PDF's metadata shows it was edited or re-exported after it was issued. Ask "
@@ -148,9 +148,10 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
     },
     ReasonCode.VOICE_LIKELY_SYNTHETIC: {
         Lang.EN: "The caller's voice shows signs of being AI-generated in two windows in a row. "
-        "Do not act on this call; confirm through OOB-Confirm or a callback.",
+        "Do not act on this call; confirm through OOB-Confirm or a callback on the number on "
+        "file.",
         Lang.HI: "कॉल करने वाले की आवाज़ लगातार दो हिस्सों में AI से बनी हुई लगती है। इस कॉल पर "
-        "कार्रवाई न करें; OOB-Confirm या कॉल-बैक से पुष्टि करें।",
+        "कार्रवाई न करें; OOB-Confirm या दर्ज नंबर पर कॉल-बैक के ज़रिए पुष्टि करें।",
     },
     # --- asks ---
     ReasonCode.ASK_NEW_ACCOUNT: {
@@ -163,7 +164,7 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.EN: "Somebody asked for an OTP, PIN, password or card detail. Never share one, not "
         "even for a 'test'; report this case to security now.",
         Lang.HI: "किसी ने OTP, PIN, पासवर्ड या कार्ड की जानकारी माँगी है। इसे किसी को न बताएँ, "
-        "चाहे 'टेस्ट' के नाम पर ही क्यों न पूछा जाए; अभी यह केस सुरक्षा टीम को बताएँ।",
+        "चाहे 'टेस्ट' के नाम पर ही क्यों न पूछा जाए; अभी इस केस की सूचना सुरक्षा टीम को दें।",
     },
     ReasonCode.ASK_REMOTE_ACCESS: {
         Lang.EN: "The sender asked you to install a remote-access or screen-sharing app. Do not "
@@ -234,7 +235,7 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
     ReasonCode.OOB_APPROVED: {
         Lang.EN: "The requester answered OOB-Confirm and said they did ask for this. Keep working "
         "the other checks on this case; the OOB answer alone does not settle the payment.",
-        Lang.HI: "अनुरोधकर्ता ने OOB-Confirm का जवाब दिया और कहा कि उसने यह अनुरोध किया है। इस "
+        Lang.HI: "अनुरोधकर्ता ने OOB-Confirm का जवाब दिया और कहा कि उसने यह अनुरोध किया था। इस "
         "केस की बाकी जाँच जारी रखें; OOB के जवाब मात्र से भुगतान तय नहीं होता।",
     },
 }
