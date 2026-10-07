@@ -64,3 +64,9 @@ Green tests + `make check` + measured latency in STATUS notes.
 - FastAPI streaming responses / SSE: https://fastapi.tiangolo.com/advanced/custom-response/
 
 ## Agent plan (write yours here)
+1. **EventBus:** Implement an async event bus in `service.py` to handle Pub/Sub of LiveEvents per `call_id` using `asyncio.Queue`.
+2. **Session Start:** Implement `LiveService.start` to create a `Case` and track the session state (previous asks, voice scores, band state).
+3. **Handle Voice:** Implement `handle_voice` to aggregate voice window scores, compute the overall `VoiceSignal`, generate `VoiceEvent` (without raw scores), and check for `BandEvent` changes.
+4. **Handle Chunk:** Implement `handle_chunk` to orchestrate transcription, ask extraction (`extract_asks` from T05), track unique ask types, generate `AskEvent`/`TranscriptEvent`/`BandEvent`, and update the `Case`.
+5. **Whisper Adapter:** Implement `WhisperTranscriber` in `adapters/transcribe_whisper.py` with lazy loading of `mlx_whisper` and `ffmpeg` subprocess conversion to 16kHz wav.
+6. **API and Extension Glue:** Update `routes_live.py` and `extension/offscreen.js` (for MediaRecorder chunk POST) to connect the pipeline end-to-end.
