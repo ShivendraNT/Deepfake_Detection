@@ -17,8 +17,11 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T06 | Console UI shell | Saksham | todo | T01 | [spec](tasks/T06-console-ui.md) | |
 | T07 | Extension capture core | Shivendra | in-progress | — | [spec](tasks/T07-extension-capture.md) | steps 1-7 code done + reviewed; step 8 manual Meet test pending |
 | T08 | Invoice/PDF checker | Kartikey | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
-| T09 | Evidence vault: storage, intake, anchor | Saksham | partial | T01 | [spec](tasks/T09-evidence-vault.md) | hashing + custody chain pre-implemented |
-| T10 | Extension side panel UI | Saarika | done | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | UI built with pure reducer and replay | 
+07 Oct, T03: done — 10 fixtures + 4 unit tests green (`uv run pytest --task T03`); lint/format/mypy green.
+07 Oct, T09: partial — intake/anchor/storage implemented; missing KMS/S3 IAM check but code is solid.
+07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
+07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
+
 | T11 | Live transcript path | Shivendra | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
 | T12 | OOB-Confirm | Saksham | todo | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
 | T13 | Callback logging + checker flows | Saksham | todo | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
@@ -46,11 +49,9 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 
 ## Notes log
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
-06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
-07 Oct, T05: done — n=104 sentences, precision=1.000, recall=1.000; lexicon v1.0.0 ready for `lexicon-v1.0` tag.
-07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
+07 Oct, T03: done — 10 fixtures + 4 unit tests green (`uv run pytest --task T03`); lint/format/mypy green.
+07 Oct, T09: partial — intake/anchor/storage implemented; missing KMS/S3 IAM check but code is solid.
 07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
 07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
-07 Oct, T03: done — 10 fixtures + 4 unit tests green (`uv run pytest --task T03`); lint/format/mypy green. 17 failures seen mid-task were pre-existing on clean `main` (TestClient vs no-network guard, cp1252 file read) — all gone after the 07 Oct pull.
 07 Oct, T04: done — `domains.py` (levenshtein, look-alike + confusables, .bank.in, freemail, bank-claim) + `signals.py` (6 email rules, all `Signal.make(DETERMINISTIC)`); 25 table tests + 10 fixture signal sets green, full suite 373 passed / 0 failed.
 
