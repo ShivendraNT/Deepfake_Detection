@@ -26,6 +26,7 @@ class AppState:
     _live: Any = None  # T11: LiveService
     _watchlist: Any = None  # T13: Watchlist
     _store: Any = None  # T09: BlobStore
+    _seal: Any = None  # C14 Satyapan Seal: SealServices (needs the `seal` extra)
     transcriber_override: Transcriber | None = None  # tests inject FakeTranscriber here
 
     @classmethod
@@ -70,6 +71,13 @@ class AppState:
 
             self._watchlist = Watchlist()
         return self._watchlist
+
+    def seal(self) -> Any:
+        if self._seal is None:
+            from satyapan.seal.service import SealServices
+
+            self._seal = SealServices.build()
+        return self._seal
 
     def live(self) -> Any:
         if self._live is None:
