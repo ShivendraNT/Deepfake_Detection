@@ -26,7 +26,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T15 | Local LLM summary (Ollama) + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done; Ollama local, free |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
 | T17 | Voice uploads path | Kartikey | todo | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | |
-| T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | done | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
+| T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | todo | T07 | [spec](tasks/T18-audio-channel-eval.md) | previous numbers were simulated; real measurement needed (see results/INVALIDATED.md) |
 | T19 | Research R1: loader, D2, D3, metrics | Kartikey + Shivendra | todo | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | |
 | T20 | Research R2: paraphrase attacks + filters | Shivendra | todo | T19 | [spec](tasks/T20-research-paraphrase-attacks.md) | email ICFD authors first |
 | T21 | Research R3: evaluation + money figure | Shivendra | todo | T19, T20 | [spec](tasks/T21-research-eval-money-figure.md) | |
@@ -51,3 +51,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
 07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
 07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
+08 Oct, T18: back to todo. The f83e3b7 CSV and thresholds came from random.gauss, not audio; withdrawn (results/INVALIDATED.md). Runner now needs a sha256 manifest of real audio; test checks it.

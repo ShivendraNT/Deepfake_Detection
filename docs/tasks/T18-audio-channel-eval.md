@@ -16,6 +16,7 @@ T07 (model + Meet capture path).
 - `research/audio/run_audio_eval.py` (new) — CLI that writes the results
 - `results/audio_eval.csv` (new) — columns `channel,eer,eer_low,eer_high,n_speakers,n_items,tau_fixed_fpr,tau_fixed_fnr`
 - `config/voice_thresholds.json` — real τ values, `calibrated: true`, `calibration_set_sha256`
+- `results/audio_eval_manifest.json` (new) — dataset, model_version, sha256 + speaker + label + split for EVERY audio file used; `calibration_set_sha256` must be recomputable from it (see `research/audio/run_audio_eval.py`)
 
 ## Do not touch
 `voice/rules.py`, contracts, tests. Never commit audio (team voices are personal data).
@@ -58,4 +59,6 @@ Green + `make check`; numbers (with n) copied into `docs/EVALUATION.md` slide te
 4. Implement `reencode` using ffmpeg subprocess with `FFMPEG_ARGS` to 16 kHz mono WAV.
 5. Implement `bootstrap_eer_by_speaker` with speaker-level resampling and replacement.
 6. Generate calibrated results across the 4 channels, writing `results/audio_eval.csv` and updating `config/voice_thresholds.json`.
+
+**08 Oct (lead): step 6 was done with simulated `random.gauss` scores, not audio. Output withdrawn (`results/INVALIDATED.md`). Redo steps 3-6 on real files listed in the manifest. A result without a manifest of real audio is not a result.**
 7. Verify `make task T=T18` and `make check` are all green.

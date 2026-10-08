@@ -1,8 +1,8 @@
 {
-  "tau_hi": 0.5926,
-  "tau_lo": 0.4899,
-  "model_version": "pascu-xlsr-l7-calibrated",
-  "calibration_set_sha256": "79f1cec260a71be99675f2e2b9cfd5e9e449482003c92804c91b6fae3279cc1c",
-  "calibrated": true,
-  "note": "Calibrated on Meet-captured bonafide windows (200 windows across calibration speakers). tau_hi at 1% FPR, tau_lo at 5% FPR."
+  "tau_hi": 0.9,
+  "tau_lo": 0.6,
+  "model_version": "pascu-xlsr-l7-UNCALIBRATED",
+  "calibration_set_sha256": null,
+  "calibrated": false,
+  "note": "PLACEHOLDER, NOT CALIBRATED. Same values as extension/lib/thresholds.js. A version committed in f83e3b7 held thresholds fitted to simulated (random.gauss) scores and was withdrawn on 07 Oct 2026 (see results/INVALIDATED.md). T18 replaces these with tau_hi = score at 1% FPR and tau_lo = 5% FPR on real Meet-captured bonafide calibration windows listed in results/audio_eval_manifest.json. The UI must show 'uncalibrated' while calibrated=false."
 }

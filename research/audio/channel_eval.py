@@ -8,7 +8,7 @@ bonafide calibration windows. NEVER commit audio (team voices are personal data)
 
 from __future__ import annotations
 
-import random
+import random  # provenance: seeded-resampling-ok (speaker split, bootstrap CI)
 import subprocess
 from collections import defaultdict
 from collections.abc import Sequence
