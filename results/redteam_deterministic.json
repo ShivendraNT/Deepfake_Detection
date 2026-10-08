@@ -1,7 +1,7 @@
 {
  "what": "Deterministic red-team: deny-list bypass, queue flooding, pre-filter evasion",
  "date": "2026-10-08",
- "git_commit": "1cbf71b+dirty",
+ "git_commit": "c6746a9",
  "command": "uv run python -m research.redteam.run_deterministic",
  "llm_part": "not run (no Ollama in this environment); see scripts/redteam.py",
  "A_denylist_bypass": {

@@ -1,7 +1,7 @@
 {
  "what": "Frozen ask extractor on a lexicon-blind held-out set (synthetic, AI-written)",
  "date": "2026-10-08",
- "git_commit": "1cbf71b+dirty",
+ "git_commit": "c6746a9",
  "lexicon_version": "1.0.0",
  "command": "uv run python -m research.heldout.run_eval",
  "data": {

@@ -1,7 +1,7 @@
 {
  "what": "Alert budget through the real pipeline (synthetic cases)",
  "date": "2026-10-08",
- "git_commit": "1cbf71b+dirty",
+ "git_commit": "c6746a9",
  "code_state": "post-fix",
  "command": "uv run python -m research.alert_budget.run_alert_budget",
  "data": {
@@ -257,8 +257,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_SECRECY": 2,
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+       "ASK_SECRECY": 2
       }
      },
      "N1_split_payments": {
@@ -1066,8 +1066,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_SECRECY": 2,
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+       "ASK_SECRECY": 2
       }
      },
      "N1_split_payments": {
@@ -2681,8 +2681,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_SECRECY": 2,
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+       "ASK_SECRECY": 2
       }
      },
      "N1_split_payments": {
@@ -3489,8 +3489,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_SECRECY": 2,
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+       "ASK_SECRECY": 2
       }
      },
      "N1_split_payments": {
