@@ -16,7 +16,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
 | T06 | Console UI shell | Saksham | done | T01 | [spec](tasks/T06-console-ui.md) | |
 | T07 | Extension capture core | Shivendra | in-progress | — | [spec](tasks/T07-extension-capture.md) | steps 1-7 code done + reviewed; step 8 manual Meet test pending |
-| T08 | Invoice/PDF checker | Kartikey | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
+| T08 | Invoice/PDF checker | Kartikey | done | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 10/10 tests pass, regex/metadata/checker done |
 | T09 | Evidence vault: storage, intake, anchor | Saksham | partial | T01 | [spec](tasks/T09-evidence-vault.md) | hashing + custody chain pre-implemented |
 | T10 | Extension side panel UI | Saarika | done | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | UI built with pure reducer and replay | 
 | T11 | Live transcript path | Shivendra | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
@@ -56,3 +56,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T06: done — console UI shell built with React, Tailwind, and Radix UI; mock API wiring completed.
 07 Oct, T04: done — `domains.py` (levenshtein, look-alike + confusables, .bank.in, freemail, bank-claim) + `signals.py` (6 email rules, all `Signal.make(DETERMINISTIC)`); 25 table tests + 10 fixture signal sets green, full suite 373 passed / 0 failed.
 07 Oct, T12: done — OOB-Confirm service, SES mailer adapter, and CFO inbox screen merged.
+08 Oct, T08: done — invoice regex, PDF metadata parsing, and master diff signals merged.

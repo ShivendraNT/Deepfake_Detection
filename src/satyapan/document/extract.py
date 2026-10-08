@@ -6,6 +6,8 @@ Spec: docs/tasks/T08-invoice-pdf-checker.md.
 from __future__ import annotations
 
 import re
+from collections.abc import Iterable
+from typing import TypeVar
 
 from satyapan.contracts.parsed import InvoiceFields
 
@@ -23,6 +25,28 @@ AMOUNT_PATTERN = re.compile(
     re.IGNORECASE,
 )
 INVOICE_NO_PATTERN = re.compile(r"invoice\s*(?:no\.?|number|#)\s*[:\-]?\s*([A-Z0-9/\-]+)", re.I)
+# One combined keyword search (case-insensitive). Only digits within ACCOUNT_WINDOW
+# characters after a hit are treated as an account number.
+ACCOUNT_KEYWORD_PATTERN = re.compile(
+    "|".join(re.escape(keyword) for keyword in ACCOUNT_KEYWORDS), re.IGNORECASE
+)
+ACCOUNT_WINDOW = 40
+
+_T = TypeVar("_T")
+
+
+def _unique(values: Iterable[_T]) -> list[_T]:
+    """De-duplicate, keeping the first-seen order."""
+    return list(dict.fromkeys(values))
+
+
+def _account_numbers(text: str) -> list[str]:
+    """Digits that sit in the ACCOUNT_WINDOW characters right after a payment keyword."""
+    found: list[str] = []
+    for hit in ACCOUNT_KEYWORD_PATTERN.finditer(text):
+        window = text[hit.end() : hit.end() + ACCOUNT_WINDOW]
+        found.extend(ACCOUNT_DIGITS.findall(window))
+    return _unique(found)
 
 
 def extract_invoice_fields(text: str) -> InvoiceFields:
@@ -34,4 +58,13 @@ def extract_invoice_fields(text: str) -> InvoiceFields:
       numbers and GSTIN digits are not picked up.
     - Amounts: int rupees (drop commas and paise).
     """
-    raise NotImplementedError("T08: see docs/tasks/T08-invoice-pdf-checker.md")
+    amounts = _unique(int(raw.replace(",", "")) for raw in AMOUNT_PATTERN.findall(text))
+    invoice_no = INVOICE_NO_PATTERN.search(text)
+    return InvoiceFields(
+        ifsc_codes=_unique(IFSC_PATTERN.findall(text)),
+        account_numbers=_account_numbers(text),
+        upi_ids=_unique(UPI_PATTERN.findall(text)),
+        gstins=_unique(GSTIN_PATTERN.findall(text)),
+        amounts_inr=amounts,
+        invoice_number=invoice_no.group(1) if invoice_no else None,
+    )
