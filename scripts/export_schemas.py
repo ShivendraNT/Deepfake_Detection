@@ -39,6 +39,10 @@ MODELS = [
     "EvidenceItemForLLM",
     "CitizenResult",
     "VoiceWindowResult",
+    "SealSession",
+    "SealMeetingView",
+    "SealVerification",
+    "PaymentIntent",
 ]
 
 

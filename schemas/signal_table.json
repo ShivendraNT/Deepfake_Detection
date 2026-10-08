@@ -167,5 +167,29 @@
     "allowed_sources": [
       "deterministic"
     ]
+  },
+  "VOICE_SEALED": {
+    "group": "provenance",
+    "target": "NONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "VOICE_UNSEALED_CLAIMED_EXEC": {
+    "group": "provenance",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "SEAL_PRESENCE_CONFLICT": {
+    "group": "provenance",
+    "target": "HOLD_IF_MONEY_ELSE_VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
   }
 }

@@ -47,6 +47,7 @@ class SignalGroup(StrEnum):
     ASK = "ask"
     STYLE = "style"
     WATCHLIST = "watchlist"
+    PROVENANCE = "provenance"  # Satyapan Seal: who produced the audio (C14, docs/SEAL.md)
 
 
 class SignalSource(StrEnum):
@@ -165,6 +166,22 @@ class CustodyEvent(StrEnum):
     ANCHOR = "ANCHOR"
 
 
+class SealSessionKind(StrEnum):
+    """What a Voice Seal session is bound to (docs/SEAL.md)."""
+
+    MEETING = "meeting"  # a live meeting (Meet/Teams URL)
+    VOICE_NOTE = "voice_note"  # one recorded voice note (note id)
+
+
+class SealEpochStatus(StrEnum):
+    """Per-epoch result shown to every role (raw z is for checker/security only)."""
+
+    SEALED = "sealed"  # z >= tau_epoch
+    WEAK = "weak"  # some seal energy, below tau_epoch
+    UNSEALED = "unsealed"  # speech present, no seal (a gap if the session is sealed)
+    NO_SPEECH = "no_speech"  # too little speech to judge
+
+
 class Lang(StrEnum):
     EN = "en"
     HI = "hi"
@@ -209,6 +226,10 @@ class ReasonCode(StrEnum):
     STYLE_PRESSURE = "STYLE_PRESSURE"
     # Watchlist (R4)
     WATCHLIST_HIT = "WATCHLIST_HIT"
+    # Provenance: Satyapan Seal (C14, docs/SEAL.md). Raise-only like every other signal.
+    VOICE_SEALED = "VOICE_SEALED"  # info only: never lowers a band, never clears anything
+    VOICE_UNSEALED_CLAIMED_EXEC = "VOICE_UNSEALED_CLAIMED_EXEC"  # weak, at most VERIFY
+    SEAL_PRESENCE_CONFLICT = "SEAL_PRESENCE_CONFLICT"  # claimed exec is sealing another meeting
     # Decision-level codes (added by the policy engine, never by detectors)
     MULTI_GROUP_STRONG = "MULTI_GROUP_STRONG"
     GREY_FLAG = "GREY_FLAG"

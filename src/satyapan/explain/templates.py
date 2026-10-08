@@ -210,6 +210,31 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.HI: "भेजने वाला या कॉल करने वाला पिछले 30 दिनों की हमारी वॉचलिस्ट पर है। इस संपर्क "
         "पर कार्रवाई न करें; किसी भी भुगतान से पहले चेकर और सुरक्षा टीम के पास जाएँ।",
     },
+    # --- provenance (Satyapan Seal, docs/SEAL.md). Never reassure; "not sealed" is not "fake" ---
+    ReasonCode.VOICE_SEALED: {
+        Lang.EN: "This speech carries the voice seal of an enrolled executive's device for this "
+        "meeting or note. It shows whose device spoke, not that the request is right: keep every "
+        "other check and clearance step on this case.",
+        Lang.HI: "इस आवाज़ पर एक पंजीकृत अधिकारी के डिवाइस की वॉइस सील है, जो इसी मीटिंग या नोट "
+        "से जुड़ी है। इससे सिर्फ़ पता चलता है कि किसके डिवाइस से बात हुई, अनुरोध सही है यह नहीं; "
+        "इस केस की बाकी जाँच और मंज़ूरी जारी रखें।",
+    },
+    ReasonCode.VOICE_UNSEALED_CLAIMED_EXEC: {
+        Lang.EN: "The speaker is presented as an enrolled executive, but 15 seconds or more of "
+        "speech carry no seal from their device. Not sealed does not mean fake; confirm through "
+        "OOB-Confirm or a callback on the number on file before acting.",
+        Lang.HI: "बोलने वाले को पंजीकृत अधिकारी बताया गया है, लेकिन 15 सेकंड या उससे ज़्यादा "
+        "आवाज़ पर उनके डिवाइस की सील नहीं है। सील न होने का मतलब नकली होना नहीं है; कार्रवाई से "
+        "पहले OOB-Confirm या दर्ज नंबर पर कॉल-बैक से पुष्टि करें।",
+    },
+    ReasonCode.SEAL_PRESENCE_CONFLICT: {
+        Lang.EN: "The executive named here is sealing a different meeting from their enrolled "
+        "device right now, and this voice carries no seal. Do not act on this call; call them "
+        "back on the directory number and tell the checker.",
+        Lang.HI: "जिन अधिकारी का नाम यहाँ है, उनका पंजीकृत डिवाइस इसी समय किसी दूसरी मीटिंग में "
+        "सील लगा रहा है, और इस आवाज़ पर कोई सील नहीं है। इस कॉल पर कार्रवाई न करें; डायरेक्टरी "
+        "के नंबर पर उन्हें कॉल-बैक करें और चेकर को बताएँ।",
+    },
     # --- decision-level (policy engine only) ---
     ReasonCode.MULTI_GROUP_STRONG: {
         Lang.EN: "Two or more independent check groups raised a concern together, so this case "

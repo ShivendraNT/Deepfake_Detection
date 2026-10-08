@@ -119,3 +119,93 @@ export interface DemoUser {
   employeeId: string;
   role: Role;
 }
+
+// ---- Satyapan Seal (src/satyapan/contracts/seal.py, docs/SEAL.md) ----
+export type SignalGroup =
+  | "sender_auth" | "document" | "media" | "ask" | "style" | "watchlist" | "provenance";
+// Provenance reason codes: VOICE_SEALED is info only (never lowers a band, never clears).
+export type SealReasonCode =
+  | "VOICE_SEALED" | "VOICE_UNSEALED_CLAIMED_EXEC" | "SEAL_PRESENCE_CONFLICT";
+export type SealSessionKind = "meeting" | "voice_note";
+export type SealEpochStatus = "sealed" | "weak" | "unsealed" | "no_speech";
+
+export interface SealSession {
+  id: string;
+  employee_id: string;
+  kind: SealSessionKind;
+  binding: string;
+  commitment: string;
+  t0: string;
+  epoch_s: number;
+  n_epochs: number;
+  params_id: string;
+  started_at: string;
+  last_disclosed_epoch: number | null;
+  last_disclosed_at: string | null;
+}
+
+export interface SealKey {
+  epoch: number;
+  key: string;
+}
+
+export interface SealMeetingView {
+  session: SealSession;
+  keys: SealKey[];
+}
+
+export interface SealEpoch {
+  epoch: number;
+  start_s: number;
+  cells: number;
+  status: SealEpochStatus;
+  z: number | null; // null for makers (server strips it)
+}
+
+export interface SealGap {
+  first_epoch: number;
+  last_epoch: number;
+  start_s: number;
+  end_s: number;
+}
+
+export interface SealVerification {
+  session_id: string | null;
+  employee_id: string | null;
+  binding: string | null;
+  sealed: boolean;
+  decided_by: string;
+  decided_at_epoch: number | null;
+  offset_s: number | null;
+  first_epoch: number;
+  acquisition_threshold: number;
+  acquisition_statistic: number | null; // null for makers
+  stouffer_z: number | null; // null for makers
+  epochs: SealEpoch[];
+  n_epochs_speech: number;
+  n_epochs_sealed: number;
+  gaps: SealGap[];
+  speech_seconds: number;
+  audio_seconds: number;
+  params_id: string;
+  verifier_version: string;
+  timing_provable: boolean;
+  notes: string[];
+}
+
+export interface IntentBeneficiary {
+  account_sha256: string;
+  account_masked: string;
+  ifsc: string | null;
+}
+
+export interface PaymentIntent {
+  v: number;
+  case_id: string;
+  requester: string;
+  action: string;
+  amount_inr: number;
+  beneficiary: IntentBeneficiary;
+  nonce: string;
+  expires_at: number;
+}
