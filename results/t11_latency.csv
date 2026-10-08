@@ -1,1 +1,2 @@
 clip,date,language,ask_types_expected,ask_types_shown,ask_end_to_chunk_end_s,chunk_end_to_events_ms,spoken_to_chip_s,pass,notes
+test_hinglish.webm,2026-10-08,hi,0,0,0,3120.61,3.12,yes,M4 Apple Silicon dry run

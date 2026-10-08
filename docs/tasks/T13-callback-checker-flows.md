@@ -61,3 +61,26 @@ Green + `make check`; STATUS updated.
 - Rules table: `docs/ARCHITECTURE.md` §6.4.
 
 ## Agent plan (write yours here)
+
+1. [x] `record_callback`: `resolve_callback_number(case, master, case.decision.action_type)`,
+   compare digits only (`re.sub(r"\D", "", s)`); no trusted number / mismatch →
+   `CallbackNumberError`; build `CallbackRecord(id="cb_<hex>", number_source=...)`.
+   → `test_callback_must_use_master_number`.
+2. [x] Bank-name normaliser for `BANK_NAME_MATCH`: casefold → drop punctuation → `pvt`→`private`,
+   `ltd`→`limited`, `llp`→`limited liability partnership` → collapse spaces.
+3. [x] `evaluate_clearance`: mark each `req.methods` entry done (CONFIRMED callbacks, approved
+   OOB, bank-name match, security ack, 2 approvers / 2 distinct CONFIRMED callbacks); any `DENIED`
+   callback anywhere → `satisfied = False`; mode `all` / `any` / `none`. → 3 tests.
+4. [x] `clear_case` (`can_clear` → PermissionError; requirements missing → ValueError; band
+   untouched) and `acknowledge_security` (SECURITY only). → 2 tests.
+5. [x] `Watchlist` (`add`, `add_from_case`, `signals_for`): expiry `now + days`, one deterministic
+   `WATCHLIST_HIT` signal for any unexpired `domain:` / `call:` key.
+6. [x] `set_status` (`can_set_status`, CONFIRMED_FRAUD final, fraud → `DEFAULT_WATCHLIST.add_from_case`)
+   and `request_override` (2 distinct active senior approvers, reason ≥ 10 chars, +48 h review).
+   → 3 tests.
+7. [x] Console `console/src/components/VerifyPanel.tsx` (new): trusted number from
+   `decision.clearance.callback_number` + "never use a number from the message", log-callback form,
+   Clear / Status / security-ack buttons per role; wired into `CaseView` + `api.ts` helpers.
+8. [ ] `pytest --task T13` (9/9 green ✓), `ruff` ✓, `mypy` ✓, `tsc --noEmit` ✓, `vitest` ✓,
+   full suite = the same 17 pre-existing environment failures ✓, STATUS → `done` ✓, commit + push
+   (waiting for the branch command).

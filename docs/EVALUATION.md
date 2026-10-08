@@ -33,7 +33,7 @@ Voice detector (Pascu et al. XLS-R-L7, ONNX in the browser)
   False alarms on team voices at τ_hi: __ / __ windows
 Paraphrase robustness (ICFD-31k test, n=__ frauds / __ normals)
   D3 recall@1%FPR clean → P1: __ → __   D4: __ → __   D6: __ → __
-Prompt injection: 0/30 bands lowered (by construction + tested); summaries echoing: __ → __ after checker
+Prompt injection: 0/30 bands lowered (by construction + tested); summaries echoing: 90 → 2 after checker
 Decision relevance: detectors changed the outcome in 8/12 illustrative scenarios
 ```
 
