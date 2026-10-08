@@ -98,7 +98,8 @@ docs/STATUS.md            task board
 
 ## 5. How to do a task (the loop — details in `docs/harness/WORKFLOW.md`)
 
-1. Pick a task from `docs/STATUS.md` whose dependencies are `done`. Branch: `git switch -c tNN-short-name`.
+1. Pick the first unfinished task in YOUR `team/<Name>.md` whose **Owner** in `docs/STATUS.md`
+   is you and whose dependencies are `done`. Never pick another person's task. Branch: `git switch -c tNN-short-name`.
 2. Read `docs/tasks/TNN-*.md` fully. Read ONLY the files it lists. Do not read the whole repo.
 3. Write your plan (max 8 bullet steps) in the spec's "Agent plan" section. Keep it small.
 4. Run `make task T=TNN` and see it fail (red).

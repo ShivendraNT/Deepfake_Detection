@@ -69,3 +69,23 @@ Green task tests + `make check`; STATUS.md updated; commit `T04: ...`.
 - RBI `.bank.in`: domain reserved for banks (registrar IDRBT).
 
 ## Agent plan (write yours here)
+
+1. `domains.py` — the six functions were implemented in an earlier pass of this task; verify with
+   the 25 table tests (`test_domain_table`) and keep. Do not touch `parser.py` (T03's file).
+2. `signals.py`: private `_signal(code, evidence_id, detail)` helper that always calls
+   `Signal.make(code, source=SignalSource.DETERMINISTIC, evidence_ids=[...], detector=DETECTOR_NAME)`
+   — group/target/strength are never typed by hand.
+3. Rule order exactly as in the `email_signals` docstring:
+   not trusted → `grey_reasons += [PARSE_FAILURE]`; trusted + `dmarc == "fail"` → `EMAIL_DMARC_FAIL`.
+4. `is_lookalike(parsed.from_domain, master.known_domains())` → `EMAIL_LOOKALIKE_DOMAIN` with
+   `detail={"imitates": <known domain>}`; exact matches return None (no signal).
+5. `claims_to_be_bank(from_display_name, from_domain) and not is_bank_in(from_domain)` →
+   `EMAIL_BANK_NOT_BANK_IN`. Subject is never used.
+6. Reply-To / Return-Path domain ≠ `from_domain` and not in `KNOWN_ESP_DOMAINS` →
+   `EMAIL_REPLYTO_MISMATCH` (at most one signal; detail lists the offending domains).
+7. `is_freemail(from_domain)` **and** display name/subject claims a known employee
+   (`master.employees`), our company (`master.company_domain`) or a vendor legal name →
+   `EMAIL_FREEMAIL_CORPORATE` with `detail={"claims": <what it claims>}`.
+8. `EMAIL_AUTH_PASS` only when no raising signal fired and `auth.trusted and dmarc == "pass"`;
+   `artifacts={"from_domain", "dmarc"}`. Then run `uv run pytest --task T04`, `ruff`, `mypy`,
+   update `docs/STATUS.md`, commit `T04: ...`.

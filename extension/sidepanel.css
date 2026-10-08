@@ -1,2 +1,350 @@
 /* Side panel styles (T10). Band colours must also carry text (never colour alone). */
-:root { --pass: #1b7f3b; --verify: #b26a00; --hold: #b00020; font-family: system-ui, sans-serif; }
+:root {
+  --pass: #1b7f3b;
+  --pass-bg: #eaf6ed;
+  --verify: #b26a00;
+  --verify-bg: #fff6e5;
+  --hold: #b00020;
+  --hold-bg: #fdebee;
+  --border-subtle: #e5e7eb;
+  --bg-card: #ffffff;
+  --text-main: #111827;
+  --text-muted: #6b7280;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  color: var(--text-main);
+  background-color: #f9fafb;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  background-color: #0f172a;
+  min-height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 0 0 auto;
+  padding: 14px 16px;
+  background-color: #f9fafb;
+  border-left: 1px solid var(--border-subtle);
+  box-shadow: -6px 0 25px rgba(0, 0, 0, 0.25);
+}
+
+@media (max-width: 420px) {
+  html {
+    background-color: #f9fafb;
+  }
+  body {
+    max-width: 100%;
+    margin: 0;
+    border-left: none;
+    box-shadow: none;
+  }
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 6px;
+  background: #1e293b;
+  color: #fff;
+  font-weight: 700;
+  font-size: 15px;
+}
+
+.brand-title {
+  font-size: 17px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.protection-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  background-color: #ecfdf5;
+  color: #065f46;
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid #a7f3d0;
+}
+
+.protection-pill .dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background-color: #10b981;
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.2);
+}
+
+.panel-body {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex: 1;
+}
+
+/* Band Banner */
+.band-banner {
+  border-radius: 8px;
+  padding: 12px 14px;
+  border-left: 6px solid var(--pass);
+  background-color: var(--pass-bg);
+  transition: all 0.2s ease;
+}
+
+.band-banner.band-pass {
+  border-left-color: var(--pass);
+  background-color: var(--pass-bg);
+}
+
+.band-banner.band-verify {
+  border-left-color: var(--verify);
+  background-color: var(--verify-bg);
+}
+
+.band-banner.band-hold {
+  border-left-color: var(--hold);
+  background-color: var(--hold-bg);
+}
+
+.band-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.band-label-prefix {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.band-name {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+}
+
+.band-pass .band-name { color: var(--pass); }
+.band-verify .band-name { color: var(--verify); }
+.band-hold .band-name { color: var(--hold); }
+
+.band-desc {
+  font-size: 13px;
+  color: #374151;
+  line-height: 1.35;
+}
+
+/* Cards */
+.card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 10px 12px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+
+.card-title {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+/* Suggested Line */
+.suggested-card {
+  background: #fdfdfd;
+  border: 1px solid #d1d5db;
+}
+
+.suggested-line {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #1f2937;
+  padding: 6px 8px;
+  background: #f3f4f6;
+  border-radius: 6px;
+  border-left: 3px solid #6b7280;
+}
+
+.band-hold .suggested-card .suggested-line,
+.suggested-line.urgent {
+  background: #fff1f2;
+  border-left-color: var(--hold);
+  color: #9f1239;
+}
+
+/* Voice Meter */
+.voice-meter {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  border: 1px solid var(--border-subtle);
+  background-color: #f9fafb;
+}
+
+.voice-meter.meter-no-signs {
+  background-color: #f0fdf4;
+  color: #166534;
+  border-color: #bbf7d0;
+}
+
+.voice-meter.meter-inconclusive {
+  background-color: #fffbeb;
+  color: #92400e;
+  border-color: #fde68a;
+}
+
+.voice-meter.meter-likely-synthetic {
+  background-color: #fef2f2;
+  color: #991b1b;
+  border-color: #fecaca;
+}
+
+/* Ask Chips */
+.ask-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  min-height: 28px;
+}
+
+.ask-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+}
+
+.ask-chip .chip-type {
+  font-size: 10px;
+  font-weight: 700;
+  background: #dc2626;
+  color: #fff;
+  padding: 1px 4px;
+  border-radius: 3px;
+}
+
+/* Transcript */
+.transcript-feed {
+  max-height: 140px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 4px 2px;
+}
+
+.transcript-line {
+  font-size: 13px;
+  line-height: 1.35;
+  color: #374151;
+  padding: 4px 6px;
+  border-radius: 4px;
+  background: #f3f4f6;
+}
+
+.empty-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+/* Action Buttons */
+.actions-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 10px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.btn-primary {
+  background-color: #1e293b;
+  color: #ffffff;
+}
+
+.btn-primary:hover {
+  background-color: #0f172a;
+}
+
+.btn-secondary {
+  background-color: #ffffff;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.btn-secondary:hover {
+  background-color: #f3f4f6;
+}
+
+/* Footer */
+.panel-footer {
+  margin-top: auto;
+  padding-top: 8px;
+  border-top: 1px solid var(--border-subtle);
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.status-message {
+  font-style: italic;
+}
