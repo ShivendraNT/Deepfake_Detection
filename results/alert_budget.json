@@ -1,8 +1,8 @@
 {
  "what": "Alert budget through the real pipeline (synthetic cases)",
  "date": "2026-10-08",
- "git_commit": "fda5496",
- "code_state": "pre-fix (policy 1.0.0, no context layer)",
+ "git_commit": "ae42e6e+dirty",
+ "code_state": "post-fix",
  "command": "uv run python -m research.alert_budget.run_alert_budget",
  "data": {
   "benign_ap.jsonl_sha256": "f5c09ad4333360753e92db5d0b88c051cabd7f31823867b22017eaa33fc0ada0",
@@ -1234,7 +1234,3992 @@
      }
     }
    }
+  },
+  "context_only": {
+   "all": {
+    "routine": {
+     "n": 400,
+     "ge_verify": {
+      "k": 71,
+      "n": 400,
+      "value": 0.1775,
+      "ci95": [
+       0.1432,
+       0.218
+      ]
+     },
+     "verify_exactly": {
+      "k": 29,
+      "n": 400,
+      "value": 0.0725,
+      "ci95": [
+       0.051,
+       0.1022
+      ]
+     },
+     "hold": {
+      "k": 42,
+      "n": 400,
+      "value": 0.105,
+      "ci95": [
+       0.0786,
+       0.1389
+      ]
+     },
+     "above_floor": {
+      "k": 71,
+      "n": 400,
+      "value": 0.1775,
+      "ci95": [
+       0.1432,
+       0.218
+      ]
+     },
+     "checker_queue": {
+      "k": 42,
+      "n": 400,
+      "value": 0.105,
+      "ci95": [
+       0.0786,
+       0.1389
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 38,
+      "ASK_NEW_ACCOUNT": 26,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 8,
+      "ASK_SECRECY": 4,
+      "ASK_PAYEE_CHANGE": 2,
+      "ASK_REMOTE_ACCESS": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 38,
+      "ASK_NEW_ACCOUNT": 5,
+      "ASK_SECRECY": 4,
+      "ASK_REMOTE_ACCESS": 1,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack": {
+     "n": 184,
+     "ge_verify": {
+      "k": 125,
+      "n": 184,
+      "value": 0.6793,
+      "ci95": [
+       0.6088,
+       0.7425
+      ]
+     },
+     "verify_exactly": {
+      "k": 100,
+      "n": 184,
+      "value": 0.5435,
+      "ci95": [
+       0.4714,
+       0.6138
+      ]
+     },
+     "hold": {
+      "k": 25,
+      "n": 184,
+      "value": 0.1359,
+      "ci95": [
+       0.0938,
+       0.1929
+      ]
+     },
+     "above_floor": {
+      "k": 35,
+      "n": 184,
+      "value": 0.1902,
+      "ci95": [
+       0.1401,
+       0.253
+      ]
+     },
+     "checker_queue": {
+      "k": 25,
+      "n": 184,
+      "value": 0.1359,
+      "ci95": [
+       0.0938,
+       0.1929
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 20,
+      "ASK_CREDENTIAL": 12,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+      "ASK_SECRECY": 9,
+      "ASK_BYPASS": 3,
+      "ASK_PAYEE_CHANGE": 3,
+      "ASK_REMOTE_ACCESS": 2
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 12,
+      "ASK_SECRECY": 9,
+      "ASK_BYPASS": 3,
+      "ASK_REMOTE_ACCESS": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 26,
+      "ge_verify": {
+       "k": 26,
+       "n": 26,
+       "value": 1.0,
+       "ci95": [
+        0.8713,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 25,
+       "n": 26,
+       "value": 0.9615,
+       "ci95": [
+        0.8111,
+        0.9932
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "above_floor": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 7,
+       "ASK_PAYEE_CHANGE": 3,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 23,
+      "ge_verify": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "verify_exactly": {
+       "k": 10,
+       "n": 23,
+       "value": 0.4348,
+       "ci95": [
+        0.2563,
+        0.6319
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 23,
+       "value": 0.0435,
+       "ci95": [
+        0.0077,
+        0.2099
+       ]
+      },
+      "above_floor": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 23,
+       "value": 0.0435,
+       "ci95": [
+        0.0077,
+        0.2099
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
+       "ASK_SECRECY": 1
+      }
+     },
+     "N1_split_payments": {
+      "n": 12,
+      "ge_verify": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "verify_exactly": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 75,
+      "ge_verify": {
+       "k": 75,
+       "n": 75,
+       "value": 1.0,
+       "ci95": [
+        0.9513,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 65,
+       "n": 75,
+       "value": 0.8667,
+       "ci95": [
+        0.7717,
+        0.9259
+       ]
+      },
+      "hold": {
+       "k": 10,
+       "n": 75,
+       "value": 0.1333,
+       "ci95": [
+        0.0741,
+        0.2283
+       ]
+      },
+      "above_floor": {
+       "k": 10,
+       "n": 75,
+       "value": 0.1333,
+       "ci95": [
+        0.0741,
+        0.2283
+       ]
+      },
+      "checker_queue": {
+       "k": 10,
+       "n": 75,
+       "value": 0.1333,
+       "ci95": [
+        0.0741,
+        0.2283
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 13,
+       "ASK_SECRECY": 8,
+       "ASK_BYPASS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 8,
+       "ASK_BYPASS": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 48,
+      "ge_verify": {
+       "k": 13,
+       "n": 48,
+       "value": 0.2708,
+       "ci95": [
+        0.1657,
+        0.41
+       ]
+      },
+      "verify_exactly": {
+       "k": 0,
+       "n": 48,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.0741
+       ]
+      },
+      "hold": {
+       "k": 13,
+       "n": 48,
+       "value": 0.2708,
+       "ci95": [
+        0.1657,
+        0.41
+       ]
+      },
+      "above_floor": {
+       "k": 13,
+       "n": 48,
+       "value": 0.2708,
+       "ci95": [
+        0.1657,
+        0.41
+       ]
+      },
+      "checker_queue": {
+       "k": 13,
+       "n": 48,
+       "value": 0.2708,
+       "ci95": [
+        0.1657,
+        0.41
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 12,
+       "ASK_REMOTE_ACCESS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 12,
+       "ASK_REMOTE_ACCESS": 2
+      }
+     }
+    }
+   },
+   "dev": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 28,
+      "n": 200,
+      "value": 0.14,
+      "ci95": [
+       0.0987,
+       0.1949
+      ]
+     },
+     "verify_exactly": {
+      "k": 17,
+      "n": 200,
+      "value": 0.085,
+      "ci95": [
+       0.0537,
+       0.1319
+      ]
+     },
+     "hold": {
+      "k": 11,
+      "n": 200,
+      "value": 0.055,
+      "ci95": [
+       0.031,
+       0.0958
+      ]
+     },
+     "above_floor": {
+      "k": 28,
+      "n": 200,
+      "value": 0.14,
+      "ci95": [
+       0.0987,
+       0.1949
+      ]
+     },
+     "checker_queue": {
+      "k": 11,
+      "n": 200,
+      "value": 0.055,
+      "ci95": [
+       0.031,
+       0.0958
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 18,
+      "ASK_CREDENTIAL": 11,
+      "ASK_SECRECY": 1,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 11,
+      "ASK_NEW_ACCOUNT": 2,
+      "ASK_SECRECY": 1
+     }
+    },
+    "attack": {
+     "n": 86,
+     "ge_verify": {
+      "k": 56,
+      "n": 86,
+      "value": 0.6512,
+      "ci95": [
+       0.5459,
+       0.7435
+      ]
+     },
+     "verify_exactly": {
+      "k": 47,
+      "n": 86,
+      "value": 0.5465,
+      "ci95": [
+       0.4416,
+       0.6475
+      ]
+     },
+     "hold": {
+      "k": 9,
+      "n": 86,
+      "value": 0.1047,
+      "ci95": [
+       0.056,
+       0.1871
+      ]
+     },
+     "above_floor": {
+      "k": 11,
+      "n": 86,
+      "value": 0.1279,
+      "ci95": [
+       0.0729,
+       0.2147
+      ]
+     },
+     "checker_queue": {
+      "k": 9,
+      "n": 86,
+      "value": 0.1047,
+      "ci95": [
+       0.056,
+       0.1871
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 8,
+      "ASK_CREDENTIAL": 6,
+      "ASK_REMOTE_ACCESS": 2,
+      "ASK_SECRECY": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 6,
+      "ASK_REMOTE_ACCESS": 2,
+      "ASK_SECRECY": 2
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 9,
+      "ge_verify": {
+       "k": 9,
+       "n": 9,
+       "value": 1.0,
+       "ci95": [
+        0.7009,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 9,
+       "n": 9,
+       "value": 1.0,
+       "ci95": [
+        0.7009,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 2,
+       "ASK_PAYEE_CHANGE": 1
+      },
+      "hold_cases_with_reason_code": {}
+     },
+     "N1_small_new_payee": {
+      "n": 6,
+      "ge_verify": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "verify_exactly": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+      },
+      "hold_cases_with_reason_code": {}
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "verify_exactly": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 38,
+      "ge_verify": {
+       "k": 38,
+       "n": 38,
+       "value": 1.0,
+       "ci95": [
+        0.9082,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 36,
+       "n": 38,
+       "value": 0.9474,
+       "ci95": [
+        0.8271,
+        0.9854
+       ]
+      },
+      "hold": {
+       "k": 2,
+       "n": 38,
+       "value": 0.0526,
+       "ci95": [
+        0.0146,
+        0.1729
+       ]
+      },
+      "above_floor": {
+       "k": 2,
+       "n": 38,
+       "value": 0.0526,
+       "ci95": [
+        0.0146,
+        0.1729
+       ]
+      },
+      "checker_queue": {
+       "k": 2,
+       "n": 38,
+       "value": 0.0526,
+       "ci95": [
+        0.0146,
+        0.1729
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 6,
+       "ASK_SECRECY": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 27,
+      "ge_verify": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "verify_exactly": {
+       "k": 0,
+       "n": 27,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.1246
+       ]
+      },
+      "hold": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "above_floor": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "checker_queue": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6,
+       "ASK_REMOTE_ACCESS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6,
+       "ASK_REMOTE_ACCESS": 2
+      }
+     }
+    }
+   },
+   "test": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 43,
+      "n": 200,
+      "value": 0.215,
+      "ci95": [
+       0.1637,
+       0.277
+      ]
+     },
+     "verify_exactly": {
+      "k": 12,
+      "n": 200,
+      "value": 0.06,
+      "ci95": [
+       0.0347,
+       0.1019
+      ]
+     },
+     "hold": {
+      "k": 31,
+      "n": 200,
+      "value": 0.155,
+      "ci95": [
+       0.1114,
+       0.2116
+      ]
+     },
+     "above_floor": {
+      "k": 43,
+      "n": 200,
+      "value": 0.215,
+      "ci95": [
+       0.1637,
+       0.277
+      ]
+     },
+     "checker_queue": {
+      "k": 31,
+      "n": 200,
+      "value": 0.155,
+      "ci95": [
+       0.1114,
+       0.2116
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 27,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 8,
+      "ASK_NEW_ACCOUNT": 8,
+      "ASK_SECRECY": 3,
+      "ASK_REMOTE_ACCESS": 1,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 27,
+      "ASK_NEW_ACCOUNT": 3,
+      "ASK_SECRECY": 3,
+      "ASK_REMOTE_ACCESS": 1,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack": {
+     "n": 98,
+     "ge_verify": {
+      "k": 69,
+      "n": 98,
+      "value": 0.7041,
+      "ci95": [
+       0.6074,
+       0.7854
+      ]
+     },
+     "verify_exactly": {
+      "k": 53,
+      "n": 98,
+      "value": 0.5408,
+      "ci95": [
+       0.4425,
+       0.6361
+      ]
+     },
+     "hold": {
+      "k": 16,
+      "n": 98,
+      "value": 0.1633,
+      "ci95": [
+       0.1031,
+       0.2489
+      ]
+     },
+     "above_floor": {
+      "k": 24,
+      "n": 98,
+      "value": 0.2449,
+      "ci95": [
+       0.1704,
+       0.3386
+      ]
+     },
+     "checker_queue": {
+      "k": 16,
+      "n": 98,
+      "value": 0.1633,
+      "ci95": [
+       0.1031,
+       0.2489
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 12,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+      "ASK_SECRECY": 7,
+      "ASK_CREDENTIAL": 6,
+      "ASK_BYPASS": 3,
+      "ASK_PAYEE_CHANGE": 2
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 7,
+      "ASK_CREDENTIAL": 6,
+      "ASK_BYPASS": 3,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 17,
+      "ge_verify": {
+       "k": 17,
+       "n": 17,
+       "value": 1.0,
+       "ci95": [
+        0.8157,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 16,
+       "n": 17,
+       "value": 0.9412,
+       "ci95": [
+        0.7302,
+        0.9895
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "above_floor": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 5,
+       "ASK_PAYEE_CHANGE": 2,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 17,
+      "ge_verify": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "verify_exactly": {
+       "k": 8,
+       "n": 17,
+       "value": 0.4706,
+       "ci95": [
+        0.2617,
+        0.6904
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "above_floor": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
+       "ASK_SECRECY": 1
+      }
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "verify_exactly": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 37,
+      "ge_verify": {
+       "k": 37,
+       "n": 37,
+       "value": 1.0,
+       "ci95": [
+        0.9059,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 29,
+       "n": 37,
+       "value": 0.7838,
+       "ci95": [
+        0.628,
+        0.8861
+       ]
+      },
+      "hold": {
+       "k": 8,
+       "n": 37,
+       "value": 0.2162,
+       "ci95": [
+        0.1139,
+        0.372
+       ]
+      },
+      "above_floor": {
+       "k": 8,
+       "n": 37,
+       "value": 0.2162,
+       "ci95": [
+        0.1139,
+        0.372
+       ]
+      },
+      "checker_queue": {
+       "k": 8,
+       "n": 37,
+       "value": 0.2162,
+       "ci95": [
+        0.1139,
+        0.372
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 7,
+       "ASK_SECRECY": 6,
+       "ASK_BYPASS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 6,
+       "ASK_BYPASS": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 21,
+      "ge_verify": {
+       "k": 6,
+       "n": 21,
+       "value": 0.2857,
+       "ci95": [
+        0.1381,
+        0.4996
+       ]
+      },
+      "verify_exactly": {
+       "k": 0,
+       "n": 21,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.1546
+       ]
+      },
+      "hold": {
+       "k": 6,
+       "n": 21,
+       "value": 0.2857,
+       "ci95": [
+        0.1381,
+        0.4996
+       ]
+      },
+      "above_floor": {
+       "k": 6,
+       "n": 21,
+       "value": 0.2857,
+       "ci95": [
+        0.1381,
+        0.4996
+       ]
+      },
+      "checker_queue": {
+       "k": 6,
+       "n": 21,
+       "value": 0.2857,
+       "ci95": [
+        0.1381,
+        0.4996
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6
+      }
+     }
+    }
+   }
+  },
+  "policy_only": {
+   "all": {
+    "routine": {
+     "n": 400,
+     "ge_verify": {
+      "k": 158,
+      "n": 400,
+      "value": 0.395,
+      "ci95": [
+       0.3483,
+       0.4437
+      ]
+     },
+     "verify_exactly": {
+      "k": 125,
+      "n": 400,
+      "value": 0.3125,
+      "ci95": [
+       0.269,
+       0.3595
+      ]
+     },
+     "hold": {
+      "k": 33,
+      "n": 400,
+      "value": 0.0825,
+      "ci95": [
+       0.0593,
+       0.1136
+      ]
+     },
+     "above_floor": {
+      "k": 158,
+      "n": 400,
+      "value": 0.395,
+      "ci95": [
+       0.3483,
+       0.4437
+      ]
+     },
+     "checker_queue": {
+      "k": 33,
+      "n": 400,
+      "value": 0.0825,
+      "ci95": [
+       0.0593,
+       0.1136
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 88,
+      "ASK_SECRECY": 60,
+      "ASK_NEW_ACCOUNT": 26,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+      "ASK_PAYEE_CHANGE": 7,
+      "ASK_REMOTE_ACCESS": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 29,
+      "ASK_SECRECY": 26,
+      "ASK_NEW_ACCOUNT": 9,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_PAYEE_CHANGE": 1
+     }
+    },
+    "attack": {
+     "n": 184,
+     "ge_verify": {
+      "k": 138,
+      "n": 184,
+      "value": 0.75,
+      "ci95": [
+       0.6828,
+       0.807
+      ]
+     },
+     "verify_exactly": {
+      "k": 103,
+      "n": 184,
+      "value": 0.5598,
+      "ci95": [
+       0.4876,
+       0.6296
+      ]
+     },
+     "hold": {
+      "k": 35,
+      "n": 184,
+      "value": 0.1902,
+      "ci95": [
+       0.1401,
+       0.253
+      ]
+     },
+     "above_floor": {
+      "k": 53,
+      "n": 184,
+      "value": 0.288,
+      "ci95": [
+       0.2275,
+       0.3573
+      ]
+     },
+     "checker_queue": {
+      "k": 35,
+      "n": 184,
+      "value": 0.1902,
+      "ci95": [
+       0.1401,
+       0.253
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_SECRECY": 29,
+      "ASK_NEW_ACCOUNT": 20,
+      "ASK_CREDENTIAL": 12,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+      "ASK_BYPASS": 3,
+      "ASK_PAYEE_CHANGE": 3,
+      "ASK_REMOTE_ACCESS": 2
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 28,
+      "ASK_CREDENTIAL": 5,
+      "ASK_NEW_ACCOUNT": 3,
+      "ASK_BYPASS": 3,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_REMOTE_ACCESS": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 26,
+      "ge_verify": {
+       "k": 26,
+       "n": 26,
+       "value": 1.0,
+       "ci95": [
+        0.8713,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 17,
+       "n": 26,
+       "value": 0.6538,
+       "ci95": [
+        0.4622,
+        0.8059
+       ]
+      },
+      "hold": {
+       "k": 9,
+       "n": 26,
+       "value": 0.3462,
+       "ci95": [
+        0.1941,
+        0.5378
+       ]
+      },
+      "above_floor": {
+       "k": 9,
+       "n": 26,
+       "value": 0.3462,
+       "ci95": [
+        0.1941,
+        0.5378
+       ]
+      },
+      "checker_queue": {
+       "k": 9,
+       "n": 26,
+       "value": 0.3462,
+       "ci95": [
+        0.1941,
+        0.5378
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_SECRECY": 9,
+       "ASK_NEW_ACCOUNT": 7,
+       "ASK_PAYEE_CHANGE": 3,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 9,
+       "ASK_NEW_ACCOUNT": 2,
+       "ASK_PAYEE_CHANGE": 1,
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 23,
+      "ge_verify": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "verify_exactly": {
+       "k": 9,
+       "n": 23,
+       "value": 0.3913,
+       "ci95": [
+        0.2216,
+        0.5921
+       ]
+      },
+      "hold": {
+       "k": 2,
+       "n": 23,
+       "value": 0.087,
+       "ci95": [
+        0.0242,
+        0.268
+       ]
+      },
+      "above_floor": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "checker_queue": {
+       "k": 2,
+       "n": 23,
+       "value": 0.087,
+       "ci95": [
+        0.0242,
+        0.268
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "ASK_SECRECY": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+       "ASK_SECRECY": 2
+      }
+     },
+     "N1_split_payments": {
+      "n": 12,
+      "ge_verify": {
+       "k": 12,
+       "n": 12,
+       "value": 1.0,
+       "ci95": [
+        0.7575,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 12,
+       "n": 12,
+       "value": 1.0,
+       "ci95": [
+        0.7575,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 75,
+      "ge_verify": {
+       "k": 75,
+       "n": 75,
+       "value": 1.0,
+       "ci95": [
+        0.9513,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 56,
+       "n": 75,
+       "value": 0.7467,
+       "ci95": [
+        0.6379,
+        0.8314
+       ]
+      },
+      "hold": {
+       "k": 19,
+       "n": 75,
+       "value": 0.2533,
+       "ci95": [
+        0.1686,
+        0.3621
+       ]
+      },
+      "above_floor": {
+       "k": 19,
+       "n": 75,
+       "value": 0.2533,
+       "ci95": [
+        0.1686,
+        0.3621
+       ]
+      },
+      "checker_queue": {
+       "k": 19,
+       "n": 75,
+       "value": 0.2533,
+       "ci95": [
+        0.1686,
+        0.3621
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_SECRECY": 17,
+       "ASK_NEW_ACCOUNT": 13,
+       "ASK_BYPASS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 17,
+       "ASK_BYPASS": 2,
+       "ASK_NEW_ACCOUNT": 1
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 48,
+      "ge_verify": {
+       "k": 14,
+       "n": 48,
+       "value": 0.2917,
+       "ci95": [
+        0.1824,
+        0.4318
+       ]
+      },
+      "verify_exactly": {
+       "k": 9,
+       "n": 48,
+       "value": 0.1875,
+       "ci95": [
+        0.1019,
+        0.3194
+       ]
+      },
+      "hold": {
+       "k": 5,
+       "n": 48,
+       "value": 0.1042,
+       "ci95": [
+        0.0453,
+        0.2217
+       ]
+      },
+      "above_floor": {
+       "k": 14,
+       "n": 48,
+       "value": 0.2917,
+       "ci95": [
+        0.1824,
+        0.4318
+       ]
+      },
+      "checker_queue": {
+       "k": 5,
+       "n": 48,
+       "value": 0.1042,
+       "ci95": [
+        0.0453,
+        0.2217
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 12,
+       "ASK_REMOTE_ACCESS": 2,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 5,
+       "ASK_REMOTE_ACCESS": 1
+      }
+     }
+    }
+   },
+   "dev": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 85,
+      "n": 200,
+      "value": 0.425,
+      "ci95": [
+       0.3585,
+       0.4943
+      ]
+     },
+     "verify_exactly": {
+      "k": 63,
+      "n": 200,
+      "value": 0.315,
+      "ci95": [
+       0.2546,
+       0.3823
+      ]
+     },
+     "hold": {
+      "k": 22,
+      "n": 200,
+      "value": 0.11,
+      "ci95": [
+       0.0738,
+       0.1609
+      ]
+     },
+     "above_floor": {
+      "k": 85,
+      "n": 200,
+      "value": 0.425,
+      "ci95": [
+       0.3585,
+       0.4943
+      ]
+     },
+     "checker_queue": {
+      "k": 22,
+      "n": 200,
+      "value": 0.11,
+      "ci95": [
+       0.0738,
+       0.1609
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 51,
+      "ASK_SECRECY": 38,
+      "ASK_NEW_ACCOUNT": 18,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 20,
+      "ASK_SECRECY": 19,
+      "ASK_NEW_ACCOUNT": 6
+     }
+    },
+    "attack": {
+     "n": 86,
+     "ge_verify": {
+      "k": 62,
+      "n": 86,
+      "value": 0.7209,
+      "ci95": [
+       0.6183,
+       0.8047
+      ]
+     },
+     "verify_exactly": {
+      "k": 48,
+      "n": 86,
+      "value": 0.5581,
+      "ci95": [
+       0.4529,
+       0.6584
+      ]
+     },
+     "hold": {
+      "k": 14,
+      "n": 86,
+      "value": 0.1628,
+      "ci95": [
+       0.0995,
+       0.2549
+      ]
+     },
+     "above_floor": {
+      "k": 20,
+      "n": 86,
+      "value": 0.2326,
+      "ci95": [
+       0.1559,
+       0.3321
+      ]
+     },
+     "checker_queue": {
+      "k": 14,
+      "n": 86,
+      "value": 0.1628,
+      "ci95": [
+       0.0995,
+       0.2549
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_SECRECY": 11,
+      "ASK_NEW_ACCOUNT": 8,
+      "ASK_CREDENTIAL": 6,
+      "ASK_REMOTE_ACCESS": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 11,
+      "ASK_CREDENTIAL": 3,
+      "ASK_NEW_ACCOUNT": 1,
+      "ASK_REMOTE_ACCESS": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 9,
+      "ge_verify": {
+       "k": 9,
+       "n": 9,
+       "value": 1.0,
+       "ci95": [
+        0.7009,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 6,
+       "n": 9,
+       "value": 0.6667,
+       "ci95": [
+        0.3542,
+        0.8794
+       ]
+      },
+      "hold": {
+       "k": 3,
+       "n": 9,
+       "value": 0.3333,
+       "ci95": [
+        0.1206,
+        0.6458
+       ]
+      },
+      "above_floor": {
+       "k": 3,
+       "n": 9,
+       "value": 0.3333,
+       "ci95": [
+        0.1206,
+        0.6458
+       ]
+      },
+      "checker_queue": {
+       "k": 3,
+       "n": 9,
+       "value": 0.3333,
+       "ci95": [
+        0.1206,
+        0.6458
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_SECRECY": 3,
+       "ASK_NEW_ACCOUNT": 2,
+       "ASK_PAYEE_CHANGE": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 3
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 6,
+      "ge_verify": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "verify_exactly": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+      },
+      "hold_cases_with_reason_code": {}
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 38,
+      "ge_verify": {
+       "k": 38,
+       "n": 38,
+       "value": 1.0,
+       "ci95": [
+        0.9082,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 30,
+       "n": 38,
+       "value": 0.7895,
+       "ci95": [
+        0.6365,
+        0.8893
+       ]
+      },
+      "hold": {
+       "k": 8,
+       "n": 38,
+       "value": 0.2105,
+       "ci95": [
+        0.1107,
+        0.3635
+       ]
+      },
+      "above_floor": {
+       "k": 8,
+       "n": 38,
+       "value": 0.2105,
+       "ci95": [
+        0.1107,
+        0.3635
+       ]
+      },
+      "checker_queue": {
+       "k": 8,
+       "n": 38,
+       "value": 0.2105,
+       "ci95": [
+        0.1107,
+        0.3635
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_SECRECY": 8,
+       "ASK_NEW_ACCOUNT": 6
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 8,
+       "ASK_NEW_ACCOUNT": 1
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 27,
+      "ge_verify": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "verify_exactly": {
+       "k": 4,
+       "n": 27,
+       "value": 0.1481,
+       "ci95": [
+        0.0592,
+        0.3248
+       ]
+      },
+      "hold": {
+       "k": 3,
+       "n": 27,
+       "value": 0.1111,
+       "ci95": [
+        0.0385,
+        0.2806
+       ]
+      },
+      "above_floor": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "checker_queue": {
+       "k": 3,
+       "n": 27,
+       "value": 0.1111,
+       "ci95": [
+        0.0385,
+        0.2806
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6,
+       "ASK_REMOTE_ACCESS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 3,
+       "ASK_REMOTE_ACCESS": 1
+      }
+     }
+    }
+   },
+   "test": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 73,
+      "n": 200,
+      "value": 0.365,
+      "ci95": [
+       0.3014,
+       0.4337
+      ]
+     },
+     "verify_exactly": {
+      "k": 62,
+      "n": 200,
+      "value": 0.31,
+      "ci95": [
+       0.25,
+       0.3772
+      ]
+     },
+     "hold": {
+      "k": 11,
+      "n": 200,
+      "value": 0.055,
+      "ci95": [
+       0.031,
+       0.0958
+      ]
+     },
+     "above_floor": {
+      "k": 73,
+      "n": 200,
+      "value": 0.365,
+      "ci95": [
+       0.3014,
+       0.4337
+      ]
+     },
+     "checker_queue": {
+      "k": 11,
+      "n": 200,
+      "value": 0.055,
+      "ci95": [
+       0.031,
+       0.0958
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 37,
+      "ASK_SECRECY": 22,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 10,
+      "ASK_NEW_ACCOUNT": 8,
+      "ASK_PAYEE_CHANGE": 6,
+      "ASK_REMOTE_ACCESS": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 9,
+      "ASK_SECRECY": 7,
+      "ASK_NEW_ACCOUNT": 3,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_PAYEE_CHANGE": 1
+     }
+    },
+    "attack": {
+     "n": 98,
+     "ge_verify": {
+      "k": 76,
+      "n": 98,
+      "value": 0.7755,
+      "ci95": [
+       0.6834,
+       0.8468
+      ]
+     },
+     "verify_exactly": {
+      "k": 55,
+      "n": 98,
+      "value": 0.5612,
+      "ci95": [
+       0.4625,
+       0.6553
+      ]
+     },
+     "hold": {
+      "k": 21,
+      "n": 98,
+      "value": 0.2143,
+      "ci95": [
+       0.1446,
+       0.3055
+      ]
+     },
+     "above_floor": {
+      "k": 33,
+      "n": 98,
+      "value": 0.3367,
+      "ci95": [
+       0.2509,
+       0.4349
+      ]
+     },
+     "checker_queue": {
+      "k": 21,
+      "n": 98,
+      "value": 0.2143,
+      "ci95": [
+       0.1446,
+       0.3055
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_SECRECY": 18,
+      "ASK_NEW_ACCOUNT": 12,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+      "ASK_CREDENTIAL": 6,
+      "ASK_BYPASS": 3,
+      "ASK_PAYEE_CHANGE": 2
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 17,
+      "ASK_BYPASS": 3,
+      "ASK_CREDENTIAL": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_NEW_ACCOUNT": 2,
+      "ASK_PAYEE_CHANGE": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 17,
+      "ge_verify": {
+       "k": 17,
+       "n": 17,
+       "value": 1.0,
+       "ci95": [
+        0.8157,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 11,
+       "n": 17,
+       "value": 0.6471,
+       "ci95": [
+        0.413,
+        0.8269
+       ]
+      },
+      "hold": {
+       "k": 6,
+       "n": 17,
+       "value": 0.3529,
+       "ci95": [
+        0.1731,
+        0.587
+       ]
+      },
+      "above_floor": {
+       "k": 6,
+       "n": 17,
+       "value": 0.3529,
+       "ci95": [
+        0.1731,
+        0.587
+       ]
+      },
+      "checker_queue": {
+       "k": 6,
+       "n": 17,
+       "value": 0.3529,
+       "ci95": [
+        0.1731,
+        0.587
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_SECRECY": 6,
+       "ASK_NEW_ACCOUNT": 5,
+       "ASK_PAYEE_CHANGE": 2,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 6,
+       "ASK_NEW_ACCOUNT": 2,
+       "ASK_PAYEE_CHANGE": 1,
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 17,
+      "ge_verify": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "verify_exactly": {
+       "k": 7,
+       "n": 17,
+       "value": 0.4118,
+       "ci95": [
+        0.2161,
+        0.6399
+       ]
+      },
+      "hold": {
+       "k": 2,
+       "n": 17,
+       "value": 0.1176,
+       "ci95": [
+        0.0329,
+        0.3434
+       ]
+      },
+      "above_floor": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "checker_queue": {
+       "k": 2,
+       "n": 17,
+       "value": 0.1176,
+       "ci95": [
+        0.0329,
+        0.3434
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "ASK_SECRECY": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+       "ASK_SECRECY": 2
+      }
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 37,
+      "ge_verify": {
+       "k": 37,
+       "n": 37,
+       "value": 1.0,
+       "ci95": [
+        0.9059,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 26,
+       "n": 37,
+       "value": 0.7027,
+       "ci95": [
+        0.5422,
+        0.8251
+       ]
+      },
+      "hold": {
+       "k": 11,
+       "n": 37,
+       "value": 0.2973,
+       "ci95": [
+        0.1749,
+        0.4578
+       ]
+      },
+      "above_floor": {
+       "k": 11,
+       "n": 37,
+       "value": 0.2973,
+       "ci95": [
+        0.1749,
+        0.4578
+       ]
+      },
+      "checker_queue": {
+       "k": 11,
+       "n": 37,
+       "value": 0.2973,
+       "ci95": [
+        0.1749,
+        0.4578
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_SECRECY": 9,
+       "ASK_NEW_ACCOUNT": 7,
+       "ASK_BYPASS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 9,
+       "ASK_BYPASS": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 21,
+      "ge_verify": {
+       "k": 7,
+       "n": 21,
+       "value": 0.3333,
+       "ci95": [
+        0.1719,
+        0.5463
+       ]
+      },
+      "verify_exactly": {
+       "k": 5,
+       "n": 21,
+       "value": 0.2381,
+       "ci95": [
+        0.1063,
+        0.4509
+       ]
+      },
+      "hold": {
+       "k": 2,
+       "n": 21,
+       "value": 0.0952,
+       "ci95": [
+        0.0265,
+        0.2891
+       ]
+      },
+      "above_floor": {
+       "k": 7,
+       "n": 21,
+       "value": 0.3333,
+       "ci95": [
+        0.1719,
+        0.5463
+       ]
+      },
+      "checker_queue": {
+       "k": 2,
+       "n": 21,
+       "value": 0.0952,
+       "ci95": [
+        0.0265,
+        0.2891
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 2
+      }
+     }
+    }
+   }
+  },
+  "after": {
+   "all": {
+    "routine": {
+     "n": 400,
+     "ge_verify": {
+      "k": 71,
+      "n": 400,
+      "value": 0.1775,
+      "ci95": [
+       0.1432,
+       0.218
+      ]
+     },
+     "verify_exactly": {
+      "k": 63,
+      "n": 400,
+      "value": 0.1575,
+      "ci95": [
+       0.1251,
+       0.1964
+      ]
+     },
+     "hold": {
+      "k": 8,
+      "n": 400,
+      "value": 0.02,
+      "ci95": [
+       0.0102,
+       0.039
+      ]
+     },
+     "above_floor": {
+      "k": 71,
+      "n": 400,
+      "value": 0.1775,
+      "ci95": [
+       0.1432,
+       0.218
+      ]
+     },
+     "checker_queue": {
+      "k": 8,
+      "n": 400,
+      "value": 0.02,
+      "ci95": [
+       0.0102,
+       0.039
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 38,
+      "ASK_NEW_ACCOUNT": 26,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 8,
+      "ASK_SECRECY": 4,
+      "ASK_PAYEE_CHANGE": 2,
+      "ASK_REMOTE_ACCESS": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 7,
+      "ASK_NEW_ACCOUNT": 5,
+      "ASK_SECRECY": 2,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack": {
+     "n": 184,
+     "ge_verify": {
+      "k": 137,
+      "n": 184,
+      "value": 0.7446,
+      "ci95": [
+       0.677,
+       0.8021
+      ]
+     },
+     "verify_exactly": {
+      "k": 120,
+      "n": 184,
+      "value": 0.6522,
+      "ci95": [
+       0.5809,
+       0.7172
+      ]
+     },
+     "hold": {
+      "k": 17,
+      "n": 184,
+      "value": 0.0924,
+      "ci95": [
+       0.0585,
+       0.143
+      ]
+     },
+     "above_floor": {
+      "k": 35,
+      "n": 184,
+      "value": 0.1902,
+      "ci95": [
+       0.1401,
+       0.253
+      ]
+     },
+     "checker_queue": {
+      "k": 17,
+      "n": 184,
+      "value": 0.0924,
+      "ci95": [
+       0.0585,
+       0.143
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 20,
+      "ASK_CREDENTIAL": 12,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+      "ASK_SECRECY": 9,
+      "ASK_BYPASS": 3,
+      "ASK_PAYEE_CHANGE": 3,
+      "ASK_REMOTE_ACCESS": 2
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 9,
+      "ASK_CREDENTIAL": 5,
+      "ASK_BYPASS": 3,
+      "ASK_REMOTE_ACCESS": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 26,
+      "ge_verify": {
+       "k": 26,
+       "n": 26,
+       "value": 1.0,
+       "ci95": [
+        0.8713,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 25,
+       "n": 26,
+       "value": 0.9615,
+       "ci95": [
+        0.8111,
+        0.9932
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "above_floor": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 7,
+       "ASK_PAYEE_CHANGE": 3,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 23,
+      "ge_verify": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "verify_exactly": {
+       "k": 10,
+       "n": 23,
+       "value": 0.4348,
+       "ci95": [
+        0.2563,
+        0.6319
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 23,
+       "value": 0.0435,
+       "ci95": [
+        0.0077,
+        0.2099
+       ]
+      },
+      "above_floor": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 23,
+       "value": 0.0435,
+       "ci95": [
+        0.0077,
+        0.2099
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
+       "ASK_SECRECY": 1
+      }
+     },
+     "N1_split_payments": {
+      "n": 12,
+      "ge_verify": {
+       "k": 12,
+       "n": 12,
+       "value": 1.0,
+       "ci95": [
+        0.7575,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 12,
+       "n": 12,
+       "value": 1.0,
+       "ci95": [
+        0.7575,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 75,
+      "ge_verify": {
+       "k": 75,
+       "n": 75,
+       "value": 1.0,
+       "ci95": [
+        0.9513,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 65,
+       "n": 75,
+       "value": 0.8667,
+       "ci95": [
+        0.7717,
+        0.9259
+       ]
+      },
+      "hold": {
+       "k": 10,
+       "n": 75,
+       "value": 0.1333,
+       "ci95": [
+        0.0741,
+        0.2283
+       ]
+      },
+      "above_floor": {
+       "k": 10,
+       "n": 75,
+       "value": 0.1333,
+       "ci95": [
+        0.0741,
+        0.2283
+       ]
+      },
+      "checker_queue": {
+       "k": 10,
+       "n": 75,
+       "value": 0.1333,
+       "ci95": [
+        0.0741,
+        0.2283
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 13,
+       "ASK_SECRECY": 8,
+       "ASK_BYPASS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 8,
+       "ASK_BYPASS": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 48,
+      "ge_verify": {
+       "k": 13,
+       "n": 48,
+       "value": 0.2708,
+       "ci95": [
+        0.1657,
+        0.41
+       ]
+      },
+      "verify_exactly": {
+       "k": 8,
+       "n": 48,
+       "value": 0.1667,
+       "ci95": [
+        0.087,
+        0.2958
+       ]
+      },
+      "hold": {
+       "k": 5,
+       "n": 48,
+       "value": 0.1042,
+       "ci95": [
+        0.0453,
+        0.2217
+       ]
+      },
+      "above_floor": {
+       "k": 13,
+       "n": 48,
+       "value": 0.2708,
+       "ci95": [
+        0.1657,
+        0.41
+       ]
+      },
+      "checker_queue": {
+       "k": 5,
+       "n": 48,
+       "value": 0.1042,
+       "ci95": [
+        0.0453,
+        0.2217
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 12,
+       "ASK_REMOTE_ACCESS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 5,
+       "ASK_REMOTE_ACCESS": 1
+      }
+     }
+    }
+   },
+   "dev": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 28,
+      "n": 200,
+      "value": 0.14,
+      "ci95": [
+       0.0987,
+       0.1949
+      ]
+     },
+     "verify_exactly": {
+      "k": 25,
+      "n": 200,
+      "value": 0.125,
+      "ci95": [
+       0.0861,
+       0.178
+      ]
+     },
+     "hold": {
+      "k": 3,
+      "n": 200,
+      "value": 0.015,
+      "ci95": [
+       0.0051,
+       0.0432
+      ]
+     },
+     "above_floor": {
+      "k": 28,
+      "n": 200,
+      "value": 0.14,
+      "ci95": [
+       0.0987,
+       0.1949
+      ]
+     },
+     "checker_queue": {
+      "k": 3,
+      "n": 200,
+      "value": 0.015,
+      "ci95": [
+       0.0051,
+       0.0432
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 18,
+      "ASK_CREDENTIAL": 11,
+      "ASK_SECRECY": 1,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 3,
+      "ASK_NEW_ACCOUNT": 2,
+      "ASK_SECRECY": 1
+     }
+    },
+    "attack": {
+     "n": 86,
+     "ge_verify": {
+      "k": 62,
+      "n": 86,
+      "value": 0.7209,
+      "ci95": [
+       0.6183,
+       0.8047
+      ]
+     },
+     "verify_exactly": {
+      "k": 57,
+      "n": 86,
+      "value": 0.6628,
+      "ci95": [
+       0.5578,
+       0.7538
+      ]
+     },
+     "hold": {
+      "k": 5,
+      "n": 86,
+      "value": 0.0581,
+      "ci95": [
+       0.0251,
+       0.129
+      ]
+     },
+     "above_floor": {
+      "k": 11,
+      "n": 86,
+      "value": 0.1279,
+      "ci95": [
+       0.0729,
+       0.2147
+      ]
+     },
+     "checker_queue": {
+      "k": 5,
+      "n": 86,
+      "value": 0.0581,
+      "ci95": [
+       0.0251,
+       0.129
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 8,
+      "ASK_CREDENTIAL": 6,
+      "ASK_REMOTE_ACCESS": 2,
+      "ASK_SECRECY": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 3,
+      "ASK_SECRECY": 2,
+      "ASK_REMOTE_ACCESS": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 9,
+      "ge_verify": {
+       "k": 9,
+       "n": 9,
+       "value": 1.0,
+       "ci95": [
+        0.7009,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 9,
+       "n": 9,
+       "value": 1.0,
+       "ci95": [
+        0.7009,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 2,
+       "ASK_PAYEE_CHANGE": 1
+      },
+      "hold_cases_with_reason_code": {}
+     },
+     "N1_small_new_payee": {
+      "n": 6,
+      "ge_verify": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "verify_exactly": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+      },
+      "hold_cases_with_reason_code": {}
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 38,
+      "ge_verify": {
+       "k": 38,
+       "n": 38,
+       "value": 1.0,
+       "ci95": [
+        0.9082,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 36,
+       "n": 38,
+       "value": 0.9474,
+       "ci95": [
+        0.8271,
+        0.9854
+       ]
+      },
+      "hold": {
+       "k": 2,
+       "n": 38,
+       "value": 0.0526,
+       "ci95": [
+        0.0146,
+        0.1729
+       ]
+      },
+      "above_floor": {
+       "k": 2,
+       "n": 38,
+       "value": 0.0526,
+       "ci95": [
+        0.0146,
+        0.1729
+       ]
+      },
+      "checker_queue": {
+       "k": 2,
+       "n": 38,
+       "value": 0.0526,
+       "ci95": [
+        0.0146,
+        0.1729
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 6,
+       "ASK_SECRECY": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 27,
+      "ge_verify": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "verify_exactly": {
+       "k": 4,
+       "n": 27,
+       "value": 0.1481,
+       "ci95": [
+        0.0592,
+        0.3248
+       ]
+      },
+      "hold": {
+       "k": 3,
+       "n": 27,
+       "value": 0.1111,
+       "ci95": [
+        0.0385,
+        0.2806
+       ]
+      },
+      "above_floor": {
+       "k": 7,
+       "n": 27,
+       "value": 0.2593,
+       "ci95": [
+        0.1317,
+        0.4468
+       ]
+      },
+      "checker_queue": {
+       "k": 3,
+       "n": 27,
+       "value": 0.1111,
+       "ci95": [
+        0.0385,
+        0.2806
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6,
+       "ASK_REMOTE_ACCESS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 3,
+       "ASK_REMOTE_ACCESS": 1
+      }
+     }
+    }
+   },
+   "test": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 43,
+      "n": 200,
+      "value": 0.215,
+      "ci95": [
+       0.1637,
+       0.277
+      ]
+     },
+     "verify_exactly": {
+      "k": 38,
+      "n": 200,
+      "value": 0.19,
+      "ci95": [
+       0.1417,
+       0.25
+      ]
+     },
+     "hold": {
+      "k": 5,
+      "n": 200,
+      "value": 0.025,
+      "ci95": [
+       0.0107,
+       0.0572
+      ]
+     },
+     "above_floor": {
+      "k": 43,
+      "n": 200,
+      "value": 0.215,
+      "ci95": [
+       0.1637,
+       0.277
+      ]
+     },
+     "checker_queue": {
+      "k": 5,
+      "n": 200,
+      "value": 0.025,
+      "ci95": [
+       0.0107,
+       0.0572
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 27,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 8,
+      "ASK_NEW_ACCOUNT": 8,
+      "ASK_SECRECY": 3,
+      "ASK_REMOTE_ACCESS": 1,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 4,
+      "ASK_NEW_ACCOUNT": 3,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_SECRECY": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack": {
+     "n": 98,
+     "ge_verify": {
+      "k": 75,
+      "n": 98,
+      "value": 0.7653,
+      "ci95": [
+       0.6724,
+       0.8382
+      ]
+     },
+     "verify_exactly": {
+      "k": 63,
+      "n": 98,
+      "value": 0.6429,
+      "ci95": [
+       0.5443,
+       0.7307
+      ]
+     },
+     "hold": {
+      "k": 12,
+      "n": 98,
+      "value": 0.1224,
+      "ci95": [
+       0.0715,
+       0.2019
+      ]
+     },
+     "above_floor": {
+      "k": 24,
+      "n": 98,
+      "value": 0.2449,
+      "ci95": [
+       0.1704,
+       0.3386
+      ]
+     },
+     "checker_queue": {
+      "k": 12,
+      "n": 98,
+      "value": 0.1224,
+      "ci95": [
+       0.0715,
+       0.2019
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 12,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+      "ASK_SECRECY": 7,
+      "ASK_CREDENTIAL": 6,
+      "ASK_BYPASS": 3,
+      "ASK_PAYEE_CHANGE": 2
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 7,
+      "ASK_BYPASS": 3,
+      "ASK_CREDENTIAL": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 17,
+      "ge_verify": {
+       "k": 17,
+       "n": 17,
+       "value": 1.0,
+       "ci95": [
+        0.8157,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 16,
+       "n": 17,
+       "value": 0.9412,
+       "ci95": [
+        0.7302,
+        0.9895
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "above_floor": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 5,
+       "ASK_PAYEE_CHANGE": 2,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 17,
+      "ge_verify": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "verify_exactly": {
+       "k": 8,
+       "n": 17,
+       "value": 0.4706,
+       "ci95": [
+        0.2617,
+        0.6904
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "above_floor": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
+       "ASK_SECRECY": 1
+      }
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 37,
+      "ge_verify": {
+       "k": 37,
+       "n": 37,
+       "value": 1.0,
+       "ci95": [
+        0.9059,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 29,
+       "n": 37,
+       "value": 0.7838,
+       "ci95": [
+        0.628,
+        0.8861
+       ]
+      },
+      "hold": {
+       "k": 8,
+       "n": 37,
+       "value": 0.2162,
+       "ci95": [
+        0.1139,
+        0.372
+       ]
+      },
+      "above_floor": {
+       "k": 8,
+       "n": 37,
+       "value": 0.2162,
+       "ci95": [
+        0.1139,
+        0.372
+       ]
+      },
+      "checker_queue": {
+       "k": 8,
+       "n": 37,
+       "value": 0.2162,
+       "ci95": [
+        0.1139,
+        0.372
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 7,
+       "ASK_SECRECY": 6,
+       "ASK_BYPASS": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 6,
+       "ASK_BYPASS": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 21,
+      "ge_verify": {
+       "k": 6,
+       "n": 21,
+       "value": 0.2857,
+       "ci95": [
+        0.1381,
+        0.4996
+       ]
+      },
+      "verify_exactly": {
+       "k": 4,
+       "n": 21,
+       "value": 0.1905,
+       "ci95": [
+        0.0767,
+        0.4
+       ]
+      },
+      "hold": {
+       "k": 2,
+       "n": 21,
+       "value": 0.0952,
+       "ci95": [
+        0.0265,
+        0.2891
+       ]
+      },
+      "above_floor": {
+       "k": 6,
+       "n": 21,
+       "value": 0.2857,
+       "ci95": [
+        0.1381,
+        0.4996
+       ]
+      },
+      "checker_queue": {
+       "k": 2,
+       "n": 21,
+       "value": 0.0952,
+       "ci95": [
+        0.0265,
+        0.2891
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 2
+      }
+     }
+    }
+   }
   }
+ },
+ "attack_holds_lost": {
+  "counts": {
+   "all": {
+    "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)": 18,
+    "policy 1.1: real single ask, no corroboration -> VERIFY": 8
+   },
+   "test": {
+    "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)": 9,
+    "policy 1.1: real single ask, no corroboration -> VERIFY": 4
+   },
+   "dev": {
+    "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)": 9,
+    "policy 1.1: real single ask, no corroboration -> VERIFY": 4
+   }
+  },
+  "cases": [
+   {
+    "case": "case_a_ask_004",
+    "split": "test",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A1"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_006",
+    "split": "dev",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A1"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_009",
+    "split": "dev",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A1"
+    ],
+    "before_ask_codes": [
+     "ASK_NEW_ACCOUNT",
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_011",
+    "split": "dev",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A1"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_021",
+    "split": "test",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A1"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_023",
+    "split": "dev",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A1"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_029",
+    "split": "test",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A2"
+    ],
+    "before_ask_codes": [
+     "ASK_CREDENTIAL"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   },
+   {
+    "case": "case_a_ask_030",
+    "split": "dev",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A2"
+    ],
+    "before_ask_codes": [
+     "ASK_CREDENTIAL"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   },
+   {
+    "case": "case_a_ask_032",
+    "split": "test",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A2"
+    ],
+    "before_ask_codes": [
+     "ASK_CREDENTIAL"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   },
+   {
+    "case": "case_a_ask_035",
+    "split": "dev",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A2"
+    ],
+    "before_ask_codes": [
+     "ASK_CREDENTIAL"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   },
+   {
+    "case": "case_a_ask_042",
+    "split": "test",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A2"
+    ],
+    "before_ask_codes": [
+     "ASK_CREDENTIAL"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   },
+   {
+    "case": "case_a_ask_057",
+    "split": "dev",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A3"
+    ],
+    "before_ask_codes": [
+     "ASK_REMOTE_ACCESS"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   },
+   {
+    "case": "case_a_ask_088",
+    "split": "dev",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A5"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_092",
+    "split": "test",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A5"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_096",
+    "split": "dev",
+    "scenario": "N2_new_payee_large",
+    "gold_asks": [
+     "A5"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_128",
+    "split": "test",
+    "scenario": "N1_small_new_payee",
+    "gold_asks": [
+     "A6"
+    ],
+    "before_ask_codes": [
+     "ASK_UNUSUAL_PAYMENT_METHOD",
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_133",
+    "split": "test",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_134",
+    "split": "test",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_135",
+    "split": "dev",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_136",
+    "split": "dev",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_137",
+    "split": "test",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_PAYEE_CHANGE",
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_138",
+    "split": "test",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_NEW_ACCOUNT",
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_148",
+    "split": "test",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_NEW_ACCOUNT",
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_149",
+    "split": "dev",
+    "scenario": "C1_payee_change",
+    "gold_asks": [
+     "A7"
+    ],
+    "before_ask_codes": [
+     "ASK_SECRECY"
+    ],
+    "after_band": "VERIFY",
+    "cause": "context layer: only the appended footer was removed (it had caused or corroborated the HOLD)"
+   },
+   {
+    "case": "case_a_ask_154",
+    "split": "dev",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A3",
+     "A2"
+    ],
+    "before_ask_codes": [
+     "ASK_CREDENTIAL"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   },
+   {
+    "case": "case_a_ask_165",
+    "split": "test",
+    "scenario": "no_payment_credential_or_remote",
+    "gold_asks": [
+     "A2"
+    ],
+    "before_ask_codes": [
+     "ASK_CREDENTIAL"
+    ],
+    "after_band": "VERIFY",
+    "cause": "policy 1.1: real single ask, no corroboration -> VERIFY"
+   }
+  ]
  },
  "before_measured_on_pre_fix_code": {
   "git_commit": "fda5496",
@@ -2461,5 +6446,6 @@
     }
    }
   }
- }
+ },
+ "before_emulation_matches_pre_fix_code": true
 }

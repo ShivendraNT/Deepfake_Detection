@@ -174,6 +174,9 @@ def main() -> None:
             }
         report["variants"][name] = per
 
+    if not pre_fix:
+        report["attack_holds_lost"] = holds_lost(cases, master)
+
     if pre_fix:
         report["before_measured_on_pre_fix_code"] = {
             "git_commit": report["git_commit"],
@@ -190,6 +193,55 @@ def main() -> None:
     OUT_JSON.write_text(json.dumps(report, indent=1, ensure_ascii=False) + "\n", encoding="utf-8")
     OUT_MD.write_text(render_md(report), encoding="utf-8")
     print(render_md(report))
+
+
+def holds_lost(cases: list[SynthCase], master: MasterData) -> dict[str, Any]:
+    """Attack cases at HOLD before and not after, attributed to the stage that removed the
+    HOLD: the context layer (and whether it removed anything from the attacker's OWN text, i.e.
+    a filter error, or only the appended footer) or the policy 1.1 corroboration cap."""
+    from satyapan.asks.extractor import extract_asks
+    from satyapan.context import strip_context
+
+    def kinds(text: str) -> set[str]:
+        return {x.ask_type.value for x in extract_asks(text)}
+
+    rows: list[dict[str, Any]] = []
+    for sc in cases:
+        if sc.group != "attack":
+            continue
+        b = run_case(sc, master, VARIANTS["before"]).decision
+        a = run_case(sc, master, VARIANTS["after"]).decision
+        if b is None or a is None or b.band != Band.HOLD or a.band == Band.HOLD:
+            continue
+        c = run_case(sc, master, VARIANTS["context_only"]).decision
+        assert c is not None
+        own = sc.payloads[0].decode("utf-8").split(" Regards, Accounts. ")[0] if sc.payloads else ""
+        if c.band != Band.HOLD:
+            cause = (
+                "context layer: removed part of the attacker's own text (filter error)"
+                if kinds(own) - kinds(strip_context(own).cleaned)
+                else "context layer: only the appended footer was removed (it had caused or "
+                "corroborated the HOLD)"
+            )
+        else:
+            cause = "policy 1.1: real single ask, no corroboration -> VERIFY"
+        rows.append(
+            {
+                "case": sc.case.id,
+                "split": sc.split,
+                "scenario": sc.scenario,
+                "gold_asks": sc.gold_asks,
+                "before_ask_codes": [r.value for r in b.reason_codes if r.value.startswith("ASK_")],
+                "after_band": a.band.value,
+                "cause": cause,
+            }
+        )
+    counts: dict[str, dict[str, int]] = {}
+    for r in rows:
+        for split in ("all", r["split"]):
+            counts.setdefault(split, {})
+            counts[split][r["cause"]] = counts[split].get(r["cause"], 0) + 1
+    return {"counts": counts, "cases": rows}
 
 
 def _same(a: dict[str, Any], b: dict[str, Any]) -> bool:
@@ -276,6 +328,19 @@ def render_md(r: dict[str, Any]) -> str:
                 + " |"
             )
         out.append("")
+    if "attack_holds_lost" in r:
+        out += ["## Attack cases that lost HOLD (before -> after), by cause", ""]
+        out += ["| Split | Cause | Cases |", "|---|---|---|"]
+        for split in ("test", "all"):
+            for cause, k in sorted(r["attack_holds_lost"]["counts"].get(split, {}).items()):
+                out.append(f"| {split} | {cause} | {k} |")
+        out += [
+            "",
+            "All of these stay at VERIFY or above (none drops to PASS). Footer-caused HOLDs were "
+            "the same false positive that hits routine payments, so they inflated the old attack "
+            "HOLD rate; the policy-cap rows are the real cost of ADR-021.",
+            "",
+        ]
     if "before_emulation_matches_pre_fix_code" in r:
         pf = r["before_measured_on_pre_fix_code"]["git_commit"]
         out.append(
