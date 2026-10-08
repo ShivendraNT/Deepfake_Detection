@@ -55,3 +55,12 @@ Out of scope: compromise of the backend host, of the bank, or of the browser its
 - The voice detector's false-alarm rate on real Meet audio is only as good as the τ calibration
   set (team voices, n stated on the slide).
 - Demo identity headers are not authentication. Production needs SSO.
+
+## Added 08 Oct 2026 (ADR-021, ADR-022, judge findings)
+
+| Threat | Mitigation | Residual (measured, `results/redteam_deterministic.json`) |
+|---|---|---|
+| Ask hidden in boilerplate-shaped text so the context pre-filter drops it | segment-level stripping; never strip requests to the requester, money-movement content or un-negated actions; strip a footer/notification only if no ask remains once the boilerplate span is cut | round-3 wrappers (final): up to 2/38 asks hidden; known gap "bank will never ask for your OTP ... but <ask>": 13/38 |
+| Checker-queue flooding by planted keywords ("confidential", "OTP") | single uncorroborated ask is capped at VERIFY (ADR-021) | one planted keyword: 10-21% of routine payments at HOLD (was 100%); two keyword types: still 100% |
+| De-minimis splitting to a new payee | 30-day cumulative de-minimis from the payer's payment register (ADR-022) | needs the register feed; 12/12 synthetic splits now VERIFY |
+| New-vendor onboarding (first phone/bank record is the trust root) | assumption: verified out of band (GSTIN lookup, penny drop, callback number from GST/MCA records, not from the vendor's e-mail) | not implemented |
