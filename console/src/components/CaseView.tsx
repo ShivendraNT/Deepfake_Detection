@@ -8,6 +8,7 @@ import { BandBadge } from "./BandBadge";
 import { EvidenceList } from "./EvidenceList";
 import { ReasonCodes } from "./ReasonCodes";
 import { TransactionCard } from "./TransactionCard";
+import { VerifyPanel } from "./VerifyPanel";
 
 interface CaseViewProps {
   user?: DemoUser;
@@ -30,6 +31,7 @@ export function CaseView({
 }: CaseViewProps) {
   const [fetchedCase, setFetchedCase] = useState<Case | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [refreshTick, setRefreshTick] = useState<number>(0);
 
   const activeRole: Role = propRole || user?.role || "maker";
 
@@ -59,7 +61,7 @@ export function CaseView({
     return () => {
       active = false;
     };
-  }, [user, caseId, propCaseItem]);
+  }, [user, caseId, propCaseItem, refreshTick]);
 
   const currentCase = propCaseItem !== undefined ? propCaseItem : fetchedCase;
   const isLoading = propLoading !== undefined ? propLoading : loading;
@@ -191,6 +193,18 @@ export function CaseView({
             )}
           </div>
         </section>
+      )}
+
+      {/* 3b. Verification actions (T13): callback form + Clear / Status per role */}
+      {user && (
+        <VerifyPanel
+          key={currentCase.id}
+          user={user}
+          caseItem={currentCase}
+          onChanged={() => {
+            if (propCaseItem === undefined) setRefreshTick((t) => t + 1);
+          }}
+        />
       )}
 
       {/* 4. Evidence List */}

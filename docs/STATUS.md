@@ -21,7 +21,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T10 | Extension side panel UI | Saarika | done | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | UI built with pure reducer and replay | 
 | T11 | Live transcript path | Shivendra | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
 | T12 | OOB-Confirm | Saksham | done | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
-| T13 | Callback logging + checker flows | Saksham | todo | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
+| T13 | Callback logging + checker flows | Saksham | done | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
 | T14 | Explanation templates EN/HI | Saksham | done | T02 | [spec](tasks/T14-explanation-templates.md) | 33/33 codes EN + Devanagari HI done; `reason_text` + `explain_template` done; 35/35 task tests + full suite green; proofread and signed off by Kartikey |
 | T15 | Bedrock summary + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
@@ -57,3 +57,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T04: done — `domains.py` (levenshtein, look-alike + confusables, .bank.in, freemail, bank-claim) + `signals.py` (6 email rules, all `Signal.make(DETERMINISTIC)`); 25 table tests + 10 fixture signal sets green, full suite 373 passed / 0 failed.
 07 Oct, T12: done — OOB-Confirm service, SES mailer adapter, and CFO inbox screen merged.
 08 Oct, T08: done — invoice regex, PDF metadata parsing, and master diff signals merged.
+08 Oct, T13: done — callback logging, clearance evaluation, status rules, override, and watchlist.
