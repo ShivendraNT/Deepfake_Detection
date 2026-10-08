@@ -65,3 +65,26 @@ Green + `make check`; STATUS updated; commit `T08: ...`.
 - PDF incremental updates: each update appends a new `%%EOF` (PDF 1.7 spec §7.5.6).
 
 ## Agent plan (write yours here)
+
+- [x] 1. `extract_invoice_fields` (`extract.py`): run the given patterns, accounts only inside
+      40 chars after an `ACCOUNT_KEYWORDS` hit, amounts as `int` rupees, de-dup keeping
+      first-seen order. Green: `test_regex_on_plain_text`, `test_phone_digits_not_account`.
+- [x] 2. `extract_pdf_text` (`pdf.py`): `ValueError` unless `data.startswith(b"%PDF")`, then
+      pdfplumber over `io.BytesIO`, pages joined with `"\n"`. Green: `test_not_a_pdf_raises_value_error`.
+- [x] 3. `parse_pdf_date`: spec regex -> aware `datetime`; `None`/garbage -> `None`.
+      Green: `test_pdf_date_parsing`.
+- [x] 4. `read_pdf_metadata`: `data.count(b"%%EOF")`, `incremental_updates = max(eof-1, 0)`,
+      info dict from `pdf.metadata`. Note (verified on the fixtures): pdfminer falls back to a
+      sequential xref scan here and resolves object 6 to its FIRST occurrence, so `pdf.metadata`
+      still shows the pre-edit Info dict — when `eof_count > 1` the Info keys are re-read from the
+      bytes after the first `%%EOF` (the appended update) so `producer`/`mod_date` are the
+      effective ones (`SomeEditor 9.1` / `2026-10-03`). Green: fixture `eof_count` assertions.
+- [x] 5. `document_signals` (`checker.py`): vendor by `txn.vendor_id`, else GSTIN match in
+      `master.vendors`; unregistered account/IFSC/UPI -> one `DOC_ACCOUNT_MISMATCH`
+      (detail `{"field", "invoice_value_masked"}`, every value masked with `mask_account`);
+      `incremental_updates > 0 and mod_date > creation_date` -> `DOC_PDF_EDITED`
+      (dates missing -> treated as edited; conservative); no payee field at all ->
+      `grey_reasons += [PARSE_FAILURE]`; nothing fired -> `DOC_NO_ISSUES`.
+      Green: `test_fixture_pdf_fields_meta_and_signals`.
+- [x] 6. `make task T=T08` green, then `make fmt` + `make check`.
+- [x] 7. `docs/STATUS.md` -> `done`, commit `T08: ...`.

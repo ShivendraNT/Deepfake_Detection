@@ -68,3 +68,27 @@ Green + `make check`; if AWS used, note bucket name + Object Lock mode in STATUS
 - boto3 put_object: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/s3/client/put_object.html
 
 ## Agent plan (write yours here)
+
+1. `LocalStorage.put/get` in `vault/storage.py`: reject keys with a `..` part or a leading `/`
+   (`ValueError`), mkdir parents, write bytes, return `path.resolve().as_uri()`; `get` parses the
+   `file://` URI (`urllib.parse.urlparse` + `unquote`, `Path.from` → read) and rejects other
+   schemes. Turns `test_local_storage_roundtrip` + the 3 traversal tests green.
+2. `get_storage(settings)` in `vault/storage.py`: `LocalStorage(settings.vault_dir)` unless
+   `settings.aws_mode and settings.s3_bucket`; construct `S3Storage(settings)` inside
+   `try/except Exception` → `logging.warning` → fall back to LocalStorage. Turns the two
+   `get_storage_*` tests green.
+3. `intake(...)` in `vault/intake.py`: follow the 5 docstring steps in order — `sha256_bytes(data)`
+   first, store at `{case_id}/{sha}`, id `ev_{sha[:16]}`, `log.append(... CustodyEvent.INTAKE ...)`,
+   then build `Evidence(captured_at=now or utcnow(), excerpt=excerpt[:EXCERPT_MAX_CHARS])`.
+   Turns `test_intake_hashes_stores_and_logs` green.
+4. `anchor_head(log, store, now)` in `vault/anchor.py`: body `{"head_hash","seq","at"}` via
+   `canonical_json`, key `anchors/{seq:08d}-{head}.json`, `object_lock_mode="GOVERNANCE"` only when
+   `isinstance(store, S3Storage)` (lazy import), else `None`. Turns `test_anchor_writes_head` green.
+5. `S3Storage` in `adapters/s3_store.py`: boto3 imported **inside** `__init__` (optional extra),
+   `Config(connect_timeout=..., read_timeout=settings.aws_timeout_s)`, `put` with
+   `ServerSideEncryption="AES256"`, `get` from `s3://bucket/key`, `put_locked` adds
+   `ObjectLockMode="GOVERNANCE"` + `ObjectLockRetainUntilDate=now+1 day`. Not covered by unit tests;
+   the boto3-import invariant test guards the file location.
+6. Run the whole T09 suite, then `ruff check/format` + `mypy` + full `pytest` (the `make check`
+   equivalent); fix with `ruff format .` if needed.
+7. Update `docs/STATUS.md` (T09 → `done` + one-line note) and commit `T09: ...`.

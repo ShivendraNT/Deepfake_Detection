@@ -51,3 +51,16 @@ Green + `make check`; a Hindi speaker has proofread (note who in STATUS).
 - Lewis et al. 2022: warnings alone barely help — give a concrete ACTION in every line.
 
 ## Agent plan (write yours here)
+1. Enumerate every `ReasonCode` (33) and group them floor / email / doc / voice / ask / style /
+   watchlist / decision-level using `contracts/signal_table.py` + ARCHITECTURE §6.1-6.2.
+2. Draft EN text per code: one line of WHAT HAPPENED + one line of WHAT TO DO (concrete action),
+   ≤ 300 chars, no reassuring words, callback wording always "number on file".
+3. Draft HI text in simple everyday Devanagari, same two beats; band names (PASS/VERIFY/HOLD)
+   and product terms (OOB-Confirm, PDF) stay in English; ask a Hindi speaker to proofread.
+4. Fill `REASON_TEXT` for all 33 codes; verify with a script that keys == set(ReasonCode),
+   lengths ≤ 300, Devanagari present, forbidden words absent.
+5. Implement `reason_text` (direct dict lookup, `KeyError` if missing).
+6. Implement `explain_template`: headline `Band: <band>` / `स्तर: <band>` + one line per
+   `decision.reason_codes` in order, `\n`-joined, `source="template"`.
+7. Run `pytest --task T14 -v` until green, then lint + typecheck + full test run.
+8. Update `docs/STATUS.md` (status + Hindi proofreader note) after the leader's review.

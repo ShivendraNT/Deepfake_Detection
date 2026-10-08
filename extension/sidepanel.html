@@ -1,15 +1,81 @@
 <!doctype html>
-<!-- STUB(T10) — see docs/tasks/T10-extension-sidepanel.md. Remove this marker when done.
-     Required element ids: voice-meter, transcript, ask-chips, suggested-line, btn-confirm,
-     btn-link-payment, protection-indicator. -->
-<html>
+<html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>Satyapan</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Satyapan Call Monitor</title>
     <link rel="stylesheet" href="sidepanel.css" />
   </head>
   <body>
-    <p>Side panel not built yet (T10).</p>
+    <header class="panel-header">
+      <div class="brand">
+        <span class="logo-mark">स</span>
+        <h1 class="brand-title">Satyapan</h1>
+      </div>
+      <div id="protection-indicator" class="protection-pill active" title="Active protection">
+        <span class="dot"></span>
+        <span class="protection-text">Protection on</span>
+      </div>
+    </header>
+
+    <main class="panel-body">
+      <!-- Band Banner -->
+      <section id="band-banner" class="band-banner band-pass">
+        <div class="band-title-row">
+          <span class="band-label-prefix">POLICY BAND</span>
+          <span id="band-name" class="band-name">PASS</span>
+        </div>
+        <p id="band-desc" class="band-desc">No elevated fraud patterns detected.</p>
+      </section>
+
+      <!-- Suggested Line Card -->
+      <section class="card suggested-card">
+        <h2 class="card-title">Suggested response</h2>
+        <div id="suggested-line" class="suggested-line">
+          Listen carefully to requests. Verify standard PO approval process.
+        </div>
+      </section>
+
+      <!-- Voice Meter -->
+      <section class="card voice-card">
+        <h2 class="card-title">Voice authenticity</h2>
+        <div id="voice-meter" class="voice-meter meter-no-signs" data-label="no_signs">
+          <span class="voice-status-icon">🎙️</span>
+          <span id="voice-text" class="voice-text">No signs of synthetic audio (0 windows)</span>
+        </div>
+      </section>
+
+      <!-- Ask Chips -->
+      <section class="card asks-card">
+        <h2 class="card-title">Detected asks</h2>
+        <div id="ask-chips" class="ask-chips">
+          <span class="empty-hint">No high-risk asks detected yet.</span>
+        </div>
+      </section>
+
+      <!-- Transcript -->
+      <section class="card transcript-card">
+        <h2 class="card-title">Live transcript</h2>
+        <div id="transcript" class="transcript-feed">
+          <p class="empty-hint">Listening to call audio...</p>
+        </div>
+      </section>
+
+      <!-- Action Buttons -->
+      <section class="actions-section">
+        <button id="btn-confirm" class="btn btn-primary" type="button">
+          Confirm with requester (OOB)
+        </button>
+        <button id="btn-link-payment" class="btn btn-secondary" type="button">
+          Link to payment case
+        </button>
+      </section>
+    </main>
+
+    <footer class="panel-footer">
+      <div id="status-message" class="status-message">Listening to call</div>
+    </footer>
+
     <script type="module" src="sidepanel.js"></script>
   </body>
 </html>

@@ -11,22 +11,22 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 |---|---|---|---|---|---|---|
 | T01 | Skeleton, contracts, fixtures, mock API | Shivendra | done | — | [spec](tasks/T01-skeleton-contracts-mock-api.md) | pre-implemented; GET /cases returns 12 fixtures |
 | T02 | Policy engine + property tests | Shivendra | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
-| T03 | .eml parser | Kartikey | todo | T01 | [spec](tasks/T03-eml-parser.md) | |
-| T04 | Domain checks + email signals | Kartikey | todo | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
-| T05 | Ask extractor v1.0 (A1-A7) | Saarika | todo | T01 | [spec](tasks/T05-ask-extractor.md) | freeze + tag for research when done |
-| T06 | Console UI shell | Saksham | done | T01 | [spec](tasks/T06-console-ui.md) | list + case view (card first) + role switcher; vitest 1/1, `pytest --task T06` 3/3, tsc clean |
-| T07 | Extension capture core | Shivendra | todo | — | [spec](tasks/T07-extension-capture.md) | manifest + voice_rules.js pre-done |
-| T08 | Invoice/PDF checker | Kartikey | todo | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 6 fixture PDFs generated |
+| T03 | .eml parser | Kartikey | done | T01 | [spec](tasks/T03-eml-parser.md) | |
+| T04 | Domain checks + email signals | Kartikey | done | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
+| T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
+| T06 | Console UI shell | Saksham | done | T01 | [spec](tasks/T06-console-ui.md) | |
+| T07 | Extension capture core | Shivendra | in-progress | — | [spec](tasks/T07-extension-capture.md) | steps 1-7 code done + reviewed; step 8 manual Meet test pending |
+| T08 | Invoice/PDF checker | Kartikey | done | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 10/10 tests pass, regex/metadata/checker done |
 | T09 | Evidence vault: storage, intake, anchor | Saksham | partial | T01 | [spec](tasks/T09-evidence-vault.md) | hashing + custody chain pre-implemented |
-| T10 | Extension side panel UI | Saarika | todo | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | build from replay file |
+| T10 | Extension side panel UI | Saarika | done | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | UI built with pure reducer and replay | 
 | T11 | Live transcript path | Shivendra | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
-| T12 | OOB-Confirm | Saksham | done | T02, T06 | [spec](tasks/T12-oob-confirm.md) | token hashed + bound, DENIED → HOLD/SUSPECTED_FRAUD, OobInbox screen; 8/9 strict green (`test_api_flow` blocked by the pre-existing Windows TestClient/network-guard issue) |
-| T13 | Callback logging + checker flows | Saksham | done | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | trusted-number callbacks, clearance evaluation, HOLD clear + security ack, 2-approver override, 30-day watchlist, VerifyPanel; 9/9 strict green |
-| T14 | Explanation templates EN/HI | Saksham | todo | T02 | [spec](tasks/T14-explanation-templates.md) | |
+| T12 | OOB-Confirm | Saksham | done | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
+| T13 | Callback logging + checker flows | Saksham | done | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
+| T14 | Explanation templates EN/HI | Saksham | done | T02 | [spec](tasks/T14-explanation-templates.md) | 33/33 codes EN + Devanagari HI done; `reason_text` + `explain_template` done; 35/35 task tests + full suite green; proofread and signed off by Kartikey |
 | T15 | Bedrock summary + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
 | T17 | Voice uploads path | Kartikey | todo | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | |
-| T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | todo | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
+| T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | done | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
 | T19 | Research R1: loader, D2, D3, metrics | Kartikey + Shivendra | todo | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | |
 | T20 | Research R2: paraphrase attacks + filters | Shivendra | todo | T19 | [spec](tasks/T20-research-paraphrase-attacks.md) | email ICFD authors first |
 | T21 | Research R3: evaluation + money figure | Shivendra | todo | T19, T20 | [spec](tasks/T21-research-eval-money-figure.md) | |
@@ -46,3 +46,15 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 
 ## Notes log
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
+06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
+07 Oct, T05: done — n=104 sentences, precision=1.000, recall=1.000; lexicon v1.0.0 ready for `lexicon-v1.0` tag.
+07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
+07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
+07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
+07 Oct, T03: done — 10 fixtures + 4 unit tests green (`uv run pytest --task T03`); lint/format/mypy green.
+07 Oct, T09: partial — intake/anchor/storage implemented; missing KMS/S3 IAM check but code is solid.
+07 Oct, T06: done — console UI shell built with React, Tailwind, and Radix UI; mock API wiring completed.
+07 Oct, T04: done — `domains.py` (levenshtein, look-alike + confusables, .bank.in, freemail, bank-claim) + `signals.py` (6 email rules, all `Signal.make(DETERMINISTIC)`); 25 table tests + 10 fixture signal sets green, full suite 373 passed / 0 failed.
+07 Oct, T12: done — OOB-Confirm service, SES mailer adapter, and CFO inbox screen merged.
+08 Oct, T08: done — invoice regex, PDF metadata parsing, and master diff signals merged.
+08 Oct, T13: done — callback logging, clearance evaluation, status rules, override, and watchlist.
