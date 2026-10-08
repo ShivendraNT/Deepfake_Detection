@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=1280">
+<title>Satyapan Round 1 Submission</title>
+<style>
+/* ---------- fonts (all OFL-1.1, bundled in src/fonts) ---------- */
+@font-face { font-family: 'Inter'; src: url(fonts/inter-var.woff2) format('woff2'); font-weight: 100 900;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
+@font-face { font-family: 'Inter'; src: url(fonts/inter-var-ext.woff2) format('woff2'); font-weight: 100 900;
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Noto Sans Devanagari'; src: url(fonts/noto-deva-400.woff2) format('woff2'); font-weight: 400; unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+25CC, U+A830-A839, U+A8E0-A8FF; }
+@font-face { font-family: 'Noto Sans Devanagari'; src: url(fonts/noto-deva-600.woff2) format('woff2'); font-weight: 600; unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+25CC, U+A830-A839, U+A8E0-A8FF; }
+@font-face { font-family: 'Noto Sans Devanagari'; src: url(fonts/noto-deva-700.woff2) format('woff2'); font-weight: 700 900; unicode-range: U+0900-097F, U+1CD0-1CF9, U+200C-200D, U+25CC, U+A830-A839, U+A8E0-A8FF; }
+@font-face { font-family: 'JetBrains Mono'; src: url(fonts/jbmono-400.woff2) format('woff2'); font-weight: 400; }
+@font-face { font-family: 'JetBrains Mono'; src: url(fonts/jbmono-600.woff2) format('woff2'); font-weight: 600 700; }
+
+/* ---------- tokens ---------- */
+:root {
+  --ink: #0f172a; --ink2: #334155; --mute: #525d72; --line: #d6dbe3; --line2: #e7eaf0;
+  --paper: #ffffff; --panel: #f4f6f9; --warm: #fbf8f2;
+  --brand: #1e3a8a; --brand2: #3150b0; --brandT: #e9eefc;
+  --pass: #15653a; --passT: #e5f3ea; --verify: #96540a; --verifyT: #fdf0d9; --hold: #b0122a; --holdT: #fce7ea;
+  --aws: #a8470b; --awsT: #fff3e5; --trust: #15653a; --untrust: #b0122a; --device: #1e3a8a;
+  --sans: 'Inter', 'Noto Sans Devanagari', 'DejaVu Sans', system-ui, sans-serif;
+  --mono: 'JetBrains Mono', 'DejaVu Sans Mono', monospace;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body { font-family: var(--sans); color: var(--ink); background: #dfe3ea; -webkit-font-smoothing: antialiased; font-feature-settings: "cv11", "ss01"; }
+@page { size: 1280px 720px; margin: 0; }
+@media screen { section.slide { margin: 0 auto 28px; box-shadow: 0 2px 12px rgba(15,23,42,.18); } body { padding: 28px 0; } }
+@media print { body { background: #fff; } }
+
+/* ---------- slide frame ---------- */
+section.slide { width: 1280px; height: 720px; position: relative; overflow: hidden; background: var(--paper);
+  padding: 26px 44px 0 44px; display: flex; flex-direction: column; break-after: page; page-break-after: always; }
+section.slide:last-of-type { break-after: auto; page-break-after: auto; }
+.kicker { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 650; letter-spacing: .07em;
+  text-transform: uppercase; color: var(--mute); }
+.kicker .part { color: var(--brand); }
+.kicker .part.arch { color: var(--aws); }
+.kicker .part.apx { color: var(--ink2); }
+.kicker .dot { width: 4px; height: 4px; border-radius: 50%; background: var(--line); }
+.kicker .rub { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 550; color: var(--ink2);
+  background: var(--panel); border: 1px solid var(--line); padding: 2px 10px; border-radius: 999px; }
+h1 { font-size: 26px; line-height: 1.16; margin: 7px 0 12px; letter-spacing: -.016em; font-weight: 760; color: var(--ink); }
+h1 .lite { font-weight: 500; color: var(--ink2); }
+.body { flex: 1; min-height: 0; position: relative; }
+footer.ft { height: 32px; flex: none; display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--line2);
+  font-size: 13px; color: var(--mute); }
+footer.ft .src { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+footer.ft .pg { flex: none; font-weight: 650; color: var(--ink2); }
+footer.ft .pg b { color: var(--brand); }
+
+/* ---------- type ---------- */
+p { margin: 0 0 8px; }
+.s14 { font-size: 14px; line-height: 1.38; } .s15 { font-size: 15px; line-height: 1.38; } .s16 { font-size: 16px; line-height: 1.4; }
+.s17 { font-size: 17px; line-height: 1.4; } .s18 { font-size: 18px; line-height: 1.38; } .s20 { font-size: 20px; line-height: 1.3; }
+.mute { color: var(--mute); } .ink2 { color: var(--ink2); } .b { font-weight: 700; } .sb { font-weight: 620; }
+.mono { font-family: var(--mono); font-size: .92em; }
+.hi { font-family: 'Noto Sans Devanagari', var(--sans); }
+.lab { font-size: 13px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--mute); margin: 0 0 6px; }
+.lab.brand { color: var(--brand); }
+ul.l { margin: 0; padding-left: 18px; } ul.l li { margin: 0 0 4px; }
+ul.l.tight li { margin-bottom: 2px; }
+.nowrap { white-space: nowrap; }
+
+/* ---------- blocks ---------- */
+.card { border: 1px solid var(--line); border-radius: 10px; padding: 11px 14px; background: #fff; }
+.card.tint { background: var(--panel); border-color: var(--line2); }
+.card.brand { background: var(--brandT); border-color: #c9d4f3; }
+.card.warm { background: var(--warm); border-color: #ece3d1; }
+.card.hold { background: var(--holdT); border-color: #f2c3ca; }
+.card.pass { background: var(--passT); border-color: #bfe0cb; }
+.card.verify { background: var(--verifyT); border-color: #f0d5a6; }
+.row { display: flex; gap: 14px; } .col { display: flex; flex-direction: column; gap: 10px; }
+.grow { flex: 1; min-width: 0; }
+
+/* status tags */
+.tag { display: inline-block; font-size: 12.9px; font-weight: 700; letter-spacing: .02em; padding: 1px 7px; border-radius: 5px;
+  border: 1px solid; vertical-align: 1px; white-space: nowrap; }
+.tag.built { color: var(--pass); border-color: #9fd0b1; background: var(--passT); }
+.tag.design { color: var(--ink2); border-color: var(--line); background: var(--panel); }
+.tag.finale { color: var(--brand); border-color: #b9c6ef; background: var(--brandT); }
+.tag.pending { color: var(--verify); border-color: #ebc98a; background: var(--verifyT); }
+.tag.ext { color: #5b3f8c; border-color: #cdbfe6; background: #f3effb; }
+.tag.meas { color: var(--pass); border-color: #9fd0b1; background: #fff; }
+
+/* bands */
+.band { display: inline-block; font-weight: 800; font-size: 13.5px; letter-spacing: .04em; padding: 1px 8px; border-radius: 5px; }
+.band.pass { color: var(--pass); background: var(--passT); border: 1px solid #a9d6b8; }
+.band.verify { color: var(--verify); background: var(--verifyT); border: 1px solid #ebc98a; }
+.band.hold { color: var(--hold); background: var(--holdT); border: 1px solid #efb3bd; }
+
+/* tables */
+table.t { border-collapse: collapse; width: 100%; font-size: 14px; line-height: 1.33; }
+table.t th { text-align: left; font-size: 13px; font-weight: 700; color: var(--mute); letter-spacing: .03em; text-transform: uppercase;
+  padding: 5px 8px; border-bottom: 1.5px solid var(--line); vertical-align: bottom; }
+table.t td { padding: 5px 8px; border-bottom: 1px solid var(--line2); vertical-align: top; }
+table.t tr:last-child td { border-bottom: none; }
+table.t.zebra tbody tr:nth-child(odd) td { background: #fafbfc; }
+table.t td.num, table.t th.num { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+
+/* screenshot crops: <div class="crop" style="--w;--h"><img style="--x;--y;--s"></div> */
+.crop { position: relative; overflow: hidden; border-radius: 8px; border: 1px solid var(--line); background: #f6f7f9; flex: none; }
+.crop img { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
+.cap { font-size: 13px; color: var(--mute); line-height: 1.3; margin-top: 5px; }
+
+/* svg text defaults */
+svg { display: block; }
+svg text { font-family: var(--sans); fill: var(--ink); }
+svg .t13 { font-size: 13px; } svg .t14 { font-size: 14px; } svg .t15 { font-size: 15px; } svg .t16 { font-size: 16px; }
+svg .b { font-weight: 700; } svg .sb { font-weight: 620; } svg .m { fill: var(--mute); } svg .i2 { fill: var(--ink2); }
+svg foreignObject div { font-family: var(--sans); color: var(--ink); }
+.fo { font-size: 14px; line-height: 1.32; }
+</style>
+</head>
+<body>
+
+<!-- =====================================================================
+     PITCH DECK 1/10 : team, challenge, one-sentence solution
+     ===================================================================== -->
+<section class="slide" data-page="D01">
+  <div class="kicker"><span class="part">Pitch deck</span> 1 / 10 <span class="dot"></span> Team, challenge statement and one-sentence solution
+    <span class="rub">Amazon AI Cyber Security Hackathon · Round 1</span></div>
+  <div class="body" style="display:flex; gap:26px; padding-top:16px;">
+    <div style="width:650px; display:flex; flex-direction:column;">
+      <div class="lab brand" style="margin-bottom:10px">Track 03 · Deepfake Detection for Financial Communications</div>
+      <div style="display:flex; align-items:center; gap:20px;">
+        <svg width="88" height="88" viewBox="0 0 92 92" aria-label="Satyapan seal mark">
+          <circle cx="46" cy="46" r="43" fill="#1e3a8a"/>
+          <circle cx="46" cy="46" r="36" fill="none" stroke="#fff" stroke-opacity=".55" stroke-width="1.5" stroke-dasharray="3 3"/>
+          <text x="46" y="60" text-anchor="middle" style="font-family:'Noto Sans Devanagari'; font-size:40px; font-weight:700; fill:#fff">स</text>
+        </svg>
+        <div>
+          <div style="font-size:58px; font-weight:820; letter-spacing:-.03em; line-height:1;">Satyapan</div>
+          <div class="hi" style="font-size:19px; color:var(--ink2); margin-top:6px;">सत्यापन <span style="font-family:var(--sans)">· “verification” in Hindi</span></div>
+        </div>
+      </div>
+      <div style="font-size:24px; font-weight:650; letter-spacing:-.01em; margin:16px 0 12px; line-height:1.25;">Payment verification that a deepfake cannot pass.</div>
+      <div class="card brand" style="padding:13px 16px;">
+        <div class="lab brand" style="margin-bottom:5px">One-sentence solution</div>
+        <div class="s17" style="line-height:1.42">Satyapan makes a deepfaked CFO or vendor <b>unable to move money</b>: every payment is checked against the company’s own vendor master, the real executive’s voice and approvals carry a cryptographic <b>Satyapan Seal</b>, and any doubt hands verification to a person and channel the attacker does not control.</div>
+      </div>
+      <div class="card" style="margin-top:12px; border-left:4px solid var(--brand);">
+        <div class="s18 b" style="line-height:1.3">“A deepfake can copy a CFO’s voice, never his key.”</div>
+        <div class="s15 mute" style="margin-top:3px"><i>Awaaz nakli ho sakti hai, mohar nahi.</i> (A voice can be faked; the seal cannot.)</div>
+      </div>
+      <div class="card tint" style="margin-top:auto; margin-bottom:12px; padding:9px 14px;">
+        <div class="lab" style="margin-bottom:4px">Reviewer map · rubric criterion → page</div>
+        <div style="display:grid; grid-template-columns: 1fr 1fr; column-gap:22px; row-gap:2px;" class="s14">
+          <div>Problem fit and user (20) <b class="nowrap" style="float:right">2, 3</b></div>
+          <div>Safety, privacy, responsible AI (15) <b style="float:right">9, A3</b></div>
+          <div>Architecture and detection (20) <b class="nowrap" style="float:right">4, 5, 7, A1-A3</b></div>
+          <div>Adoption and scale (10) <b style="float:right">10, A1</b></div>
+          <div>Value and differentiation (15) <b style="float:right">3, 5, 6</b></div>
+          <div>Evidence ledger, every number <b style="float:right">X1</b></div>
+          <div>Feasibility and 48 h plan (15) <b style="float:right">8, 10</b></div>
+          <div>AI, data and asset disclosures <b style="float:right">X5</b></div>
+        </div>
+      </div>
+    </div>
+    <div style="flex:1; display:flex; flex-direction:column; gap:11px; min-width:0; padding-bottom:12px;">
+      <div class="card tint">
+        <div class="lab">Challenge statement we answer</div>
+        <div class="s15" style="font-style:italic; line-height:1.4">“Help people and institutions verify financial communications, detect manipulation, and create an actionable path for review, reporting, or response.”</div>
+        <table class="t" style="margin-top:6px; font-size:14px">
+          <tr><td style="width:62px; padding-left:0" class="sb">Verify</td><td>Seal proves the real executive; master, the real account</td></tr>
+          <tr><td style="padding-left:0" class="sb">Detect</td><td>provenance, forensic, behavioural signals, <i>raise-only</i></td></tr>
+          <tr><td style="padding-left:0" class="sb">Act</td><td>who verifies, checker hold, 1930 / NCRP / bank pack</td></tr>
+        </table>
+      </div>
+      <div class="card">
+        <div class="lab">Team · Delhi Technological University (DTU)</div>
+        <table class="t" style="font-size:14px">
+          <tr><td class="sb" style="width:206px; padding-left:0">Shivendra Narayan Tripathi</td><td>Lead · policy engine, Seal, capture</td></tr>
+          <tr><td class="sb" style="padding-left:0">Saarika <span class="mute">[surname]</span></td><td>Ask detection, side panel, voice</td></tr>
+          <tr><td class="sb" style="padding-left:0">Kartikey <span class="mute">[surname]</span></td><td>Email, invoice, voice checks, report</td></tr>
+          <tr><td class="sb" style="padding-left:0">Saksham <span class="mute">[surname]</span></td><td>Console, vault, OOB-Confirm, EN/HI</td></tr>
+        </table>
+      </div>
+      <div class="card pass" style="flex:1;">
+        <div class="lab" style="color:var(--pass)">What already runs (prototype, 8 Oct 2026)</div>
+        <ul class="l s14" style="line-height:1.36">
+          <li>Decision engine with 7 property-tested safety invariants</li>
+          <li>Satyapan Seal module, API, demo pages, side-panel chip</li>
+          <li>Ask detection EN / Hinglish / Devanagari; EN + HI text</li>
+          <li>511 automated tests pass; gaps listed on pages 8 and X4</li>
+        </ul>
+        <div class="s14 mute" style="margin-top:6px">Synthetic and public data only. Every number is traced in X1.</div>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Deck: pages 1-10 · Architectural overview: A1-A3 · Appendix: X1-X6 (ledger, decision tables, threat model, assumptions, disclosures, references)</div><div class="pg"><b>Satyapan</b> · 1</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 2/10 : user, threat scenario, harm
+     ===================================================================== -->
+<section class="slide" data-page="D02">
+  <div class="kicker"><span class="part">Pitch deck</span> 2 / 10 <span class="dot"></span> User, threat scenario and harm
+    <span class="rub">Problem fit and user understanding (20) · Final check 01</span></div>
+  <h1>The deepfake “boss scam” has reached India’s finance desks</h1>
+  <div class="body" style="display:flex; gap:20px;">
+    <!-- left: evidence it is Indian and current -->
+    <div style="width:540px; display:flex; flex-direction:column; gap:9px;">
+      <div class="lab">It is happening in India, now</div>
+      <div class="card hold" style="padding:10px 13px;">
+        <div class="s14 b" style="color:var(--hold)">JULY 2026 · ₹10.70 CRORE · LISTED-COMPANY SUBSIDIARY [R1]</div>
+        <div class="s15" style="margin-top:3px">Starmangalsutra Pvt Ltd, a subsidiary of Sky Gold &amp; Diamonds, disclosed that an employee sent funds to unknown accounts on instructions from an <b>impersonated director</b>. The company cited deepfake techniques, including profile cloning, and a compromised company phone and laptop. The director had given no such instruction.</div>
+      </div>
+      <div class="card warm" style="padding:10px 13px;">
+        <div class="s14 b" style="color:var(--verify)">17 JULY 2026 · SEBI CAUTION TO LISTED COMPANIES, PR 40/2026 [R2]</div>
+        <div class="s15" style="margin-top:3px">“Boss scam”: CEO/MD impersonation using <b>AI deepfakes and voice cloning on video calls</b>, hijacked WhatsApp Web sessions, the attacker’s number saved under the CEO’s name, and “don’t tell anyone, it is price-sensitive”. Then a mule account. SEBI’s advice: <b>verify directly with the senior official, never pay on a message alone, report on 1930.</b></div>
+      </div>
+      <div class="card tint" style="padding:10px 13px;">
+        <div class="s14 b ink2">2024 · ARUP, HONG KONG · HK$200M (ABOUT US$25.6M) [R3]</div>
+        <div class="s15" style="margin-top:3px">An employee made 15 transfers after a video call with a deepfaked CFO and colleagues. <span class="mute">The person who should have verified was the person being deceived.</span></div>
+      </div>
+      <div class="s14 ink2" style="border-left:3px solid var(--line); padding-left:10px; line-height:1.38;">Scale: Indian citizens lost <b>₹22,845.73 crore</b> to cyber fraud in 2024 (Lok Sabha reply, 22 Jul 2025; mostly consumer fraud) [R4]. Corporate losses come on top, and most are never disclosed.</div>
+    </div>
+    <!-- right: user, moment, pattern, boundary -->
+    <div style="flex:1; display:flex; flex-direction:column; gap:9px; min-width:0;">
+      <div class="row" style="gap:10px">
+        <div class="card brand grow" style="padding:10px 13px;">
+          <div class="lab brand">Primary user</div>
+          <div class="s15"><b>Priya</b>, accounts-payable maker at a ₹80-crore Pune manufacturer <span class="mute">(illustrative)</span>. Pays vendors by NEFT / RTGS / UPI. Checker: <b>Arjun</b>. CFO: <b>Rajesh</b>.</div>
+        </div>
+        <div class="card hold grow" style="padding:10px 13px;">
+          <div class="lab" style="color:var(--hold)">Harmful moment</div>
+          <div class="s15">Priya is about to pay a <b>new or changed bank account</b>, in a hurry and in secret, because “the CFO” or “the vendor” said so.</div>
+        </div>
+      </div>
+      <div class="card" style="padding:10px 12px 10px;">
+        <div class="lab">Exact threat pattern</div>
+        <svg width="606" height="112" viewBox="0 0 606 112" role="img" aria-label="Five-step threat pattern: impersonate, ask, pressure, pay, drain">
+          <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a94a6"/></marker></defs>
+          <rect x="0" y="0" width="110" height="112" rx="8" fill="#fce7ea" stroke="#efb3bd"/>
+          <foreignObject x="7" y="5" width="98" height="104"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>1 Impersonate</b><br>deepfake voice or video, cloned profile</div></foreignObject>
+          <line x1="111" y1="56" x2="122" y2="56" stroke="#8a94a6" stroke-width="2" marker-end="url(#ar2)"/>
+          <rect x="124" y="0" width="110" height="112" rx="8" fill="#fdf0d9" stroke="#ebc98a"/>
+          <foreignObject x="131" y="5" width="98" height="104"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>2 Ask</b><br>new account, “keep it confidential”, “skip Arjun”</div></foreignObject>
+          <line x1="235" y1="56" x2="246" y2="56" stroke="#8a94a6" stroke-width="2" marker-end="url(#ar2)"/>
+          <rect x="248" y="0" width="110" height="112" rx="8" fill="#fdf0d9" stroke="#ebc98a"/>
+          <foreignObject x="255" y="5" width="98" height="104"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>3 Pressure</b><br>the maker is also the one who would verify</div></foreignObject>
+          <line x1="359" y1="56" x2="370" y2="56" stroke="#8a94a6" stroke-width="2" marker-end="url(#ar2)"/>
+          <rect x="372" y="0" width="110" height="112" rx="8" fill="#f4f6f9" stroke="#d6dbe3"/>
+          <foreignObject x="379" y="5" width="98" height="104"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>4 Pay</b><br>NEFT / RTGS / UPI to a mule account</div></foreignObject>
+          <line x1="483" y1="56" x2="494" y2="56" stroke="#8a94a6" stroke-width="2" marker-end="url(#ar2)"/>
+          <rect x="496" y="0" width="110" height="112" rx="8" fill="#fce7ea" stroke="#efb3bd"/>
+          <foreignObject x="503" y="5" width="98" height="104"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>5 Drain</b><br>moved on in hours; needs the UTR fast</div></foreignObject>
+        </svg>
+      </div>
+      <div class="card tint" style="padding:10px 13px;">
+        <div class="lab">Harm</div>
+        <div class="s15">Loss of lakhs to crores in minutes. Recovery depends on reporting the transaction reference (UTR) within hours. Listed firms must disclose; Sky Gold’s shares fell on the news [R1].</div>
+      </div>
+      <div class="card" style="padding:10px 13px;">
+        <div class="lab">Sharply bounded problem</div>
+        <div class="s15"><b>In scope:</b> payment instructions reaching an SME or mid-market AP team by email, WhatsApp text or voice note, and browser meetings (Google Meet, Teams on the web).<br><b>Out of scope (MVP):</b> consumer scams, phone-call interception, native Teams / Zoom desktop apps (upload the recording instead).</div>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">[R1] Sky Gold disclosure to BSE, 16 Jul 2026 (The Economic Times) · [R2] SEBI PR 40/2026 · [R3] Fortune, May 2024 · [R4] Lok Sabha, 22 Jul 2025 · links: X6</div><div class="pg"><b>Satyapan</b> · 2</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 3/10 : current journey, product flow, differentiation
+     ===================================================================== -->
+<section class="slide" data-page="D03">
+  <div class="kicker"><span class="part">Pitch deck</span> 3 / 10 <span class="dot"></span> Current journey, product flow and solution differentiation
+    <span class="rub">Value and differentiation (15) · Problem fit (20)</span></div>
+  <h1>Before and after: verification moves away from the person being deceived</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:10px;">
+    <svg width="1192" height="300" viewBox="0 0 1192 300" role="img" aria-label="Journey today versus with Satyapan, five steps">
+      <defs>
+        <marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#8a94a6"/></marker>
+      </defs>
+      <!-- column headers -->
+      <g class="t13 b" style="letter-spacing:.06em">
+        <text x="132" y="16" class="m">1 · INSTRUCTION ARRIVES</text>
+        <text x="348" y="16" class="m">2 · CHECK</text>
+        <text x="564" y="16" class="m">3 · VERIFY</text>
+        <text x="780" y="16" class="m">4 · APPROVE AND PAY</text>
+        <text x="996" y="16" class="m">5 · IF IT WAS FRAUD</text>
+      </g>
+      <!-- row labels -->
+      <rect x="0" y="28" width="112" height="124" rx="8" fill="#fce7ea" stroke="#efb3bd"/>
+      <text x="56" y="80" text-anchor="middle" class="t15 b" style="fill:#b0122a">TODAY</text>
+      <text x="56" y="100" text-anchor="middle" class="t13 i2">Priya decides</text>
+      <text x="56" y="117" text-anchor="middle" class="t13 i2">alone</text>
+      <rect x="0" y="164" width="112" height="134" rx="8" fill="#e9eefc" stroke="#b9c6ef"/>
+      <text x="56" y="218" text-anchor="middle" class="t15 b" style="fill:#1e3a8a">WITH</text>
+      <text x="56" y="237" text-anchor="middle" class="t15 b" style="fill:#1e3a8a">SATYAPAN</text>
+      <!-- TODAY row -->
+      <g>
+        <rect x="124" y="28" width="204" height="124" rx="8" fill="#fff" stroke="#d6dbe3"/>
+        <foreignObject x="132" y="34" width="190" height="114"><div class="fo">“Rajesh” on Meet or WhatsApp: <b>urgent, confidential</b>, pay this new escrow account today.</div></foreignObject>
+        <rect x="340" y="28" width="204" height="124" rx="8" fill="#fff" stroke="#d6dbe3"/>
+        <foreignObject x="348" y="34" width="190" height="114"><div class="fo">Priya judges by <b>ear and face</b>. A detector, if any, gives a % that drifts with each new generator.</div></foreignObject>
+        <rect x="556" y="28" width="204" height="124" rx="8" fill="#fff" stroke="#d6dbe3"/>
+        <foreignObject x="564" y="34" width="190" height="114"><div class="fo">She calls the number in the message or her phone (attackers rename contacts [R2]). <b>The verifier is the person being deceived.</b></div></foreignObject>
+        <rect x="772" y="28" width="204" height="124" rx="8" fill="#fff" stroke="#d6dbe3"/>
+        <foreignObject x="780" y="34" width="190" height="114"><div class="fo">“Approved” arrives by email or chat, which can also be faked. The amount or account can change afterwards.</div></foreignObject>
+        <rect x="988" y="28" width="204" height="124" rx="8" fill="#fff" stroke="#d6dbe3"/>
+        <foreignObject x="996" y="34" width="190" height="114"><div class="fo">Hunts for the UTR, the bank’s fraud email and the NCRP form while the money moves on.</div></foreignObject>
+        <g stroke="#c4cad4" stroke-width="2" marker-end="url(#ar3)"><line x1="329" y1="90" x2="338" y2="90"/><line x1="545" y1="90" x2="554" y2="90"/><line x1="761" y1="90" x2="770" y2="90"/><line x1="977" y1="90" x2="986" y2="90"/></g>
+      </g>
+      <!-- SATYAPAN row -->
+      <g>
+        <rect x="124" y="164" width="204" height="134" rx="8" fill="#fff" stroke="#3150b0" stroke-width="1.5"/>
+        <foreignObject x="132" y="170" width="190" height="124"><div class="fo">Payment entered. <b>Floor from the vendor master:</b> new account ⇒ <span class="band verify" style="font-size:12.9px">VERIFY</span> whatever the message says.</div></foreignObject>
+        <rect x="340" y="164" width="204" height="134" rx="8" fill="#fff" stroke="#3150b0" stroke-width="1.5"/>
+        <foreignObject x="348" y="170" width="190" height="124"><div class="fo">Side panel: <b>“Claims to be Rajesh: NOT sealed”</b>. Asks: new account, secrecy, skip approval ⇒ <span class="band hold" style="font-size:12.9px">HOLD</span></div></foreignObject>
+        <rect x="556" y="164" width="204" height="134" rx="8" fill="#fff" stroke="#3150b0" stroke-width="1.5"/>
+        <foreignObject x="564" y="170" width="190" height="124"><div class="fo">Only the <b>checker</b> may clear a HOLD, after his own callback on the number on file. OOB-Confirm reaches the <b>real</b> Rajesh.</div></foreignObject>
+        <rect x="772" y="164" width="204" height="134" rx="8" fill="#fff" stroke="#3150b0" stroke-width="1.5"/>
+        <foreignObject x="780" y="170" width="190" height="124"><div class="fo">Real Rajesh’s passkey <b>signs the exact amount and account</b> (Intent Seal). Any change breaks the signature.</div></foreignObject>
+        <rect x="988" y="164" width="204" height="134" rx="8" fill="#fff" stroke="#3150b0" stroke-width="1.5"/>
+        <foreignObject x="996" y="170" width="190" height="124"><div class="fo">One click: <b>1930 script with the UTR on line 1</b>, bank fraud-desk email, NCRP draft, hashed evidence. A human submits.</div></foreignObject>
+        <g stroke="#3150b0" stroke-width="2" marker-end="url(#ar3)"><line x1="329" y1="231" x2="338" y2="231"/><line x1="545" y1="231" x2="554" y2="231"/><line x1="761" y1="231" x2="770" y2="231"/><line x1="977" y1="231" x2="986" y2="231"/></g>
+      </g>
+    </svg>
+    <div class="row" style="gap:16px; align-items:stretch;">
+      <div class="card brand" style="width:300px; flex:none; padding:10px 13px;">
+        <div class="lab brand">User value</div>
+        <div class="s15">Priya <b>never has to judge whether a voice is fake</b>. Routine known-vendor payments add no step unless evidence raises them: 3.0% [1.4-6.4] of routine payments reached the checker in our synthetic test (n = 200, X1).</div>
+      </div>
+      <div class="grow">
+        <table class="t" style="font-size:14px">
+          <thead><tr><th style="width:290px">Others do</th><th style="width:300px">What that gives you</th><th>What Satyapan does differently</th></tr></thead>
+          <tbody>
+            <tr><td><b>Passive deepfake detectors</b> (meeting, contact-centre and upload tools)</td><td>a probability that decays: on 2026 video generators the best detector scored 69.7% AUROC [R10]</td><td><b>Proves the real executive</b> (Seal); no score is ever the gate</td></tr>
+            <tr><td><b>Meeting identity badges</b> (Zoom + World ID beta, RealityCheck) [R16]</td><td>verify the <i>account</i>, on one platform; not the audio, not the payment</td><td>seals the <b>voice itself</b> to a passkey, this meeting, this 5 s; works for voice notes</td></tr>
+            <tr><td><b>In-band caller authentication</b> research (CallShield, 2026) [R13]</td><td>about 63 s to authenticate; keys shared between contacts</td><td>5 s median verdict offline (X1); delayed key disclosure: receivers cannot forge</td></tr>
+            <tr><td><b>Callback and maker-checker</b> (standard BEC hygiene)</td><td>right idea, done by hand, often skipped; number taken from the message</td><td>enforced and logged; number only from the master; <b>moved to the checker</b> when anything looks off</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">[R2] SEBI PR 40/2026 · [R10] DF26, arXiv 2609.07369 · [R13] CallShield, arXiv 2601.09327 · [R16] Zoom + World ID (May 2026), Beyond Identity RealityCheck (Aug 2024)</div><div class="pg"><b>Satyapan</b> · 3</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 4/10 : core decision approach
+     ===================================================================== -->
+<section class="slide" data-page="D04">
+  <div class="kicker"><span class="part">Pitch deck</span> 4 / 10 <span class="dot"></span> Core detection and decision-making approach
+    <span class="rub">Technical architecture and detection logic (20)</span></div>
+  <h1>A trusted floor, raise-only evidence, and humans the attacker has not reached</h1>
+  <div class="body" style="display:flex; gap:20px;">
+    <svg width="600" height="590" viewBox="0 0 600 590" role="img" aria-label="Decision logic: trusted floor and raise-only evidence combine into a band that decides who verifies">
+      <defs>
+        <marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker>
+        <marker id="ar4r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b0122a"/></marker>
+        <marker id="ar4g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15653a"/></marker>
+      </defs>
+      <!-- inputs -->
+      <rect x="1" y="1" width="284" height="86" rx="9" fill="#e5f3ea" stroke="#15653a" stroke-width="1.6"/>
+      <text x="14" y="23" class="t13 b" style="fill:#15653a; letter-spacing:.06em">TRUSTED · company’s own data</text>
+      <foreignObject x="13" y="31" width="264" height="54"><div class="fo">pending payment entered by the maker · vendor master · 30-day payment register · directory</div></foreignObject>
+      <rect x="315" y="1" width="284" height="86" rx="9" fill="#fce7ea" stroke="#b0122a" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <text x="328" y="23" class="t13 b" style="fill:#b0122a; letter-spacing:.06em">UNTRUSTED · attacker can shape it</text>
+      <foreignObject x="327" y="31" width="264" height="54"><div class="fo">email · invoice PDF · WhatsApp text or voice note · live call audio</div></foreignObject>
+      <line x1="143" y1="88" x2="143" y2="106" stroke="#15653a" stroke-width="2" marker-end="url(#ar4g)"/>
+      <line x1="457" y1="88" x2="457" y2="106" stroke="#b0122a" stroke-width="2" marker-end="url(#ar4r)"/>
+      <!-- floor + signals -->
+      <rect x="1" y="108" width="284" height="92" rx="9" fill="#fff" stroke="#15653a" stroke-width="1.6"/>
+      <text x="14" y="130" class="t15 b">① Floor (fixed table)</text>
+      <foreignObject x="13" y="137" width="266" height="60"><div class="fo">new or changed bank account ⇒ <b>at least VERIFY</b>, however convincing the message</div></foreignObject>
+      <rect x="315" y="108" width="284" height="92" rx="9" fill="#fff" stroke="#b0122a" stroke-width="1.6" stroke-dasharray="6 4"/>
+      <text x="328" y="130" class="t15 b">② Evidence signals</text>
+      <foreignObject x="327" y="137" width="266" height="60"><div class="fo"><b>provenance</b>: Seal, email origin · <b>forensic</b>: voice, PDF edits · <b>behaviour</b>: the ask</div></foreignObject>
+      <line x1="143" y1="201" x2="143" y2="224" stroke="#475569" stroke-width="2" marker-end="url(#ar4)"/>
+      <text x="152" y="217" class="t13 i2">sets the minimum</text>
+      <line x1="457" y1="201" x2="457" y2="224" stroke="#475569" stroke-width="2" marker-end="url(#ar4)"/>
+      <text x="466" y="217" class="t13 b" style="fill:#b0122a">can only raise</text>
+      <!-- combine -->
+      <rect x="1" y="226" width="598" height="96" rx="9" fill="#f4f6f9" stroke="#334155" stroke-width="1.6"/>
+      <text x="14" y="249" class="t15 b">Band = the highest of the floor and every raised signal</text>
+      <foreignObject x="13" y="256" width="580" height="64"><div class="fo">two independent strong groups ⇒ HOLD · one uncorroborated ask ⇒ at most VERIFY · LLM or style ⇒ at most VERIFY · parse failure or detector error ⇒ at least VERIFY (fail closed)</div></foreignObject>
+      <line x1="100" y1="323" x2="100" y2="344" stroke="#475569" stroke-width="2" marker-end="url(#ar4)"/>
+      <line x1="300" y1="323" x2="300" y2="344" stroke="#475569" stroke-width="2" marker-end="url(#ar4)"/>
+      <line x1="500" y1="323" x2="500" y2="344" stroke="#475569" stroke-width="2" marker-end="url(#ar4)"/>
+      <!-- outcomes -->
+      <rect x="1" y="346" width="190" height="120" rx="9" fill="#e5f3ea" stroke="#a9d6b8"/>
+      <text x="14" y="369" class="t15 b" style="fill:#15653a">PASS</text>
+      <foreignObject x="13" y="376" width="172" height="88"><div class="fo">pay normally; evidence and decision are logged</div></foreignObject>
+      <rect x="205" y="346" width="190" height="120" rx="9" fill="#fdf0d9" stroke="#ebc98a"/>
+      <text x="218" y="369" class="t15 b" style="fill:#96540a">VERIFY</text>
+      <foreignObject x="217" y="376" width="172" height="88"><div class="fo"><b>maker</b> calls back on the number <b>from the master</b>, or sends OOB-Confirm</div></foreignObject>
+      <rect x="409" y="346" width="190" height="120" rx="9" fill="#fce7ea" stroke="#efb3bd"/>
+      <text x="422" y="369" class="t15 b" style="fill:#b0122a">HOLD</text>
+      <foreignObject x="421" y="376" width="172" height="88"><div class="fo"><b>checker only</b>, after own callback + security sign-off; vendor edits frozen</div></foreignObject>
+      <line x1="300" y1="467" x2="300" y2="488" stroke="#475569" stroke-width="2" marker-end="url(#ar4)"/>
+      <line x1="504" y1="467" x2="504" y2="488" stroke="#475569" stroke-width="2" marker-end="url(#ar4)"/>
+      <!-- proof -->
+      <rect x="1" y="490" width="598" height="98" rx="9" fill="#e9eefc" stroke="#3150b0" stroke-width="1.6"/>
+      <text x="14" y="513" class="t15 b" style="fill:#1e3a8a">③ Proof from the real requester, on his own device</text>
+      <foreignObject x="13" y="520" width="580" height="66"><div class="fo">OOB-Confirm or Intent Seal: “Did you ask Priya to pay ₹48,50,000 to ••••4821?” <b>“No, not me” ⇒ HOLD + suspected fraud.</b> “Yes” is recorded but never clears a HOLD on its own.</div></foreignObject>
+    </svg>
+    <div style="flex:1; display:flex; flex-direction:column; gap:10px; min-width:0;">
+      <div>
+        <div class="lab">Floor table in plain words (trusted inputs only)</div>
+        <table class="t zebra" style="font-size:14px">
+          <thead><tr><th>If the payment goes to…</th><th style="width:74px">Floor</th><th>Before paying</th></tr></thead>
+          <tbody>
+            <tr><td>a known vendor, same account, usual amount</td><td><span class="band pass">PASS</span></td><td>nothing extra</td></tr>
+            <tr><td>a known vendor, unusual amount or dormant 180+ days</td><td><span class="band verify">VERIFY</span></td><td>callback or OOB-Confirm</td></tr>
+            <tr><td>a new payee, up to ₹25,000 incl. last 30 days</td><td><span class="band pass">PASS</span></td><td>bank’s own new-payee checks</td></tr>
+            <tr><td>a new payee, above ₹25,000</td><td><span class="band verify">VERIFY</span></td><td>callback or OOB; above ₹10 lakh both</td></tr>
+            <tr><td>a vendor whose bank account changed</td><td><span class="band verify">VERIFY</span></td><td>callback on the <b>old</b> number; bank-shown name = master</td></tr>
+            <tr><td>(a change to a phone, email or approver on file)</td><td><span class="band hold">HOLD</span></td><td>checker on the old channel + 2nd approver</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card tint" style="padding:10px 13px;">
+        <div class="lab">Safety rules, property-tested on the real engine (7 test files)</div>
+        <ul class="l s14 tight" style="line-height:1.36">
+          <li>Untrusted content can only raise the band, never lower it.</li>
+          <li>The floor reads only trusted data (fuzzed with hostile inputs).</li>
+          <li>LLM or style signals: at most VERIFY, never counted as strong.</li>
+          <li>No HOLD from a single uncorroborated ask (policy 1.1).</li>
+          <li>Only the checker can clear a HOLD; the maker never can.</li>
+          <li>No code path files a report; a human always submits.</li>
+        </ul>
+      </div>
+      <div class="card brand" style="padding:11px 14px; margin-top:auto;">
+        <div class="s17 b" style="line-height:1.35; color:var(--brand)">Detectors decide <u>who</u> verifies, never <u>whether</u> money to a new or changed account needs verifying.</div>
+        <div class="s14 ink2" style="margin-top:4px">A deepfake works by manipulating the person who would verify. Any strong signal therefore moves the decision to someone else.</div>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Policy engine: <span class="mono">src/satyapan/policy/</span> · invariants: <span class="mono">tests/invariants/</span> · full signal → band table and codes: X2 · ₹ thresholds are configurable</div><div class="pg"><b>Satyapan</b> · 4</div></footer>
+</section>
+
+<!-- END-OF-SLIDES -->
+</body>
+</html>
