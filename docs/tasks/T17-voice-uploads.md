@@ -56,3 +56,11 @@ Green + `make check`; one real (consented, local-only) voice note scored end-to-
 - Transcribe language identification: https://docs.aws.amazon.com/transcribe/latest/dg/lang-id.html
 
 ## Agent plan (write yours here)
+1. Mark T17 `in-progress` in `docs/STATUS.md`. Run `make task T=T17` to confirm red.
+2. Implement `src/satyapan/voice/audio_io.py:decode_to_16k_mono` via ffmpeg subprocess (raising `ValueError` on bad data / non-zero exit).
+3. Implement `src/satyapan/voice/audio_io.py:split_windows` (5s chunks, drop < 1s) and `estimate_speech_seconds` (30ms RMS > 0.01 VAD).
+4. Implement `src/satyapan/voice/upload.py:analyze_voice_upload` connecting decode, split, scorer (catch errors -> DETECTOR_ERROR), classify_windows, transcribe, and ask extraction.
+5. Implement `src/satyapan/voice/detector.py:OnnxVoiceDetector` using onnxruntime for audio window scoring.
+6. Implement `src/satyapan/adapters/transcribe_aws.py:AwsTranscriber` batch client with language identification.
+7. Run `make task T=T17` to verify all T17 acceptance tests pass (green).
+8. Run `make check` (ruff, mypy, all tests), update `docs/STATUS.md` to `done`, and commit.

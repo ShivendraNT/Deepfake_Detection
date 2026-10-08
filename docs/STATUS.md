@@ -25,7 +25,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T14 | Explanation templates EN/HI | Saksham | done | T02 | [spec](tasks/T14-explanation-templates.md) | 33/33 codes EN + Devanagari HI done; `reason_text` + `explain_template` done; 35/35 task tests + full suite green; proofread and signed off by Kartikey |
 | T15 | Bedrock summary + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
-| T17 | Voice uploads path | Kartikey | todo | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | |
+| T17 | Voice uploads path | Kartikey | done | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | 5/5 tests green; audio_io + upload + onnx + transcribe |
 | T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | done | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
 | T19 | Research R1: loader, D2, D3, metrics | Kartikey + Shivendra | todo | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | |
 | T20 | Research R2: paraphrase attacks + filters | Shivendra | todo | T19 | [spec](tasks/T20-research-paraphrase-attacks.md) | email ICFD authors first |
@@ -58,3 +58,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T12: done — OOB-Confirm service, SES mailer adapter, and CFO inbox screen merged.
 08 Oct, T08: done — invoice regex, PDF metadata parsing, and master diff signals merged.
 08 Oct, T13: done — callback logging, clearance evaluation, status rules, override, and watchlist.
+08 Oct, T17: done — audio_io (16kHz mono decode + 5s windowing + 30ms RMS VAD), upload pipeline (decode -> score -> classify_windows -> transcribe -> extract_asks), onnx detector and aws transcribe batch adapter; 5/5 task tests + full suite 415 passed.
