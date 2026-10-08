@@ -176,6 +176,29 @@ def main() -> None:
 
     if not pre_fix:
         report["attack_holds_lost"] = holds_lost(cases, master)
+        report["attack_dropped_to_pass"] = [
+            {
+                "case": sc.case.id,
+                "split": sc.split,
+                "gold_asks": sc.gold_asks,
+                "before_reason_codes": [r.value for r in b.reason_codes],
+                "why": "flagged before only by an ask fired from the appended footer; the "
+                "lexicon does not detect the attacker's real ask"
+                if not {
+                    x.ask_type.value
+                    for x in __import__(
+                        "satyapan.asks.extractor", fromlist=["extract_asks"]
+                    ).extract_asks(sc.payloads[0].decode("utf-8").split(" Regards, Accounts. ")[0])
+                }
+                else "other",
+            }
+            for sc in cases
+            if sc.group == "attack"
+            for b in [run_case(sc, master, VARIANTS["before"]).decision]
+            if b is not None
+            and b.band != Band.PASS
+            and run_case(sc, master, VARIANTS["after"]).decision.band == Band.PASS  # type: ignore[union-attr]
+        ]
 
     if pre_fix:
         report["before_measured_on_pre_fix_code"] = {
@@ -341,6 +364,12 @@ def render_md(r: dict[str, Any]) -> str:
             "HOLD rate; the policy-cap rows are the real cost of ADR-021.",
             "",
         ]
+    if "attack_dropped_to_pass" in r:
+        drops = r["attack_dropped_to_pass"]
+        out += [f"Attack cases that went from >= VERIFY to PASS: **{len(drops)}**.", ""]
+        for d in drops:
+            out.append(f"- `{d['case']}` ({d['split']}, gold {d['gold_asks']}): {d['why']}.")
+        out.append("")
     if "before_emulation_matches_pre_fix_code" in r:
         pf = r["before_measured_on_pre_fix_code"]["git_commit"]
         out.append(
