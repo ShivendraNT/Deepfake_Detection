@@ -58,3 +58,12 @@ Green + `make check`; NCRP field order verified against the live portal before t
 - NCRP: https://cybercrime.gov.in/ · 1930 helpline · Chakshu: https://sancharsaathi.gov.in/sfc/
 
 ## Agent plan (write yours here)
+
+- [x] 1. `format_inr` in `pack.py` — Indian grouping (last 3 digits, then groups of 2) → `test_format_inr` (5 cases) green.
+- [x] 2. Unlock rules → `ReportNotUnlockedError` + `TransactionFacts` built from `case.txn` → `test_attempted_requires_suspected`, `test_money_sent_requires_confirmed_and_utr` green.
+- [x] 3. `call_script_1930` (MONEY_SENT only, UTR on line 1) + `bank_email` subject/body (facts first) → UTR/subject/body asserts of `test_money_sent_pack_is_utr_first` green.
+- [x] 4. `ncrp_draft` as `NcrpField` list in portal order + `chakshu_note` → label asserts of `test_money_sent_pack_is_utr_first` green.
+- [x] 5. `evidence_index` (one per `case.evidence`, runs as `detector@version`), `custody_head`, `sec63_helper` → rest of `test_money_sent_pack_is_utr_first` green.
+- [x] 6. `render_html` with `html.escape(..., quote=True)` on every value; 1930 script first → `test_html_escapes_attacker_text` green.
+- [x] 7. API wiring check (`routes_reports.py` already glue) → `test_api_report_html` + T01's 501/200 branch green.
+- [x] 8. `uv run ruff check .`, `ruff format --check .`, `mypy`, full `uv run pytest` green; STATUS note.
