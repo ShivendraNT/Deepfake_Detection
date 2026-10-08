@@ -65,3 +65,25 @@ Green + `make check`; demo rehearsal on two browser profiles noted in STATUS.
 - SES v2 send_email: https://boto3.amazonaws.com/v1/documentation/api/latest/reference/services/sesv2/client/send_email.html
 
 ## Agent plan (write yours here)
+
+1. [x] `beneficiary_hash` / `binding_hash` in `workflows/oob.py`: `sha256(f"{a or ''}|{i or ''}|{u or ''}")`
+   and `sha256(f"{case_id}|{amount_inr}|{bh}|{nonce}")`, hex. → `test_binding_changes_with_amount`.
+2. [x] `oob_message`: tiny `_inr(n)` helper for Indian grouping (`4850000` → `48,50,000`), account
+   masked `••••<last4>`; PAYMENT → `Did you just ask {maker} to pay ₹… to A/c ••••4821 (IFSC)?`;
+   LIVE_CALL / no txn → sentence containing "call". → `test_live_call_message_without_txn`.
+3. [x] `OOBService.create`: `secrets.token_urlsafe(32)` for nonce and token, id `oob_<hex>`,
+   store `OOBRequest` in `self._store[token_sha256]` (raw token only returned), subject + body
+   containing `/oob/{token}` sent to `requester.email`; mailer exception → `channels=["in_app"]`.
+   → `test_binding_and_token_hash`, `test_message_and_mail`.
+4. [x] `OOBService.respond`: order unknown → spent (replay) → expired (set `result=EXPIRED`, raise) →
+   wrong responder; then `result` APPROVED/DENIED, `responded_at`, `responded_by`, `spent=True`.
+   → `test_replay_rejected`, `test_expired`, `test_wrong_responder_and_unknown`,
+   `test_deny_turns_case_hold_and_suspected` (policy already maps DENIED → HOLD + SUSPECTED_FRAUD).
+5. [x] `adapters/ses_mailer.py`: `boto3` imported inside `__init__` (optional extra), sesv2 client with
+   `Config(connect_timeout=read_timeout=settings.aws_timeout_s)`, `send` → `MessageId`.
+6. [x] Console `components/OobInbox.tsx` (role `requester`): `api.oobInbox`, token extracted from the
+   `/oob/<token>` link in the body, Yes/No → `api.respondOob`; wired into `App.tsx`.
+7. [x] `pytest --task T12` → 8 passed / 1 failed (`test_api_flow`, pre-existing Windows TestClient +
+   conftest network guard — fails identically on a pristine checkout); `ruff check/format` and `mypy`
+   clean; `tsc --noEmit` exit 0; vitest 1/1.
+8. [ ] `docs/STATUS.md` → `done`, commit + push the branch.
