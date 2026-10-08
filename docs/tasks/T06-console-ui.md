@@ -65,3 +65,19 @@ Both green, `make check` green, a screenshot in the PR, STATUS.md updated.
 - Testing Library: https://testing-library.com/docs/react-testing-library/intro/
 
 ## Agent plan (write yours here)
+
+1. [x] `components/BandBadge.tsx` (`data-testid="band-badge"`, colour **and** word: PASS green /
+   VERIFY amber / HOLD red, neutral "NO DECISION" for `null`) and `components/RoleSwitcher.tsx`
+   (top bar `<select>` over `DEMO_USERS`, controlled by App state so the identity object is stable).
+2. [x] `components/CaseList.tsx`: `api.listCases(user)` in an effect (cancelled when the user
+   changes), rows `data-testid="case-row"` with BandBadge, title, `₹` + `toLocaleString("en-IN")`,
+   status; `App.tsx` shell (state = user + selected id, header + two-pane grid); `STUB(T06)` removed.
+3. [x] `components/TransactionCard.tsx` (amount, rail, beneficiary, account masked `••••1234`,
+   IFSC, UPI, UTR) and `components/ReasonCodes.tsx` (reason chips + info chips, no scores).
+4. [x] `components/EvidenceList.tsx` (filename, channel, size, `sha256.slice(0, 12)`) and
+   `components/CaseView.tsx` — order: TransactionCard → BandBadge + ReasonCodes → clearance steps
+   (`Call back on (from vendor master)` + `decision.clearance.callback_number`) → EvidenceList →
+   signals, where every `sig.score` is gated by `canSeeScores(role)` (checker/security only).
+5. [x] `tsc --noEmit -p console` exit 0; `npm test` (vitest) 1/1 green.
+6. [x] `pytest --task T06` 3/3 green.
+7. [ ] `docs/STATUS.md` → `done`, commit + push the branch, screenshot in the PR.
