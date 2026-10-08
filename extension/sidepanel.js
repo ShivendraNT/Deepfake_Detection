@@ -2,6 +2,7 @@
 // feeds events one by one (300 ms apart) so the UI can be built without a live call.
 import { applyEvent, initialState } from "./lib/panel_state.js";
 import { API_BASE, subscribe } from "./lib/api.js";
+import { sealChipView } from "./lib/seal_chip.js";
 
 let currentState = initialState();
 
@@ -100,6 +101,20 @@ export function renderState(state) {
         transcriptEl.appendChild(line);
       }
       transcriptEl.scrollTop = transcriptEl.scrollHeight;
+    }
+  }
+
+  // 5b. Satyapan Seal chip
+  const sealEl = document.getElementById("seal-chip");
+  if (sealEl) {
+    const view = sealChipView(state.seal);
+    sealEl.hidden = !view;
+    sealEl.classList.remove("seal-acquiring", "seal-sealed", "seal-not-sealed", "seal-lost");
+    if (view) {
+      sealEl.classList.add(view.cls);
+      document.getElementById("seal-icon").textContent = view.icon;
+      document.getElementById("seal-text").textContent = view.text;
+      document.getElementById("seal-sub").textContent = view.sub;
     }
   }
 

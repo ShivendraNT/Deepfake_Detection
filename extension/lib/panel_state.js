@@ -4,7 +4,9 @@
 //   callId: null, band: "PASS", voice: { label: "no_signs", windows: 0 },
 //   transcript: [],            // last 20 lines: { chunkIndex, text }
 //   asks: [],                  // unique ask chips: { askType, reasonCode, label }
-//   reasonCodes: [], suggestedLine: null, status: null
+//   reasonCodes: [], suggestedLine: null, status: null,
+//   seal: { state: "idle", employeeId: null, name: null, claimed: false,
+//           epochsSealed: 0, epochsWithSpeech: 0 }   // Satyapan Seal chip (docs/SEAL.md)
 // }
 // applyEvent(state, event) -> NEW state (never mutate). Event shapes: schemas/LiveEvent.schema.json
 //   "voice"      -> state.voice = { label, windows: windowIndex + 1 }   (never store score)
@@ -12,6 +14,8 @@
 //   "ask"        -> add chip if askType not present; label from ASK_LABELS
 //   "band"       -> band, reasonCodes, suggestedLine
 //   "status"     -> status message
+//   "seal"       -> seal chip: state acquiring | sealed | not_sealed | lost, who, epoch counts
+//                   (never stores z or any score; "not_sealed" is never shown as "fake")
 // ASK_LABELS: A1 "New account", A2 "OTP / password", A3 "Remote-access app", A4 "Secrecy",
 //             A5 "Bypass approval", A6 "Gift card / crypto", A7 "Bank details changed"
 
@@ -25,6 +29,19 @@ export const ASK_LABELS = {
   A7: "Bank details changed",
 };
 
+export const SEAL_STATES = ["idle", "acquiring", "sealed", "not_sealed", "lost"];
+
+export function initialSeal() {
+  return {
+    state: "idle",
+    employeeId: null,
+    name: null,
+    claimed: false,
+    epochsSealed: 0,
+    epochsWithSpeech: 0,
+  };
+}
+
 export function initialState() {
   return {
     callId: null,
@@ -35,6 +52,7 @@ export function initialState() {
     reasonCodes: [],
     suggestedLine: null,
     status: null,
+    seal: initialSeal(),
   };
 }
 
@@ -47,6 +65,7 @@ export function applyEvent(state, event) {
     transcript: [...state.transcript],
     asks: [...state.asks],
     reasonCodes: [...state.reasonCodes],
+    seal: { ...(state.seal || initialSeal()) },
   };
 
   if (event.call_id || event.callId) {
@@ -100,6 +119,20 @@ export function applyEvent(state, event) {
 
     case "status": {
       next.status = event.message || event.status || null;
+      break;
+    }
+
+    case "seal": {
+      const st = SEAL_STATES.includes(event.state) ? event.state : "idle";
+      next.seal = {
+        state: st,
+        employeeId: event.employee_id ?? event.employeeId ?? next.seal.employeeId,
+        name: event.display_name ?? event.name ?? next.seal.name,
+        claimed: Boolean(event.claimed ?? next.seal.claimed),
+        epochsSealed: event.epochs_sealed ?? event.epochsSealed ?? next.seal.epochsSealed,
+        epochsWithSpeech:
+          event.epochs_with_speech ?? event.epochsWithSpeech ?? next.seal.epochsWithSpeech,
+      };
       break;
     }
 
