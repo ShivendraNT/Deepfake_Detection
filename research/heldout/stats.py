@@ -54,7 +54,8 @@ def git_commit() -> str:
             ["git", "rev-parse", "--short", "HEAD"], cwd=ROOT, capture_output=True, text=True
         ).stdout.strip()
         dirty = subprocess.run(
-            ["git", "status", "--porcelain", "--untracked-files=no"],
+            # code state only: regenerated files under results/ do not make the code dirty
+            ["git", "status", "--porcelain", "--untracked-files=no", "--", ".", ":!results"],
             cwd=ROOT,
             capture_output=True,
             text=True,
