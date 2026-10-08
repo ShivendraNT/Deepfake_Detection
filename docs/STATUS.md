@@ -23,7 +23,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T12 | OOB-Confirm | Saksham | done | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
 | T13 | Callback logging + checker flows | Saksham | done | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
 | T14 | Explanation templates EN/HI | Saksham | done | T02 | [spec](tasks/T14-explanation-templates.md) | 33/33 codes EN + Devanagari HI done; `reason_text` + `explain_template` done; 35/35 task tests + full suite green; proofread and signed off by Kartikey |
-| T15 | Bedrock summary + faithfulness + red-team | Shivendra | todo | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done |
+| T15 | Bedrock summary + faithfulness + red-team | Shivendra | done | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | Faithfulness checker + Bedrock + 30 injections |
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
 | T17 | Voice uploads path | Kartikey | done | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | 5/5 tests green; audio_io + upload + onnx + transcribe |
 | T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | done | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
