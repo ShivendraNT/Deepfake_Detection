@@ -153,3 +153,21 @@ per-payment test. **Not done here:** vendor onboarding (first phone/bank record 
 is still the trust root and is assumed to be verified out of band (GSTIN lookup, penny drop,
 callback number from GST/MCA records), see THREAT_MODEL.
 
+
+### ADR-023 Satyapan Seal: authenticate the real executive (Voice Seal + Intent Seal)
+**Decision:** add component C14 (`src/satyapan/seal/`, docs/SEAL.md). An enrolled executive's
+client hides a keyed ±2 dB, 12-band level pattern in outgoing speech; keys come from a
+passkey-committed TESLA hash chain, bound to the meeting id and 5 s epoch, disclosed only after
+each epoch. The same passkey signs SHA-256 of the exact payment intent (Intent Seal). Three
+provenance codes join the signal table: `VOICE_SEALED` (NONE, info only), `VOICE_UNSEALED_CLAIMED_EXEC`
+(weak, VERIFY), `SEAL_PRESENCE_CONFLICT` (strong, HOLD if money else VERIFY); all deterministic.
+The receiver protocol acquires the offset once (Bonferroni) and then scores at a fixed offset;
+later looks use alpha spending. Never re-maximise the lag per epoch (the lab's v1 did and got 1
+false seal in 560 sessions).
+**Why:** detectors decay as generators improve (DF26); a seal's false-alarm rate is fixed by
+statistics (H0 z ~ N(0,1), measured mean +0.04 / std 1.03 over 3,920 attack epochs) and its
+security by cryptography, for every voice and language. It turns "detect the fake" into "prove the
+real" without biometrics. **Limits (stated, not hidden):** a compromised exec laptop, browser
+malware against the WebAuthn prompt (no transaction display), offline uploads cannot prove
+timing, and Google Meet's own processing is untested until the two-laptop test.
+**Safety:** a seal never lowers a band or clears a HOLD; "not sealed" is never shown as "fake".

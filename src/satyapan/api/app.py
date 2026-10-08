@@ -8,7 +8,14 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
-from satyapan.api import routes_cases, routes_citizen, routes_live, routes_reports, routes_verify
+from satyapan.api import (
+    routes_cases,
+    routes_citizen,
+    routes_live,
+    routes_reports,
+    routes_seal,
+    routes_verify,
+)
 from satyapan.api.state import AppState
 from satyapan.settings import Settings, get_settings
 
@@ -40,7 +47,14 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
             },
         )
 
-    for r in (routes_cases, routes_verify, routes_reports, routes_live, routes_citizen):
+    for r in (
+        routes_cases,
+        routes_verify,
+        routes_reports,
+        routes_live,
+        routes_citizen,
+        routes_seal,
+    ):
         app.include_router(r.router)
     return app
 

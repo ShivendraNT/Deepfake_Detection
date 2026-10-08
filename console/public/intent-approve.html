@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Intent Seal Approval (demo)</title>
+<style>
+  /* DEMO PAGE for screenshots: the requester (CFO) signs the exact payment with a passkey. */
+  :root {
+    --ink: #111827; --muted: #6b7280; --line: #e5e7eb; --bg: #f6f7f9; --card: #fff; --brand: #1e3a8a;
+    --pass: #1b7f3b; --pass-bg: #eaf6ed; --hold: #b00020; --hold-bg: #fdebee; --verify-bg: #fff6e5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif; color: var(--ink); background: var(--bg);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; }
+  .demo-ribbon { background: #111827; color: #fde68a; font-size: 13px; padding: 6px 24px; }
+  header { display: flex; align-items: center; gap: 14px; padding: 18px 32px; background: var(--card); border-bottom: 1px solid var(--line); }
+  .logo { width: 36px; height: 36px; border-radius: 9px; background: var(--brand); color: #fff; display: grid; place-items: center; font-weight: 700; font-size: 20px; }
+  header h1 { font-size: 19px; margin: 0; } header .sub { color: var(--muted); font-size: 13px; }
+  header .who { margin-left: auto; font-size: 13px; color: var(--muted); text-align: right; }
+  main { max-width: 1060px; margin: 28px auto; padding: 0 32px; display: grid; grid-template-columns: 1fr 340px; gap: 24px; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 22px 24px; }
+  .card h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 0 0 14px; }
+  .question { font-size: 15px; color: var(--muted); margin: 0 0 6px; }
+  .amount { font-size: 44px; font-weight: 750; letter-spacing: -.01em; margin: 0; }
+  .to { font-size: 20px; margin: 8px 0 18px; }
+  table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  td { padding: 8px 0; border-top: 1px solid var(--line); vertical-align: top; }
+  td:first-child { color: var(--muted); width: 190px; }
+  td code { font-size: 12.5px; word-break: break-all; }
+  .buttons { display: flex; gap: 12px; margin-top: 22px; }
+  button { padding: 12px 18px; font-size: 15px; font-weight: 600; border-radius: 9px; border: 0; cursor: pointer; }
+  .approve { background: var(--brand); color: #fff; flex: 1; }
+  .deny { background: #fff; color: var(--hold); border: 1px solid #f1b8c1; }
+  .secondary { background: #eef2ff; color: var(--brand); width: 100%; }
+  .tamper { display: flex; gap: 10px; align-items: flex-start; font-size: 13.5px; margin-top: 16px; padding: 12px; border-radius: 9px; background: var(--verify-bg); border: 1px dashed #e7b864; }
+  .result { margin-top: 20px; border-radius: 12px; padding: 18px 20px; font-size: 15px; line-height: 1.5; display: none; }
+  .result.ok { display: block; background: var(--pass-bg); border: 1px solid #b7e0c3; }
+  .result.bad { display: block; background: var(--hold-bg); border: 1px solid #f1b8c1; }
+  .result h3 { margin: 0 0 6px; font-size: 19px; }
+  .side p { font-size: 13.5px; line-height: 1.55; color: #374151; margin: 0 0 10px; }
+  .status { font-size: 13px; margin-top: 10px; color: var(--muted); }
+  .pill { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12px; font-weight: 600; }
+  .pill.on { background: var(--pass-bg); color: var(--pass); } .pill.off { background: #f3f4f6; color: var(--muted); }
+</style>
+</head>
+<body>
+<div class="demo-ribbon">DEMO SCREEN · fictional case and bank data · Intent Seal prototype (docs/SEAL.md)</div>
+<header>
+  <div class="logo">स</div>
+  <div><h1>Payment approval request</h1><div class="sub">Intent Seal: your passkey signs this exact amount and beneficiary</div></div>
+  <div class="who">Signed in as <b>Rajesh Iyer</b> · CFO (requester)<br/>Passkey: <span id="pk" class="pill off">not enrolled</span></div>
+</header>
+<main>
+  <section class="card">
+    <h2>Priya Sharma (AP) asks: did you request this payment?</h2>
+    <p class="question" id="question">Loading…</p>
+    <p class="amount" id="amount">—</p>
+    <p class="to" id="to"></p>
+    <table>
+      <tr><td>Case</td><td id="case"></td></tr>
+      <tr><td>Beneficiary account</td><td id="acct"></td></tr>
+      <tr><td>Action</td><td id="action"></td></tr>
+      <tr><td>Expires</td><td id="exp"></td></tr>
+      <tr><td>Signed challenge (SHA-256)</td><td><code id="chal"></code></td></tr>
+    </table>
+    <label class="tamper"><input type="checkbox" id="tamper" /> <span><b>Demo attack:</b> after you approve, a compromised maker account changes the amount to ₹4,85,00,000 before the payment is sent.</span></label>
+    <div class="buttons">
+      <button class="approve" id="approve" type="button">Approve with passkey (Touch ID)</button>
+      <button class="deny" id="deny" type="button">No, I did not ask for this</button>
+    </div>
+    <div class="result" id="result"></div>
+  </section>
+  <aside class="card side">
+    <h2>What you are signing</h2>
+    <p>Your passkey signs a hash of: case, requester, amount in rupees, a hash of the full account number, IFSC, a one-time nonce and an expiry.</p>
+    <p>If anyone changes the amount or the account after you approve, the signature no longer matches and the payment is refused. The same approval cannot be replayed.</p>
+    <p>Approving here does not clear a HOLD on its own: the checker's callback rules still apply.</p>
+    <button class="secondary" id="enrol" type="button">Enrol this device's passkey</button>
+    <div class="status" id="status"></div>
+  </aside>
+</main>
+<script>
+const qs = new URLSearchParams(location.search);
+const API = qs.get("api") || "http://127.0.0.1:8000";
+const CASE = qs.get("case") || "case_s06";
+const ME = {"X-Demo-User": "emp_rajesh", "X-Demo-Role": "requester", "Content-Type": "application/json"};
+let issued = null;
+
+const b64uToBuf = s => Uint8Array.from(atob(s.replace(/-/g, "+").replace(/_/g, "/") + "===".slice((s.length + 3) % 4)), c => c.charCodeAt(0)).buffer;
+const bufToB64u = b => btoa(String.fromCharCode(...new Uint8Array(b))).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+const status = t => document.getElementById("status").textContent = t;
+async function api(path, body) {
+  const r = await fetch(API + path, {method: "POST", headers: ME, body: JSON.stringify(body || {})});
+  const j = await r.json();
+  if (!r.ok) { const e = new Error((j.detail && (j.detail.reason || j.detail)) || r.status); e.body = j; throw e; }
+  return j;
+}
+
+async function enrol() {
+  const o = await api("/passkeys/emp_rajesh/register/options");
+  o.challenge = b64uToBuf(o.challenge);
+  o.user.id = b64uToBuf(o.user.id);
+  (o.excludeCredentials || []).forEach(c => c.id = b64uToBuf(c.id));
+  const cred = await navigator.credentials.create({publicKey: o});
+  await api("/passkeys/emp_rajesh/register", {credential: {
+    id: cred.id, rawId: bufToB64u(cred.rawId), type: cred.type,
+    response: {clientDataJSON: bufToB64u(cred.response.clientDataJSON), attestationObject: bufToB64u(cred.response.attestationObject)}}});
+  document.getElementById("pk").className = "pill on"; document.getElementById("pk").textContent = "enrolled";
+  status("Passkey enrolled for Rajesh Iyer.");
+  await load();
+}
+
+async function load() {
+  try { issued = await api("/intent/challenge", {case_id: CASE}); }
+  catch (e) { document.getElementById("question").textContent = e.message === "not_enrolled" ? "Enrol your passkey to see the approval request." : "Could not load: " + e.message; return; }
+  const it = issued.intent, b = it.beneficiary;
+  document.getElementById("question").textContent = issued.display_text;
+  document.getElementById("amount").textContent = issued.display_text.match(/₹[\d,]+/)[0];
+  document.getElementById("to").innerHTML = `to account <b>${b.account_masked}</b> (${b.ifsc || "UPI"})`;
+  document.getElementById("case").textContent = it.case_id;
+  document.getElementById("acct").textContent = `${b.account_masked} · sha256 ${b.account_sha256.slice(0, 16)}…`;
+  document.getElementById("action").textContent = it.action;
+  document.getElementById("exp").textContent = new Date(it.expires_at * 1000).toLocaleString("en-IN");
+  document.getElementById("chal").textContent = issued.challenge_sha256_hex;
+}
+
+async function approve() {
+  const res = document.getElementById("result");
+  const o = issued.request_options;
+  const pk = {challenge: b64uToBuf(o.challenge), rpId: o.rpId, timeout: o.timeout, userVerification: o.userVerification,
+              allowCredentials: (o.allowCredentials || []).map(c => ({...c, id: b64uToBuf(c.id)}))};
+  const a = await navigator.credentials.get({publicKey: pk});
+  const assertion = {id: a.id, rawId: bufToB64u(a.rawId), type: a.type, response: {
+    clientDataJSON: bufToB64u(a.response.clientDataJSON), authenticatorData: bufToB64u(a.response.authenticatorData),
+    signature: bufToB64u(a.response.signature), userHandle: a.response.userHandle ? bufToB64u(a.response.userHandle) : null}};
+  const tamper = document.getElementById("tamper").checked;
+  const sent = tamper ? {...issued.intent, amount_inr: 48500000} : issued.intent;
+  try {
+    const ok = await api("/intent/verify", {intent: sent, assertion});
+    res.className = "result ok";
+    res.innerHTML = `<h3>✓ Approval signed and accepted</h3>${ok.display_text.replace("Approve", "Bound to")}<br/><small>${ok.note}</small>`;
+  } catch (e) {
+    res.className = "result bad";
+    const why = e.message === "signature_rejected" ? "The payment presented for release (₹4,85,00,000) is not the one your passkey signed (₹48,50,000). The signature does not match, so it is refused and logged to the case's evidence chain."
+      : e.message === "replay" ? "This approval was already used once. A replayed approval is refused." : "Refused: " + e.message;
+    res.innerHTML = `<h3>✕ Rejected: ${e.message}</h3>${why}`;
+  }
+}
+
+document.getElementById("enrol").addEventListener("click", () => enrol().catch(e => status("Enrolment failed: " + e.message)));
+document.getElementById("approve").addEventListener("click", () => approve().catch(e => status("Passkey error: " + e.message)));
+document.getElementById("deny").addEventListener("click", () => {
+  const res = document.getElementById("result"); res.className = "result bad";
+  res.innerHTML = "<h3>Marked as not requested</h3>In the full flow this answers OOB-Confirm with DENIED: the case goes to HOLD and SUSPECTED_FRAUD.";
+});
+load();
+</script>
+</body>
+</html>

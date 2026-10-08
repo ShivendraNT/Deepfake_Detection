@@ -1,0 +1,101 @@
+{
+  "$defs": {
+    "SealSessionKind": {
+      "description": "What a Voice Seal session is bound to (docs/SEAL.md).",
+      "enum": [
+        "meeting",
+        "voice_note"
+      ],
+      "title": "SealSessionKind",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "One passkey-started seal session (one meeting, or one voice note).",
+  "properties": {
+    "id": {
+      "pattern": "^seal_[A-Za-z0-9_\\-]+$",
+      "title": "Id",
+      "type": "string"
+    },
+    "employee_id": {
+      "title": "Employee Id",
+      "type": "string"
+    },
+    "kind": {
+      "$ref": "#/$defs/SealSessionKind"
+    },
+    "binding": {
+      "title": "Binding",
+      "type": "string"
+    },
+    "commitment": {
+      "pattern": "^[0-9a-f]{64}$",
+      "title": "Commitment",
+      "type": "string"
+    },
+    "t0": {
+      "format": "date-time",
+      "title": "T0",
+      "type": "string"
+    },
+    "epoch_s": {
+      "exclusiveMinimum": 0,
+      "title": "Epoch S",
+      "type": "number"
+    },
+    "n_epochs": {
+      "exclusiveMinimum": 0,
+      "title": "N Epochs",
+      "type": "integer"
+    },
+    "params_id": {
+      "title": "Params Id",
+      "type": "string"
+    },
+    "started_at": {
+      "format": "date-time",
+      "title": "Started At",
+      "type": "string"
+    },
+    "last_disclosed_epoch": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Disclosed Epoch"
+    },
+    "last_disclosed_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Last Disclosed At"
+    }
+  },
+  "required": [
+    "id",
+    "employee_id",
+    "kind",
+    "binding",
+    "commitment",
+    "t0",
+    "epoch_s",
+    "n_epochs",
+    "params_id",
+    "started_at"
+  ],
+  "title": "SealSession",
+  "type": "object"
+}

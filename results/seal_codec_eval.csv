@@ -1,0 +1,15 @@
+chain,description,n_sessions_genuine,genuine_verified,n_sessions_attack,attacks_falsely_sealed,median_time_to_verdict_s,max_time_to_verdict_s,genuine_epochs_post_acq,genuine_z_mean,genuine_epoch_rate_z_ge_4,attack_epochs_post_acq,attack_z_mean,attack_z_std,attack_z_max
+clean,No codec,10,10,40,0,5.0,5.0,70,7.117,1.0,280,0.063,1.063,2.977
+opus32_meet,Opus 32 kbps 48 kHz (Meet-like),10,10,40,0,5.0,5.0,70,6.471,0.9571,280,-0.057,0.982,2.75
+opus24,Opus 24 kbps 48 kHz,10,10,40,0,5.0,10.0,70,6.297,0.9714,280,0.049,0.995,3.044
+opus16_voicenote,Opus 16 kbps 16 kHz (WhatsApp-style note),10,10,40,0,5.0,10.0,70,5.984,0.9571,280,0.02,1.012,2.673
+opus12,Opus 12 kbps 16 kHz,10,10,40,0,5.0,10.0,70,5.159,0.9,280,-0.028,1.008,2.628
+opus8_nb,Opus 8 kbps narrowband,10,10,40,0,10.0,20.0,70,4.743,0.7714,280,-0.078,1.045,3.125
+amrnb_12.2,AMR-NB 12.2 kbps (mobile call),10,10,40,0,5.0,10.0,70,5.182,0.8286,280,0.103,0.999,3.132
+amrnb_4.75,AMR-NB 4.75 kbps (worst mode),10,10,40,0,20.0,45.0,70,3.266,0.2429,280,0.097,0.982,2.855
+g711_mulaw,G.711 mu-law (PSTN),10,10,40,0,5.0,5.0,70,6.922,0.9857,280,0.019,1.012,2.801
+mp3_32,MP3 32 kbps,10,10,40,0,5.0,5.0,70,6.633,0.9857,280,0.053,1.043,2.589
+opus24_loss5,"Opus 24k + 5% frame loss, no PLC",10,10,40,0,5.0,10.0,70,6.051,0.9286,280,0.077,1.044,3.079
+opus24_noise15,Opus 24k + white noise 15 dB SNR,10,9,40,0,10.0,25.0,70,3.869,0.4857,280,0.134,0.943,2.355
+opus24_amrnb12.2,Opus 24k -> AMR-NB 12.2 (dial-in),10,10,40,0,5.0,20.0,70,4.742,0.7,280,0.048,1.14,3.097
+gain-9_opus16,-9 dB gain + Opus 16k,10,10,40,0,5.0,10.0,70,5.809,0.9429,280,0.026,1.066,2.303

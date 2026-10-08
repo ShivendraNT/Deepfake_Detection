@@ -41,6 +41,7 @@ def test_deterministic_codes_never_accept_llm() -> None:
             SignalGroup.DOCUMENT,
             SignalGroup.ASK,
             SignalGroup.WATCHLIST,
+            SignalGroup.PROVENANCE,
         ):
             assert SignalSource.LLM not in spec.allowed_sources, code
 

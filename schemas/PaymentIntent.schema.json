@@ -1,0 +1,86 @@
+{
+  "$defs": {
+    "IntentBeneficiary": {
+      "additionalProperties": false,
+      "description": "Beneficiary as signed: a hash of the full account plus what the approver is shown.",
+      "properties": {
+        "account_sha256": {
+          "pattern": "^[0-9a-f]{64}$",
+          "title": "Account Sha256",
+          "type": "string"
+        },
+        "account_masked": {
+          "title": "Account Masked",
+          "type": "string"
+        },
+        "ifsc": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Ifsc"
+        }
+      },
+      "required": [
+        "account_sha256",
+        "account_masked"
+      ],
+      "title": "IntentBeneficiary",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Intent Seal: the exact payment a passkey approves. Challenge = SHA-256(canonical JSON).",
+  "properties": {
+    "v": {
+      "default": 1,
+      "title": "V",
+      "type": "integer"
+    },
+    "case_id": {
+      "title": "Case Id",
+      "type": "string"
+    },
+    "requester": {
+      "title": "Requester",
+      "type": "string"
+    },
+    "action": {
+      "title": "Action",
+      "type": "string"
+    },
+    "amount_inr": {
+      "exclusiveMinimum": 0,
+      "title": "Amount Inr",
+      "type": "integer"
+    },
+    "beneficiary": {
+      "$ref": "#/$defs/IntentBeneficiary"
+    },
+    "nonce": {
+      "minLength": 16,
+      "title": "Nonce",
+      "type": "string"
+    },
+    "expires_at": {
+      "title": "Expires At",
+      "type": "integer"
+    }
+  },
+  "required": [
+    "case_id",
+    "requester",
+    "action",
+    "amount_inr",
+    "beneficiary",
+    "nonce",
+    "expires_at"
+  ],
+  "title": "PaymentIntent",
+  "type": "object"
+}

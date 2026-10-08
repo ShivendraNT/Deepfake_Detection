@@ -1,0 +1,256 @@
+{
+  "$defs": {
+    "SealEpoch": {
+      "additionalProperties": false,
+      "description": "Per-epoch verification result. `z` is a raw score: stripped for the maker role.",
+      "properties": {
+        "epoch": {
+          "minimum": 0,
+          "title": "Epoch",
+          "type": "integer"
+        },
+        "start_s": {
+          "title": "Start S",
+          "type": "number"
+        },
+        "cells": {
+          "minimum": 0,
+          "title": "Cells",
+          "type": "integer"
+        },
+        "status": {
+          "$ref": "#/$defs/SealEpochStatus"
+        },
+        "z": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Z"
+        }
+      },
+      "required": [
+        "epoch",
+        "start_s",
+        "cells",
+        "status"
+      ],
+      "title": "SealEpoch",
+      "type": "object"
+    },
+    "SealEpochStatus": {
+      "description": "Per-epoch result shown to every role (raw z is for checker/security only).",
+      "enum": [
+        "sealed",
+        "weak",
+        "unsealed",
+        "no_speech"
+      ],
+      "title": "SealEpochStatus",
+      "type": "string"
+    },
+    "SealGap": {
+      "additionalProperties": false,
+      "description": "A run of epochs that contain speech but no seal, inside a sealed recording.",
+      "properties": {
+        "first_epoch": {
+          "title": "First Epoch",
+          "type": "integer"
+        },
+        "last_epoch": {
+          "title": "Last Epoch",
+          "type": "integer"
+        },
+        "start_s": {
+          "title": "Start S",
+          "type": "number"
+        },
+        "end_s": {
+          "title": "End S",
+          "type": "number"
+        }
+      },
+      "required": [
+        "first_epoch",
+        "last_epoch",
+        "start_s",
+        "end_s"
+      ],
+      "title": "SealGap",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Result of verifying a recording / voice note against one seal session.",
+  "properties": {
+    "session_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Session Id"
+    },
+    "employee_id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Employee Id"
+    },
+    "binding": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Binding"
+    },
+    "sealed": {
+      "title": "Sealed",
+      "type": "boolean"
+    },
+    "decided_by": {
+      "title": "Decided By",
+      "type": "string"
+    },
+    "decided_at_epoch": {
+      "anyOf": [
+        {
+          "type": "integer"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Decided At Epoch"
+    },
+    "offset_s": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Offset S"
+    },
+    "first_epoch": {
+      "default": 0,
+      "title": "First Epoch",
+      "type": "integer"
+    },
+    "acquisition_threshold": {
+      "title": "Acquisition Threshold",
+      "type": "number"
+    },
+    "acquisition_statistic": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Acquisition Statistic"
+    },
+    "stouffer_z": {
+      "anyOf": [
+        {
+          "type": "number"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Stouffer Z"
+    },
+    "epochs": {
+      "items": {
+        "$ref": "#/$defs/SealEpoch"
+      },
+      "title": "Epochs",
+      "type": "array"
+    },
+    "n_epochs_speech": {
+      "default": 0,
+      "title": "N Epochs Speech",
+      "type": "integer"
+    },
+    "n_epochs_sealed": {
+      "default": 0,
+      "title": "N Epochs Sealed",
+      "type": "integer"
+    },
+    "gaps": {
+      "items": {
+        "$ref": "#/$defs/SealGap"
+      },
+      "title": "Gaps",
+      "type": "array"
+    },
+    "speech_seconds": {
+      "default": 0.0,
+      "title": "Speech Seconds",
+      "type": "number"
+    },
+    "audio_seconds": {
+      "default": 0.0,
+      "title": "Audio Seconds",
+      "type": "number"
+    },
+    "params_id": {
+      "title": "Params Id",
+      "type": "string"
+    },
+    "verifier_version": {
+      "title": "Verifier Version",
+      "type": "string"
+    },
+    "timing_provable": {
+      "default": false,
+      "title": "Timing Provable",
+      "type": "boolean"
+    },
+    "notes": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Notes",
+      "type": "array"
+    }
+  },
+  "required": [
+    "sealed",
+    "decided_by",
+    "acquisition_threshold",
+    "params_id",
+    "verifier_version"
+  ],
+  "title": "SealVerification",
+  "type": "object"
+}

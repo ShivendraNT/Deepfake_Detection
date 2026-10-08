@@ -348,3 +348,55 @@ body {
 .status-message {
   font-style: italic;
 }
+
+/* Satyapan Seal chip (docs/SEAL.md). Text always states the result; colour only supports it. */
+.seal-chip {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle);
+  background: var(--bg-card);
+}
+.seal-chip[hidden] {
+  display: none;
+}
+.seal-icon {
+  flex: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+  color: #fff;
+  background: var(--text-muted);
+}
+.seal-text {
+  font-weight: 650;
+  font-size: 14px;
+}
+.seal-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+  line-height: 1.4;
+}
+.seal-sealed {
+  background: var(--pass-bg);
+  border-color: #b7e0c3;
+}
+.seal-sealed .seal-icon {
+  background: var(--pass);
+}
+.seal-not-sealed,
+.seal-lost {
+  background: var(--verify-bg);
+  border-color: #f3d29a;
+}
+.seal-not-sealed .seal-icon,
+.seal-lost .seal-icon {
+  background: var(--verify);
+}

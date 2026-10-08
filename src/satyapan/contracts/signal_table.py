@@ -7,7 +7,10 @@ fills them from this table. That way two teammates cannot disagree about what a 
 Safety notes (enforced by tests/invariants):
 - No entry has a target that LOWERS a band. The lowest target is NONE (informational).
 - STYLE codes may come from ML or LLM; they are capped at VERIFY by the policy engine anyway.
-- Deterministic codes (email, document, asks, watchlist) may NOT come from an LLM.
+- Deterministic codes (email, document, asks, watchlist, provenance) may NOT come from an LLM.
+- Provenance (Satyapan Seal, docs/SEAL.md): a seal can only ADD evidence. VOICE_SEALED is
+  informational (NONE), so a sealed voice never lowers a band or clears a HOLD. A missing seal
+  is WEAK and at most VERIFY ("not sealed" does not mean "fake").
 """
 
 from __future__ import annotations
@@ -92,6 +95,16 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
     # --- watchlist (R4, deterministic) ---
     ReasonCode.WATCHLIST_HIT: SignalSpec(
         SignalGroup.WATCHLIST, TargetRule.PLUS_ONE, Strength.WEAK, _DET
+    ),
+    # --- provenance (C14 Satyapan Seal, deterministic: cryptography + fixed statistics) ---
+    ReasonCode.VOICE_SEALED: SignalSpec(
+        SignalGroup.PROVENANCE, TargetRule.NONE, Strength.WEAK, _DET
+    ),
+    ReasonCode.VOICE_UNSEALED_CLAIMED_EXEC: SignalSpec(
+        SignalGroup.PROVENANCE, TargetRule.VERIFY, Strength.WEAK, _DET
+    ),
+    ReasonCode.SEAL_PRESENCE_CONFLICT: SignalSpec(
+        SignalGroup.PROVENANCE, TargetRule.HOLD_IF_MONEY_ELSE_VERIFY, Strength.STRONG, _DET
     ),
 }
 

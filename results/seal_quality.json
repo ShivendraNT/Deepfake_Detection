@@ -1,0 +1,135 @@
+{
+ "what": "PESQ-WB and STOI vs the clean original (proxies, not a listening test)",
+ "format": "per condition: mean, min, n over voices (first 30 s of each)",
+ "script": "research/seal/quality.py",
+ "voices": [
+  "af_bella",
+  "af_heart",
+  "am_adam",
+  "am_michael",
+  "bf_emma",
+  "bm_george",
+  "hf_alpha",
+  "hf_beta",
+  "hm_omega",
+  "hm_psi"
+ ],
+ "audio_sha256": {
+  "af_bella.wav": "7e0f82c67e6d14cf1ab2cedfdb70b2406f535f5a24dba767f9ed5808208eb2b1",
+  "af_heart.wav": "5eaea3f9411baf6ae6816a979f37b439533117980285a1cde1fe77532b08c912",
+  "am_adam.wav": "e30e53572181b878a5aa43f111ef1722979fd1d57c67a05c35710eb3de3129b3",
+  "am_michael.wav": "bec9232787bab30a8adac8ef7ddcd6da87efcb4145bc81392642dbf9448cc919",
+  "bf_emma.wav": "f2c08da63353d55df0fc271f51c3ac19f41311c1bececf45401be5cd8cdb3565",
+  "bm_george.wav": "bdc1171368bc576f963bd02237fd006775dd3064d0eae2e13d3bdd7da4652845",
+  "hf_alpha.wav": "4ea50ccd030e9a0e64dbd1aba0ddf149f39e01827a5b5a9e4857e3e625cd221d",
+  "hf_beta.wav": "03bf8dd633b2475b0deb2c68ed107ea0069ee5878910d6cb5869b4194bd5b954",
+  "hm_omega.wav": "08cc959b471b0efac3d9c40a25078935840e5ffabdf1755e417e1f1e77b8e04d",
+  "hm_psi.wav": "422f2ee1f80ca2d195816f206f2a720a7d72ae78ab94eca1deee08193ebc1a0f"
+ },
+ "git_commit": "400343c1a5a021121baab6136c8648fd71f54ddd-dirty",
+ "tools": {
+  "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+  "sox": "sox:      SoX v14.4.2",
+  "numpy": "2.5.3",
+  "scipy": "1.18.1",
+  "python": "3.13.16"
+ },
+ "conditions": {
+  "seal_1.0dB": {
+   "pesq_wb": {
+    "mean": 4.63,
+    "min": 4.622,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.997,
+    "min": 0.997,
+    "n": 10
+   }
+  },
+  "seal_1.5dB": {
+   "pesq_wb": {
+    "mean": 4.619,
+    "min": 4.611,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.993,
+    "min": 0.992,
+    "n": 10
+   }
+  },
+  "seal_2.0dB": {
+   "pesq_wb": {
+    "mean": 4.605,
+    "min": 4.597,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.988,
+    "min": 0.987,
+    "n": 10
+   }
+  },
+  "seal_2.5dB": {
+   "pesq_wb": {
+    "mean": 4.59,
+    "min": 4.582,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.982,
+    "min": 0.98,
+    "n": 10
+   }
+  },
+  "seal_2.0dB_then_opus16": {
+   "pesq_wb": {
+    "mean": 4.243,
+    "min": 4.127,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.976,
+    "min": 0.973,
+    "n": 10
+   }
+  },
+  "anchor_opus16_no_seal": {
+   "pesq_wb": {
+    "mean": 4.294,
+    "min": 4.204,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.986,
+    "min": 0.983,
+    "n": 10
+   }
+  },
+  "anchor_opus32_no_seal": {
+   "pesq_wb": {
+    "mean": 4.457,
+    "min": 4.405,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.994,
+    "min": 0.992,
+    "n": 10
+   }
+  },
+  "anchor_mp3_32_no_seal": {
+   "pesq_wb": {
+    "mean": 3.47,
+    "min": 3.225,
+    "n": 10
+   },
+   "stoi": {
+    "mean": 0.994,
+    "min": 0.993,
+    "n": 10
+   }
+  }
+ }
+}
