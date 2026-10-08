@@ -19,6 +19,8 @@ dependencies = [
 [project.optional-dependencies]
 # Voice detector for uploads (T17). Model files are NOT in the repo (see extension/models/README.md).
 audio = ["numpy>=1.26", "onnxruntime>=1.18"]
+# Satyapan Seal (docs/SEAL.md): Voice Seal DSP + Intent Seal passkey verification.
+seal = ["numpy>=1.26", "scipy>=1.11", "webauthn>=2.2"]
 # AWS adapters (T09, T12, T15, T17). The app works without them (local fallbacks).
 aws = ["boto3>=1.34"]
 # Local Whisper on Apple Silicon (T11, T17). macOS only.
@@ -36,6 +38,8 @@ dev = [
   "ruff>=0.6",
   "mypy>=1.10",
   "numpy>=1.26",
+  "scipy>=1.11",
+  "webauthn>=2.2",
 ]
 
 [build-system]
@@ -84,8 +88,13 @@ files = [
   "src/satyapan/vault",
   "src/satyapan/voice/rules.py",
   "src/satyapan/explain/prompt.py",
+  "src/satyapan/seal",
 ]
 strict = true
 plugins = ["pydantic.mypy"]
 mypy_path = "src"
 explicit_package_bases = true
+
+[[tool.mypy.overrides]]
+module = ["scipy.*", "cbor2.*"]
+ignore_missing_imports = true
