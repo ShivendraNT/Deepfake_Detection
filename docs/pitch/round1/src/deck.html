@@ -59,7 +59,7 @@ p { margin: 0 0 8px; }
 .s14 { font-size: 14px; line-height: 1.38; } .s15 { font-size: 15px; line-height: 1.38; } .s16 { font-size: 16px; line-height: 1.4; }
 .s17 { font-size: 17px; line-height: 1.4; } .s18 { font-size: 18px; line-height: 1.38; } .s20 { font-size: 20px; line-height: 1.3; }
 .mute { color: var(--mute); } .ink2 { color: var(--ink2); } .b { font-weight: 700; } .sb { font-weight: 620; }
-.mono { font-family: var(--mono); font-size: .92em; }
+.mono { font-family: var(--mono); font-size: max(13px, .92em); }
 .hi { font-family: 'Noto Sans Devanagari', var(--sans); }
 .lab { font-size: 13px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--mute); margin: 0 0 6px; }
 .lab.brand { color: var(--brand); }
@@ -107,6 +107,20 @@ table.t td.num, table.t th.num { text-align: right; white-space: nowrap; font-va
 .crop { position: relative; overflow: hidden; border-radius: 8px; border: 1px solid var(--line); background: #f6f7f9; flex: none; }
 .crop img { position: absolute; left: 0; top: 0; transform-origin: 0 0; }
 .cap { font-size: 13px; color: var(--mute); line-height: 1.3; margin-top: 5px; }
+.crop { width: calc(var(--w) * 1px); height: calc(var(--h) * 1px); }
+.crop img { transform: scale(var(--s)) translate(calc(var(--x) * -1px), calc(var(--y) * -1px)); }
+footer.ft .mono { font-size: 1em; }
+.num-big { font-size: 26px; font-weight: 800; letter-spacing: -.02em; line-height: 1.05; font-variant-numeric: tabular-nums; }
+.stat { border: 1px solid var(--line); border-radius: 10px; padding: 9px 12px; background: #fff; }
+.stat .k { font-size: 14px; line-height: 1.3; margin-top: 3px; }
+.stat .n { font-size: 13px; color: var(--mute); line-height: 1.28; margin-top: 3px; }
+.step { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:50%;
+  background: var(--brand); color:#fff; font-size:13px; font-weight:800; flex:none; }
+table.t.c13 { font-size: 13px; line-height: 1.28; } table.t.c13 td, table.t.c13 th { padding: 3px 6px; }
+table.t.c135 { font-size: 13.5px; line-height: 1.3; } table.t.c135 td { padding: 4px 7px; }
+.q { font-size: 15px; font-weight: 760; color: var(--brand); line-height: 1.25; margin: 0 0 5px; }
+.dn { color: var(--hold); font-weight: 700; }
+.ok { color: var(--pass); font-weight: 700; }
 
 /* svg text defaults */
 svg { display: block; }
@@ -152,12 +166,12 @@ svg foreignObject div { font-family: var(--sans); color: var(--ink); }
         <div class="lab" style="margin-bottom:4px">Reviewer map · rubric criterion → page</div>
         <div style="display:grid; grid-template-columns: 1fr 1fr; column-gap:22px; row-gap:2px;" class="s14">
           <div>Problem fit and user (20) <b class="nowrap" style="float:right">2, 3</b></div>
-          <div>Safety, privacy, responsible AI (15) <b style="float:right">9, A3</b></div>
-          <div>Architecture and detection (20) <b class="nowrap" style="float:right">4, 5, 7, A1-A3</b></div>
+          <div>Safety, privacy, responsible AI (15) <b style="float:right">8, A3, X3</b></div>
+          <div>Architecture and detection (20) <b class="nowrap" style="float:right">4, 6, A1-A3</b></div>
           <div>Adoption and scale (10) <b style="float:right">10, A1</b></div>
           <div>Value and differentiation (15) <b style="float:right">3, 5, 6</b></div>
-          <div>Evidence ledger, every number <b style="float:right">X1</b></div>
-          <div>Feasibility and 48 h plan (15) <b style="float:right">8, 10</b></div>
+          <div>Evidence ledger, every number <b style="float:right">7, X1</b></div>
+          <div>Feasibility and 48 h plan (15) <b style="float:right">7, 9, 10</b></div>
           <div>AI, data and asset disclosures <b style="float:right">X5</b></div>
         </div>
       </div>
@@ -184,10 +198,10 @@ svg foreignObject div { font-family: var(--sans); color: var(--ink); }
       <div class="card pass" style="flex:1;">
         <div class="lab" style="color:var(--pass)">What already runs (prototype, 8 Oct 2026)</div>
         <ul class="l s14" style="line-height:1.36">
-          <li>Decision engine with 7 property-tested safety invariants</li>
+          <li>Decision engine with property-tested safety invariants</li>
           <li>Satyapan Seal module, API, demo pages, side-panel chip</li>
           <li>Ask detection EN / Hinglish / Devanagari; EN + HI text</li>
-          <li>511 automated tests pass; gaps listed on pages 8 and X4</li>
+          <li>561 automated tests pass; gaps listed on pages 9 and X4</li>
         </ul>
         <div class="s14 mute" style="margin-top:6px">Synthetic and public data only. Every number is traced in X1.</div>
       </div>
@@ -209,11 +223,11 @@ svg foreignObject div { font-family: var(--sans); color: var(--ink); }
       <div class="lab">It is happening in India, now</div>
       <div class="card hold" style="padding:10px 13px;">
         <div class="s14 b" style="color:var(--hold)">JULY 2026 · ₹10.70 CRORE · LISTED-COMPANY SUBSIDIARY [R1]</div>
-        <div class="s15" style="margin-top:3px">Starmangalsutra Pvt Ltd, a subsidiary of Sky Gold &amp; Diamonds, disclosed that an employee sent funds to unknown accounts on instructions from an <b>impersonated director</b>. The company cited deepfake techniques, including profile cloning, and a compromised company phone and laptop. The director had given no such instruction.</div>
+        <div class="s15" style="margin-top:3px">Starmangalsutra Pvt Ltd, a subsidiary of Sky Gold &amp; Diamonds, disclosed that an employee sent funds to unknown accounts on instructions from an <b>impersonated director</b>. The company cited purported deepfake techniques and a compromised company phone and laptop. The director had given no such instruction.</div>
       </div>
       <div class="card warm" style="padding:10px 13px;">
         <div class="s14 b" style="color:var(--verify)">17 JULY 2026 · SEBI CAUTION TO LISTED COMPANIES, PR 40/2026 [R2]</div>
-        <div class="s15" style="margin-top:3px">“Boss scam”: CEO/MD impersonation using <b>AI deepfakes and voice cloning on video calls</b>, hijacked WhatsApp Web sessions, the attacker’s number saved under the CEO’s name, and “don’t tell anyone, it is price-sensitive”. Then a mule account. SEBI’s advice: <b>verify directly with the senior official, never pay on a message alone, report on 1930.</b></div>
+        <div class="s15" style="margin-top:3px">“Boss scam”: CEO/MD impersonation using <b>AI deepfakes and voice cloning on video calls</b>, hijacked WhatsApp Web sessions, the attacker’s number saved under the CEO’s name, and secrecy “because it is price-sensitive”. Then a mule account. SEBI’s advice: <b>call the senior directly, never transfer on a message alone, report on 1930.</b></div>
       </div>
       <div class="card tint" style="padding:10px 13px;">
         <div class="s14 b ink2">2024 · ARUP, HONG KONG · HK$200M (ABOUT US$25.6M) [R3]</div>
@@ -263,7 +277,7 @@ svg foreignObject div { font-family: var(--sans); color: var(--ink); }
       </div>
     </div>
   </div>
-  <footer class="ft"><div class="src">[R1] Sky Gold disclosure to BSE, 16 Jul 2026 (The Economic Times) · [R2] SEBI PR 40/2026 · [R3] Fortune, May 2024 · [R4] Lok Sabha, 22 Jul 2025 · links: X6</div><div class="pg"><b>Satyapan</b> · 2</div></footer>
+  <footer class="ft"><div class="src">[R1] Sky Gold disclosure, Jul 2026 (Economic Times; AIID #1596) · [R2] SEBI PR 40/2026 · [R3] Fortune, May 2024 · [R4] Lok Sabha, 22 Jul 2025 · links: X6</div><div class="pg"><b>Satyapan</b> · 2</div></footer>
 </section>
 
 <!-- =====================================================================
@@ -361,7 +375,7 @@ svg foreignObject div { font-family: var(--sans); color: var(--ink); }
       <!-- inputs -->
       <rect x="1" y="1" width="284" height="86" rx="9" fill="#e5f3ea" stroke="#15653a" stroke-width="1.6"/>
       <text x="14" y="23" class="t13 b" style="fill:#15653a; letter-spacing:.06em">TRUSTED · company’s own data</text>
-      <foreignObject x="13" y="31" width="264" height="54"><div class="fo">pending payment entered by the maker · vendor master · 30-day payment register · directory</div></foreignObject>
+      <foreignObject x="13" y="31" width="264" height="54"><div class="fo">maker’s payment entry · vendor master · payment register · staff directory</div></foreignObject>
       <rect x="315" y="1" width="284" height="86" rx="9" fill="#fce7ea" stroke="#b0122a" stroke-width="1.6" stroke-dasharray="6 4"/>
       <text x="328" y="23" class="t13 b" style="fill:#b0122a; letter-spacing:.06em">UNTRUSTED · attacker can shape it</text>
       <foreignObject x="327" y="31" width="264" height="54"><div class="fo">email · invoice PDF · WhatsApp text or voice note · live call audio</div></foreignObject>
@@ -408,35 +422,928 @@ svg foreignObject div { font-family: var(--sans); color: var(--ink); }
         <table class="t zebra" style="font-size:14px">
           <thead><tr><th>If the payment goes to…</th><th style="width:74px">Floor</th><th>Before paying</th></tr></thead>
           <tbody>
-            <tr><td>a known vendor, same account, usual amount</td><td><span class="band pass">PASS</span></td><td>nothing extra</td></tr>
-            <tr><td>a known vendor, unusual amount or dormant 180+ days</td><td><span class="band verify">VERIFY</span></td><td>callback or OOB-Confirm</td></tr>
-            <tr><td>a new payee, up to ₹25,000 incl. last 30 days</td><td><span class="band pass">PASS</span></td><td>bank’s own new-payee checks</td></tr>
-            <tr><td>a new payee, above ₹25,000</td><td><span class="band verify">VERIFY</span></td><td>callback or OOB; above ₹10 lakh both</td></tr>
-            <tr><td>a vendor whose bank account changed</td><td><span class="band verify">VERIFY</span></td><td>callback on the <b>old</b> number; bank-shown name = master</td></tr>
-            <tr><td>(a change to a phone, email or approver on file)</td><td><span class="band hold">HOLD</span></td><td>checker on the old channel + 2nd approver</td></tr>
+            <tr><td>known vendor, same account, usual amount</td><td><span class="band pass">PASS</span></td><td>nothing extra</td></tr>
+            <tr><td>known vendor, unusual amount or dormant</td><td><span class="band verify">VERIFY</span></td><td>callback or OOB-Confirm</td></tr>
+            <tr><td>new payee, ≤ ₹25,000 over 30 days</td><td><span class="band pass">PASS</span></td><td>bank’s own payee checks</td></tr>
+            <tr><td>new payee, above ₹25,000</td><td><span class="band verify">VERIFY</span></td><td>callback or OOB (both &gt; ₹10 lakh)</td></tr>
+            <tr><td>vendor’s bank account changed</td><td><span class="band verify">VERIFY</span></td><td>callback on the <b>old</b> number</td></tr>
+            <tr><td>phone, email or approver on file changed</td><td><span class="band hold">HOLD</span></td><td>checker + 2nd approver</td></tr>
           </tbody>
         </table>
       </div>
       <div class="card tint" style="padding:10px 13px;">
-        <div class="lab">Safety rules, property-tested on the real engine (7 test files)</div>
+        <div class="lab">Safety rules, property-tested on the real engine</div>
         <ul class="l s14 tight" style="line-height:1.36">
           <li>Untrusted content can only raise the band, never lower it.</li>
           <li>The floor reads only trusted data (fuzzed with hostile inputs).</li>
-          <li>LLM or style signals: at most VERIFY, never counted as strong.</li>
-          <li>No HOLD from a single uncorroborated ask (policy 1.1).</li>
-          <li>Only the checker can clear a HOLD; the maker never can.</li>
+          <li>LLM or style signals: at most VERIFY, never “strong”.</li>
+          <li>No HOLD from one uncorroborated ask; only the checker clears HOLD.</li>
           <li>No code path files a report; a human always submits.</li>
         </ul>
       </div>
       <div class="card brand" style="padding:11px 14px; margin-top:auto;">
         <div class="s17 b" style="line-height:1.35; color:var(--brand)">Detectors decide <u>who</u> verifies, never <u>whether</u> money to a new or changed account needs verifying.</div>
-        <div class="s14 ink2" style="margin-top:4px">A deepfake works by manipulating the person who would verify. Any strong signal therefore moves the decision to someone else.</div>
+        <div class="s14 ink2" style="margin-top:4px">A deepfake works by manipulating the person who would verify, so any strong signal moves the decision to someone else.</div>
       </div>
     </div>
   </div>
-  <footer class="ft"><div class="src">Policy engine: <span class="mono">src/satyapan/policy/</span> · invariants: <span class="mono">tests/invariants/</span> · full signal → band table and codes: X2 · ₹ thresholds are configurable</div><div class="pg"><b>Satyapan</b> · 4</div></footer>
+  <footer class="ft"><div class="src">Policy engine: <span class="mono">src/satyapan/policy/</span> · invariants: <span class="mono">tests/invariants/</span> · signal → band table: X2 · ₹ thresholds configurable</div><div class="pg"><b>Satyapan</b> · 4</div></footer>
 </section>
 
+<!-- PAGES-D05-ON:START -->
+<!-- =====================================================================
+     PITCH DECK 5/10 : product walkthrough (real screenshots)
+     ===================================================================== -->
+<section class="slide" data-page="D05">
+  <div class="kicker"><span class="part">Pitch deck</span> 5 / 10 <span class="dot"></span> Product flow: what each person sees
+    <span class="rub">Value and differentiation (15) · Final check 02</span></div>
+  <h1>Product walkthrough: from the live call to an approval nobody can alter</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:grid; grid-template-columns: 1fr 1fr; grid-template-rows: 256px 256px; gap:9px 14px;">
+      <!-- 1 side panel -->
+      <div class="card" style="padding:9px 12px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;"><span class="step">1</span><span class="s15 b">During the call: Priya’s side panel</span><span class="s14 mute">· maker</span></div>
+        <div style="display:flex; gap:12px; flex:1; min-height:0;">
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div class="crop" style="--w:257;--h:132"><img src="../screens/sidepanel_replay.png" alt="Side panel: policy band HOLD and suggested response" style="--x:1217;--y:62;--s:0.70"></div>
+            <div class="crop" style="--w:257;--h:70"><img src="../screens/sidepanel_replay.png" alt="Side panel: detected asks new account, secrecy, bypass approval" style="--x:1217;--y:357;--s:0.70"></div>
+          </div>
+          <div class="grow s14" style="line-height:1.36">
+            <p>The band in plain words, a safe reply to read out, and the asks it heard: <b>new account, secrecy, skip approval</b>.</p>
+            <p>Priya never sees a score and never has to judge the voice.</p>
+            <p class="mute" style="font-size:13px; margin-top:6px"><span class="tag built">BUILT</span> side panel on <b>replayed</b> events of a synthetic call. Live Meet capture test: pending.</p>
+          </div>
+        </div>
+      </div>
+      <!-- 2 seal chip -->
+      <div class="card" style="padding:9px 12px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;"><span class="step">2</span><span class="s15 b">Who is really speaking? The seal chip</span><span class="s14 mute">· maker</span></div>
+        <div style="display:flex; gap:12px; flex:1; min-height:0;">
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div class="crop" style="--w:275;--h:87"><img src="../screens/seal_chip_states.png" alt="Chip: Rajesh Iyer (CFO) sealed, 12 of 12 epochs" style="--x:432;--y:89;--s:0.80"></div>
+            <div class="crop" style="--w:275;--h:115"><img src="../screens/seal_chip_states.png" alt="Chip: claims to be Rajesh Iyer, NOT sealed, band HOLD" style="--x:825;--y:89;--s:0.80"></div>
+          </div>
+          <div class="grow s14" style="line-height:1.36">
+            <p><b>Real CFO</b> on his enrolled laptop: <span class="ok">sealed ✓</span> after about 5 s.</p>
+            <p><b>Clone</b>: “NOT sealed” ⇒ VERIFY. With the secrecy and new-account asks ⇒ HOLD.</p>
+            <p>“Not sealed” is never called “fake”.</p>
+            <p class="mute" style="font-size:13px"><span class="tag built">BUILT</span> chip + policy on replayed events; live in-call sealing: finale.</p>
+          </div>
+        </div>
+      </div>
+      <!-- 3 voice note -->
+      <div class="card" style="padding:9px 12px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;"><span class="step">3</span><span class="s15 b">A forwarded voice note</span><span class="s14 mute">· checker view in the console</span></div>
+        <div style="display:flex; gap:12px; flex:1; min-height:0;">
+          <div class="crop" style="--w:309;--h:208"><img src="../screens/seal_voice_note_spliced.png" alt="Voice note check: partly sealed, speech without seal at 20 to 35 seconds, per-epoch strip" style="--x:689;--y:153;--s:0.51"></div>
+          <div class="grow s14" style="line-height:1.36">
+            <p>Each 5 s of a WhatsApp-style note is checked. A <b>spliced-in sentence shows as a red gap</b> (here 20-35 s).</p>
+            <p>Fully sealed note: “Sealed by Rajesh Iyer (CFO) ✓”. No seal: “Not sealed: this does not mean fake”.</p>
+            <p class="mute" style="font-size:13px"><span class="tag built">BUILT</span> real API, real Opus/OGG audio, synthetic voices.</p>
+          </div>
+        </div>
+      </div>
+      <!-- 4 intent seal -->
+      <div class="card" style="padding:9px 12px; display:flex; flex-direction:column;">
+        <div style="display:flex; align-items:center; gap:8px; margin-bottom:7px;"><span class="step">4</span><span class="s15 b">The CFO approves on his own device</span><span class="s14 mute">· Intent Seal</span></div>
+        <div style="display:flex; gap:12px; flex:1; min-height:0;">
+          <div style="display:flex; flex-direction:column; gap:5px;">
+            <div class="crop" style="--w:320;--h:83"><img src="../screens/intent_seal_request.png" alt="Approval request: 48,50,000 rupees to account ending 4821" style="--x:327;--y:150;--s:0.55"></div>
+            <div class="crop" style="--w:320;--h:77"><img src="../screens/intent_seal_tampered_amount_rejected.png" alt="Rejected: payment presented for release does not match the signed amount" style="--x:327;--y:660;--s:0.55"></div>
+          </div>
+          <div class="grow s14" style="line-height:1.36">
+            <p>Touch ID signs a hash of the <b>exact amount, account, case and a one-time nonce</b>.</p>
+            <p>Genuine approval: accepted. Amount changed to ₹4,85,00,000 afterwards: <span class="dn">refused and logged</span>.</p>
+            <p class="mute" style="font-size:13px"><span class="tag built">BUILT</span> virtual authenticator; approval alone never clears a HOLD.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="card tint" style="padding:7px 13px;">
+      <div class="s14"><span class="step" style="background:var(--mute)">5</span> <b>Not yet built (finale, page 10):</b> console case view, OOB-Confirm inbox, one-click UTR-first report pack (A2). <span class="mute">All screens are the team’s prototype: fictional people, companies and bank data; synthetic TTS voices.</span></div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Screens: <span class="mono">docs/pitch/round1/screens/</span>, made by <span class="mono">scripts/seal_screenshots.py</span> from the running API · seal numbers: page 6 and X1</div><div class="pg"><b>Satyapan</b> · 5</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 6/10 : the innovation, Satyapan Seal
+     ===================================================================== -->
+<section class="slide" data-page="D06">
+  <div class="kicker"><span class="part">Pitch deck</span> 6 / 10 <span class="dot"></span> Core approach: the innovation
+    <span class="rub">Value and differentiation (15) · Architecture and detection (20)</span></div>
+  <h1>Satyapan Seal: prove the real executive instead of chasing the fake</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:flex; gap:14px; height:392px;">
+      <!-- why detection decays -->
+      <div style="width:318px; display:flex; flex-direction:column; gap:10px;">
+        <div class="card warm" style="padding:10px 13px;">
+          <div class="lab" style="color:var(--verify)">Why detection alone decays</div>
+          <ul class="l s14" style="line-height:1.36">
+            <li>On 2026 video generators the <b>best detector reached 69.7% AUROC</b>; one detector scored <b>34.5%</b> on closed-source generators (below 50% = worse than chance) [R10].</li>
+            <li>Open-source detectors lost about half their AUC on real 2024 deepfakes; <b>audio −48%</b> [R11].</li>
+          </ul>
+          <div class="s15 b" style="color:var(--brand); line-height:1.3; margin-top:7px">A seal does not decay: the attacker needs the key, not a better voice.</div>
+        </div>
+        <div class="card hold" style="padding:10px 13px; flex:1;">
+          <div class="s15 b" style="color:var(--hold)">Not sealed ≠ fake</div>
+          <div class="s14" style="margin-top:3px; line-height:1.36">A missing seal only raises to <span class="band verify" style="font-size:12.9px">VERIFY</span>. A seal never lowers a band or clears a HOLD (property-tested).</div>
+        </div>
+      </div>
+      <!-- how it works -->
+      <div class="card" style="width:462px; padding:10px 13px; display:flex; flex-direction:column;">
+        <div class="lab brand">How it works · one Touch ID per meeting</div>
+        <div style="display:flex; flex-direction:column; gap:5px;" class="s14">
+          <div style="display:flex; gap:9px; align-items:flex-start;"><span class="step">1</span><div><b>Enrol once.</b> Rajesh (CFO) creates a passkey on his laptop. The server keeps only the public key.</div></div>
+          <div style="display:flex; gap:9px; align-items:flex-start;"><span class="step">2</span><div><b>Start a meeting.</b> One Touch ID signs a commitment to a fresh chain of keys, bound to <b>this meeting ID</b>.</div></div>
+          <div style="display:flex; gap:9px; align-items:flex-start;"><span class="step">3</span><div><b>Speak.</b> His client adds a faint keyed level pattern (±2 dB, 12 bands) to every <b>5 s</b> of his voice. Each key is revealed only <b>after</b> its 5 s end (TESLA delayed disclosure [R14]).</div></div>
+          <div style="display:flex; gap:9px; align-items:flex-start;"><span class="step">4</span><div><b>Verify.</b> Priya’s panel checks each 5 s with the revealed key: <span class="ok">“Rajesh: sealed ✓”</span> or <span class="dn">“Claims to be Rajesh: NOT sealed → verify”</span>.</div></div>
+        </div>
+        <svg width="434" height="54" viewBox="0 0 434 54" style="margin-top:7px; flex:none" role="img" aria-label="Timeline: each 5-second epoch is sealed with key K_e, revealed after the epoch ends">
+          <g class="t13">
+            <rect x="0" y="2" width="100" height="24" rx="5" fill="#e9eefc" stroke="#b9c6ef"/><text x="50" y="19" text-anchor="middle">0-5 s · key K1</text>
+            <rect x="106" y="2" width="100" height="24" rx="5" fill="#e9eefc" stroke="#b9c6ef"/><text x="156" y="19" text-anchor="middle">5-10 s · K2</text>
+            <rect x="212" y="2" width="100" height="24" rx="5" fill="#e9eefc" stroke="#b9c6ef"/><text x="262" y="19" text-anchor="middle">10-15 s · K3</text>
+            <path d="M100 28 L114 44" stroke="#15653a" stroke-width="1.6" fill="none"/><text x="118" y="49" style="fill:#15653a">K1 out</text>
+            <path d="M206 28 L220 44" stroke="#15653a" stroke-width="1.6" fill="none"/><text x="224" y="49" style="fill:#15653a">K2 out</text>
+            <text x="322" y="19" class="m">hash chain,</text><text x="322" y="36" class="m">signed at start</text>
+          </g>
+        </svg>
+        <div class="card brand" style="padding:8px 11px; margin-top:auto;">
+          <div class="s14"><b>Intent Seal.</b> For money, the same passkey signs SHA-256 of the exact <b>amount + beneficiary + case + nonce + expiry</b>. Any later change breaks it (page 5, step 4).</div>
+        </div>
+      </div>
+      <!-- defeats -->
+      <div class="grow" style="display:flex; flex-direction:column; gap:8px;">
+        <table class="t c135">
+          <thead><tr><th>Attack</th><th style="width:150px">Result</th></tr></thead>
+          <tbody>
+            <tr><td>Voice clone / live voice conversion</td><td class="ok">not sealed</td></tr>
+            <tr><td>Replay of an earlier sealed call</td><td class="ok">not sealed</td></tr>
+            <tr><td>Relay of live audio from another meeting</td><td class="ok">not sealed</td></tr>
+            <tr><td>Another exec’s valid seal, posing as him</td><td class="ok">shows who sealed</td></tr>
+            <tr><td>Listener forging a later 5 s</td><td class="ok">key not yet out</td></tr>
+            <tr><td>Malware on the CFO’s own laptop</td><td class="dn">not defeated</td></tr>
+            <tr><td>Never-enrolled caller (phone, guest)</td><td style="color:var(--verify); font-weight:700">not sealed → callback</td></tr>
+            <tr><td>Fake voice mixed in with the real CFO</td><td style="color:var(--verify); font-weight:700">partly</td></tr>
+          </tbody>
+        </table>
+        <div class="mute" style="font-size:13px; line-height:1.3; margin-top:auto">Nearest prior work: CallShield, ~63 s, shared keys [R13]; Zoom badges verify the account, not the audio [R16]. Full threat table: X3.</div>
+      </div>
+    </div>
+    <!-- measured -->
+    <div>
+      <div class="lab" style="margin-bottom:5px">Measured on the in-repo module · synthetic TTS voices, n = 10 (6 English, 4 Hindi) · illustrative, not a field result</div>
+      <div style="display:grid; grid-template-columns: repeat(5, 1fr); gap:10px;">
+        <div class="stat"><div class="num-big" style="color:var(--pass)">0 / 560</div><div class="k">attack sessions falsely sealed (clone, relay, replay, wrong identity)</div><div class="n">95% CI upper bound 0.7%</div></div>
+        <div class="stat"><div class="num-big">139 / 140</div><div class="k">genuine sessions verified, 14 real codec chains</div><div class="n">Opus 16k (WhatsApp-style), AMR-NB 12.2, G.711, 5% loss</div></div>
+        <div class="stat"><div class="num-big">5 s</div><div class="k">median time to verdict</div><div class="n">10 s Opus 8k; 20 s worst mobile mode</div></div>
+        <div class="stat"><div class="num-big">4 / 4</div><div class="k">sealed through real Chrome WebRTC</div><div class="n">noise suppression, AGC, echo cancel on and off; n = 2 voices</div></div>
+        <div class="stat"><div class="num-big">4.61</div><div class="k">PESQ-WB with seal; plain Opus 32k: 4.46</div><div class="n">audibility proxy; listening test pending</div></div>
+      </div>
+      <div class="s14" style="margin-top:6px; line-height:1.35">English and Hindi voices behave alike. <b>Untested: Google Meet’s own server-side and ML noise cancellation</b> → finale test #1 (page 10). Weak spot: a constant 3% time-stretch (X1).</div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">[R10] DF26 arXiv 2609.07369 · [R11] Deepfake-Eval-2024 arXiv 2503.02857 · [R13] CallShield · [R14] TESLA, RFC 4082 · code <span class="mono">src/satyapan/seal/</span> · numbers: X1 §Seal</div><div class="pg"><b>Satyapan</b> · 6</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 7/10 : evidence and honest validation
+     ===================================================================== -->
+<section class="slide" data-page="D07">
+  <div class="kicker"><span class="part">Pitch deck</span> 7 / 10 <span class="dot"></span> Data, evidence and validation so far
+    <span class="rub">Feasibility (15) · Architecture and detection (20)</span></div>
+  <h1>Evidence: what we measured, and why no content detector decides alone</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:10px;">
+   <div style="display:flex; gap:16px;">
+    <div style="width:590px; display:flex; flex-direction:column; gap:10px;">
+      <div class="card" style="padding:10px 14px;">
+        <div class="lab">Alert budget · the real decision engine on 400 routine + 184 attack synthetic payments</div>
+        <svg width="562" height="288" viewBox="0 0 562 288" role="img" aria-label="Alert budget before and after policy 1.1 and the context layer">
+<g class="t13"><rect x="0" y="5" width="13" height="11" rx="2" fill="#aab3c2"/><text x="18" y="15" class="i2">before: policy 1.0</text><rect x="150" y="5" width="13" height="11" rx="2" fill="#1e3a8a"/><text x="168" y="15" class="i2">after: policy 1.1 + context layer (built)</text></g>
+<line x1="0" y1="26" x2="562" y2="26" stroke="#e7eaf0"/>
+<text x="0" y="43" class="t14 sb">Routine payments at HOLD</text><text x="0" y="60" class="t13 m">test split, n = 200 · lower is better</text>
+<rect x="236" y="32" width="57.8" height="13" rx="2" fill="#aab3c2"/>
+<text x="299.8" y="43" class="t13 i2">27.5%</text>
+<rect x="236" y="48" width="6.3" height="13" rx="2" fill="#1e3a8a"/>
+<text x="248.3" y="59" class="t13 b">3.0%</text><text x="284.3" y="59" class="t13 m">[1.4–6.4]</text>
+<line x1="0" y1="69" x2="562" y2="69" stroke="#e7eaf0"/>
+<text x="0" y="86" class="t14 sb">Routine payments ≥ VERIFY</text><text x="0" y="103" class="t13 m">n = 200 · lower is better</text>
+<rect x="236" y="75" width="76.7" height="13" rx="2" fill="#aab3c2"/>
+<text x="318.6" y="86" class="t13 i2">36.5%</text>
+<rect x="236" y="91" width="45.1" height="13" rx="2" fill="#1e3a8a"/>
+<text x="287.1" y="102" class="t13 b">21.5%</text><text x="335.1" y="102" class="t13 m">[16.4–27.7]</text>
+<line x1="0" y1="112" x2="562" y2="112" stroke="#e7eaf0"/>
+<text x="0" y="129" class="t14 sb">Attack cases ≥ VERIFY</text><text x="0" y="146" class="t13 m">n = 98 · higher is better</text>
+<rect x="236" y="118" width="149.9" height="13" rx="2" fill="#aab3c2"/>
+<text x="391.9" y="129" class="t13 i2">71.4%</text>
+<rect x="236" y="134" width="160.7" height="13" rx="2" fill="#1e3a8a"/>
+<text x="402.6" y="145" class="t13 b">76.5%</text><text x="450.6" y="145" class="t13 m">[67.2–83.8]</text>
+<line x1="0" y1="155" x2="562" y2="155" stroke="#e7eaf0"/>
+<text x="0" y="172" class="t14 sb">Attack cases at HOLD</text><text x="0" y="189" class="t13 m">n = 98 · the honest cost (below)</text>
+<rect x="236" y="161" width="53.5" height="13" rx="2" fill="#aab3c2"/>
+<text x="295.6" y="172" class="t13 i2">25.5%</text>
+<rect x="236" y="177" width="25.6" height="13" rx="2" fill="#1e3a8a"/>
+<text x="267.6" y="188" class="t13 b">12.2%</text><text x="315.6" y="188" class="t13 m">[7.1–20.2]</text>
+<line x1="0" y1="198" x2="562" y2="198" stroke="#e7eaf0"/>
+<text x="0" y="215" class="t14 sb">Split payments, new payee</text><text x="0" y="232" class="t13 m">≥ VERIFY · all splits, n = 12</text>
+<rect x="236" y="204" width="2.0" height="13" rx="2" fill="#aab3c2"/>
+<text x="244.0" y="215" class="t13 i2">0%</text>
+<rect x="236" y="220" width="210.0" height="13" rx="2" fill="#1e3a8a"/>
+<text x="452.0" y="231" class="t13 b">100%</text>
+<line x1="0" y1="241" x2="562" y2="241" stroke="#e7eaf0"/>
+<text x="0" y="258" class="t14 sb">Payee change / big new payee</text><text x="0" y="275" class="t13 m">≥ VERIFY · n = 26 / 75</text>
+<rect x="236" y="247" width="210.0" height="13" rx="2" fill="#aab3c2"/>
+<text x="452.0" y="258" class="t13 i2">100%</text>
+<rect x="236" y="263" width="210.0" height="13" rx="2" fill="#1e3a8a"/>
+<text x="452.0" y="274" class="t13 b">100%</text>
+<line x1="236" y1="26" x2="236" y2="282" stroke="#8a94a6"/>
+</svg>
+      </div>
+      <div class="card tint" style="padding:9px 13px;">
+        <div class="lab">How to read the attack HOLD drop (computed by the script)</div>
+        <div class="s14" style="line-height:1.38">Of 13 test-split attack cases that lost HOLD, <b>9</b> had been held only by a standard confidentiality footer (the same false positive that hit routine payments) and <b>4</b> are real single credential asks with no payment, now VERIFY. All stay at VERIFY or above except <b>1</b>, a remote-access ask the lexicon misses, which fell to PASS.</div>
+      </div>
+    </div>
+    <div class="grow" style="display:flex; flex-direction:column; gap:10px;">
+      <div class="card" style="padding:10px 13px;">
+        <div class="lab">Ask detection on held-out texts · frozen lexicon · test split</div>
+        <div style="display:flex; gap:16px; margin:2px 0 6px;">
+          <div><div class="num-big">0.47</div><div class="s13 mute" style="font-size:13px">precision [0.36–0.58], 73 flagged</div></div>
+          <div><div class="num-big">0.33</div><div class="s13 mute" style="font-size:13px">recall [0.24–0.42], 104 asks</div></div>
+          <div><div class="num-big">21.0% → 11.5%</div><div class="s13 mute" style="font-size:13px">benign texts with a false ask, n = 157 (context layer)</div></div>
+        </div>
+        <div class="s14" style="line-height:1.36">Recall by language (all splits): English 0.28, Hinglish 0.36, Devanagari <b>0.15</b>. These replace an earlier, circular P = R = 1.0 on team-written sentences.</div>
+        <div class="s14 b" style="color:var(--brand); margin-top:6px; line-height:1.34">Content detectors are brittle and easy to paraphrase around. That is why they can only raise the band, and why the floor and the Seal carry the decision.</div>
+      </div>
+      <div class="card" style="padding:10px 13px;">
+        <div class="lab">Red-team, deterministic · routine payments, n = 200</div>
+        <table class="t c135" style="margin-top:-2px">
+          <tr><td style="padding-left:0">One planted secrecy word → HOLD</td><td class="num">100% → 20.5%</td></tr>
+          <tr><td style="padding-left:0">Planted OTP-SMS or disclaimer line → HOLD</td><td class="num">100% → 3.0%</td></tr>
+          <tr><td style="padding-left:0">Two planted keyword types → HOLD (<b>queue flooding: open</b>)</td><td class="num dn">still 100%</td></tr>
+          <tr><td style="padding-left:0">Asks hidden by a boilerplate wrapper, n = 38</td><td class="num">5.3%</td></tr>
+          <tr><td style="padding-left:0">Known gap: “bank never asks for OTP … but &lt;ask&gt;”, n = 38</td><td class="num dn">34.2% hidden</td></tr>
+        </table>
+      </div>
+      <div class="card verify" style="padding:9px 13px;">
+        <div class="lab" style="color:var(--verify)">Pending: no number yet, never shown as a result</div>
+        <div class="s14" style="line-height:1.36">Seal through a real Google Meet call · voice-detector error rate through Meet and phone codecs · false alarms per speaker on consented Meet audio · clone catch rate in a real call · spoken ask → chip latency · email and invoice checker rates. Earlier simulated voice numbers were <b>withdrawn</b> (X4).</div>
+      </div>
+    </div>
+   </div>
+   <div class="card pass" style="padding:8px 13px;">
+     <div class="s14"><b>Engineering evidence:</b> 561 automated tests pass (138 skipped = unfinished tasks, X4). Safety rules are property-tested on the real engine (200 random cases each): raise-only, floor isolation, LLM cap, grey and OOB rules, no HOLD from one weak signal. Plain tests cover checker-only clearance, score hiding, no auto-reporting, custody chain.</div>
+   </div>
+  </div>
+  <footer class="ft"><div class="src">Synthetic data: AI-written held-out texts (one author), cases built from them; Wilson 95% CIs; test split quoted because rules were tuned on dev texts · scripts, commits: X1 §1-3</div><div class="pg"><b>Satyapan</b> · 7</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 8/10 : privacy, security, safety and misuse
+     ===================================================================== -->
+<section class="slide" data-page="D08">
+  <div class="kicker"><span class="part">Pitch deck</span> 8 / 10 <span class="dot"></span> Privacy, security, safety and misuse safeguards
+    <span class="rub">Safety, privacy and responsible AI (15) · Final check 05</span></div>
+  <h1>Build for Trust: the brief’s five questions, answered</h1>
+  <div class="body" style="display:grid; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 300px 1fr; gap:10px 12px;">
+    <div class="card" style="padding:9px 12px;">
+      <div class="q">1 · What data do you need?</div>
+      <ul class="l s14 tight" style="line-height:1.33">
+        <li><b>Payment entry, vendor master, payment register, directory</b>: set the floor and the only callback numbers (company records).</li>
+        <li><b>Email, invoice, voice note</b> the user chooses to attach: can only raise.</li>
+        <li><b>Remote tab audio</b>, only while Priya turns protection on: asks + seal check; not stored unless she saves 30 s as evidence.</li>
+        <li><b>Executives’ passkey public keys</b> and 32-byte seal keys: opt-in, own Touch ID.</li>
+      </ul>
+      <div class="s14" style="margin-top:5px; line-height:1.33"><b class="dn">We do not collect:</b> voiceprints or any biometric, video, the user’s own mic, bank logins or OTPs, customer data, other tabs, contacts.</div>
+    </div>
+    <div class="card" style="padding:9px 12px;">
+      <div class="q">2 · What happens when the system is wrong?</div>
+      <ul class="l s14 tight" style="line-height:1.33">
+        <li><b>False alarm:</b> the worst case is “verify before paying”. No auto-block, no accusation; one uncorroborated ask → at most VERIFY. Routine payments at HOLD: 3.0% (synthetic, n = 200).</li>
+        <li><b>Missed attack:</b> the floor still applies; a new or changed account always needs verification.</li>
+        <li><b>Real CFO not sealed</b> (on his phone): friction, not harm → normal callback.</li>
+        <li><b>Correction:</b> checker clears with a logged reason, can remove watchlist entries; monthly false-alarm review.</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:9px 12px;">
+      <div class="q">3 · Who can act on the result?</div>
+      <ul class="l s14 tight" style="line-height:1.33">
+        <li><b>Maker:</b> clears VERIFY by callback on the number on file or OOB-Confirm.</li>
+        <li><b>Checker:</b> the only role that clears HOLD, after own callback + security sign-off.</li>
+        <li><b>Checker / security:</b> mark confirmed fraud. A <b>human</b> files 1930 / NCRP / bank reports.</li>
+        <li><b>Urgent override:</b> two senior approvers, reason, review in 48 h; never on suspected fraud.</li>
+        <li><b>Small firm</b> where the owner is the target: CA or bank RM as second verifier (design).</li>
+      </ul>
+    </div>
+    <div class="card" style="padding:9px 12px;">
+      <div class="q">4 · How will users understand the result?</div>
+      <div class="s14" style="line-height:1.33">Band + plain reason + next step, in English and Hindi for all 33 reason codes. <b>Never a bare score.</b></div>
+      <div class="card tint" style="padding:6px 9px; margin-top:6px;">
+        <div class="s14" style="line-height:1.33">“The bank account differs from the vendor master. Call the vendor back on the number already on file (not the one in the message) before paying.”</div>
+        <div class="s14 hi" style="line-height:1.4; margin-top:3px">“बैंक खाता वेंडर मास्टर से अलग है। भुगतान से पहले वेंडर को पहले से दर्ज नंबर पर फिर से कॉल करें (संदेश वाले नंबर पर नहीं)।”</div>
+      </div>
+      <div class="s14" style="line-height:1.33; margin-top:5px">Seal text says “Not sealed does not mean fake”. An optional LLM summary must pass a faithfulness check and never sets the band.</div>
+    </div>
+    <div class="card" style="padding:9px 12px;">
+      <div class="q">5 · How will the product resist misuse?</div>
+      <ul class="l s14 tight" style="line-height:1.33">
+        <li><b>Oracle tuning:</b> makers never see scores; no public upload endpoint.</li>
+        <li><b>Prompt injection:</b> the LLM has no tools, sees untrusted text only as data, cannot set or lower a band.</li>
+        <li><b>Adaptation:</b> floor and Seal do not depend on detector quality; red-team numbers on page 7.</li>
+        <li><b>Evidence access:</b> role-checked reads, hash-chained custody; in production S3 Object Lock + KMS, CloudTrail.</li>
+        <li><b>Privacy abuse:</b> nobody can seal another person’s voice without that person’s passkey; keys expire.</li>
+      </ul>
+    </div>
+    <div class="card brand" style="padding:9px 12px;">
+      <div class="q">Bias, consent and notice</div>
+      <ul class="l s14 tight" style="line-height:1.33">
+        <li><b>Seal:</b> its false-alarm statistics do not depend on voice, accent or language; English and Hindi voices measured alike.</li>
+        <li><b>Detectors:</b> Devanagari recall is weakest (0.15). Before any voice threshold goes live: false alarms per speaker on consented Meet audio, ≥ 4 accents. “Inconclusive” never escalates alone; unsupported language → checker.</li>
+        <li><b>Notice:</b> staff policy notice; execs opt in per meeting; meeting-chat notice to the other side (design).</li>
+      </ul>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Data-flow table with lawful basis (DPDP Act 2023, Rules 2025 [R7]) and retention: X3 · roles: <span class="mono">policy/permissions.py</span> · EN/HI text: <span class="mono">explain/templates.py</span></div><div class="pg"><b>Satyapan</b> · 8</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 9/10 : validation plan and key assumptions
+     ===================================================================== -->
+<section class="slide" data-page="D09">
+  <div class="kicker"><span class="part">Pitch deck</span> 9 / 10 <span class="dot"></span> Validation plan and key assumptions
+    <span class="rub">Feasibility (15) · Final check 04</span></div>
+  <h1>Validation plan: each assumption has a test, a pass mark and a status</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:10px;">
+    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:10px;">
+      <div class="card pass" style="padding:8px 12px;"><div class="s15 b">① Offline <span class="tag built">DONE</span></div><div class="s14" style="line-height:1.33; margin-top:2px">Codecs, WebRTC, held-out texts, alert budget, red-team (pages 6-7).</div></div>
+      <div class="card brand" style="padding:8px 12px;"><div class="s15 b">② Lab <span class="tag finale">FINALE</span></div><div class="s14" style="line-height:1.33; margin-top:2px">Two laptops on Google Meet, consented voices, listening test.</div></div>
+      <div class="card tint" style="padding:8px 12px;"><div class="s15 b">③ Shadow pilot · 2 weeks</div><div class="s14" style="line-height:1.33; margin-top:2px">One SME or CA firm, log only, real AP traffic. Pass: routine HOLD ≤ 5%.</div></div>
+      <div class="card tint" style="padding:8px 12px;"><div class="s15 b">④ Live with KPIs</div><div class="s14" style="line-height:1.33; margin-top:2px">VERIFY-only, then full HOLD; monthly false-alarm review.</div></div>
+    </div>
+    <table class="t zebra c135">
+      <thead><tr><th style="width:30px">#</th><th style="width:290px">Assumption</th><th style="width:210px">Why it matters</th><th>How we validate it (pass mark)</th><th style="width:210px">Status today</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td><b>The seal survives Google Meet</b>, incl. its server side and ML noise cancellation</td><td>live Voice Seal depends on it</td><td>two laptops, Meet noise cancellation on and off, sealed + unsealed files (median z ≥ 4; controls not sealed)</td><td><span class="tag pending">PENDING</span> Chrome client path passed (n = 2 voices)</td></tr>
+        <tr><td>2</td><td><b>The seal is inaudible</b> at ±2 dB</td><td>executives will not accept artefacts</td><td>blind A/B by 3 listeners, 1.5 vs 2.0 dB; use 1.5 dB if 2.0 is heard</td><td><span class="tag pending">PENDING</span> PESQ proxy 4.61</td></tr>
+        <tr><td>3</td><td><b>Executives enrol</b> and start a sealed session</td><td>covers the people attackers impersonate</td><td>time 3 enrolments and session starts (under 2 min each)</td><td><span class="tag pending">PENDING</span></td></tr>
+        <tr><td>4</td><td><b>The vendor master is trustworthy</b> when a vendor is first added</td><td>it is the floor’s trust root</td><td>first bank/phone record checked out of band: GSTIN lookup, penny drop, number from GST/MCA records, never from the vendor’s email</td><td><span class="tag design">DESIGN</span> not built</td></tr>
+        <tr><td>5</td><td><b>A payment-register export exists</b> (Tally / Zoho / SAP CSV)</td><td>30-day split rule, amount patterns</td><td>import one anonymised export in the shadow pilot</td><td><span class="tag built">BUILT</span> synthetic CSV only</td></tr>
+        <tr><td>6</td><td><b>Routine escalation stays low</b> on real traffic</td><td>alert fatigue kills adoption</td><td>shadow mode: routine HOLD ≤ 5%, routine VERIFY trend down</td><td>3.0% synthetic; real pending</td></tr>
+        <tr><td>7</td><td><b>Live Hinglish speech-to-text</b> is good enough to see asks</td><td>ask chips during calls</td><td>10 consented clips: spoken ask → chip latency and ask recall</td><td><span class="tag pending">PENDING</span></td></tr>
+        <tr><td>8</td><td><b>The voice detector adds value</b> through Meet and phone codecs</td><td>forensic signal (raise-only)</td><td>public set × 4 codecs; false alarms per speaker on consented Meet audio</td><td><span class="tag pending">PENDING</span> simulated numbers withdrawn</td></tr>
+        <tr><td>9</td><td><b>The checker is not the person impersonated</b></td><td>HOLD independence</td><td>small-firm setting: CA or bank RM as second verifier, or cooling-off</td><td><span class="tag design">DESIGN</span></td></tr>
+      </tbody>
+    </table>
+    <div class="card warm" style="padding:7px 13px;">
+      <div class="s14"><b>If #1 fails</b> (Meet destroys the seal even at 2.5 dB or 10 s epochs): Intent Seal, sealed voice notes and the floor still work unchanged; the live chip falls back to a spoken session code (design). <b>Nothing else depends on the voice detector.</b></div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Test procedures: <span class="mono">research/seal/README.md</span> §6 (two-laptop Meet test, listening test) · full gap list and what is not built: X4</div><div class="pg"><b>Satyapan</b> · 9</div></footer>
+</section>
+
+<!-- =====================================================================
+     PITCH DECK 10/10 : adoption, integration and the 48-hour finale plan
+     ===================================================================== -->
+<section class="slide" data-page="D10">
+  <div class="kicker"><span class="part">Pitch deck</span> 10 / 10 <span class="dot"></span> Deployment pathway and 48-hour prototype plan
+    <span class="rub">Adoption (10) · Feasibility and 48 h plan (15)</span></div>
+  <h1>Adoption path, and 48 hours in which every block ends in a proof</h1>
+  <div class="body" style="display:flex; gap:16px;">
+    <div style="width:420px; display:flex; flex-direction:column; gap:8px;">
+      <div class="card" style="padding:8px 12px;">
+        <div class="lab">Owner and users</div>
+        <div class="s14" style="line-height:1.34">The <b>finance controller / CFO</b> buys and runs it. <b>Makers and checkers</b> use it daily; 3-10 payment approvers enrol a passkey. IT force-installs the extension through <b>Chrome Enterprise policy</b>.</div>
+      </div>
+      <div class="card" style="padding:8px 12px;">
+        <div class="lab">Integration</div>
+        <div class="s14" style="line-height:1.34">Vendor master + payment register as a nightly <b>Tally / Zoho / SAP CSV</b> export; SSO directory; OOB by email / SMS. <b>No bank API needed</b>: the maker types the payee name the bank shows.</div>
+      </div>
+      <div class="card" style="padding:8px 12px;">
+        <div class="lab">Distribution</div>
+        <div class="s14" style="line-height:1.34">① Banks offer it to <b>SME current-account</b> customers with corporate net banking · ② Tally / Zoho marketplaces · ③ <b>CA firms</b> that run payables for many SMEs.</div>
+      </div>
+      <div class="card brand" style="padding:8px 12px;">
+        <div class="lab brand">Rollout</div>
+        <div class="s14" style="line-height:1.34"><b>Shadow</b> 2 weeks (log only) → <b>VERIFY-only</b> → <b>full HOLD</b>. Intent Seal for approvers in week 1, Voice Seal for executives in week 2.</div>
+      </div>
+      <div class="card" style="padding:8px 12px;">
+        <div class="lab">KPIs and friction</div>
+        <div class="s14" style="line-height:1.34">Routine HOLD rate (≤ 5%) · median time to clear · approvers enrolled · prevented-loss log. Friction: one Touch ID per meeting; nothing for receivers; seal verdict ≈ 5 s (offline). Teams / Zoom desktop: use the browser client or upload the recording.</div>
+      </div>
+    </div>
+    <div class="grow" style="display:flex; flex-direction:column; gap:8px;">
+      <div class="lab" style="margin:0">48-hour finale plan · owners: Shivendra (S), Saarika (Sa), Kartikey (K), Saksham (Sk)</div>
+      <table class="t zebra c135">
+        <thead><tr><th style="width:62px">Hours</th><th>We build</th><th style="width:300px">Proof shown to judges</th></tr></thead>
+        <tbody>
+          <tr><td class="b">0-4</td><td><b>Test #1: two-laptop Google Meet seal test</b>, noise cancellation on/off; listening test (S, Sa)</td><td>z per 5 s on screen; go / no-go for the live seal</td></tr>
+          <tr><td class="b">4-14</td><td>Exec-mode sealing (AudioWorklet) + seal check inside the extension (S); live chip (Sa)</td><td>real Meet: “Rajesh: sealed ✓”, then the clone laptop: “NOT sealed”</td></tr>
+          <tr><td class="b">4-14</td><td>OOB-Confirm + Intent Seal as a clearance method, email / SMS (Sk)</td><td>a judge taps “No, not me” on a phone → case turns HOLD + suspected fraud</td></tr>
+          <tr><td class="b">14-24</td><td>AWS ap-south-1: API on ECS Fargate, DynamoDB, S3 Object Lock + KMS, Cognito roles, Verified Permissions (K, S)</td><td>live URL; the maker’s “clear HOLD” is refused and logged in CloudTrail</td></tr>
+          <tr><td class="b">24-34</td><td>Email + invoice checks on the fixture files; console case view; UTR-first report pack (K, Sk)</td><td>raw .eml / PDF in → floor catches what detectors pass; 1930 script, UTR on line 1</td></tr>
+          <tr><td class="b">34-42</td><td>Judge red-team station (all)</td><td>judges speak their own scam lines: asks may be missed, floor and seal still hold</td></tr>
+          <tr><td class="b">42-48</td><td>Shadow replay of the 584 synthetic cases; 10 dry runs; backup recording (all)</td><td>alert-budget dashboard; demo runs end to end</td></tr>
+        </tbody>
+      </table>
+      <div class="card tint" style="padding:7px 12px;">
+        <div class="s14" style="line-height:1.34"><b>Dependencies we control:</b> two laptops + a virtual mic (BlackHole), consented teammate voices with signed forms, an AWS account in ap-south-1, Chrome. <b>None on banks, I4C or Google</b>: no external API is assumed.</div>
+      </div>
+      <div class="card warm" style="padding:7px 12px;">
+        <div class="s14" style="line-height:1.34"><b>Fallbacks:</b> Meet kills the seal → local call tab + sealed voice notes + Intent Seal, said openly · AWS slow → the same code in local mode · WebAuthn trouble → OOB-Confirm token. The seal only <i>adds</i> signals, so the core demo never depends on it.</div>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Rollout and KPI targets are plans, not results · latency and cost assumptions: A3 · production architecture: A1</div><div class="pg"><b>Satyapan</b> · 10</div></footer>
+</section>
+
+<!-- =====================================================================
+     ARCHITECTURE A1 : end-to-end system
+     ===================================================================== -->
+<section class="slide" data-page="A1">
+  <div class="kicker"><span class="part arch">Architectural overview</span> A1 / 3 <span class="dot"></span> End-to-end system, data boundaries, components, outputs
+    <span class="rub">Architecture (20) · Final check 03</span></div>
+  <h1>A1 · One system: trusted data sets the floor, everything else can only raise it</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:8px;">
+    <svg width="1192" height="480" viewBox="0 0 1192 480" role="img" aria-label="End-to-end system diagram with trust boundaries">
+<defs><marker id="a1ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><marker id="a1arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15653a"/></marker><marker id="a1arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b0122a"/></marker><marker id="a1arb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1e3a8a"/></marker><marker id="a1aro" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#a8470b"/></marker></defs>
+<text x="0" y="13" text-anchor="start" class="t13 b" style="fill:#525d72">INPUTS · consent and provenance</text>
+<rect x="0" y="22" width="226" height="136" rx="7" fill="#e5f3ea" stroke="#15653a" stroke-width="1.6"/><foreignObject x="7" y="27" width="212" height="126"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#15653a">TRUSTED · company records</b><br>• payment entered by the maker<br>• vendor master + payment register (Tally / Zoho / SAP CSV)<br>• staff directory (SSO)<br><span style="color:#525d72">basis: contract / employment</span></div></foreignObject>
+<rect x="0" y="168" width="226" height="170" rx="7" fill="#fce7ea" stroke="#b0122a" stroke-width="1.6" stroke-dasharray="6 4"/><foreignObject x="7" y="173" width="212" height="160"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#b0122a">UNTRUSTED · attacker can shape</b><br>• email (.eml), invoice PDF, forwarded by staff<br>• WhatsApp text / voice note, uploaded by the user<br>• live tab audio of a browser call: only after the user clicks; remote side only; <b>not stored</b></div></foreignObject>
+<rect x="0" y="344" width="226" height="122" rx="7" fill="#e9eefc" stroke="#1e3a8a" stroke-width="1.6"/><foreignObject x="7" y="349" width="212" height="112"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#1e3a8a">EXECUTIVE’S LAPTOP · opt-in</b><br>• own passkey (Touch ID)<br>• exec mode seals own mic <span class="tag finale">FINALE</span><br>• signs approvals (Intent Seal) <span class="tag built">BUILT</span></div></foreignObject>
+<rect x="244" y="22" width="236" height="344" rx="10" fill="#f7f9fe" stroke="#1e3a8a" stroke-width="1.8" stroke-dasharray="8 5"/><text x="254" y="40" class="t13 b" style="fill:#1e3a8a; letter-spacing:.05em">MAKER’S DEVICE · CHROME</text>
+<rect x="270" y="50" width="200" height="54" rx="7" fill="#fff" stroke="#b9c6ef" stroke-width="1.3"/><foreignObject x="277" y="55" width="186" height="44"><div class="fo" style="font-size:13.5px; line-height:1.28">Tab capture → 16 kHz <span class="tag pending">PARTLY</span></div></foreignObject>
+<rect x="270" y="112" width="200" height="54" rx="7" fill="#fff" stroke="#b9c6ef" stroke-width="1.3"/><foreignObject x="277" y="117" width="186" height="44"><div class="fo" style="font-size:13.5px; line-height:1.28">Seal check, 5 s at a time <span class="tag finale">FINALE</span></div></foreignObject>
+<rect x="270" y="174" width="200" height="54" rx="7" fill="#fff" stroke="#b9c6ef" stroke-width="1.3"/><foreignObject x="277" y="179" width="186" height="44"><div class="fo" style="font-size:13.5px; line-height:1.28">Voice detector, on-device <span style="color:#96540a">(uncalibrated)</span></div></foreignObject>
+<rect x="270" y="236" width="200" height="60" rx="7" fill="#fff" stroke="#3150b0" stroke-width="1.6"/><foreignObject x="277" y="241" width="186" height="50"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Side panel</b>: band, asks, seal chip, reply <span class="tag built">BUILT</span></div></foreignObject>
+<rect x="270" y="304" width="200" height="54" rx="7" fill="#f4f6f9" stroke="#e7eaf0" stroke-width="1.3"/><foreignObject x="277" y="309" width="186" height="44"><div class="fo" style="font-size:13px; line-height:1.28"><span style="color:#334155">Sent out: verdicts, 10 s chunks. Never the local mic.</span></div></foreignObject>
+<line x1="370" y1="104" x2="370" y2="112" stroke="#475569" stroke-width="1.8" marker-end="url(#a1ar)"/>
+<line x1="370" y1="166" x2="370" y2="174" stroke="#475569" stroke-width="1.8" marker-end="url(#a1ar)"/>
+<line x1="370" y1="228" x2="370" y2="236" stroke="#475569" stroke-width="1.8" marker-end="url(#a1ar)"/>
+<rect x="270" y="392" width="200" height="54" rx="7" fill="#fff" stroke="#d6dbe3" stroke-width="1.3"/><foreignObject x="277" y="397" width="186" height="44"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Google Meet / Teams (web)</b>: Opus audio to all</div></foreignObject>
+<path d="M226 418 L268 418" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-end="url(#a1arb)"/>
+<path d="M258 392 L258 77 L268 77" fill="none" stroke="#b0122a" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1arr)"/>
+<path d="M226 252 L238 252 L238 374 L484 374 L484 132 L508 132" fill="none" stroke="#b0122a" stroke-width="1.8" stroke-dasharray="5 4" marker-end="url(#a1arr)"/>
+<text x="266" y="388" text-anchor="start" class="t13" style="fill:#b0122a">files → intake, hashed first</text>
+<path d="M470 266 L494 266 L494 66 L508 66" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-end="url(#a1arb)"/>
+<path d="M226 452 L240 452 L240 456 L488 456 L488 266 L508 266" fill="none" stroke="#1e3a8a" stroke-width="1.8" marker-end="url(#a1arb)"/>
+<text x="266" y="474" text-anchor="start" class="t13" style="fill:#1e3a8a">seal session + keys, Intent Seal</text>
+<rect x="498" y="22" width="472" height="444" rx="10" fill="#fffbf6" stroke="#a8470b" stroke-width="1.8" stroke-dasharray="8 5"/><text x="508" y="40" class="t13 b" style="fill:#a8470b; letter-spacing:.05em">AWS ap-south-1 (MUMBAI) · PRODUCTION TARGET</text>
+<rect x="510" y="48" width="448" height="38" rx="7" fill="#fff" stroke="#f0c9a5" stroke-width="1.3"/><foreignObject x="517" y="53" width="434" height="28"><div class="fo" style="font-size:13px; line-height:1.28"><b>Entry</b>: Cognito roles → <b>API on ECS Fargate</b> (FastAPI)</div></foreignObject>
+<rect x="510" y="94" width="218" height="76" rx="7" fill="#fff" stroke="#f0c9a5" stroke-width="1.3"/><foreignObject x="517" y="99" width="204" height="66"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Intake</b>: SHA-256 before parsing, custody row <span class="tag pending">PARTLY</span></div></foreignObject>
+<rect x="740" y="94" width="218" height="76" rx="7" fill="#fff" stroke="#f0c9a5" stroke-width="1.3"/><foreignObject x="747" y="99" width="204" height="66"><div class="fo" style="font-size:13px; line-height:1.28"><b>Detectors</b>, raise-only: asks, voice-note seal <span class="tag built">BUILT</span> email, invoice <span class="tag design">NOT YET BUILT</span></div></foreignObject>
+<rect x="510" y="178" width="448" height="50" rx="7" fill="#e5f3ea" stroke="#15653a" stroke-width="1.8"/><foreignObject x="517" y="183" width="434" height="40"><div class="fo" style="font-size:13px; line-height:1.28"><b style="color:#15653a">POLICY ENGINE</b>: floor from trusted data + raise-only rules. <b>The only component that sets the band.</b> <span class="tag built">BUILT</span></div></foreignObject>
+<rect x="510" y="236" width="218" height="66" rx="7" fill="#fff" stroke="#f0c9a5" stroke-width="1.3"/><foreignObject x="517" y="241" width="204" height="56"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Seal Registry</b>: sessions, disclosed keys <span class="tag built">BUILT</span></div></foreignObject>
+<rect x="740" y="236" width="218" height="66" rx="7" fill="#fff" stroke="#f0c9a5" stroke-width="1.3"/><foreignObject x="747" y="241" width="204" height="56"><div class="fo" style="font-size:13px; line-height:1.28"><b>Workflows</b>: callback, OOB, HOLD; Verified Permissions <span class="tag pending">PARTLY</span></div></foreignObject>
+<rect x="510" y="310" width="218" height="72" rx="7" fill="#fff" stroke="#f0c9a5" stroke-width="1.3"/><foreignObject x="517" y="315" width="204" height="62"><div class="fo" style="font-size:13px; line-height:1.28"><b>Explainer</b>: EN/HI text <span class="tag built">BUILT</span> Bedrock (in-country) + Guardrails, summary only</div></foreignObject>
+<rect x="740" y="310" width="218" height="72" rx="7" fill="#fff" stroke="#f0c9a5" stroke-width="1.3"/><foreignObject x="747" y="315" width="204" height="62"><div class="fo" style="font-size:13px; line-height:1.28"><b>Transcribe</b> hi-IN / en-IN (uploads) · <b>Report pack</b> <span class="tag design">NOT YET BUILT</span></div></foreignObject>
+<rect x="510" y="390" width="218" height="68" rx="7" fill="#fff3e5" stroke="#a8470b" stroke-width="1.3"/><foreignObject x="517" y="395" width="204" height="58"><div class="fo" style="font-size:13px; line-height:1.28"><b>DynamoDB</b>: cases, custody · <b>S3 Object Lock + KMS</b>: evidence vault</div></foreignObject>
+<rect x="740" y="390" width="218" height="68" rx="7" fill="#fff3e5" stroke="#a8470b" stroke-width="1.3"/><foreignObject x="747" y="395" width="204" height="58"><div class="fo" style="font-size:13px; line-height:1.28"><b>SES / SNS</b>: OOB · <b>EventBridge</b>: alerts · <b>CloudTrail</b>: audit</div></foreignObject>
+<path d="M226 60 L240 60 L240 8 L734 8 L734 176" fill="none" stroke="#15653a" stroke-width="1.8" marker-end="url(#a1arg)"/>
+<text x="300" y="20" text-anchor="start" class="t13 b" style="fill:#15653a">trusted data → floor only</text>
+<text x="988" y="13" text-anchor="start" class="t13 b" style="fill:#525d72">OUTPUTS · who acts</text>
+<rect x="988" y="22" width="204" height="76" rx="7" fill="#fff" stroke="#d6dbe3" stroke-width="1.3"/><foreignObject x="995" y="27" width="190" height="66"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Maker</b>: band + plain reason (EN/HI) + suggested reply. No scores.</div></foreignObject>
+<rect x="988" y="106" width="204" height="64" rx="7" fill="#fff" stroke="#d6dbe3" stroke-width="1.3"/><foreignObject x="995" y="111" width="190" height="54"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Checker</b>: HOLD queue with evidence and scores</div></foreignObject>
+<rect x="988" y="178" width="204" height="76" rx="7" fill="#e9eefc" stroke="#b9c6ef" stroke-width="1.3"/><foreignObject x="995" y="183" width="190" height="66"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Claimed requester</b>: OOB / Intent Seal prompt on his own device</div></foreignObject>
+<rect x="988" y="262" width="204" height="64" rx="7" fill="#fff" stroke="#d6dbe3" stroke-width="1.3"/><foreignObject x="995" y="267" width="190" height="54"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Security lead</b>: alert on HOLD or “not me”</div></foreignObject>
+<rect x="988" y="334" width="204" height="132" rx="7" fill="#fdf0d9" stroke="#ebc98a" stroke-width="1.3"/><foreignObject x="995" y="339" width="190" height="122"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Report pack draft</b>, UTR first → <b>a human submits</b> to 1930 / NCRP / bank. No API exists; we never auto-file.</div></foreignObject>
+<line x1="970" y1="60" x2="986" y2="60" stroke="#a8470b" stroke-width="1.8" marker-end="url(#a1aro)"/>
+<line x1="970" y1="138" x2="986" y2="138" stroke="#a8470b" stroke-width="1.8" marker-end="url(#a1aro)"/>
+<line x1="970" y1="216" x2="986" y2="216" stroke="#a8470b" stroke-width="1.8" marker-end="url(#a1aro)"/>
+<line x1="970" y1="294" x2="986" y2="294" stroke="#a8470b" stroke-width="1.8" marker-end="url(#a1aro)"/>
+<line x1="970" y1="400" x2="986" y2="400" stroke="#a8470b" stroke-width="1.8" marker-end="url(#a1aro)"/>
+</svg>
+    <div style="display:flex; gap:12px;">
+      <div class="card tint" style="padding:6px 12px; flex:1;">
+        <div class="s13" style="font-size:13px; line-height:1.32"><b>Retention:</b> live audio not stored (user may save 30 s) · evidence 90 days or life of case · seal registry: meeting ID, timing, 32-byte keys, life of case · Bedrock: no prompt storage by default [R17] · all data in India (ap-south-1; Bedrock “in.” profile routes only Mumbai ↔ Hyderabad).</div>
+      </div>
+      <div class="card pass" style="padding:6px 12px; width:470px; flex:none;">
+        <div class="s13" style="font-size:13px; line-height:1.32"><b>Runs today, locally:</b> FastAPI + policy engine, asks + context layer, Seal module + registry API + voice-note check + Intent Seal, side panel, EN/HI text. <b>Nothing is deployed on AWS yet</b>; tags show prototype status.</div>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">[R17] Bedrock India cross-Region inference (29 Sep 2026) · [R18] Transcribe hi-IN / en-IN, batch + streaming · [R19] Verified Permissions in ap-south-1 · [R20] S3 Object Lock</div><div class="pg"><b>Satyapan</b> · A1</div></footer>
+</section>
+
+<!-- =====================================================================
+     ARCHITECTURE A2 : decision flow, escalation, human review, reporting, evidence
+     ===================================================================== -->
+<section class="slide" data-page="A2">
+  <div class="kicker"><span class="part arch">Architectural overview</span> A2 / 3 <span class="dot"></span> Decision flow, escalation, human review, reporting, evidence
+    <span class="rub">Architecture (20) · Safety (15)</span></div>
+  <h1>A2 · From signal to decision to a human, with an evidence record at every step</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:10px;">
+    <svg width="1192" height="232" viewBox="0 0 1192 232" role="img" aria-label="Decision and escalation flow">
+<defs><marker id="a2ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#475569"/></marker><marker id="a2arg" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#15653a"/></marker><marker id="a2arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b0122a"/></marker><marker id="a2arb" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1e3a8a"/></marker><marker id="a2aro" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#a8470b"/></marker></defs>
+<rect x="0" y="40" width="128" height="150" rx="7" fill="#f4f6f9" stroke="#d6dbe3" stroke-width="1.3"/><foreignObject x="7" y="45" width="114" height="140"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Payment</b> entered + <b>evidence</b> attached or heard</div></foreignObject>
+<rect x="146" y="40" width="140" height="150" rx="7" fill="#fff" stroke="#d6dbe3" stroke-width="1.3"/><foreignObject x="153" y="45" width="126" height="140"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Intake</b>: SHA-256 before parsing; custody row INTAKE</div></foreignObject>
+<rect x="304" y="40" width="160" height="70" rx="7" fill="#e5f3ea" stroke="#15653a" stroke-width="1.3"/><foreignObject x="311" y="45" width="146" height="60"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#15653a">Floor</b> from trusted data only</div></foreignObject>
+<rect x="304" y="120" width="160" height="70" rx="7" fill="#fce7ea" stroke="#b0122a" stroke-width="1.3" stroke-dasharray="6 4"/><foreignObject x="311" y="125" width="146" height="60"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#b0122a">Signals</b>: provenance, forensic, behaviour</div></foreignObject>
+<rect x="482" y="40" width="150" height="150" rx="7" fill="#fff" stroke="#334155" stroke-width="1.6"/><foreignObject x="489" y="45" width="136" height="140"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Policy engine</b>: band = highest of floor and raised signals; errors fail closed (≥ VERIFY)</div></foreignObject>
+<rect x="650" y="0" width="196" height="64" rx="7" fill="#e5f3ea" stroke="#a9d6b8" stroke-width="1.3"/><foreignObject x="657" y="5" width="182" height="54"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#15653a">PASS</b>: pay; decision logged</div></foreignObject>
+<rect x="650" y="72" width="196" height="76" rx="7" fill="#fdf0d9" stroke="#ebc98a" stroke-width="1.3"/><foreignObject x="657" y="77" width="182" height="66"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#96540a">VERIFY</b>: maker calls the number <b>on file</b> or sends OOB / Intent Seal</div></foreignObject>
+<rect x="650" y="156" width="196" height="76" rx="7" fill="#fce7ea" stroke="#efb3bd" stroke-width="1.3"/><foreignObject x="657" y="161" width="182" height="66"><div class="fo" style="font-size:13.5px; line-height:1.28"><b style="color:#b0122a">HOLD</b>: checker only, own callback + security sign-off; vendor edits frozen</div></foreignObject>
+<rect x="864" y="40" width="150" height="150" rx="7" fill="#e9eefc" stroke="#b9c6ef" stroke-width="1.3"/><foreignObject x="871" y="45" width="136" height="140"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Requester answers</b> on his own login / passkey: “Yes” is logged; <b>“No, not me” ⇒ HOLD + suspected fraud</b></div></foreignObject>
+<rect x="1032" y="40" width="160" height="150" rx="7" fill="#fdf0d9" stroke="#ebc98a" stroke-width="1.3"/><foreignObject x="1039" y="45" width="146" height="140"><div class="fo" style="font-size:13.5px; line-height:1.28"><b>Checker / security</b> confirm fraud ⇒ <b>UTR-first pack</b>; a human files it</div></foreignObject>
+<line x1="128" y1="115" x2="144" y2="115" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<line x1="286" y1="75" x2="302" y2="75" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<line x1="286" y1="155" x2="302" y2="155" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<line x1="464" y1="75" x2="480" y2="75" stroke="#15653a" stroke-width="1.8" marker-end="url(#a2arg)"/>
+<line x1="464" y1="155" x2="480" y2="155" stroke="#b0122a" stroke-width="1.8" marker-end="url(#a2arr)"/>
+<line x1="632" y1="115" x2="640" y2="115" stroke="#475569" stroke-width="1.8"/>
+<line x1="640" y1="32" x2="640" y2="194" stroke="#475569" stroke-width="1.8"/>
+<line x1="640" y1="32" x2="648" y2="32" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<line x1="640" y1="110" x2="648" y2="110" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<line x1="640" y1="194" x2="648" y2="194" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<line x1="846" y1="110" x2="862" y2="110" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<path d="M846 194 L855 194 L855 160 L862 160" fill="none" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+<line x1="1014" y1="115" x2="1030" y2="115" stroke="#475569" stroke-width="1.8" marker-end="url(#a2ar)"/>
+</svg>
+    <div style="display:flex; gap:12px; flex:1; min-height:0;">
+      <div class="card" style="width:420px; flex:none; padding:9px 12px;">
+        <div class="lab">Alerts and notifications</div>
+        <table class="t c13">
+          <thead><tr><th>Event</th><th>Who is told, how</th></tr></thead>
+          <tbody>
+            <tr><td>band rises during a call</td><td>maker: side-panel chip + reply line</td></tr>
+            <tr><td>case at VERIFY / HOLD</td><td>maker / checker: console queue</td></tr>
+            <tr><td>OOB or Intent Seal request</td><td>claimed requester: email / SMS (SES / SNS) → his own login + passkey</td></tr>
+            <tr><td>HOLD, or “No, not me”</td><td>security lead: EventBridge rule → email / SMS</td></tr>
+            <tr><td>any status change</td><td>custody row + CloudTrail</td></tr>
+          </tbody>
+        </table>
+        <div class="s13 mute" style="font-size:13px; margin-top:5px">Alert budget: one uncorroborated ask never reaches the checker queue (page 7).</div>
+      </div>
+      <div class="card" style="flex:1; padding:9px 12px;">
+        <div class="lab">Evidence path · tamper-evident custody chain</div>
+        <div style="display:flex; gap:6px; align-items:stretch; margin-bottom:6px;">
+          <div class="card tint grow" style="padding:4px 7px; font-size:13px; line-height:1.25"><b>INTAKE</b><br>hash first</div>
+          <div class="card tint grow" style="padding:4px 7px; font-size:13px; line-height:1.25"><b>ANALYSIS</b><br>detector, seal</div>
+          <div class="card tint grow" style="padding:4px 7px; font-size:13px; line-height:1.25"><b>DECISION</b><br>band, reasons</div>
+          <div class="card tint grow" style="padding:4px 7px; font-size:13px; line-height:1.25"><b>CLEARANCE</b><br>who, how</div>
+        </div>
+        <div class="s14" style="line-height:1.34">Each row stores SHA-256(previous row + this row). The chain head is written to <b>S3 Object Lock</b> every 15 min and on every status change (production). The <b>seal verification record</b> (session, 5 s epochs, scores, key-chain proof) adds <i>who produced the speech</i>.</div>
+        <div class="s14" style="line-height:1.34; margin-top:4px"><b>What we claim:</b> integrity since capture, plus seal provenance. Not “proof of fraud”. <span class="tag built">BUILT</span> chain core <span class="tag design">NOT YET BUILT</span> S3 anchor</div>
+      </div>
+      <div class="card warm" style="width:350px; flex:none; padding:9px 12px;">
+        <div class="lab" style="color:var(--verify)">Golden-hour report pack · UTR first</div>
+        <ol class="s14" style="margin:0; padding-left:18px; line-height:1.34">
+          <li><b>Call 1930</b>: script with UTR, amount, time and beneficiary on the first line.</li>
+          <li><b>Bank fraud desk</b>: pre-filled email asking to hold the funds.</li>
+          <li><b>NCRP</b> (cybercrime.gov.in) complaint draft + evidence index with hashes.</li>
+        </ol>
+        <div class="s14" style="line-height:1.34; margin-top:5px">Only checker / security can generate it. <b>A human submits; no API to 1930 or NCRP exists, and we never fake one.</b> <span class="tag design">NOT YET BUILT</span></div>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Clearance and roles: <span class="mono">policy/clearance.py</span>, <span class="mono">policy/permissions.py</span> · custody: <span class="mono">vault/custody.py</span> · [R8] cybercrime.gov.in / 1930</div><div class="pg"><b>Satyapan</b> · A2</div></footer>
+</section>
+
+<!-- =====================================================================
+     ARCHITECTURE A3 : security, privacy, adversarial risks; performance; validation
+     ===================================================================== -->
+<section class="slide" data-page="A3">
+  <div class="kicker"><span class="part arch">Architectural overview</span> A3 / 3 <span class="dot"></span> Risk mitigations, performance assumptions, validation
+    <span class="rub">Safety (15) · Architecture (20)</span></div>
+  <h1>A3 · Mitigations, performance assumptions and how we validate them</h1>
+  <div class="body" style="display:flex; gap:14px;">
+    <div style="width:720px; flex:none;">
+      <table class="t zebra c13">
+        <thead><tr><th style="width:190px">Risk</th><th>Mitigation</th><th style="width:170px">Evidence / status</th></tr></thead>
+        <tbody>
+          <tr><td>Perfect deepfake fools every detector</td><td>floor from trusted data; detectors only raise; Seal proves the real executive</td><td>invariant tests; 0/560 false seals</td></tr>
+          <tr><td>Manipulated maker calls the attacker’s number</td><td>callback number only from master or directory; strong signal moves it to the checker</td><td>invariant tests <span class="tag built">BUILT</span></td></tr>
+          <tr><td>Prompt injection in mail, PDF or speech</td><td>LLM has no tools, fixed system prompt, never sets the band; output checked</td><td>tests; reassuring text passing 100% → 36.7% (n = 30)</td></tr>
+          <tr><td>Attacker tunes fakes against our output</td><td>makers see bands, never scores; no public upload</td><td>invariant test</td></tr>
+          <tr><td>Insider maker clears his own HOLD</td><td>role check; in production also Verified Permissions (Cedar)</td><td>invariant test; AVP finale</td></tr>
+          <tr><td>Checker-queue flooding</td><td>one uncorroborated ask capped at VERIFY</td><td>1 word: 3-21%; 2 types: 100% <b class="dn">open</b></td></tr>
+          <tr><td>Splitting under ₹25,000</td><td>30-day total per new payee from the payer’s register</td><td>12/12 splits ≥ VERIFY</td></tr>
+          <tr><td>Seal replay, relay, forgery</td><td>bound to meeting + 5 s epoch; keys disclosed only after use</td><td>0/560 false seals</td></tr>
+          <tr><td>Compromised exec laptop or browser</td><td>Touch ID per session, Intent Seal per payment; SPC-style amount display (future) [R15]</td><td><b class="dn">not defeated</b>, stated</td></tr>
+          <tr><td>Evidence tampering or snooping</td><td>hash at intake, custody chain, Object Lock + KMS, role-checked reads, CloudTrail</td><td>chain <span class="tag built">BUILT</span>; AWS finale</td></tr>
+          <tr><td>Over-collection, data leaving India</td><td>no voiceprints; live audio not stored; ap-south-1 only; Bedrock in-country</td><td>design + DPDP table (X3)</td></tr>
+          <tr><td>Extension abuse</td><td>captures one tab only after a click; never the mic; enterprise-managed install</td><td>capture code built; Meet test pending</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="grow" style="display:flex; flex-direction:column; gap:9px;">
+      <div class="card" style="padding:8px 12px;">
+        <div class="lab">Performance assumptions</div>
+        <table class="t c13">
+          <tbody>
+            <tr><td style="padding-left:0">Seal verdict</td><td>5 s median (10 s Opus 8k)</td><td><span class="tag meas">MEASURED</span></td></tr>
+            <tr><td style="padding-left:0">Seal check compute</td><td>≈ 6 ms per call recording (Python)</td><td><span class="tag meas">MEASURED</span></td></tr>
+            <tr><td style="padding-left:0">Key disclosure delay</td><td>≤ 1 s after each 5 s</td><td><span class="tag design">DESIGN</span></td></tr>
+            <tr><td style="padding-left:0">Voice window</td><td>5 s audio; ≈ 2.8 s compute in Node</td><td><span class="tag pending">CHROME PENDING</span></td></tr>
+            <tr><td style="padding-left:0">Spoken ask → chip</td><td>≤ 13 s budget</td><td><span class="tag pending">PENDING</span></td></tr>
+            <tr><td style="padding-left:0">LLM</td><td>never in the live loop</td><td><span class="tag design">DESIGN</span></td></tr>
+            <tr><td style="padding-left:0">Cost per case</td><td>&lt; ₹1 non-live; ≈ ₹2 per live call-minute (Transcribe)</td><td><span class="tag pending">ESTIMATE</span></td></tr>
+            <tr><td style="padding-left:0">Scale</td><td>32-byte key per 5 s per speaker; table lookup per case</td><td><span class="tag design">DESIGN</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card brand" style="padding:8px 12px; flex:1;">
+        <div class="lab brand">Validation approach</div>
+        <ul class="l s14 tight" style="line-height:1.34">
+          <li><b>Done:</b> 561 tests incl. property tests of the safety rules; held-out texts; alert budget through the real engine; deterministic red-team; real codecs (ffmpeg, sox) and real Chrome WebRTC for the Seal.</li>
+          <li><b>Next:</b> two-laptop Meet test, listening test, latency in Chrome, then a 2-week shadow pilot (page 9).</li>
+          <li>Every number has a script, commit, n and CI in X1. Estimates are labelled.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Full threat model and DPDP data flows: X3 · [R15] W3C WebAuthn / Secure Payment Confirmation · cost basis: Transcribe list price, to be re-checked for ap-south-1</div><div class="pg"><b>Satyapan</b> · A3</div></footer>
+</section>
+
+<!-- =====================================================================
+     APPENDIX X1 : evidence ledger (condensed)
+     ===================================================================== -->
+<section class="slide" data-page="X1">
+  <div class="kicker"><span class="part apx">Appendix</span> X1 / 6 <span class="dot"></span> Evidence ledger (condensed)
+    <span class="rub">Every number in this PDF</span></div>
+  <h1>X1 · Every number, with its n, interval, script and status</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:7px;">
+    <table class="t zebra c13" style="table-layout:fixed">
+      <colgroup><col style="width:50px"><col style="width:352px"><col style="width:150px"><col style="width:74px"><col style="width:172px"><col style="width:310px"><col style="width:84px"></colgroup>
+      <thead><tr><th>Page</th><th>Claim</th><th>Value</th><th>n</th><th>95% CI (Wilson)</th><th>Producer → output · commit</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td>3, 6</td><td>Attack sessions falsely sealed (4 attack types)</td><td><b>0 / 560</b></td><td>560</td><td>[0–0.7%]</td><td rowspan="4"><span class="mono">research/seal/run_codec_eval.py</span> → <span class="mono">seal_summary.json</span> · d6ae619 / bb92393</td><td>measured†</td></tr>
+        <tr><td>6</td><td>Genuine sessions verified, 14 codec chains</td><td><b>139 / 140</b></td><td>140</td><td>[96.1–99.9%]</td><td>measured†</td></tr>
+        <tr><td>6</td><td>Attack scores per 5 s: mean / std / max; ≥ 4</td><td>+0.04 / 1.03 / 3.13; 0</td><td>3,920</td><td>—</td><td>measured†</td></tr>
+        <tr><td>3, 6</td><td>Median time to verdict (most chains)</td><td>5 s</td><td>10 / chain</td><td>—</td><td>measured†</td></tr>
+        <tr><td>6</td><td>Chrome WebRTC on/off: sealed; controls sealed</td><td>4 / 4; 0 / 10</td><td>2 voices</td><td>[51–100%]; [0–28%]</td><td><span class="mono">webrtc_probe.py</span> · 31a952e / a7eebae</td><td>measured†</td></tr>
+        <tr><td>6</td><td>PESQ-WB, seal ±2 dB vs plain Opus 32k</td><td>4.61 vs 4.46</td><td>10 voices</td><td>min 4.60 / 4.41</td><td><span class="mono">quality.py</span> · 622fe9d</td><td>proxy†</td></tr>
+        <tr><td>3, 7, 8</td><td>Routine payments at HOLD, before → after</td><td>27.5% → <b>3.0%</b></td><td>200</td><td>[21.8–34.1] → [1.4–6.4]</td><td rowspan="4"><span class="mono">research/alert_budget</span> → <span class="mono">alert_budget.json</span> · 7f28b4e (test split unless “all”)</td><td>measured</td></tr>
+        <tr><td>7</td><td>Routine payments at ≥ VERIFY</td><td>36.5% → 21.5%</td><td>200</td><td>[30.1–43.4] → [16.4–27.7]</td><td>measured</td></tr>
+        <tr><td>7</td><td>Attack cases ≥ VERIFY; at HOLD</td><td>71.4→76.5%; 25.5→12.2%</td><td>98</td><td>after: [67.2–83.8]; [7.1–20.2]</td><td>measured</td></tr>
+        <tr><td>7, A3</td><td>Splits ≥ VERIFY; payee-change / big new payee ≥ VERIFY (all)</td><td>0→100%; 100% / 100%</td><td>12; 26 / 75</td><td>—</td><td>measured</td></tr>
+        <tr><td>7</td><td>Ask precision / recall, frozen lexicon</td><td>0.47 / 0.33</td><td>73 / 104</td><td>[.36–.58] / [.24–.42]</td><td rowspan="3"><span class="mono">research/heldout</span> → <span class="mono">asks_heldout_eval.json</span> · c6746a9</td><td>measured</td></tr>
+        <tr><td>7</td><td>Benign texts with a false ask (→ context layer)</td><td>21.0% → 11.5%</td><td>157</td><td>[15.4–28.1] → [7.4–17.4]</td><td>measured</td></tr>
+        <tr><td>7, 8</td><td>Recall EN / Hinglish / Devanagari (all)</td><td>0.28 / 0.36 / 0.15</td><td>190 asks</td><td>Devanagari [.07–.29]</td><td>measured</td></tr>
+        <tr><td>7, A3</td><td>Routine at HOLD: 1 secrecy word; OTP-SMS line; 2 types</td><td>20.5%; 3.0%; 100%</td><td>200</td><td>[15.5–26.6]; [1.4–6.4]</td><td rowspan="3"><span class="mono">research/redteam</span> → <span class="mono">redteam_deterministic.json</span> · c6746a9</td><td>measured</td></tr>
+        <tr><td>7</td><td>Asks hidden: wrapper; “never asks OTP … but”</td><td>5.3%; 34.2%</td><td>38</td><td>[1.5–17.3]; [21.2–50.1]</td><td>measured</td></tr>
+        <tr><td>A3</td><td>Reassuring summaries passing the checker</td><td>100% → 36.7%</td><td>30</td><td>[21.9–54.5]</td><td>measured</td></tr>
+        <tr><td>1, 7</td><td>Automated tests (skipped = unfinished tasks)</td><td>561 pass, 138 skip</td><td>—</td><td>—</td><td><span class="mono">make check</span> · 2afaf2a</td><td>measured</td></tr>
+      </tbody>
+    </table>
+    <div style="display:flex; gap:10px;">
+      <div class="card tint" style="padding:6px 11px; flex:1;"><div class="s13" style="font-size:13px; line-height:1.3">† <b>Seal rows: synthetic TTS voices</b> (Kokoro-82M, 6 English + 4 Hindi, n = 10), real codecs (ffmpeg, sox), real Chromium 141; illustrative, not field results. Text rows: AI-written synthetic texts, one author. <b>Estimates</b> (cost ≈ ₹1 per case, ≈ ₹2 per live minute) are labelled as such. Full ledger: <span class="mono">results/EVIDENCE_LEDGER.md</span>.</div></div>
+      <div class="card verify" style="padding:6px 11px; flex:1;"><div class="s13" style="font-size:13px; line-height:1.3"><b>Known weakness:</b> a constant 3% time-stretch defeats fixed-rate seal checking. <b>Pending:</b> seal through real Google Meet; listening test; voice-detector error rate through codecs and Meet; per-speaker false alarms; clone catch rate; ask → chip latency; LLM echo rate; email and invoice checkers. <b>Withdrawn:</b> see X4.</div></div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">External numbers ([R1]-[R4], [R10], [R11], [R13]) are the sources’ own, quoted as published and checked on 8 Oct 2026: X6</div><div class="pg"><b>Satyapan</b> · X1</div></footer>
+</section>
+
+<!-- =====================================================================
+     APPENDIX X2 : decision tables
+     ===================================================================== -->
+<section class="slide" data-page="X2">
+  <div class="kicker"><span class="part apx">Appendix</span> X2 / 6 <span class="dot"></span> Decision tables, as implemented in the policy engine
+    <span class="rub">Architecture and detection (20)</span></div>
+  <h1>X2 · Floor table and signal → band table</h1>
+  <div class="body" style="display:flex; gap:14px;">
+    <div style="width:560px; flex:none; display:flex; flex-direction:column; gap:9px;">
+      <table class="t zebra c13">
+        <thead><tr><th style="width:44px">Code</th><th>Floor action (trusted inputs only)</th><th style="width:70px">Floor</th><th style="width:196px">Clearance</th></tr></thead>
+        <tbody>
+          <tr><td class="b">K1</td><td>known payee, same details, usual amount, paid in last 180 days</td><td><span class="band pass">PASS</span></td><td>none</td></tr>
+          <tr><td class="b">K2</td><td>known payee, amount &gt; 1.25 × 12-month max, or dormant</td><td><span class="band verify">VERIFY</span></td><td>callback (master number) or OOB</td></tr>
+          <tr><td class="b">N1</td><td>new payee, ≤ ₹25,000 incl. its last 30 days</td><td><span class="band pass">PASS</span></td><td>bank’s own checks</td></tr>
+          <tr><td class="b">N2</td><td>new payee above ₹25,000</td><td><span class="band verify">VERIFY</span></td><td>callback or OOB; &gt; ₹10 lakh both</td></tr>
+          <tr><td class="b">C1</td><td>vendor’s bank / UPI differs from master</td><td><span class="band verify">VERIFY</span></td><td>callback on old number + bank-shown name = master</td></tr>
+          <tr><td class="b">T1</td><td>phone, email or approver on file changed</td><td><span class="band hold">HOLD</span></td><td>checker via old channel + 2nd approver</td></tr>
+          <tr><td class="b">D1</td><td>data or credential request only</td><td><span class="band pass">PASS</span></td><td>unless signals fire</td></tr>
+          <tr><td class="b">NONE</td><td>live call, no payment yet</td><td><span class="band pass">PASS</span></td><td>—</td></tr>
+        </tbody>
+      </table>
+      <div class="card tint" style="padding:8px 12px;">
+        <div class="lab">Decision rules</div>
+        <ul class="l s14 tight" style="line-height:1.33">
+          <li>Band = max(floor, every signal’s target); nothing lowers it. Strong signals from ≥ 2 groups ⇒ HOLD (style / LLM never count).</li>
+          <li>Policy 1.1: one ask alone ⇒ at most VERIFY unless corroborated (2nd ask type, another non-LLM group, or a risky floor).</li>
+          <li>“No, not me” ⇒ HOLD + suspected fraud. Grey flags (parse failure, detector error, short speech, unsupported language) ⇒ ≥ VERIFY + checker queue.</li>
+          <li>Clearing changes the status, never the band.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grow">
+      <table class="t zebra c13">
+        <thead><tr><th style="width:96px">Group</th><th>Signal (reason code)</th><th style="width:62px">Strength</th><th style="width:170px">Target band</th></tr></thead>
+        <tbody>
+          <tr><td rowspan="3">sender auth</td><td>DMARC fail; look-alike domain</td><td>strong</td><td>VERIFY; HOLD if floor ≥ VERIFY</td></tr>
+          <tr><td>“bank” mail not from a .bank.in domain [R5]</td><td>strong</td><td>VERIFY</td></tr>
+          <tr><td>Reply-To mismatch; free-mail for a company</td><td>weak</td><td>VERIFY</td></tr>
+          <tr><td rowspan="2">document</td><td>invoice account ≠ vendor master</td><td>strong</td><td>VERIFY</td></tr>
+          <tr><td>PDF edited after creation</td><td>weak</td><td>VERIFY</td></tr>
+          <tr><td rowspan="2">media (ML)</td><td>likely synthetic voice (2 windows ≥ τ_hi)</td><td>strong</td><td>one band above floor</td></tr>
+          <tr><td>inconclusive voice</td><td>weak</td><td>none (reason only)</td></tr>
+          <tr><td rowspan="3">ask</td><td>A2 OTP / PIN; A3 remote access</td><td>strong</td><td>HOLD*</td></tr>
+          <tr><td>A4 secrecy; A5 bypass a control</td><td>strong</td><td>HOLD if money, else VERIFY*</td></tr>
+          <tr><td>A1 new account; A6 gift card / crypto; A7 payee change</td><td>weak</td><td>VERIFY</td></tr>
+          <tr><td>style (ML / LLM)</td><td>pressure language</td><td>weak</td><td>at most VERIFY</td></tr>
+          <tr><td>watchlist</td><td>flagged sender or caller, 30 days</td><td>weak</td><td>one band above floor</td></tr>
+          <tr><td rowspan="3">provenance (Seal)</td><td>VOICE_SEALED</td><td>weak</td><td><b>none</b>: information only</td></tr>
+          <tr><td>VOICE_UNSEALED_CLAIMED_EXEC (≥ 15 s, no seal)</td><td>weak</td><td>VERIFY</td></tr>
+          <tr><td>SEAL_PRESENCE_CONFLICT (exec sealing another meeting)</td><td>strong</td><td>HOLD if money, else VERIFY</td></tr>
+        </tbody>
+      </table>
+      <div class="s13 mute" style="font-size:13px; margin-top:6px; line-height:1.3">* capped at VERIFY unless corroborated (policy 1.1). Email and document signals are specified and tested as contracts; their detectors are not yet built (X4). The table is data in <span class="mono">contracts/signal_table.py</span>: detectors cannot choose their own strength or target.</div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">[R5] RBI: banks to move to .bank.in domains (deadline 31 Oct 2025) · ₹ thresholds are configuration · ADR-021 (policy 1.1), ADR-022 (30-day de-minimis), ADR-023 (Seal)</div><div class="pg"><b>Satyapan</b> · X2</div></footer>
+</section>
+
+<!-- =====================================================================
+     APPENDIX X3 : threat model and data flows
+     ===================================================================== -->
+<section class="slide" data-page="X3">
+  <div class="kicker"><span class="part apx">Appendix</span> X3 / 6 <span class="dot"></span> Threat model and DPDP data flows
+    <span class="rub">Safety, privacy and responsible AI (15)</span></div>
+  <h1>X3 · Who attacks, what stops them, and where personal data goes</h1>
+  <div class="body" style="display:flex; gap:14px;">
+    <div style="width:600px; flex:none; display:flex; flex-direction:column; gap:9px;">
+      <table class="t zebra c13">
+        <thead><tr><th style="width:150px">Attacker</th><th>Can do</th><th style="width:210px">Main control</th></tr></thead>
+        <tbody>
+          <tr><td><b>Impersonator on a call</b></td><td>live voice clone or face swap; scripted pressure</td><td>floor; Seal; checker HOLD; OOB to the real person</td></tr>
+          <tr><td><b>Vendor email compromise</b></td><td>look-alike domain or the vendor’s real mailbox; edited PDFs</td><td>C1 floor fires on any bank change, whatever the mail says</td></tr>
+          <tr><td><b>Prompt injector</b></td><td>instructions hidden in mail, PDF, headers, Hindi text</td><td>LLM never sets the band; text is data, not prompt</td></tr>
+          <tr><td><b>Oracle tuner</b></td><td>submits fakes again and again</td><td>makers see bands only; no public upload</td></tr>
+          <tr><td><b>Insider maker</b></td><td>enters payments, uploads, tries to clear</td><td>maker cannot clear HOLD or confirm fraud</td></tr>
+          <tr><td><b>Compromised exec mailbox</b></td><td>clicks the OOB link for the CFO</td><td>OOB needs his own login; Intent Seal needs his passkey</td></tr>
+          <tr><td><b>Seal stripper</b></td><td>removes or damages the seal [R9]</td><td>result is “not sealed”: what he already was</td></tr>
+          <tr><td><b>Compromised exec laptop</b></td><td>seals or signs anything once he unlocks</td><td><b class="dn">not defeated</b>; short sessions, Touch ID per payment</td></tr>
+        </tbody>
+      </table>
+      <div class="card warm" style="padding:8px 12px;">
+        <div class="lab" style="color:var(--verify)">Residual risks, stated</div>
+        <ul class="l s14 tight" style="line-height:1.33">
+          <li>A perfect deepfake on a known-vendor, same-account payment can pass, but the money then goes to the genuine vendor.</li>
+          <li>A mule account in a look-alike name passes the bank-name check; the floor still forces a callback.</li>
+          <li>Paraphrased asks evade the lexicon (page 7); queue flooding with two keyword types still works.</li>
+          <li>The first record of a new vendor is the trust root; onboarding checks are designed, not built.</li>
+        </ul>
+      </div>
+    </div>
+    <div class="grow" style="display:flex; flex-direction:column; gap:9px;">
+      <table class="t zebra c13">
+        <thead><tr><th>Data</th><th>Processed</th><th>Stored, retention</th><th>Basis (to confirm with counsel)</th></tr></thead>
+        <tbody>
+          <tr><td>Live call audio (remote side)</td><td>on device; transcript locally or Transcribe ap-south-1</td><td><b>not stored</b>; a saved 30 s clip: 30 days, longer only for a fraud case</td><td>employer: employment / loss prevention; other side: transient processing</td></tr>
+          <tr><td>Emails, invoices, voice notes</td><td>backend, ap-south-1</td><td>S3 (encrypted): 90 days or life of case</td><td>same</td></tr>
+          <tr><td>Seal sessions and keys</td><td>registry</td><td>meeting ID, timing, keys: life of case</td><td>exec’s opt-in</td></tr>
+          <tr><td>LLM summaries</td><td>Bedrock in-country (prod) / local model (prototype)</td><td>case record, life of case</td><td>same</td></tr>
+          <tr><td>Vendor master, directory</td><td>backend</td><td>while the contract lasts</td><td>contract / employment</td></tr>
+        </tbody>
+      </table>
+      <div class="card tint" style="padding:8px 12px;">
+        <div class="s14" style="line-height:1.34">DPDP Act 2023 and Rules 2025 [R7]: most duties phase in later; we design for them now. No biometric template is created anywhere. No data leaves Indian regions. Reports are drafts a human submits; victim media is never shared with third parties.</div>
+      </div>
+      <div class="card brand" style="padding:8px 12px; flex:1;">
+        <div class="lab brand">Media provenance, future</div>
+        <div class="s14" style="line-height:1.34">MeitY’s IT Amendment Rules 2026 require labels on synthetic content [R6]. Reading such labels or C2PA credentials can only <i>raise</i> a band; attackers will not label their fakes, so absence of a label means nothing.</div>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src">Full versions: <span class="mono">docs/THREAT_MODEL.md</span>, <span class="mono">docs/DATA_POLICY.md</span>, <span class="mono">docs/SEAL.md</span> §4 · [R6] MeitY IT Amendment Rules 2026 · [R7] DPDP Rules 2025</div><div class="pg"><b>Satyapan</b> · X3</div></footer>
+</section>
+
+<!-- =====================================================================
+     APPENDIX X4 : gaps, not yet built, withdrawn results
+     ===================================================================== -->
+<section class="slide" data-page="X4">
+  <div class="kicker"><span class="part apx">Appendix</span> X4 / 6 <span class="dot"></span> Assumptions, gaps and what is not built yet
+    <span class="rub">Feasibility (15) · honesty</span></div>
+  <h1>X4 · What exists today, what does not, and what we withdrew</h1>
+  <div class="body" style="display:flex; gap:14px;">
+    <div style="width:400px; flex:none; display:flex; flex-direction:column; gap:9px;">
+      <div class="card pass" style="padding:9px 12px;">
+        <div class="lab" style="color:var(--pass)">Built and tested (prototype)</div>
+        <ul class="l s14 tight" style="line-height:1.33">
+          <li>Contracts, API skeleton, synthetic fixtures (T01)</li>
+          <li>Policy engine + property tests (T02), policy 1.1 and 30-day de-minimis</li>
+          <li>Ask extractor, EN / Hinglish / Devanagari (T05) + context layer</li>
+          <li>Side panel UI on replayed events (T10)</li>
+          <li>EN + Hindi text for all 33 reason codes (T14)</li>
+          <li>Satyapan Seal: DSP, TESLA chain, registry API, voice-note check, Intent Seal, side-panel chip</li>
+          <li>Custody hash chain core (part of T09)</li>
+          <li>Evaluation scripts: held-out, alert budget, red-team, seal</li>
+        </ul>
+      </div>
+      <div class="card verify" style="padding:9px 12px;">
+        <div class="lab" style="color:var(--verify)">In progress</div>
+        <ul class="l s14 tight" style="line-height:1.33">
+          <li>T07 extension capture: code done; <b>real Meet tab test pending</b></li>
+          <li>T09 vault: storage, intake and S3 anchor not yet built</li>
+        </ul>
+      </div>
+    </div>
+    <div style="width:400px; flex:none;">
+      <div class="card" style="padding:9px 12px;">
+        <div class="lab">Not yet built</div>
+        <ul class="l s14 tight" style="line-height:1.33">
+          <li>T03 e-mail parser, T04 domain checks</li>
+          <li>T06 console, T08 invoice / PDF checker</li>
+          <li>T11 live transcript path</li>
+          <li>T12 OOB-Confirm workflow, T13 callback and checker flows</li>
+          <li>T15 LLM summary (Ollama locally; Bedrock in production)</li>
+          <li>T16 UTR-first report pack</li>
+          <li>T17 voice uploads, T18 voice-detector evaluation</li>
+          <li>T19-T21 paraphrase-robustness study (plan only)</li>
+          <li>T22 demo assets, T24 citizen scam check (stretch)</li>
+          <li>Exec-mode sealing in the browser (AudioWorklet) and the in-extension seal check</li>
+          <li>AWS deployment; vendor-onboarding checks; small-firm second verifier; meeting-chat notice</li>
+        </ul>
+        <div class="s14 mute" style="margin-top:6px; line-height:1.33">138 tests are skipped until these tasks land; they turn on automatically.</div>
+      </div>
+    </div>
+    <div class="grow" style="display:flex; flex-direction:column; gap:9px;">
+      <div class="card hold" style="padding:9px 12px;">
+        <div class="lab" style="color:var(--hold)">Withdrawn, never to be quoted</div>
+        <div class="s14" style="line-height:1.34">A voice-detector table (“EER 4% clean, 0% Opus…”) and fitted thresholds were produced by a script that drew random numbers instead of scoring audio. We removed them, reverted the thresholds to “uncalibrated”, and added a test that blocks random-number generators in any result script. The earlier ask-extractor P = R = 1.0 was circular (same authors wrote lexicon and sentences); page 7 shows the held-out numbers instead.</div>
+      </div>
+      <div class="card" style="padding:9px 12px;">
+        <div class="lab">Known limitations</div>
+        <ul class="l s14 tight" style="line-height:1.33">
+          <li>Seal: Meet server side untested; constant time-stretch weakness; protects only enrolled people.</li>
+          <li>WebAuthn shows no amount: malware in the CFO’s browser could swap what he signs.</li>
+          <li>Desktop Teams / Zoom and phone calls are not seen live (upload instead).</li>
+          <li>All text data is synthetic, one author, no inter-annotator check.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+  <footer class="ft"><div class="src"><span class="mono">docs/STATUS.md</span> (task board) · <span class="mono">results/INVALIDATED.md</span> · <span class="mono">tests/harness/test_results_provenance.py</span></div><div class="pg"><b>Satyapan</b> · X4</div></footer>
+</section>
+
+<!-- =====================================================================
+     APPENDIX X5 : disclosures
+     ===================================================================== -->
+<section class="slide" data-page="X5">
+  <div class="kicker"><span class="part apx">Appendix</span> X5 / 6 <span class="dot"></span> Disclosure of AI-generated content, datasets, models and third-party assets
+    <span class="rub">Submission rules</span></div>
+  <h1>X5 · Disclosures: AI assistance, data, models and third-party assets</h1>
+  <div class="body" style="display:flex; flex-direction:column; gap:9px;">
+    <table class="t zebra c13">
+      <thead><tr><th style="width:170px">Category</th><th style="width:330px">Item</th><th>How it is used · licence or terms</th></tr></thead>
+      <tbody>
+        <tr><td rowspan="3"><b>AI-generated content</b></td><td>This PDF</td><td>Text, layout and diagrams drafted with AI assistance (Anthropic Claude), then reviewed and edited by the team.</td></tr>
+        <tr><td>Code</td><td>Much of the code was written with AI coding assistants (Claude Code, Gemini CLI, OpenCode-hosted models) under the team’s review and automated tests.</td></tr>
+        <tr><td>Synthetic data</td><td>Held-out test texts (EN / Hinglish / Devanagari) were written by an AI agent; payment cases are built from them by a script; demo people, companies, banks and accounts are fictional (IFSC FAK…, accounts 9999…, *.example).</td></tr>
+        <tr><td rowspan="2"><b>Synthetic voices</b></td><td>Kokoro-82M TTS, int8 ONNX via kokoro-onnx [R21]</td><td>10 stock voices for all Seal measurements and screenshots · model Apache-2.0. No real person’s voice is used anywhere.</td></tr>
+        <tr><td>Consented team voices (finale)</td><td>Only with signed consent forms, kept off the repo; clones only of a consenting teammate’s own recordings.</td></tr>
+        <tr><td rowspan="4"><b>Models</b></td><td>Pascu et al. browser-plugin voice model (ONNX) [R12]</td><td>Prototype voice detector, run locally only; <b>no licence file</b>: not redistributed; permission requested from the authors. No number in this PDF comes from it.</td></tr>
+        <tr><td>OpenAI Whisper / mlx-whisper</td><td>Planned local transcription (MIT).</td></tr>
+        <tr><td>Llama 3.1 8B via Ollama</td><td>Planned local summary in the prototype (Llama 3.1 Community License); Bedrock in production.</td></tr>
+        <tr><td>RNNoise model (ffmpeg arnndn)</td><td>Used only once, offline, as a stress test on received audio; not shipped.</td></tr>
+        <tr><td rowspan="2"><b>Datasets</b></td><td>External datasets</td><td><b>None</b> is used for any number in this PDF. Planned: public deepfake sets and Hinglish scam corpora, each under its own terms, for evaluation only.</td></tr>
+        <tr><td>Confidential data</td><td>None. No bank, customer or platform data was used.</td></tr>
+        <tr><td rowspan="3"><b>Third-party assets</b></td><td>Fonts: Inter, Noto Sans Devanagari, JetBrains Mono</td><td>SIL Open Font License 1.1, embedded in this PDF.</td></tr>
+        <tr><td>Screenshots</td><td>All are of the team’s own prototype pages, made from the running API with synthetic data.</td></tr>
+        <tr><td>Product names</td><td>Google Meet, Teams, Zoom, WhatsApp, Tally, Zoho, SAP and AWS names are used only to describe integrations; no logos are used.</td></tr>
+        <tr><td rowspan="2"><b>Libraries</b></td><td>py_webauthn, onnxruntime, FastAPI, Pydantic, NumPy, SciPy, Playwright</td><td>Open-source licences (BSD / MIT / Apache-2.0).</td></tr>
+        <tr><td>ffmpeg, sox, pesq, pystoi</td><td>Run as tools in evaluation only (LGPL / GPL tools invoked as separate programs; not linked into the product).</td></tr>
+      </tbody>
+    </table>
+  </div>
+  <footer class="ft"><div class="src">Team data rules: <span class="mono">docs/DATA_POLICY.md</span> · consent template: <span class="mono">docs/consent/</span> · nothing real is pasted into free AI tools</div><div class="pg"><b>Satyapan</b> · X5</div></footer>
+</section>
+
+<!-- =====================================================================
+     APPENDIX X6 : references
+     ===================================================================== -->
+<section class="slide" data-page="X6">
+  <div class="kicker"><span class="part apx">Appendix</span> X6 / 6 <span class="dot"></span> References (all checked on 8 Oct 2026)
+    <span class="rub">Sources</span></div>
+  <h1>X6 · References</h1>
+  <div class="body" style="column-count:2; column-gap:28px;">
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R1]</b> Starmangalsutra Pvt Ltd (Sky Gold &amp; Diamonds) ₹10.70 crore loss, Jul 2026. The Economic Times; AI Incident Database #1596: <a href="https://incidentdatabase.ai/cite/1596" style="color:var(--brand2); text-decoration:none">incidentdatabase.ai/cite/1596</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R2]</b> SEBI, PR No. 40/2026, 17 Jul 2026, caution on the “Boss Scam”. <a href="https://www.sebi.gov.in/sebi_data/attachdocs/jul-2026/1784288188963.pdf" style="color:var(--brand2); text-decoration:none">sebi.gov.in/sebi_data/attachdocs/jul-2026/1784288188963.pdf</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R3]</b> Fortune, 17 May 2024, Arup deepfake CFO scam, HK$200M. <a href="https://www.fortune.com/europe/2024/05/17/arup-deepfake-fraud-scam-victim-hong-kong-25-million-cfo" style="color:var(--brand2); text-decoration:none">fortune.com/europe/2024/05/17/arup-deepfake-fraud-scam-victim-hong-kong-25-million-cfo</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R4]</b> Lok Sabha written reply, 22 Jul 2025: ₹22,845.73 crore lost to cyber fraud in 2024 (PTI). <a href="https://www.theweek.in/wire-updates/business/2025/07/22/del23-lsq-cyber-fraud.html" style="color:var(--brand2); text-decoration:none">theweek.in/wire-updates/business/2025/07/22/del23-lsq-cyber-fraud.html</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R5]</b> RBI: banks to migrate to “.bank.in” by 31 Oct 2025 (Business Standard, 22 Apr 2025). <a href="https://www.business-standard.com/finance/news/rbi-asks-banks-to-complete-migration-to-bank-in-domain-by-october-31-2025-125042201515_1.html" style="color:var(--brand2); text-decoration:none">business-standard.com/finance/news/rbi-asks-banks-to-complete-migration-to-bank-in-domain-by-october-31-2025-125042201515_1.html</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R6]</b> MeitY, IT (Intermediary Guidelines and Digital Media Ethics Code) Amendment Rules 2026: labels on synthetically generated information. <a href="https://www.dsci.in/resource/content/it-amendment-rules-2026" style="color:var(--brand2); text-decoration:none">dsci.in/resource/content/it-amendment-rules-2026</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R7]</b> Digital Personal Data Protection Rules 2025 (PIB, Nov 2025). <a href="https://static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc20251117695301.pdf" style="color:var(--brand2); text-decoration:none">static.pib.gov.in/WriteReadData/specificdocs/documents/2025/nov/doc20251117695301.pdf</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R8]</b> National Cyber Crime Reporting Portal and helpline 1930. <a href="https://cybercrime.gov.in" style="color:var(--brand2); text-decoration:none">cybercrime.gov.in</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R9]</b> O’Reilly et al., “Deep Audio Watermarks are Shallow”, arXiv 2504.10782: removing a watermark does not help an attacker who needs to <i>add</i> a valid seal. <a href="https://arxiv.org/abs/2504.10782" style="color:var(--brand2); text-decoration:none">arxiv.org/abs/2504.10782</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R10]</b> Shykula, Yermakov et al., “DF26: We Cannot Tell Fake From Real Anymore”, arXiv 2609.07369 (2026): 69.7% best AUROC; 34.5% for one detector on closed-source generators (Table 3). <a href="https://arxiv.org/abs/2609.07369" style="color:var(--brand2); text-decoration:none">arxiv.org/abs/2609.07369</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R11]</b> Chandra et al., “Deepfake-Eval-2024”, arXiv 2503.02857: AUC −50% video, −48% audio, −45% image. <a href="https://arxiv.org/abs/2503.02857" style="color:var(--brand2); text-decoration:none">arxiv.org/abs/2503.02857</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R12]</b> Pascu, Oneata, Cucu, Müller, “Detecting Audio Deepfakes on the Edge: Lightweight SSL-Based Detection in a Browser Plugin”, arXiv 2606.30780. <a href="https://arxiv.org/abs/2606.30780" style="color:var(--brand2); text-decoration:none">arxiv.org/abs/2606.30780</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R13]</b> Rabh et al., “CallShield: Secure Caller Authentication over Real-Time Audio Channels”, arXiv 2601.09327 (~63 s, pairwise keys). <a href="https://arxiv.org/abs/2601.09327" style="color:var(--brand2); text-decoration:none">arxiv.org/abs/2601.09327</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R14]</b> TESLA broadcast authentication (Perrig et al.); IETF RFC 4082, “TESLA: A Brief Introduction”. <a href="https://www.rfc-editor.org/rfc/rfc4082" style="color:var(--brand2); text-decoration:none">rfc-editor.org/rfc/rfc4082</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R15]</b> W3C Web Authentication (WebAuthn) and Secure Payment Confirmation. <a href="https://www.w3.org/TR/webauthn-3" style="color:var(--brand2); text-decoration:none">w3.org/TR/webauthn-3</a> · <a href="https://www.w3.org/TR/secure-payment-confirmation" style="color:var(--brand2); text-decoration:none">w3.org/TR/secure-payment-confirmation</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R16]</b> Zoom + Tools for Humanity World ID beta, May 2026 (<a href="https://www.biometricupdate.com/202605/zoom-opens-beta-for-world-id-deepfake-verification-in-enterprise-meetings" style="color:var(--brand2); text-decoration:none">biometricupdate.com/202605/zoom-opens-beta-for-world-id-deepfake-verification-in-enterprise-meetings</a>); Beyond Identity RealityCheck for Zoom, Aug 2024 (<a href="https://itbrief.co.uk/story/beyond-identity-launches-realitycheck-for-zoom-security" style="color:var(--brand2); text-decoration:none">itbrief.co.uk/story/beyond-identity-launches-realitycheck-for-zoom-security</a>)</div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R17]</b> AWS ML Blog, 29 Sep 2026: Claude models in India via Bedrock geographic cross-Region inference (“in.” profile, Mumbai + Hyderabad; Guardrails supported). <a href="https://aws.amazon.com/blogs/machine-learning/amazon-bedrock-expands-claude-model-availability-to-india-cross-region-inference" style="color:var(--brand2); text-decoration:none">aws.amazon.com/blogs/machine-learning/amazon-bedrock-expands-claude-model-availability-to-india-cross-region-inference</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R18]</b> Amazon Transcribe supported languages: hi-IN and en-IN, batch and streaming. <a href="https://docs.aws.amazon.com/transcribe/latest/dg/supported-languages.html" style="color:var(--brand2); text-decoration:none">docs.aws.amazon.com/transcribe/latest/dg/supported-languages.html</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R19]</b> Amazon Verified Permissions endpoints (ap-south-1 listed). <a href="https://docs.aws.amazon.com/general/latest/gr/verifiedpermissions.html" style="color:var(--brand2); text-decoration:none">docs.aws.amazon.com/general/latest/gr/verifiedpermissions.html</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R20]</b> Amazon S3 Object Lock. <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html" style="color:var(--brand2); text-decoration:none">docs.aws.amazon.com/AmazonS3/latest/userguide/object-lock.html</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>[R21]</b> Kokoro-82M (Apache-2.0): <a href="https://huggingface.co/hexgrad/Kokoro-82M" style="color:var(--brand2); text-decoration:none">huggingface.co/hexgrad/Kokoro-82M</a> · kokoro-onnx: <a href="https://github.com/thewh1teagle/kokoro-onnx" style="color:var(--brand2); text-decoration:none">github.com/thewh1teagle/kokoro-onnx</a></div>
+    <div class="ref" style="font-size:13px; line-height:1.3; break-inside:avoid; margin-bottom:7px;"><b>Repository</b> evidence: <span class="mono">results/EVIDENCE_LEDGER.md</span>, <span class="mono">research/seal/README.md</span>, <span class="mono">docs/SEAL.md</span>, <span class="mono">docs/ARCHITECTURE.md</span>, <span class="mono">docs/DECISIONS.md</span> (ADR-001 to ADR-023).</div>
+  </div>
+  <footer class="ft"><div class="src">Where a figure could not be confirmed at its source it was removed (e.g. “profile cloning” in [R1]; Pascu EER figures not quoted)</div><div class="pg"><b>Satyapan</b> · X6</div></footer>
+</section>
+
+<!-- PAGES-D05-ON:END -->
 <!-- END-OF-SLIDES -->
 </body>
 </html>

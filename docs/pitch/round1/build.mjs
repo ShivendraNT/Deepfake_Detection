@@ -60,6 +60,15 @@ const warnings = await page.evaluate(() => {
       }
     });
     // children of .fill containers must not overflow their parent
+    // boxes whose content spills out of them (visible overflow is not clipped, so check sizes)
+    s.querySelectorAll('div, td').forEach((el) => {
+      const host = el.parentElement && el.parentElement.tagName.toLowerCase() === 'foreignobject' ? el.parentElement : el;
+      const hb = host.getBoundingClientRect();
+      let bottom = 0;
+      el.querySelectorAll('*').forEach((c) => { if (c.closest('.crop') && !c.classList.contains('crop')) return; const r = c.getBoundingClientRect(); if (r.height > 0) bottom = Math.max(bottom, r.bottom); });
+      if (host !== el) bottom = Math.max(bottom, el.getBoundingClientRect().bottom);
+      if (bottom > hb.bottom + 2) out.push(`${id}: <${el.tagName.toLowerCase()} class="${el.className && el.className.baseVal !== undefined ? el.className.baseVal : el.className}"> content spills ${Math.round(bottom - hb.bottom)}px below its box: "${el.textContent.trim().slice(0, 40)}"`);
+    });
     s.querySelectorAll('.chk').forEach((el) => {
       if (el.scrollHeight > el.clientHeight + 2) out.push(`${id}: .chk box overflows (${el.scrollHeight}>${el.clientHeight}) "${el.textContent.trim().slice(0, 40)}"`);
     });
