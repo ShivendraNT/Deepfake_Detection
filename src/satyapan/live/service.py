@@ -11,6 +11,7 @@ from dataclasses import dataclass, field
 
 from satyapan.adapters.base import Transcriber
 from satyapan.asks.extractor import DETECTOR_NAME, ask_signals, extract_asks
+from satyapan.context import strip_context
 from satyapan.contracts.case import Case
 from satyapan.contracts.common import utcnow
 from satyapan.contracts.enums import ASK_TO_REASON, Band, CaseKind, Lang, ReasonCode
@@ -101,6 +102,8 @@ class LiveService:
     thresholds: VoiceThresholds
     bus: EventBus = field(default_factory=EventBus)
     sessions: dict[str, LiveSession] = field(default_factory=dict)
+    # ADR-021: drop spoken warnings ("never share your OTP") before ask extraction.
+    context_filter: bool = True
 
     def start(self, call_id: str, maker_id: str) -> LiveSession:
         """Create a LIVE_CALL Case (id f"case_live_{call_id}") and a session."""
@@ -143,7 +146,8 @@ class LiveService:
         ]
 
         seen = {s.ask_type for s in session.asks}
-        for span in extract_asks(res.text):
+        ask_text = strip_context(res.text).cleaned if self.context_filter else res.text
+        for span in extract_asks(ask_text):
             if span.ask_type not in seen:
                 seen.add(span.ask_type)
                 events.append(

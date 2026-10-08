@@ -33,6 +33,28 @@ class PipelineContext:
     thresholds: VoiceThresholds
     scorer: WindowScorer | None = None
     transcriber: Transcriber | None = None
+    # ADR-021: strip footers / quoted bank notifications / protective warnings before the
+    # (frozen) ask extractor. False reproduces the pre-ADR-021 pipeline for before/after runs.
+    context_filter: bool = True
+
+
+def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> DetectorOutput:
+    """Run the frozen ask extractor on the context-filtered text; record what was ignored
+    in out.artifacts['context'] so the checker can see it (nothing is silently dropped)."""
+    from satyapan.asks.extractor import ask_signals, extract_asks
+    from satyapan.context import strip_context
+
+    if ctx.context_filter:
+        res = strip_context(text)
+        text = res.cleaned
+        out.artifacts["context"] = {
+            **res.summary(),
+            "removed": [
+                {"kind": r.kind, "rule": r.rule, "text": r.text[:200]} for r in res.removed
+            ],
+        }
+    out.signals += ask_signals(extract_asks(text), ev_id)
+    return out
 
 
 def _run(name: str, evidence_id: str, fn: Callable[[], DetectorOutput]) -> DetectorOutput:
@@ -70,18 +92,15 @@ def _run(name: str, evidence_id: str, fn: Callable[[], DetectorOutput]) -> Detec
 
 
 def _email(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
-    from satyapan.asks.extractor import ask_signals, extract_asks
     from satyapan.email.parser import parse_eml
     from satyapan.email.signals import email_signals
 
     parsed = parse_eml(data, trusted_authserv_id=ctx.settings.trusted_authserv_id)
     out = email_signals(parsed, ctx.master, ev.id)
-    out.signals += ask_signals(extract_asks(parsed.subject + "\n" + parsed.body_text), ev.id)
-    return out
+    return _asks(parsed.subject + "\n" + parsed.body_text, ev.id, ctx, out)
 
 
 def _pdf(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
-    from satyapan.asks.extractor import ask_signals, extract_asks
     from satyapan.document.checker import document_signals
     from satyapan.document.extract import extract_invoice_fields
     from satyapan.document.pdf import extract_pdf_text, read_pdf_metadata
@@ -90,8 +109,7 @@ def _pdf(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detecto
     out = document_signals(
         extract_invoice_fields(text), read_pdf_metadata(data), ctx.master, case.txn, ev.id
     )
-    out.signals += ask_signals(extract_asks(text), ev.id)
-    return out
+    return _asks(text, ev.id, ctx, out)
 
 
 def _voice(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
@@ -105,15 +123,9 @@ def _voice(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detec
 
 
 def _text(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
-    from satyapan.asks.extractor import ask_signals, extract_asks
-
     text = data.decode("utf-8", errors="replace")
-    return DetectorOutput(
-        detector="ask_extractor",
-        version="see lexicon",
-        evidence_id=ev.id,
-        signals=ask_signals(extract_asks(text), ev.id),
-    )
+    out = DetectorOutput(detector="ask_extractor", version="see lexicon", evidence_id=ev.id)
+    return _asks(text, ev.id, ctx, out)
 
 
 _DISPATCH: dict[Channel, Callable[[bytes, Evidence, Case, PipelineContext], DetectorOutput]] = {

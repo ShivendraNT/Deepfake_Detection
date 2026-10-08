@@ -15,6 +15,7 @@ from satyapan.contracts.enums import Role
 from satyapan.contracts.master import (
     BankAccount,
     Employee,
+    OutgoingPayment,
     PaymentHistoryRow,
     Vendor,
     VendorStats,
@@ -27,6 +28,9 @@ class MasterData:
     history: list[PaymentHistoryRow] = field(default_factory=list)
     employees: dict[str, Employee] = field(default_factory=dict)
     company_domain: str = "demo-industries.example"
+    # Payments already sent to payees NOT in the vendor master (bank statement / ERP payment
+    # register). Trusted. Feeds the 30-day de-minimis aggregation (ADR-022).
+    new_payee_payments: list[OutgoingPayment] = field(default_factory=list)
 
     # ---- vendors ----
     def vendor(self, vendor_id: str | None) -> Vendor | None:
@@ -53,6 +57,24 @@ class MasterData:
             vendor_id=vendor_id,
             max_amount_12m=max(recent, default=0),
             days_since_last_paid=None if last is None else (as_of - last).days,
+        )
+
+    def paid_to_new_payee(
+        self,
+        account_number: str | None,
+        ifsc: str | None,
+        upi_id: str | None,
+        as_of: date,
+        window_days: int,
+    ) -> int:
+        """Sum already paid to this (non-master) payee in the `window_days` up to `as_of`."""
+        if window_days <= 0:
+            return 0
+        start = as_of - timedelta(days=window_days)
+        return sum(
+            p.amount_inr
+            for p in self.new_payee_payments
+            if start < p.paid_on <= as_of and p.same_payee(account_number, ifsc, upi_id)
         )
 
     def known_domains(self) -> set[str]:
@@ -124,6 +146,23 @@ def load_history(path: Path) -> list[PaymentHistoryRow]:
     ]
 
 
+def load_new_payee_payments(path: Path) -> list[OutgoingPayment]:
+    """Optional CSV: paid_on,amount_inr,account_number,ifsc,upi_id,utr (empty file = none)."""
+    if not path.exists():
+        return []
+    return [
+        OutgoingPayment(
+            paid_on=date.fromisoformat(r["paid_on"]),
+            amount_inr=int(r["amount_inr"]),
+            account_number=r.get("account_number") or None,
+            ifsc=r.get("ifsc") or None,
+            upi_id=r.get("upi_id") or None,
+            utr=r["utr"],
+        )
+        for r in _read_csv(path)
+    ]
+
+
 def load_employees(path: Path) -> dict[str, Employee]:
     out: dict[str, Employee] = {}
     for r in _read_csv(path):
@@ -141,9 +180,11 @@ def load_employees(path: Path) -> dict[str, Employee]:
 
 
 def load_master(data_dir: Path) -> MasterData:
-    """Load data/demo/{vendor_master,payment_history,employees}.csv."""
+    """Load data/demo/{vendor_master,payment_history,employees}.csv (+ optional
+    new_payee_payments.csv)."""
     return MasterData(
         vendors=load_vendors(data_dir / "vendor_master.csv"),
         history=load_history(data_dir / "payment_history.csv"),
         employees=load_employees(data_dir / "employees.csv"),
+        new_payee_payments=load_new_payee_payments(data_dir / "new_payee_payments.csv"),
     )

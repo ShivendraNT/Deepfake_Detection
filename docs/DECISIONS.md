@@ -112,3 +112,44 @@ a bank impersonation.
 The safety design is unchanged: no tools, constant system prompt, band never from the LLM, and the
 faithfulness checker gates every summary (templates are the fallback). Cost: slower (~10-25 s per
 summary on the M4), so it stays out of the live-call loop as before.
+
+### ADR-021 Context layer before asks + no HOLD from one uncorroborated ask (policy 1.1.0)
+**Context (judge panel, R1 report §2 and §4.1):** on the real engine, a standard "This e-mail is
+confidential" footer turned a routine known-vendor payment (floor PASS) into **HOLD**, and so did a
+forwarded bank SMS ("482913 is your OTP … do not share"). We measured it: on 400 synthetic
+routine payments with realistic AP messages, policy 1.0.0 escalated 39.5% and held 31.8%
+(`results/alert_budget.md`). The frozen lexicon also fires on 21.5% of benign AP texts
+(`results/asks_heldout_eval.json`). The brief says: avoid automatic blocking based on a single
+weak signal.
+**Decision:** (1) A leader-owned pre-filter `src/satyapan/context/boilerplate.py` removes, and
+labels in `DetectorOutput.artifacts["context"]`, e-mail disclaimers, quoted bank/system
+notifications and protective warnings ("never share your OTP", "share mat karna", "साझा न करें")
+before the frozen ask extractor runs (pipeline text/email/PDF paths and the live path). It never
+removes a sentence that asks for something to be sent to the requester, contains money-movement
+content, or has an un-negated action verb. The lexicon (T05, v1.0) is untouched. (2) In
+`escalate()`, an ask signal that is not corroborated is capped at VERIFY. Corroboration = a
+second distinct ask type, or a raising signal from another group that is not LLM/style, or a
+risky floor action (N1, N2, C1, K2, T1, D1). `PolicyConfig.ask_corroboration=False` restores
+1.0.0 (used only to reproduce before/after numbers).
+**Why it is safe:** raise-only and monotone still hold (corroboration can only be gained by
+adding signals; property test `tests/invariants/test_single_weak_signal.py`); LLM/style signals
+never corroborate; the floor is unchanged, so payee changes and new payees above the de-minimis
+still need verification whatever the text says. **Cost, stated honestly:** a single real
+credential/remote-access ask during a routine K1 payment or a live call now gets VERIFY (maker
+callback + side-panel warning) instead of HOLD; attack HOLD rate changes are reported in
+`results/alert_budget.md`. The pre-filter is a new evasion surface (an ask phrased like a
+disclaimer); `results/redteam_deterministic.json` measures it. The 1.0.0 T02 unit test that
+used "one credential keyword on a K1 payment" to reach HOLD now reaches HOLD with a corroborated
+ask; its assertions (checker queue, checker-only clearance) are unchanged.
+
+### ADR-022 30-day cumulative de-minimis for new beneficiaries (judge finding b5)
+**Decision:** the floor's N1/N2 test uses today's amount plus what the same new payee (account +
+IFSC, or UPI ID) already received in the last `de_minimis_window_days` (30) days, from
+`MasterData.new_payee_payments` (`contracts.OutgoingPayment`: the payer's own bank statement /
+ERP payment register, trusted). `compute_floor`'s signature is unchanged (the data comes in
+through `master`). **Why:** 10 × ₹24,999 to a new payee was 10 × PASS. **Assumption:** the
+register feed exists (ERP/bank-statement export); without it the rule degrades to the old
+per-payment test. **Not done here:** vendor onboarding (first phone/bank record of a new vendor)
+is still the trust root and is assumed to be verified out of band (GSTIN lookup, penny drop,
+callback number from GST/MCA records), see THREAT_MODEL.
+

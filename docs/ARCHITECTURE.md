@@ -106,6 +106,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/report/pack.py` | C12 | T16 | todo |
 | `src/satyapan/citizen/rules.py` | stretch S1 | T24 | todo |
 | `src/satyapan/pipeline.py` | evidence → detectors → decision | T01 | done |
+| `src/satyapan/context/boilerplate.py` | C5 pre-filter: footers, quoted bank notifications, protective warnings (ADR-021) | lead | done |
 | `src/satyapan/repository.py` | in-memory case store | T01 | done |
 | `src/satyapan/api/` | HTTP routes | T01 (+ each task) | done (glue) |
 | `extension/` | C13 | T07, T10, T22 | todo |
@@ -197,6 +198,11 @@ flowchart TB
 Decision-level rules: **≥ 2 strong groups → HOLD** (style and LLM-sourced signals never count);
 **OOB-Confirm DENIED → HOLD + SUSPECTED_FRAUD**; **grey reasons → ≥ VERIFY + checker queue**.
 "Money movement" = a transaction exists or an A1/A6/A7 ask was detected.
+**Policy 1.1 (ADR-021): no HOLD from a single weak signal.** An ask signal alone is capped at
+VERIFY unless corroborated by (a) a second, different ask type, (b) a raising non-LLM/non-style
+signal from another group, or (c) a risky action in the trusted floor (N1, N2, C1, K2, T1, D1).
+**ADR-022:** N1 vs N2 counts the new payee's last 30 days of payments from the payer's own
+register, so splitting a payment under the de-minimis no longer stays PASS.
 
 ### 6.3 The whole engine (pseudo-code of `policy/engine.py`)
 

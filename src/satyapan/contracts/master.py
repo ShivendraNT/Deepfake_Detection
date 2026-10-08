@@ -51,6 +51,26 @@ class PaymentHistoryRow(Model):
     utr: str
 
 
+class OutgoingPayment(Model):
+    """A payment the company already SENT to a payee that is NOT in the vendor master.
+
+    Trusted: from the payer's own bank statement / ERP payment register (never from a
+    message). Used only by the floor's 30-day de-minimis aggregation (ADR-022).
+    """
+
+    paid_on: date
+    amount_inr: int = Field(ge=0)
+    account_number: AccountNumber | None = None
+    ifsc: Ifsc | None = None
+    upi_id: UpiId | None = None
+    utr: str
+
+    def same_payee(self, account_number: str | None, ifsc: str | None, upi_id: str | None) -> bool:
+        if upi_id:
+            return self.upi_id == upi_id
+        return bool(account_number) and (self.account_number, self.ifsc) == (account_number, ifsc)
+
+
 class VendorStats(Model):
     """Derived from payment history, used by the floor (K1 vs K2)."""
 

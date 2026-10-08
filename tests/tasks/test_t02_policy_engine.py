@@ -197,8 +197,13 @@ def test_reason_codes_floor_first_and_info_separate(master) -> None:
 
 
 def test_hold_goes_to_checker_queue_and_only_checker_clears(master) -> None:
-    sigs = [Signal.make(ReasonCode.ASK_CREDENTIAL, source=DET)]
+    # Policy 1.1 (ADR-021): a corroborated ask reaches HOLD (credential + secrecy asks).
+    sigs = [
+        Signal.make(ReasonCode.ASK_CREDENTIAL, source=DET),
+        Signal.make(ReasonCode.ASK_SECRECY, source=DET),
+    ]
     d = decide(make_case(signals=sigs), master)
+    assert d.band == Band.HOLD
     assert d.queue == Queue.CHECKER_REVIEW
     assert d.clearance.who == [Role.CHECKER]
     assert ClearanceMethod.OOB_CONFIRM not in d.clearance.methods
@@ -245,3 +250,136 @@ def test_pass_has_no_clearance(master) -> None:
 
 def test_decision_records_policy_version(master) -> None:
     assert decide(make_case(), master).policy_version == DEFAULT_CONFIG.policy_version
+
+
+# ---- ADR-021: no automatic HOLD from a single weak signal (one uncorroborated ask) ----
+
+ASK_CODES = [
+    ReasonCode.ASK_NEW_ACCOUNT,
+    ReasonCode.ASK_CREDENTIAL,
+    ReasonCode.ASK_REMOTE_ACCESS,
+    ReasonCode.ASK_SECRECY,
+    ReasonCode.ASK_BYPASS,
+    ReasonCode.ASK_UNUSUAL_PAYMENT_METHOD,
+    ReasonCode.ASK_PAYEE_CHANGE,
+]
+
+
+@pytest.mark.parametrize("code", ASK_CODES)
+def test_single_ask_on_routine_payment_is_at_most_verify(master, code) -> None:
+    d = decide(make_case(signals=[Signal.make(code, source=DET)]), master)  # K1 floor
+    assert d.floor_band == Band.PASS
+    assert d.band == Band.VERIFY and d.queue == Queue.MAKER
+
+
+@pytest.mark.parametrize("kind", [CaseKind.LIVE_CALL])
+def test_single_credential_ask_without_action_is_verify(master, kind) -> None:
+    sigs = [Signal.make(ReasonCode.ASK_CREDENTIAL, source=DET)]
+    assert decide(make_case(kind=kind, signals=sigs), master).band == Band.VERIFY
+
+
+def test_repeated_same_ask_type_is_still_single(master) -> None:
+    sigs = [
+        Signal.make(ReasonCode.ASK_SECRECY, source=DET, evidence_ids=[f"ev_{i}"]) for i in range(3)
+    ]
+    assert decide(make_case(signals=sigs), master).band == Band.VERIFY
+
+
+def test_two_distinct_asks_corroborate(master) -> None:
+    sigs = [
+        Signal.make(ReasonCode.ASK_SECRECY, source=DET),
+        Signal.make(ReasonCode.ASK_NEW_ACCOUNT, source=DET),
+    ]
+    assert decide(make_case(signals=sigs), master).band == Band.HOLD
+
+
+def test_risky_floor_action_corroborates(master) -> None:
+    # new beneficiary above de-minimis (N2) + secrecy ask -> HOLD, as in policy 1.0
+    txn = payment(vendor_id=None, amount=500_000, account="99991234567890", ifsc="FAKZ0000001")
+    sigs = [Signal.make(ReasonCode.ASK_SECRECY, source=DET)]
+    d = decide(make_case(txn=txn, signals=sigs), master)
+    assert d.action_type == ActionType.N2 and d.band == Band.HOLD
+
+
+def test_data_request_corroborates_credential_ask(master) -> None:
+    sigs = [Signal.make(ReasonCode.ASK_CREDENTIAL, source=DET)]
+    d = decide(make_case(kind=CaseKind.DATA_REQUEST, signals=sigs), master)
+    assert d.band == Band.HOLD  # demo case_s04 keeps its HOLD
+
+
+def test_other_deterministic_group_corroborates(master) -> None:
+    sigs = [
+        Signal.make(ReasonCode.ASK_CREDENTIAL, source=DET),
+        Signal.make(ReasonCode.EMAIL_REPLYTO_MISMATCH, source=DET),
+    ]
+    assert decide(make_case(signals=sigs), master).band == Band.HOLD
+
+
+def test_llm_or_style_signal_never_corroborates(master) -> None:
+    sigs = [
+        Signal.make(ReasonCode.ASK_CREDENTIAL, source=DET),
+        Signal.make(ReasonCode.STYLE_PRESSURE, source=LLM),
+    ]
+    assert decide(make_case(signals=sigs), master).band == Band.VERIFY
+
+
+def test_corroboration_switch_restores_policy_1_0(master) -> None:
+    from dataclasses import replace
+
+    old = replace(DEFAULT_CONFIG, ask_corroboration=False)
+    sigs = [Signal.make(ReasonCode.ASK_CREDENTIAL, source=DET)]
+    assert decide(make_case(signals=sigs), master, old).band == Band.HOLD
+
+
+# ---- ADR-022: 30-day cumulative de-minimis for new beneficiaries (judge finding b5) ----
+
+
+def _with_prior(master, amounts_days):  # type: ignore[no-untyped-def]
+    from dataclasses import replace
+    from datetime import timedelta
+
+    from satyapan.contracts import OutgoingPayment
+    from tests.helpers import DEMO_DAY
+
+    rows = [
+        OutgoingPayment(
+            paid_on=DEMO_DAY.date() - timedelta(days=d),
+            amount_inr=a,
+            account_number="99991234567890",
+            ifsc="FAKZ0000001",
+            utr=f"FAKEUTR{i}",
+        )
+        for i, (a, d) in enumerate(amounts_days)
+    ]
+    return replace(master, new_payee_payments=rows)
+
+
+NEW = {"vendor_id": None, "account": "99991234567890", "ifsc": "FAKZ0000001"}
+
+
+def test_split_payments_to_new_payee_aggregate(master) -> None:
+    m = _with_prior(master, [(24_000, 3), (24_000, 10)])
+    got = compute_floor(CaseKind.PAYMENT, payment(amount=24_000, **NEW), None, m, DEFAULT_CONFIG)
+    assert got == (Band.VERIFY, ActionType.N2)
+
+
+def test_payments_outside_window_do_not_count(master) -> None:
+    m = _with_prior(master, [(24_000, 31), (24_000, 45)])
+    got = compute_floor(CaseKind.PAYMENT, payment(amount=24_000, **NEW), None, m, DEFAULT_CONFIG)
+    assert got == (Band.PASS, ActionType.N1)
+
+
+def test_other_payees_do_not_count(master) -> None:
+    m = _with_prior(master, [(24_000, 3)])
+    other = {**NEW, "account": "99990000000042"}
+    got = compute_floor(CaseKind.PAYMENT, payment(amount=24_000, **other), None, m, DEFAULT_CONFIG)
+    assert got == (Band.PASS, ActionType.N1)
+
+
+def test_window_zero_restores_per_payment_rule(master) -> None:
+    from dataclasses import replace
+
+    m = _with_prior(master, [(24_000, 3)])
+    cfg = replace(DEFAULT_CONFIG, de_minimis_window_days=0)
+    got = compute_floor(CaseKind.PAYMENT, payment(amount=24_000, **NEW), None, m, cfg)
+    assert got == (Band.PASS, ActionType.N1)

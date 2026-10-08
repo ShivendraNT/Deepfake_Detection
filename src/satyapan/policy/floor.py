@@ -28,8 +28,8 @@ def compute_floor(
     | T1     | change to a trust anchor                                       | HOLD   |
     | D1     | data/credential request, no payment                            | PASS   |
     | C1     | existing active vendor, payee details differ from master       | VERIFY |
-    | N1     | new beneficiary, amount <= de-minimis                          | PASS   |
-    | N2     | new beneficiary, amount > de-minimis                           | VERIFY |
+    | N1     | new beneficiary, amount (+ 30-day prior to same payee) <= de-min | PASS   |
+    | N2     | new beneficiary, amount (+ 30-day prior to same payee) > de-min  | VERIFY |
     | K2     | known payee, amount > 1.25 x 12-month max, or dormant > 180 d  | VERIFY |
     | K1     | known payee, unchanged details, in pattern                     | PASS   |
     """
@@ -48,7 +48,15 @@ def compute_floor(
     if vendor is None or not vendor.has_account(txn.account_number, txn.ifsc, txn.upi_id):
         if vendor is not None and vendor.status == "active":
             return Band.VERIFY, ActionType.C1  # existing vendor, NEW bank/UPI details
-        if txn.amount_inr > cfg.de_minimis_inr:
+        # ADR-022: count what this new payee already got in the window (anti-splitting).
+        prior = master.paid_to_new_payee(
+            txn.account_number,
+            txn.ifsc,
+            txn.upi_id,
+            as_of=txn.created_at.date(),
+            window_days=cfg.de_minimis_window_days,
+        )
+        if txn.amount_inr + prior > cfg.de_minimis_inr:
             return Band.VERIFY, ActionType.N2
         return Band.PASS, ActionType.N1
 

@@ -18,20 +18,22 @@ from satyapan.contracts.case import Case, Decision
 from satyapan.contracts.common import utcnow
 from satyapan.contracts.enums import (
     FLOOR_REASON,
+    ActionType,
     Band,
     CaseStatus,
     OOBResult,
     Queue,
     ReasonCode,
+    SignalGroup,
 )
 from satyapan.contracts.evidence import Signal
 from satyapan.contracts.signal_table import MONEY_ASK_CODES
 from satyapan.master.store import MasterData
-from satyapan.policy.bands import bmax, rank
+from satyapan.policy.bands import bmax, bmin, rank
 from satyapan.policy.clearance import clearance_rules
 from satyapan.policy.config import DEFAULT_CONFIG, PolicyConfig
 from satyapan.policy.floor import compute_floor
-from satyapan.policy.targets import counts_as_strong_group, target_band
+from satyapan.policy.targets import counts_as_strong_group, is_capped, target_band
 
 
 def has_money_movement(case: Case) -> bool:
@@ -39,14 +41,53 @@ def has_money_movement(case: Case) -> bool:
     return case.txn is not None or any(s.code in MONEY_ASK_CODES for s in case.signals)
 
 
+# ADR-021: trusted floor actions that already put money or data at risk. With one of these
+# pending, a single ask is corroborated (the ask is about a real, risky action).
+CORROBORATING_ACTIONS: frozenset[ActionType] = frozenset(
+    {ActionType.N1, ActionType.N2, ActionType.C1, ActionType.K2, ActionType.T1, ActionType.D1}
+)
+
+
+def ask_corroborated(
+    signals: list[Signal], floor_band: Band, money_movement: bool, action: ActionType | None
+) -> bool:
+    """True if an ask signal is backed by a second, independent indication:
+    (a) two or more DISTINCT ask types, (b) a raising signal from another group that is not
+    LLM/style (capped signals never corroborate), or (c) a risky action in the trusted floor.
+    Monotone: adding signals can only turn this from False to True."""
+    if len({s.code for s in signals if s.group == SignalGroup.ASK}) >= 2:
+        return True
+    if action in CORROBORATING_ACTIONS:
+        return True
+    return any(
+        s.group != SignalGroup.ASK
+        and not is_capped(s)
+        and rank(target_band(s, floor_band, money_movement)) > rank(Band.PASS)
+        for s in signals
+    )
+
+
 def escalate(
-    signals: list[Signal], floor_band: Band, money_movement: bool
+    signals: list[Signal],
+    floor_band: Band,
+    money_movement: bool,
+    action: ActionType | None = None,
+    require_ask_corroboration: bool = False,
 ) -> tuple[Band, list[ReasonCode], bool]:
-    """Raise-only escalation lattice. Returns (band, raising_codes, multi_group_rule_fired)."""
+    """Raise-only escalation lattice. Returns (band, raising_codes, multi_group_rule_fired).
+
+    With require_ask_corroboration (policy >= 1.1, ADR-021), an uncorroborated ask signal is
+    capped at VERIFY: one keyword hit alone never causes a HOLD (brief: "avoid automatic
+    blocking ... based on a single weak signal")."""
+    cap_asks = require_ask_corroboration and not ask_corroborated(
+        signals, floor_band, money_movement, action
+    )
     band = Band.PASS
     raising: list[ReasonCode] = []
     for s in signals:
         t = target_band(s, floor_band, money_movement)
+        if cap_asks and s.group == SignalGroup.ASK:
+            t = bmin(t, Band.VERIFY)
         if rank(t) > rank(Band.PASS) and s.code not in raising:
             raising.append(s.code)
         band = bmax(band, t)
@@ -66,7 +107,13 @@ def decide(
     floor_band, action = compute_floor(case.kind, case.txn, case.master_change, master, cfg)
     reason_codes: list[ReasonCode] = [FLOOR_REASON[action]]
 
-    esc_band, raising, multi = escalate(case.signals, floor_band, has_money_movement(case))
+    esc_band, raising, multi = escalate(
+        case.signals,
+        floor_band,
+        has_money_movement(case),
+        action=action,
+        require_ask_corroboration=cfg.ask_corroboration,
+    )
     band = bmax(floor_band, esc_band)
     reason_codes += [c for c in raising if c not in reason_codes]
     if multi:
