@@ -27,7 +27,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
 | T17 | Voice uploads path | Kartikey | done | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | 5/5 tests green; audio_io + upload + onnx + transcribe |
 | T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | done | T07 | [spec](tasks/T18-audio-channel-eval.md) | |
-| T19 | Research R1: loader, D2, D3, metrics | Kartikey + Shivendra | todo | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | |
+| T19 | Research R1: loader, D2, D3, metrics | Kartikey + Shivendra | done | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | metrics module, D2 baseline, ICFD loader, thresholds.json, research_clean.csv; 8/8 tests green |
 | T20 | Research R2: paraphrase attacks + filters | Shivendra | todo | T19 | [spec](tasks/T20-research-paraphrase-attacks.md) | email ICFD authors first |
 | T21 | Research R3: evaluation + money figure | Shivendra | todo | T19, T20 | [spec](tasks/T21-research-eval-money-figure.md) | |
 | T22 | Demo assets + 10 dry runs | Shivendra + all | todo | T07-T17 | [spec](tasks/T22-demo-assets-dry-runs.md) | consent forms first |
@@ -60,3 +60,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 08 Oct, T13: done — callback logging, clearance evaluation, status rules, override, and watchlist.
 08 Oct, T17: done — audio_io (16kHz mono decode + 5s windowing + 30ms RMS VAD), upload pipeline (decode -> score -> classify_windows -> transcribe -> extract_asks), onnx detector and aws transcribe batch adapter; 5/5 task tests + full suite 415 passed.
 08 Oct, T11: done — mlx-whisper on M4 runs under 3.12 seconds end-to-end latency for 10s audio chunks.
+08 Oct, T19: done — metrics module (recall@FPR, Mann-Whitney AUROC, conversation bootstrap + paired diffs), ICFD JSONL loader, D2 TF-IDF baseline, run_clean pipeline, and results/thresholds.json + research_clean.csv; 8/8 task tests green.
