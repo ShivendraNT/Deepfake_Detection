@@ -1,0 +1,390 @@
+{
+ "what": "Voice Seal through real codec chains (synthetic TTS voices; illustrative, n=10)",
+ "script": "research/seal/run_codec_eval.py",
+ "module": "satyapan-voiceseal/1.0",
+ "params": {
+  "params_id": "vs1-12b-300-3400-6f-104c-625f-2.0dB",
+  "amp_db": 2.0,
+  "n_bands": 12,
+  "band_hz": [
+   300.0,
+   3400.0
+  ],
+  "chip_s": 0.048,
+  "epoch_s": 5.0
+ },
+ "protocol": {
+  "name": "v2: acquire lag once (Bonferroni over candidates), then fixed-lag scoring",
+  "acquisition_lags_frames": [
+   -25,
+   25
+  ],
+  "looks": [
+   1,
+   2
+  ],
+  "tau_acquisition": 5.494,
+  "alpha_per_acquisition_look": 1e-06,
+  "stouffer_alpha_spending_total": 1e-06,
+  "tau_epoch": 4.0,
+  "false_seal_budget_per_session_gaussian": 3e-06,
+  "hoeffding_tail_at_tau_acq": 2.7847734677012436e-07,
+  "time_to_verdict": "seconds of sealed speech from the first sealed epoch; key disclosure latency (<= 1 s) not included"
+ },
+ "pooled": {
+  "attack_epochs": 3920,
+  "attack_z_mean": 0.0375,
+  "attack_z_std": 1.0265,
+  "attack_z_max": 3.132,
+  "attack_epochs_z_ge_4": 0,
+  "attack_z_by_case": {
+   "H0u_unsealed_or_clone": {
+    "n": 980,
+    "mean": 0.031,
+    "std": 1.023,
+    "max": 3.132
+   },
+   "H0r_relay": {
+    "n": 980,
+    "mean": -0.011,
+    "std": 1.05,
+    "max": 3.125
+   },
+   "H0s_replay_e+3": {
+    "n": 980,
+    "mean": 0.092,
+    "std": 0.994,
+    "max": 3.097
+   },
+   "H0i_wrong_identity": {
+    "n": 980,
+    "mean": 0.038,
+    "std": 1.035,
+    "max": 3.079
+   }
+  },
+  "attack_sessions": 560,
+  "attack_sessions_falsely_sealed": 0,
+  "genuine_sessions": 140,
+  "genuine_sessions_verified": 139,
+  "genuine_decided_by": {
+   "acquisition_1": 93,
+   "stouffer": 10,
+   "acquisition_2": 36,
+   "not_sealed": 1
+  },
+  "genuine_missed": [
+   {
+    "voice": "hf_alpha",
+    "chain": "opus24_noise15"
+   }
+  ],
+  "lag_error_frames_genuine_median": 0.36999999999999966,
+  "by_language": {
+   "en": {
+    "genuine_z_mean": 5.457,
+    "attack_z_mean": 0.06,
+    "attack_z_std": 1.025,
+    "n_attack_epochs": 2856
+   },
+   "hi": {
+    "genuine_z_mean": 5.943,
+    "attack_z_mean": -0.023,
+    "attack_z_std": 1.029,
+    "n_attack_epochs": 1064
+   }
+  }
+ },
+ "quality": {
+  "seal_waveform_snr_db_mean": 19.11,
+  "note": "SNR is meaningless for a level pattern; see results/seal_quality.json"
+ },
+ "compute": {
+  "embed_rtf_python_mean": 0.00387,
+  "detect_ms_per_session_median": 5.9,
+  "wall_clock_s": 285.5,
+  "audio_seconds_total": 524.0
+ },
+ "chains": [
+  {
+   "chain": "clean",
+   "description": "No codec",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 5.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 7.117,
+   "genuine_epoch_rate_z_ge_4": 1.0,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.063,
+   "attack_z_std": 1.063,
+   "attack_z_max": 2.977
+  },
+  {
+   "chain": "opus32_meet",
+   "description": "Opus 32 kbps 48 kHz (Meet-like)",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 5.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 6.471,
+   "genuine_epoch_rate_z_ge_4": 0.9571,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": -0.057,
+   "attack_z_std": 0.982,
+   "attack_z_max": 2.75
+  },
+  {
+   "chain": "opus24",
+   "description": "Opus 24 kbps 48 kHz",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 10.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 6.297,
+   "genuine_epoch_rate_z_ge_4": 0.9714,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.049,
+   "attack_z_std": 0.995,
+   "attack_z_max": 3.044
+  },
+  {
+   "chain": "opus16_voicenote",
+   "description": "Opus 16 kbps 16 kHz (WhatsApp-style note)",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 10.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 5.984,
+   "genuine_epoch_rate_z_ge_4": 0.9571,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.02,
+   "attack_z_std": 1.012,
+   "attack_z_max": 2.673
+  },
+  {
+   "chain": "opus12",
+   "description": "Opus 12 kbps 16 kHz",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 10.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 5.159,
+   "genuine_epoch_rate_z_ge_4": 0.9,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": -0.028,
+   "attack_z_std": 1.008,
+   "attack_z_max": 2.628
+  },
+  {
+   "chain": "opus8_nb",
+   "description": "Opus 8 kbps narrowband",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 10.0,
+   "max_time_to_verdict_s": 20.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 4.743,
+   "genuine_epoch_rate_z_ge_4": 0.7714,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": -0.078,
+   "attack_z_std": 1.045,
+   "attack_z_max": 3.125
+  },
+  {
+   "chain": "amrnb_12.2",
+   "description": "AMR-NB 12.2 kbps (mobile call)",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 10.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 5.182,
+   "genuine_epoch_rate_z_ge_4": 0.8286,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.103,
+   "attack_z_std": 0.999,
+   "attack_z_max": 3.132
+  },
+  {
+   "chain": "amrnb_4.75",
+   "description": "AMR-NB 4.75 kbps (worst mode)",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 20.0,
+   "max_time_to_verdict_s": 45.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 3.266,
+   "genuine_epoch_rate_z_ge_4": 0.2429,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.097,
+   "attack_z_std": 0.982,
+   "attack_z_max": 2.855
+  },
+  {
+   "chain": "g711_mulaw",
+   "description": "G.711 mu-law (PSTN)",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 5.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 6.922,
+   "genuine_epoch_rate_z_ge_4": 0.9857,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.019,
+   "attack_z_std": 1.012,
+   "attack_z_max": 2.801
+  },
+  {
+   "chain": "mp3_32",
+   "description": "MP3 32 kbps",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 5.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 6.633,
+   "genuine_epoch_rate_z_ge_4": 0.9857,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.053,
+   "attack_z_std": 1.043,
+   "attack_z_max": 2.589
+  },
+  {
+   "chain": "opus24_loss5",
+   "description": "Opus 24k + 5% frame loss, no PLC",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 10.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 6.051,
+   "genuine_epoch_rate_z_ge_4": 0.9286,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.077,
+   "attack_z_std": 1.044,
+   "attack_z_max": 3.079
+  },
+  {
+   "chain": "opus24_noise15",
+   "description": "Opus 24k + white noise 15 dB SNR",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 9,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 10.0,
+   "max_time_to_verdict_s": 25.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 3.869,
+   "genuine_epoch_rate_z_ge_4": 0.4857,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.134,
+   "attack_z_std": 0.943,
+   "attack_z_max": 2.355
+  },
+  {
+   "chain": "opus24_amrnb12.2",
+   "description": "Opus 24k -> AMR-NB 12.2 (dial-in)",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 20.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 4.742,
+   "genuine_epoch_rate_z_ge_4": 0.7,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.048,
+   "attack_z_std": 1.14,
+   "attack_z_max": 3.097
+  },
+  {
+   "chain": "gain-9_opus16",
+   "description": "-9 dB gain + Opus 16k",
+   "n_sessions_genuine": 10,
+   "genuine_verified": 10,
+   "n_sessions_attack": 40,
+   "attacks_falsely_sealed": 0,
+   "median_time_to_verdict_s": 5.0,
+   "max_time_to_verdict_s": 10.0,
+   "genuine_epochs_post_acq": 70,
+   "genuine_z_mean": 5.809,
+   "genuine_epoch_rate_z_ge_4": 0.9429,
+   "attack_epochs_post_acq": 280,
+   "attack_z_mean": 0.026,
+   "attack_z_std": 1.066,
+   "attack_z_max": 2.303
+  }
+ ],
+ "manifest": {
+  "generator": "Kokoro-82M int8 ONNX (kokoro-onnx), stock voices; research/seal/gen_voices.py",
+  "data_dir": "$SATYAPAN_SEAL_DATA/voices (outside the repo; audio is never committed)",
+  "files": {
+   "af_bella.wav": "7e0f82c67e6d14cf1ab2cedfdb70b2406f535f5a24dba767f9ed5808208eb2b1",
+   "af_heart.wav": "5eaea3f9411baf6ae6816a979f37b439533117980285a1cde1fe77532b08c912",
+   "am_adam.wav": "e30e53572181b878a5aa43f111ef1722979fd1d57c67a05c35710eb3de3129b3",
+   "am_michael.wav": "bec9232787bab30a8adac8ef7ddcd6da87efcb4145bc81392642dbf9448cc919",
+   "bf_emma.wav": "f2c08da63353d55df0fc271f51c3ac19f41311c1bececf45401be5cd8cdb3565",
+   "bm_george.wav": "bdc1171368bc576f963bd02237fd006775dd3064d0eae2e13d3bdd7da4652845",
+   "hf_alpha.wav": "4ea50ccd030e9a0e64dbd1aba0ddf149f39e01827a5b5a9e4857e3e625cd221d",
+   "hf_beta.wav": "03bf8dd633b2475b0deb2c68ed107ea0069ee5878910d6cb5869b4194bd5b954",
+   "hm_omega.wav": "08cc959b471b0efac3d9c40a25078935840e5ffabdf1755e417e1f1e77b8e04d",
+   "hm_psi.wav": "422f2ee1f80ca2d195816f206f2a720a7d72ae78ab94eca1deee08193ebc1a0f"
+  },
+  "voices": [
+   "af_bella",
+   "af_heart",
+   "am_adam",
+   "am_michael",
+   "bf_emma",
+   "bm_george",
+   "hf_alpha",
+   "hf_beta",
+   "hm_omega",
+   "hm_psi"
+  ],
+  "seeds": {
+   "conditions_numpy_seed": 2026,
+   "rng_per_voice_chain": "np.random.default_rng([SEED, voice_index, chain_index])",
+   "rajesh_chain_seed": "eval-rajesh-session",
+   "meera_chain_seed": "eval-meera-session"
+  },
+  "git_commit": "d6ae619185732c5cb79a9695e2a9559238273bf7",
+  "tools": {
+   "ffmpeg": "ffmpeg version 6.1.1-3ubuntu5 Copyright (c) 2000-2023 the FFmpeg developers",
+   "sox": "sox:      SoX v14.4.2",
+   "numpy": "2.5.3",
+   "scipy": "1.18.1",
+   "python": "3.13.16"
+  }
+ }
+}
