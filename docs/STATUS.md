@@ -51,3 +51,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T10: extension side panel UI built, reducer tests and control assertions passing.
 07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
 07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
+08 Oct, SEAL (lead): Satyapan Seal R1 prototype on branch r1-seal — contracts (3 provenance codes), src/satyapan/seal/, API, CLI, side-panel chip, demo pages; results/seal_*.{csv,json} from research/seal/ scripts (0/560 false seals, 139/140 genuine, Chrome WebRTC APM on/off sealed 4/4). Two-laptop Meet test pending (research/seal/README.md §6).
