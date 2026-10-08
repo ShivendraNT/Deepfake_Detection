@@ -19,7 +19,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T08 | Invoice/PDF checker | Kartikey | done | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 10/10 tests pass, regex/metadata/checker done |
 | T09 | Evidence vault: storage, intake, anchor | Saksham | partial | T01 | [spec](tasks/T09-evidence-vault.md) | hashing + custody chain pre-implemented |
 | T10 | Extension side panel UI | Saarika | done | T07 (event contract only) | [spec](tasks/T10-extension-sidepanel.md) | UI built with pure reducer and replay | 
-| T11 | Live transcript path | Shivendra | todo | T05, T07 | [spec](tasks/T11-live-transcript.md) | |
+| T11 | Live transcript path | Shivendra | done | T05, T07 | [spec](tasks/T11-live-transcript.md) | 3.12s chunk->chip latency on M4 |
 | T12 | OOB-Confirm | Saksham | done | T02, T06 | [spec](tasks/T12-oob-confirm.md) | backend part needs only T02 |
 | T13 | Callback logging + checker flows | Saksham | done | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
 | T14 | Explanation templates EN/HI | Saksham | done | T02 | [spec](tasks/T14-explanation-templates.md) | 33/33 codes EN + Devanagari HI done; `reason_text` + `explain_template` done; 35/35 task tests + full suite green; proofread and signed off by Kartikey |
@@ -59,3 +59,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 08 Oct, T08: done — invoice regex, PDF metadata parsing, and master diff signals merged.
 08 Oct, T13: done — callback logging, clearance evaluation, status rules, override, and watchlist.
 08 Oct, T17: done — audio_io (16kHz mono decode + 5s windowing + 30ms RMS VAD), upload pipeline (decode -> score -> classify_windows -> transcribe -> extract_asks), onnx detector and aws transcribe batch adapter; 5/5 task tests + full suite 415 passed.
+08 Oct, T11: done — mlx-whisper on M4 runs under 3.12 seconds end-to-end latency for 10s audio chunks.
