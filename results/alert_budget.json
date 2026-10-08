@@ -1,7 +1,7 @@
 {
  "what": "Alert budget through the real pipeline (synthetic cases)",
  "date": "2026-10-08",
- "git_commit": "ae42e6e+dirty",
+ "git_commit": "1cbf71b+dirty",
  "code_state": "post-fix",
  "command": "uv run python -m research.alert_budget.run_alert_budget",
  "data": {
@@ -257,8 +257,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -1066,8 +1066,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -1288,14 +1288,14 @@
       "ASK_CREDENTIAL": 38,
       "ASK_NEW_ACCOUNT": 26,
       "ASK_UNUSUAL_PAYMENT_METHOD": 8,
-      "ASK_SECRECY": 4,
+      "ASK_SECRECY": 5,
       "ASK_PAYEE_CHANGE": 2,
       "ASK_REMOTE_ACCESS": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_CREDENTIAL": 38,
       "ASK_NEW_ACCOUNT": 5,
-      "ASK_SECRECY": 4,
+      "ASK_SECRECY": 5,
       "ASK_REMOTE_ACCESS": 1,
       "ASK_PAYEE_CHANGE": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
@@ -2085,14 +2085,14 @@
       "ASK_CREDENTIAL": 27,
       "ASK_UNUSUAL_PAYMENT_METHOD": 8,
       "ASK_NEW_ACCOUNT": 8,
-      "ASK_SECRECY": 3,
+      "ASK_SECRECY": 4,
       "ASK_REMOTE_ACCESS": 1,
       "ASK_PAYEE_CHANGE": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_CREDENTIAL": 27,
+      "ASK_SECRECY": 4,
       "ASK_NEW_ACCOUNT": 3,
-      "ASK_SECRECY": 3,
       "ASK_REMOTE_ACCESS": 1,
       "ASK_PAYEE_CHANGE": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
@@ -2681,8 +2681,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -3489,8 +3489,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -3672,21 +3672,21 @@
       ]
      },
      "verify_exactly": {
-      "k": 63,
+      "k": 62,
       "n": 400,
-      "value": 0.1575,
+      "value": 0.155,
       "ci95": [
-       0.1251,
-       0.1964
+       0.1228,
+       0.1937
       ]
      },
      "hold": {
-      "k": 8,
+      "k": 9,
       "n": 400,
-      "value": 0.02,
+      "value": 0.0225,
       "ci95": [
-       0.0102,
-       0.039
+       0.0119,
+       0.0422
       ]
      },
      "above_floor": {
@@ -3699,26 +3699,26 @@
       ]
      },
      "checker_queue": {
-      "k": 8,
+      "k": 9,
       "n": 400,
-      "value": 0.02,
+      "value": 0.0225,
       "ci95": [
-       0.0102,
-       0.039
+       0.0119,
+       0.0422
       ]
      },
      "cases_with_reason_code": {
       "ASK_CREDENTIAL": 38,
       "ASK_NEW_ACCOUNT": 26,
       "ASK_UNUSUAL_PAYMENT_METHOD": 8,
-      "ASK_SECRECY": 4,
+      "ASK_SECRECY": 5,
       "ASK_PAYEE_CHANGE": 2,
       "ASK_REMOTE_ACCESS": 1
      },
      "hold_cases_with_reason_code": {
-      "ASK_CREDENTIAL": 7,
+      "ASK_CREDENTIAL": 8,
       "ASK_NEW_ACCOUNT": 5,
-      "ASK_SECRECY": 2,
+      "ASK_SECRECY": 3,
       "ASK_PAYEE_CHANGE": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
      }
@@ -4468,21 +4468,21 @@
       ]
      },
      "verify_exactly": {
-      "k": 38,
+      "k": 37,
       "n": 200,
-      "value": 0.19,
+      "value": 0.185,
       "ci95": [
-       0.1417,
-       0.25
+       0.1373,
+       0.2446
       ]
      },
      "hold": {
-      "k": 5,
+      "k": 6,
       "n": 200,
-      "value": 0.025,
+      "value": 0.03,
       "ci95": [
-       0.0107,
-       0.0572
+       0.0138,
+       0.0639
       ]
      },
      "above_floor": {
@@ -4495,27 +4495,27 @@
       ]
      },
      "checker_queue": {
-      "k": 5,
+      "k": 6,
       "n": 200,
-      "value": 0.025,
+      "value": 0.03,
       "ci95": [
-       0.0107,
-       0.0572
+       0.0138,
+       0.0639
       ]
      },
      "cases_with_reason_code": {
       "ASK_CREDENTIAL": 27,
       "ASK_UNUSUAL_PAYMENT_METHOD": 8,
       "ASK_NEW_ACCOUNT": 8,
-      "ASK_SECRECY": 3,
+      "ASK_SECRECY": 4,
       "ASK_REMOTE_ACCESS": 1,
       "ASK_PAYEE_CHANGE": 1
      },
      "hold_cases_with_reason_code": {
-      "ASK_CREDENTIAL": 4,
+      "ASK_CREDENTIAL": 5,
       "ASK_NEW_ACCOUNT": 3,
+      "ASK_SECRECY": 2,
       "ASK_PAYEE_CHANGE": 1,
-      "ASK_SECRECY": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
      }
     },

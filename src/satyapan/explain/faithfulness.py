@@ -8,6 +8,37 @@ from satyapan.contracts.explain import EvidenceItemForLLM, FaithfulnessResult
 
 FORBIDDEN_WORDS_EN: tuple[str, ...] = ("safe", "legitimate", "verified", "genuine", "authentic")
 FORBIDDEN_WORDS_HI: tuple[str, ...] = ("सुरक्षित", "वैध", "सत्यापित", "असली", "प्रामाणिक")
+# Reassurance phrases that slipped past the word list (judge red-team finding E3, 08 Oct).
+# Same rule: blocked unless a verified clearance exists. Fail-closed: a faithful summary that
+# happens to use one ("not approved") falls back to the template, which is acceptable.
+FORBIDDEN_PHRASES_EN: tuple[str, ...] = (
+    "no risk",
+    "low risk",
+    "risk-free",
+    "fine to pay",
+    "ok to pay",
+    "okay to pay",
+    "go ahead",
+    "all clear",
+    "approved",
+    "nothing suspicious",
+    "no red flags",
+    "no concerns",
+    "trustworthy",
+    "sab theek",
+    "koi risk nahi",
+    "koi khatra nahi",
+)
+FORBIDDEN_PHRASES_HI: tuple[str, ...] = (
+    "ठीक है",
+    "सब ठीक",
+    "कोई खतरा नहीं",
+    "कोई जोखिम नहीं",
+    "भरोसेमंद",
+    "मंज़ूर",
+    "मंजूर",
+    "स्वीकृत",
+)
 
 _CITATION = re.compile(r"\[(ev_[A-Za-z0-9_\-]+)\]")
 _SENTENCE_END = re.compile(r"(?<=[.!?।])(?:\s+|$)")
@@ -56,8 +87,8 @@ def check_faithfulness(
         remove commas/spaces; '₹48,50,000' == '4850000').
     (b) "citation:<sentence #>" — a sentence with no [ev_...] citation, or citing an id that
         is not in items.
-    (c) "forbidden:<word>" — any FORBIDDEN word (EN or HI, case-insensitive, whole word)
-        unless has_verified_clearance is True.
+    (c) "forbidden:<word>" — any FORBIDDEN word or reassurance phrase (EN or HI,
+        case-insensitive, whole word/phrase) unless has_verified_clearance is True.
     Sentence split: on '.', '!', '?', '।' followed by space or end.
     """
     failures: list[str] = []
@@ -74,8 +105,11 @@ def check_faithfulness(
             failures.append(f"citation:{n}")
 
     if not has_verified_clearance:
-        for word in FORBIDDEN_WORDS_EN + FORBIDDEN_WORDS_HI:
-            if re.search(rf"(?<![{_WORD}]){re.escape(word)}(?![{_WORD}])", summary, re.I):
+        for word in (
+            FORBIDDEN_WORDS_EN + FORBIDDEN_WORDS_HI + FORBIDDEN_PHRASES_EN + FORBIDDEN_PHRASES_HI
+        ):
+            pattern = r"\s+".join(re.escape(w) for w in word.split())
+            if re.search(rf"(?<![{_WORD}]){pattern}(?![{_WORD}])", summary, re.I):
                 failures.append(f"forbidden:{word}")
 
     return FaithfulnessResult(ok=not failures, failures=list(dict.fromkeys(failures)))

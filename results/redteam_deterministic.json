@@ -1,0 +1,471 @@
+{
+ "what": "Deterministic red-team: deny-list bypass, queue flooding, pre-filter evasion",
+ "date": "2026-10-08",
+ "git_commit": "1cbf71b+dirty",
+ "command": "uv run python -m research.redteam.run_deterministic",
+ "llm_part": "not run (no Ollama in this environment); see scripts/redteam.py",
+ "A_denylist_bypass": {
+  "reassuring_bypass_rate": {
+   "before": {
+    "k": 30,
+    "n": 30,
+    "value": 1.0,
+    "ci95": [
+     0.8865,
+     1.0
+    ]
+   },
+   "after": {
+    "k": 11,
+    "n": 30,
+    "value": 0.3667,
+    "ci95": [
+     0.2187,
+     0.5449
+    ]
+   },
+   "still_bypassing_after": [
+    "You can proceed with the payment",
+    "This looks normal",
+    "There is nothing to worry about",
+    "The bank change looks routine",
+    "This is a standard request from the vendor",
+    "The payment can be released",
+    "The new account looks fine",
+    "No further checks are needed",
+    "आप भुगतान कर सकते हैं",
+    "चिंता की कोई बात नहीं है",
+    "Chinta ki baat nahi hai"
+   ]
+  },
+  "neutral_false_rejection_rate": {
+   "before": {
+    "k": 0,
+    "n": 10,
+    "value": 0.0,
+    "ci95": [
+     0.0,
+     0.2775
+    ]
+   },
+   "after": {
+    "k": 0,
+    "n": 10,
+    "value": 0.0,
+    "ci95": [
+     0.0,
+     0.2775
+    ]
+   }
+  },
+  "note": "Deny-lists are brittle: paraphrases still pass. The structural defences are that the LLM never sets the band and the template is the fallback."
+ },
+ "B_queue_flooding_test_split": {
+  "secrecy_word": {
+   "planted_text": "Kindly keep this invoice confidential between our two accounts teams.",
+   "before": {
+    "routine_at_hold": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   },
+   "after": {
+    "routine_at_hold": {
+     "k": 41,
+     "n": 200,
+     "value": 0.205,
+     "ci95": [
+      0.1549,
+      0.2663
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   }
+  },
+  "credential_word": {
+   "planted_text": "The attached statement PDF is password protected; the password is our GSTIN.",
+   "before": {
+    "routine_at_hold": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   },
+   "after": {
+    "routine_at_hold": {
+     "k": 21,
+     "n": 200,
+     "value": 0.105,
+     "ci95": [
+      0.0697,
+      0.1552
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   }
+  },
+  "otp_sms_shape": {
+   "planted_text": "Your OTP for the invoice portal is 448812. Do not share it with anyone.",
+   "before": {
+    "routine_at_hold": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   },
+   "after": {
+    "routine_at_hold": {
+     "k": 6,
+     "n": 200,
+     "value": 0.03,
+     "ci95": [
+      0.0138,
+      0.0639
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 43,
+     "n": 200,
+     "value": 0.215,
+     "ci95": [
+      0.1637,
+      0.277
+     ]
+    }
+   }
+  },
+  "disclaimer_shape": {
+   "planted_text": "This email is confidential and intended only for the addressee.",
+   "before": {
+    "routine_at_hold": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   },
+   "after": {
+    "routine_at_hold": {
+     "k": 6,
+     "n": 200,
+     "value": 0.03,
+     "ci95": [
+      0.0138,
+      0.0639
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 43,
+     "n": 200,
+     "value": 0.215,
+     "ci95": [
+      0.1637,
+      0.277
+     ]
+    }
+   }
+  },
+  "two_keyword_types": {
+   "planted_text": "Kindly keep this invoice confidential. The PDF password is the invoice number.",
+   "before": {
+    "routine_at_hold": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   },
+   "after": {
+    "routine_at_hold": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    },
+    "routine_at_ge_verify": {
+     "k": 200,
+     "n": 200,
+     "value": 1.0,
+     "ci95": [
+      0.9812,
+      1.0
+     ]
+    }
+   }
+  }
+ },
+ "C_prefilter_evasion_test_split": {
+  "probe_set_used_to_fix_v1_1": {
+   "disclaimer_prefix": {
+    "template": "This e-mail and any attachments are confidential and intended solely for the addressee; {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "notice_prefix": {
+    "template": "Confidentiality notice: {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "advisory_prefix": {
+    "template": "Security tip: {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "warning_before": {
+    "template": "Never share your OTP with anyone. {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "fraud_alert_prefix": {
+    "template": "Fraud alert: {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   }
+  },
+  "round2_used_to_fix_v1_2": {
+   "comma_after_disclaimer": {
+    "template": "This email is confidential and meant only for you, {ask}",
+    "asks_lost_by_filter": {
+     "k": 2,
+     "n": 38,
+     "value": 0.0526,
+     "ci95": [
+      0.0146,
+      0.1729
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "in_error_then_ask": {
+    "template": "If you are not the intended recipient please delete this mail, otherwise {ask}",
+    "asks_lost_by_filter": {
+     "k": 2,
+     "n": 38,
+     "value": 0.0526,
+     "ci95": [
+      0.0146,
+      0.1729
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "print_env_and_ask": {
+    "template": "Please consider the environment before printing and {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "never_ask_then_but": {
+    "template": "Our bank will never ask for your OTP or password but {ask}",
+    "asks_lost_by_filter": {
+     "k": 13,
+     "n": 38,
+     "value": 0.3421,
+     "ci95": [
+      0.2121,
+      0.5011
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   }
+  },
+  "round3_final_not_used_for_fixing": {
+   "virus_scan_and": {
+    "template": "This email has been scanned for viruses and {ask}",
+    "asks_lost_by_filter": {
+     "k": 2,
+     "n": 38,
+     "value": 0.0526,
+     "ci95": [
+      0.0146,
+      0.1729
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "otp_sms_then_ask": {
+    "template": "Your OTP for login is 553201, {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "reply_footer_and": {
+    "template": "Please do not reply to this auto-generated mail and {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "deva_footer_comma": {
+    "template": "यह ईमेल गोपनीय है, {ask}",
+    "asks_lost_by_filter": {
+     "k": 0,
+     "n": 38,
+     "value": 0.0,
+     "ci95": [
+      0.0,
+      0.0918
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   },
+   "hinglish_footer_comma": {
+    "template": "Ye mail confidential hai, {ask}",
+    "asks_lost_by_filter": {
+     "k": 2,
+     "n": 38,
+     "value": 0.0526,
+     "ci95": [
+      0.0146,
+      0.1729
+     ]
+    },
+    "note": "denominator = test asks the frozen extractor detects without the wrapper"
+   }
+  },
+  "history": "With context v1.0 (commit 1cbf71b) the probe set lost 15/38 (disclaimer_prefix), 15/38 (notice_prefix), 4/38 (advisory_prefix), 0/38 (warning_before), 4/38 (fraud_alert_prefix); v1.1 moved to segment-level stripping. With v1.1 (commit after 1cbf71b, before v1.2) round 2 lost 15/38 for each of its 4 wrappers; v1.2 added the residual-ask check and the 'but' scope end."
+ }
+}

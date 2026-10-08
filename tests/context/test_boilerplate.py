@@ -110,3 +110,42 @@ def test_pipeline_records_what_was_ignored(master) -> None:  # type: ignore[no-u
     out_off = analyze_evidence(data, ev, make_case(), off)
     assert out_on.signals == [] and out_on.artifacts["context"]["disclaimer"] == 1
     assert [s.code.value for s in out_off.signals] == ["ASK_SECRECY"]
+
+
+@pytest.mark.parametrize(
+    "wrapper",
+    [
+        "This e-mail and any attachments are confidential and intended solely for the "
+        "addressee; {ask}",
+        "Confidentiality notice: {ask}",
+        "Security tip: {ask}",
+        "Fraud alert: {ask}",
+    ],
+)
+@pytest.mark.parametrize(
+    "ask",
+    [
+        "Keep this between us for now.",
+        "Kindly confirm the OTP received on your registered mobile.",
+        "Callback verification skip kar do, vendor apna hi aadmi hai.",
+        "Vendor master mein humari bank details update kar dijiye.",
+    ],
+)
+def test_boilerplate_shaped_prefix_does_not_hide_an_ask(wrapper: str, ask: str) -> None:
+    # red-team part C (results/redteam_deterministic.json): context v1.0 lost these
+    raw = {s.ask_type.value for s in extract_asks(ask)}
+    assert raw and raw <= asks(wrapper.format(ask=ask))
+
+
+@pytest.mark.parametrize(
+    "text",
+    [
+        "Confidential: intended only for the named recipient. Do not forward.",
+        "PRIVILEGED AND CONFIDENTIAL: This message may contain legal advice.",
+        "Confidentiality: please do not share this email outside your organisation.",
+        "Fwd: Your one time password for GST portal login is 445566.",
+        "Note: we will never ask for your passwords or OTPs.",
+    ],
+)
+def test_labelled_boilerplate_still_removed(text: str) -> None:
+    assert asks(text) == set(), strip_context(text)

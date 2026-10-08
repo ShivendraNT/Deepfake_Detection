@@ -30,7 +30,7 @@ import unicodedata
 from dataclasses import dataclass, field
 from typing import Literal
 
-CONTEXT_VERSION = "1.0.0"
+CONTEXT_VERSION = "1.2.0"  # 1.1 segment-level; 1.2 residual-ask check + "but" scope (red team C)
 
 Kind = Literal["disclaimer", "notification", "warning", "signature"]
 
@@ -92,6 +92,7 @@ _DISCLAIMER = [
             "this_email_confidential",
         ),
         (r"\bcontents?\s+of\s+this\s+(e-?mail|message)", "contents_of_this_email"),
+        (r"\b(this|the)\s+(e-?mail|message|communication)\s+may\s+contain\b", "may_contain"),
         (r"\bintended\s+(solely|only|recipient|for\s+the)", "intended_recipient"),
         (r"\bnot\s+the\s+intended\b", "intended_recipient"),
         (r"\b(received|receive)\b[^.]{0,30}\bin\s+error\b", "received_in_error"),
@@ -185,7 +186,10 @@ _ADVISORY = re.compile(
     r"|safe\s+banking|be\s+alert|be\s+careful|advisory)\b|सावधान",
     _I,
 )
+_SCOPE_END = re.compile(r"\b(but|however|lekin|par)\b|लेकिन|पर\s", _I)
 _CLAUSE = re.compile(r"[,;:]|\s+but\s+|\s+lekin\s+|\s+लेकिन\s+", _I)
+_SEGMENT = re.compile(r"(?<=[;:])\s+")
+_LABEL_MAX_WORDS = 4
 _SENTENCE = re.compile(r"(?<=[.!?।])\s+|(?<=[.!?।]['\")\]])\s+|\n+")
 
 
@@ -202,8 +206,10 @@ def _guarded(sentence: str) -> bool:
 
 def _unnegated_action(sentence: str) -> bool:
     """True if some action verb in the sentence is not under a nearby negation."""
-    if _NEVER_ASK.search(sentence):  # "X will never ask you for A, B or to C": rest is in scope
-        sentence = sentence[: _NEVER_ASK.search(sentence).start()]  # type: ignore[union-attr]
+    m_never = _NEVER_ASK.search(sentence)
+    if m_never:  # "X will never ask you for A, B or to C" is in scope up to but/however/lekin
+        stop = _SCOPE_END.search(sentence, m_never.end())
+        sentence = sentence[: m_never.start()] + (sentence[stop.start() :] if stop else "")
     for clause in _CLAUSE.split(sentence):
         for m in _ACTION.finditer(clause):
             before = clause[: m.start()].split()[-6:]
@@ -234,16 +240,27 @@ def _is_warning(sentence: str) -> str | None:
     return "never_ask" if _NEVER_ASK.search(sentence) else "negated_or_advisory"
 
 
+def _residual_asks(segment: str, match: re.Match[str]) -> bool:
+    """Does the segment still contain an ask once the matched boilerplate span is cut out?
+    ("This email is confidential, keep it between us" -> yes -> keep the segment.)"""
+    from satyapan.asks.extractor import extract_asks  # frozen lexicon, read-only use
+
+    rest = segment[: match.start()] + " " + segment[match.end() :]
+    return bool(extract_asks(rest))
+
+
 def _classify(sentence: str, prev_kind: Kind | None) -> tuple[Kind, str] | None:
     s = sentence.strip()
     if not s or _guarded(s):
         return None
     for pat, rid in _DISCLAIMER:
-        if pat.search(s):
-            return "disclaimer", rid
+        m = pat.search(s)
+        if m:
+            return None if _residual_asks(s, m) else ("disclaimer", rid)
     for pat, rid in _NOTIFICATION:
-        if pat.search(s):
-            return "notification", rid
+        m = pat.search(s)
+        if m:
+            return None if _residual_asks(s, m) else ("notification", rid)
     w = _is_warning(s)
     if w:
         return "warning", w
@@ -276,12 +293,23 @@ def strip_context(text: str) -> ContextResult:
     kept: list[str] = []
     prev: Kind | None = None
     for sentence in _SENTENCE.split(body):
-        hit = _classify(sentence, prev)
-        if hit is None:
-            kept.append(sentence)
-            prev = None
-        else:
-            removed.append(Removed(hit[0], hit[1], sentence.strip()))
-            prev = hit[0]
+        # Segment level (v1.1): "Confidentiality notice: <ask>" must not hide the ask. A short
+        # label before ':' is removed only together with the segment it labels.
+        segments = [x for x in _SEGMENT.split(sentence) if x.strip()]
+        hits: list[tuple[Kind, str] | None] = []
+        for seg in segments:
+            hit = _classify(seg, prev)
+            hits.append(hit)
+            prev = hit[0] if hit else None
+        for i, seg in enumerate(segments):
+            hit = hits[i]
+            is_label = seg.rstrip().endswith(":") and len(seg.split()) <= _LABEL_MAX_WORDS
+            if is_label and i + 1 < len(segments) and not _guarded(seg):
+                nxt = hits[i + 1]
+                hit = (nxt[0], "label") if nxt else None
+            if hit is None:
+                kept.append(seg)
+            else:
+                removed.append(Removed(hit[0], hit[1], seg.strip()))
     cleaned = " ".join(s.strip() for s in kept if s.strip())
     return ContextResult(original=text, cleaned=cleaned, removed=removed)
