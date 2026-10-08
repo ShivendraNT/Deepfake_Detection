@@ -29,6 +29,7 @@ from satyapan.contracts import (
     TargetRule,
 )
 from satyapan.policy import bmax, decide, rank
+from satyapan.policy.config import PolicyConfig
 from satyapan.policy.engine import has_money_movement
 from satyapan.seal.signals import MIN_UNSEALED_SPEECH_S, voice_seal_signals
 from tests.invariants.strategies import base_cases, signals, with_extras
@@ -87,10 +88,20 @@ def test_unsealed_alone_never_exceeds_verify(master, base) -> None:  # type: ign
 
 @given(base=base_cases(), sigs=st.lists(signals(), max_size=6))
 def test_unsealed_raises_to_at_most_verify(master, base, sigs) -> None:  # type: ignore[no-untyped-def]
+    """Unsealed itself targets VERIFY. Under policy 1.1 (ADR-021) it is a deterministic,
+    independent group, so it may CORROBORATE an ask that was capped at VERIFY (e.g. "skip the
+    approval" + a claimed CFO whose voice is not sealed -> HOLD, which is intended, ADR-023).
+    It can never push a case above what the asks would justify without the corroboration cap."""
     before = decide(with_extras(base, sigs, [], None), master)
     extra = _sig(ReasonCode.VOICE_UNSEALED_CLAIMED_EXEC)
     after = decide(with_extras(base, [*sigs, extra], [], None), master)
-    assert after.band == bmax(before.band, Band.VERIFY)
+    uncapped = decide(
+        with_extras(base, sigs, [], None), master, PolicyConfig(ask_corroboration=False)
+    )
+    assert rank(after.band) >= rank(bmax(before.band, Band.VERIFY))
+    assert rank(after.band) <= rank(bmax(uncapped.band, Band.VERIFY))
+    if not any(s.group == SignalGroup.ASK for s in sigs):
+        assert after.band == bmax(before.band, Band.VERIFY)
 
 
 @given(base=base_cases())

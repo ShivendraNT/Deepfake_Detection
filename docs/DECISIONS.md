@@ -171,3 +171,5 @@ real" without biometrics. **Limits (stated, not hidden):** a compromised exec la
 malware against the WebAuthn prompt (no transaction display), offline uploads cannot prove
 timing, and Google Meet's own processing is untested until the two-laptop test.
 **Safety:** a seal never lowers a band or clears a HOLD; "not sealed" is never shown as "fake".
+
+**Interaction with ADR-021 (merge, 08 Oct):** `VOICE_UNSEALED_CLAIMED_EXEC` is a deterministic signal from a non-ask group, so under policy 1.1 it corroborates a single ask. "Skip the approval" (A5) + a claimed CFO whose voice is not sealed therefore reaches HOLD (checker verifies), while unsealed alone stays at VERIFY. Property test: `tests/seal/test_seal_policy.py::test_unsealed_raises_to_at_most_verify`.
