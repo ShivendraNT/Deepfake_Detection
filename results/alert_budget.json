@@ -1,7 +1,7 @@
 {
  "what": "Alert budget through the real pipeline (synthetic cases)",
  "date": "2026-10-08",
- "git_commit": "c6746a9",
+ "git_commit": "7f28b4e",
  "code_state": "post-fix",
  "command": "uv run python -m research.alert_budget.run_alert_budget",
  "data": {
@@ -257,8 +257,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -1066,8 +1066,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -1474,8 +1474,8 @@
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
-       "ASK_SECRECY": 1
+       "ASK_SECRECY": 1,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
      },
      "N1_split_payments": {
@@ -2269,8 +2269,8 @@
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
-       "ASK_SECRECY": 1
+       "ASK_SECRECY": 1,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
      },
      "N1_split_payments": {
@@ -2681,8 +2681,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -3489,8 +3489,8 @@
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
-       "ASK_SECRECY": 2
+       "ASK_SECRECY": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
      },
      "N1_split_payments": {
@@ -3896,8 +3896,8 @@
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
-       "ASK_SECRECY": 1
+       "ASK_SECRECY": 1,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
      },
      "N1_split_payments": {
@@ -4690,8 +4690,8 @@
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
-       "ASK_UNUSUAL_PAYMENT_METHOD": 1,
-       "ASK_SECRECY": 1
+       "ASK_SECRECY": 1,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
      },
      "N1_split_payments": {
@@ -5221,6 +5221,20 @@
    }
   ]
  },
+ "attack_dropped_to_pass": [
+  {
+   "case": "case_a_ask_055",
+   "split": "test",
+   "gold_asks": [
+    "A3"
+   ],
+   "before_reason_codes": [
+    "FLOOR_D1_DATA_REQUEST",
+    "ASK_SECRECY"
+   ],
+   "why": "flagged before only by an ask fired from the appended footer; the lexicon does not detect the attacker's real ask"
+  }
+ ],
  "before_measured_on_pre_fix_code": {
   "git_commit": "fda5496",
   "result": {

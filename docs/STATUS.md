@@ -52,3 +52,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 07 Oct, T14: done — all 33 reason codes in EN + Hindi (two proofread passes, 24 fixes); full test suite green; proofread and officially signed off by Kartikey.
 07 Oct, T18: audio channel evaluation across 4 codecs + speaker-disjoint calibration completed.
 08 Oct, T18: back to todo. The f83e3b7 CSV and thresholds came from random.gauss, not audio; withdrawn (results/INVALIDATED.md). Runner now needs a sha256 manifest of real audio; test checks it.
+08 Oct, lead (evidence): T05's P=R=1.000 is on team-written sentences (circular). Held-out numbers: frozen lexicon P=0.39 R=0.28, benign false-ask 21.5% (results/asks_heldout_eval.json). Policy 1.1.0 (ADR-021/022) + context layer: routine HOLD 27.5% -> 3.0% on the alert-budget test split. Quote only rows in results/EVIDENCE_LEDGER.md.
