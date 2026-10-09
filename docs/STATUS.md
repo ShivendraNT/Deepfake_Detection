@@ -24,7 +24,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T13 | Callback logging + checker flows | Saksham | done | T02, T06 | [spec](tasks/T13-callback-checker-flows.md) | |
 | T14 | Explanation templates EN/HI | Saksham | done | T02 | [spec](tasks/T14-explanation-templates.md) | 33/33 codes EN + Devanagari HI done; `reason_text` + `explain_template` done; 35/35 task tests + full suite green; proofread and signed off by Kartikey |
 | T15 | Local LLM summary (Ollama) + faithfulness + red-team | Shivendra | done | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done; Ollama local, free |
-| T16 | Report pack | Kartikey | todo | T09, T13 | [spec](tasks/T16-report-pack.md) | core builder needs only T01 |
+| T16 | Report pack | Kartikey | done | T09, T13 | [spec](tasks/T16-report-pack.md) | UTR-first call script, bank email, NCRP draft, BSA Sec 63 index; 10/10 tests green |
 | T17 | Voice uploads path | Kartikey | done | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | 5/5 tests green; audio_io + upload + onnx + transcribe |
 | T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | todo | T07 | [spec](tasks/T18-audio-channel-eval.md) | previous numbers were simulated; real measurement needed (see results/INVALIDATED.md) |
 | T19 | Research R1: loader, D2, D3, metrics | Kartikey + Shivendra | done | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | metrics module, D2 baseline, ICFD loader, thresholds.json, research_clean.csv; 8/8 tests green |
@@ -64,3 +64,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 08 Oct, lead (evidence): T05's P=R=1.000 is on team-written sentences (circular). Held-out numbers: frozen lexicon P=0.39 R=0.28, benign false-ask 21.5% (results/asks_heldout_eval.json). Policy 1.1.0 (ADR-021/022) + context layer: routine HOLD 27.5% -> 3.0% on the alert-budget test split. Quote only rows in results/EVIDENCE_LEDGER.md.
 08 Oct, SEAL (lead): Satyapan Seal R1 prototype on branch r1-seal — contracts (3 provenance codes), src/satyapan/seal/, API, CLI, side-panel chip, demo pages; results/seal_*.{csv,json} from research/seal/ scripts (0/560 false seals, 139/140 genuine, Chrome WebRTC APM on/off sealed 4/4). Two-laptop Meet test pending (research/seal/README.md §6).
 08 Oct, T19: done — metrics module (recall@FPR, Mann-Whitney AUROC, conversation bootstrap + paired diffs), ICFD JSONL loader, D2 TF-IDF baseline, run_clean pipeline, and results/thresholds.json + research_clean.csv; 8/8 task tests green.
+08 Oct, T16: done — UTR-first 1930 script, bank fraud email, NCRP portal order, BSA Sec 63 evidence index, html escaping; 10/10 acceptance tests green.
