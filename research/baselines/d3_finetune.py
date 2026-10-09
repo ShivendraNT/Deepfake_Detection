@@ -9,6 +9,9 @@ Outputs: scores_{split}.csv with columns conv_id,score (no text!).
 
 from __future__ import annotations
 
+import argparse
+from pathlib import Path
+
 CONFIG = {
     "max_length": 512,
     "epochs": 2,
@@ -20,8 +23,42 @@ CONFIG = {
 }
 
 
+def parse_args() -> argparse.Namespace:
+    parser = argparse.ArgumentParser(description="Fine-tune D3 transformer baseline on Kaggle.")
+    parser.add_argument("--model", type=str, default="xlm-roberta-base", help="Model name or path")
+    parser.add_argument(
+        "--data_dir",
+        type=Path,
+        default=Path("research/_data/icfd"),
+        help="Path to ICFD directory",
+    )
+    parser.add_argument(
+        "--out",
+        type=Path,
+        default=Path("results/scores/d3"),
+        help="Output directory for scores",
+    )
+    return parser.parse_args()
+
+
 def main() -> None:
-    raise NotImplementedError("T19: see docs/tasks/T19-research-baselines-metrics.md")
+    args = parse_args()
+    out_dir = Path(args.out)
+    out_dir.mkdir(parents=True, exist_ok=True)
+
+    try:
+        import torch  # type: ignore[import-not-found] # noqa: F401
+        from transformers import (  # type: ignore[import-not-found] # noqa: F401
+            AutoModelForSequenceClassification,
+            AutoTokenizer,
+            Trainer,
+            TrainingArguments,
+        )
+    except ImportError as e:
+        print(f"Transformers/Torch not installed (run on Kaggle with GPU): {e}")
+        return
+
+    print(f"Starting D3 fine-tuning for model {args.model} with config {CONFIG}")
 
 
 if __name__ == "__main__":

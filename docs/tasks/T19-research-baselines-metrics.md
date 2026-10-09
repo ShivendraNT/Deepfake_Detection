@@ -57,3 +57,22 @@ Green + `make check`; class balance of ICFD test noted (if normals < 1,000 → r
 - `docs/RESEARCH_PROTOCOL.md` §4, §7
 
 ## Agent plan (write yours here)
+1. **Metrics module (`research/metrics.py`)**:
+   - Implemented `threshold_at_fpr` with exact tie handling and validation-negative search.
+   - Implemented `recall_at_threshold` and `fpr_at_threshold` with ValueError validation when positive or negative classes are missing.
+   - Implemented `auroc` using vectorized Mann-Whitney U formulation with fractional tie ranks.
+   - Implemented `bootstrap_ci`, `paired_bootstrap_diff`, and `paired_drop_diff` using deterministic `np.random.default_rng` resampling with replacement and percentile CIs.
+2. **Data loaders (`research/data/icfd.py`)**:
+   - Implemented `load_jsonl_conversations` parsing `conv_id`, `label`, `category`, and multi-turn speakers and texts.
+   - Implemented `load_icfd` verifying official split sizes (21000/4500/4500/1000) and logging class balances.
+3. **D2 baseline (`research/baselines/d2_tfidf.py`)**:
+   - Implemented `train_d2` with `TfidfVectorizer(analyzer="char_wb", ngram_range=(2, 5))` + `LogisticRegression`.
+   - Implemented `score_d2` returning class 1 predicted probabilities.
+4. **D3 Kaggle script & clean evaluation pipeline**:
+   - `research/baselines/d3_finetune.py` with CLI arguments and frozen pre-registration `CONFIG`.
+   - `research/run_clean.py` fitting thresholds on validation negatives only and outputting CIs on clean test.
+   - Generated `results/thresholds.json` and `results/research_clean.csv`.
+5. **Verification**:
+   - All 8 T19 acceptance tests passing 100%.
+   - Full suite invariant tests (185 passed) green.
+   - Code formatted and checked with `ruff` and `mypy` clean.
