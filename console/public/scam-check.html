@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0f172a" />
+    <title>Scam Check</title>
+    <!--
+      T24 — Citizen Scam Check (stretch S1). Spec: docs/tasks/T24-citizen-scam-check.md
+      POST /api/scam-check (Vite proxy -> 127.0.0.1:8000). Coarse output only: band + action.
+      No numbers, no detector details, no claim that this page protects a live phone call.
+      Rate limit note for production: 20 checks/day per device (not needed for the demo).
+    -->
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #0f172a;
+        --muted: #475569;
+        --line: #cbd5e1;
+        --bg: #f8fafc;
+        --card: #ffffff;
+        --hold: #b91c1c;
+        --verify: #b45309;
+        --pass: #15803d;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font: 18px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", sans-serif;
+      }
+      main {
+        max-width: 34rem;
+        margin: 0 auto;
+        padding: 1rem 1rem 3rem;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.75rem;
+        padding: 0.5rem 0 1rem;
+      }
+      h1 { font-size: 1.5rem; margin: 0; }
+      .sub { color: var(--muted); margin: 0 0 1rem; font-size: 1rem; }
+      button, .btn {
+        display: block;
+        width: 100%;
+        min-height: 3.25rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--line);
+        background: var(--card);
+        color: var(--ink);
+        font-size: 1.1rem;
+        font-weight: 600;
+        padding: 0.75rem 1rem;
+        text-align: center;
+        text-decoration: none;
+        cursor: pointer;
+      }
+      button:active, .btn:active { transform: translateY(1px); }
+      #langBtn { width: auto; min-height: 2.75rem; font-size: 1rem; }
+      textarea {
+        width: 100%;
+        min-height: 9rem;
+        font-size: 1.05rem;
+        line-height: 1.5;
+        padding: 0.75rem;
+        border-radius: 0.75rem;
+        border: 1px solid var(--line);
+        background: var(--card);
+        resize: vertical;
+      }
+      .primary {
+        margin-top: 0.75rem;
+        background: #1d4ed8;
+        border-color: #1d4ed8;
+        color: #fff;
+      }
+      #result { margin-top: 1.25rem; display: none; }
+      .band {
+        display: flex;
+        align-items: center;
+        gap: 0.6rem;
+        border-radius: 0.75rem;
+        padding: 0.85rem 1rem;
+        color: #fff;
+        font-size: 1.35rem;
+        font-weight: 700;
+        letter-spacing: 0.02em;
+      }
+      .band .icon { font-size: 1.6rem; }
+      .HOLD { background: var(--hold); }
+      .VERIFY { background: var(--verify); }
+      .PASS { background: var(--pass); }
+      #action {
+        background: var(--card);
+        border: 1px solid var(--line);
+        border-top: 0;
+        border-radius: 0 0 0.75rem 0.75rem;
+        padding: 1rem;
+        font-size: 1.1rem;
+        margin: 0 0 1rem;
+      }
+      .stack > * + * { margin-top: 0.75rem; }
+      .row { display: flex; gap: 0.75rem; }
+      .row > * { flex: 1; }
+      .note {
+        margin-top: 1.5rem;
+        font-size: 0.9rem;
+        color: var(--muted);
+        border-top: 1px solid var(--line);
+        padding-top: 0.75rem;
+      }
+      #status { margin-top: 0.75rem; color: var(--hold); font-weight: 600; min-height: 1.4rem; }
+      @media (max-width: 420px) {
+        .row { flex-direction: column; }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header>
+        <h1 data-i18n="title">Scam Check</h1>
+        <button id="langBtn" type="button" aria-pressed="false">हिंदी</button>
+      </header>
+
+      <p class="sub" data-i18n="intro">
+        Paste the suspicious message you received. You get the risk level and what to do next —
+        nothing else.
+      </p>
+
+      <label for="msg" class="sub" data-i18n="label">Your message</label>
+      <textarea id="msg" spellcheck="false"></textarea>
+      <button id="checkBtn" class="primary" type="button" data-i18n="check">Check message</button>
+      <p id="status" role="alert"></p>
+
+      <section id="result" aria-live="polite">
+        <div id="band" class="band">
+          <span class="icon" id="bandIcon" aria-hidden="true"></span>
+          <span id="bandText"></span>
+        </div>
+        <p id="action"></p>
+
+        <div class="stack">
+          <div class="row">
+            <a class="btn" id="call1930" href="tel:1930" data-i18n="call">Call 1930</a>
+            <a class="btn" id="speak" href="#" data-i18n="speak">Read this to me</a>
+          </div>
+          <a class="btn" id="ncrp" href="https://cybercrime.gov.in/" target="_blank" rel="noopener"
+            >NCRP</a
+          >
+          <a class="btn" id="chakshu" href="https://sancharsaathi.gov.in/sfc/" target="_blank" rel="noopener"
+            >Chakshu (Sanchar Saathi)</a
+          >
+          <a class="btn" id="share" href="#" target="_blank" rel="noopener" data-i18n="share"
+            >Share with family on WhatsApp</a
+          >
+        </div>
+      </section>
+
+      <p class="note" data-i18n="note">
+        This page reads <strong>written messages only</strong>. It cannot listen to or protect a
+        live phone call. Nobody from the police, a bank or a courier will ever arrest you on a
+        video call or ask for an OTP.
+      </p>
+    </main>
+
+    <script>
+      (function () {
+        var ENDPOINTS = ["/api/scam-check", "http://127.0.0.1:8000/scam-check"];
+        var BAND_ICON = { HOLD: "\u270a", VERIFY: "\u26a0", PASS: "\u2705" };
+        var TEXT = {
+          en: {
+            title: "Scam Check",
+            intro:
+              "Paste the suspicious message you received. You get the risk level and what to do next \u2014 nothing else.",
+            label: "Your message",
+            check: "Check message",
+            checking: "Checking\u2026",
+            empty: "Paste a message first.",
+            error: "Could not check. Try again.",
+            call: "Call 1930",
+            speak: "Read this to me",
+            share: "Share with family on WhatsApp",
+            note:
+              "This page reads <strong>written messages only</strong>. It cannot listen to or protect a live phone call. Nobody from the police, a bank or a courier will ever arrest you on a video call or ask for an OTP.",
+            speakLabel: "in English",
+          },
+          hi: {
+            title: "\u0920\u0917\u0940 \u091c\u093e\u0901\u091a",
+            intro:
+              "\u0906\u092a\u0928\u094b \u091c\u094b \u0936\u0915 \u0939\u094b \u0935\u093e\u0932\u093e \u0938\u0902\u0926\u0947\u0936 \u092f\u0939\u093e\u0901 \u0915\u0940\u091c\u093f\u090f\u0964 \u0906\u092a\u0915\u094b \u0916\u093e\u0932\u0947 \u0915\u093e \u0938\u094d\u0924\u0930 \u0914\u0930 \u0905\u0917\u0932\u093e \u0915\u094d\u092f\u093e \u0939\u0948 \u2014 \u0914\u0930 \u0915\u0941\u091b \u0928\u0939\u0940\u0902\u0964",
+            label: "\u0906\u092a\u0915\u093e \u0938\u0902\u0926\u0947\u0936",
+            check: "\u0938\u0902\u0926\u0947\u0936 \u091c\u093e\u0901\u091a\u0947\u0902",
+            checking: "\u091c\u093e\u0901\u091a \u0930\u0939\u0947 \u0939\u0948\u2026",
+            empty: "\u092a\u0939\u0932\u0947 \u0938\u0902\u0926\u0947\u0936 \u091a\u0938\u0915\u0947 \u092a\u093e\u0938 \u0915\u0940\u091c\u093f\u090f\u0964",
+            error: "\u091c\u093e\u0901\u091a \u0928\u0939\u0940\u0902 \u0939\u094b \u0938\u0915\u0940\u0964 \u092b\u093f\u0930 \u0938\u0947 \u0915\u094b\u0936\u093f\u0936 \u0915\u0940\u091c\u093f\u090f\u0964",
+            call: "1930 \u092a\u0930 \u0915\u0949\u0932 \u0915\u0940\u091c\u093f\u090f",
+            speak: "\u092e\u0947\u0930\u0947 \u0938\u0941\u0928\u093e\u0907\u090f",
+            share: "\u092a\u0930\u093f\u0935\u093e\u0930 \u0915\u0947 \u0938\u093e\u0925 \u0935\u094d\u0939\u093e\u091f\u094d\u0938\u090f\u092a \u092a\u0930 \u0938\u093e\u0901\u091c\u0947\u0902",
+            note:
+              "\u092f\u0939 \u092a\u0947\u091c <strong>\u0938\u093f\u0930\u094d\u0924 \u0938\u0902\u0926\u0947\u0936 \u0939\u0940</strong> \u092a\u0922\u093c\u0924\u093e \u0939\u0948\u0964 \u092f\u0939 \u0932\u093e\u0908 \u0932\u093e\u0907\u0915 \u0915\u0949\u0932 \u0915\u094b \u0938\u0941\u0928\u0915\u0930 \u092f\u093e \u0930\u0915\u094d\u0937\u093e \u0928\u0939\u0940\u0902 \u0915\u0930 \u0938\u0915\u0924\u0940\u0964 \u092a\u0941\u0932\u093f\u0938, \u092c\u0948\u0902\u0915 \u092f\u093e \u0915\u0942\u0930\u093f\u092f\u0930 \u0915\u093e \u0915\u094b\u0908 \u0935\u094d\u092f\u0915\u094d\u0924\u093f \u0935\u0940\u0921\u093f\u092f\u094b \u0915\u0949\u0932 \u092a\u0930 \u0917\u093c\u093f\u0930\u092b\u094d\u0924\u093e\u0930 \u0928\u0939\u0940\u0902 \u0915\u0930\u0947\u0917\u093e \u0914\u0930 \u0928 \u0913\u091f\u0940\u092a\u0940 \u092e\u093e\u0901\u0917\u0947\u0917\u093e\u0964",
+            speakLabel: "\u0939\u093f\u0902\u0926\u0940 \u092e\u0947\u0902",
+          },
+        };
+
+        var lang = "en";
+        var $ = function (id) { return document.getElementById(id); };
+        var bandClass = "PASS";
+
+        function t(key) { return TEXT[lang][key]; }
+
+        function renderStatic() {
+          document.documentElement.lang = lang === "hi" ? "hi" : "en";
+          Array.prototype.forEach.call(document.querySelectorAll("[data-i18n]"), function (el) {
+            el.innerHTML = t(el.getAttribute("data-i18n"));
+          });
+          $("langBtn").textContent = lang === "en" ? "\u0939\u093f\u0902\u0926\u0940" : "English";
+          $("langBtn").setAttribute("aria-pressed", lang === "hi" ? "true" : "false");
+        }
+
+        function speak(text) {
+          if (!("speechSynthesis" in window)) return false;
+          window.speechSynthesis.cancel();
+          var u = new SpeechSynthesisUtterance(text);
+          u.lang = lang === "hi" ? "hi-IN" : "en-IN";
+          var voices = window.speechSynthesis.getVoices();
+          var want = u.lang;
+          for (var i = 0; i < voices.length; i++) {
+            if (voices[i].lang && voices[i].lang.replace("_", "-").indexOf(want) === 0) {
+              u.voice = voices[i];
+              break;
+            }
+          }
+          window.speechSynthesis.speak(u);
+          return true;
+        }
+
+        function show(result) {
+          bandClass = result.band;
+          var band = $("band");
+          band.className = "band " + result.band;
+          $("bandIcon").textContent = BAND_ICON[result.band] || "";
+          $("bandText").textContent = result.band;
+          $("action").textContent = result.action_text;
+          $("call1930").href = (result.links && result.links.call_1930) || "tel:1930";
+          $("ncrp").href = (result.links && result.links.ncrp) || "https://cybercrime.gov.in/";
+          $("chakshu").href =
+            (result.links && result.links.chakshu) || "https://sancharsaathi.gov.in/sfc/";
+          $("share").href = (result.links && result.links.share) || "#";
+          $("result").style.display = "block";
+        }
+
+        async function check() {
+          var text = $("msg").value.trim();
+          var status = $("status");
+          if (!text) { status.textContent = t("empty"); return; }
+          status.textContent = t("checking");
+          $("checkBtn").disabled = true;
+          var body = JSON.stringify({ text: text, lang: lang === "hi" ? "hi" : "en" });
+          var opts = {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: body,
+          };
+          try {
+            var res = null;
+            for (var i = 0; i < ENDPOINTS.length; i++) {
+              try {
+                var r = await fetch(ENDPOINTS[i], opts);
+                if (r.ok) { res = await r.json(); break; }
+              } catch (e) { /* try the next endpoint */ }
+            }
+            if (!res) throw new Error("no endpoint");
+            show(res);
+            status.textContent = "";
+            speak(res.action_text);
+          } catch (e) {
+            status.textContent = t("error");
+          } finally {
+            $("checkBtn").disabled = false;
+          }
+        }
+
+        $("langBtn").addEventListener("click", function () {
+          lang = lang === "en" ? "hi" : "en";
+          renderStatic();
+        });
+        $("checkBtn").addEventListener("click", check);
+        $("speak").addEventListener("click", function (ev) {
+          ev.preventDefault();
+          speak($("action").textContent);
+        });
+        renderStatic();
+        if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
+      })();
+    </script>
+  </body>
+</html>

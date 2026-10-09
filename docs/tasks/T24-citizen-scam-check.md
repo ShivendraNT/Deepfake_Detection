@@ -47,3 +47,23 @@ Green + `make check`; works on a phone browser (screenshot in PR).
 - `tel:` and `wa.me` links: https://faq.whatsapp.com/5913398998672934
 
 ## Agent plan (write yours here)
+
+1. `src/satyapan/citizen/rules.py`: add 4 rules to `IMPOSSIBLE_CLAIMS` (courier/customs parcel
+   fee, KYC expiry, electricity disconnection, "refund" needing OTP), each with EN + Devanagari
+   HI text and a stable snake_case `rule_id`.
+2. Implement `scam_check`: `hits` = rules whose regex matches with `re.I | re.S`;
+   `spans` = `extract_asks(text)`; any hit or `A2`/`A3` → `HOLD`; any of `A1`/`A4`..`A7` →
+   `VERIFY`; else `PASS`.
+3. `action_text` per band, EN + HI: HOLD / VERIFY / PASS wording from the docstring plus a
+   Devanagari equivalent (no reassuring words, never "safe").
+4. `links` = `LINKS` + `share` = `https://wa.me/?text=` + `urllib.parse.quote(<short warning>)`
+   built from `action_text`; no "score" anywhere in the payload.
+5. Run the task tests (`uv run pytest --task T24 -v`; `make` is not installed on this Windows
+   box) — all 8 must go green.
+6. `console/public/scam-check.html` (new): textarea + big Check button, band badge (colour +
+   word), action text, tap-to-call `tel:1930`, NCRP + Chakshu links, WhatsApp share button,
+   EN/HI toggle, `SpeechSynthesis` reads the action aloud (`hi-IN`); posts to `/api/scam-check`.
+7. Full gate: `uv run ruff check .`, `uv run ruff format --check .`, `uv run mypy`,
+   `uv run pytest` (the `make check` equivalents).
+8. `docs/STATUS.md` → `in-progress` now, `done` + one-line note when green; commit
+   `T24: …`.
