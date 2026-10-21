@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from satyapan.api import (
     routes_cases,
     routes_citizen,
+    routes_dashboard,
     routes_live,
     routes_reports,
     routes_seal,
@@ -48,6 +49,7 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
         )
 
     for r in (
+        routes_dashboard,
         routes_cases,
         routes_verify,
         routes_reports,

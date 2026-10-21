@@ -32,11 +32,13 @@ def get_actor(
     x_demo_role: str = Header(default="maker"),
 ) -> Actor:
     state = get_state(request)
-    emp = state.master.employee(x_demo_user)
+    user_val = request.query_params.get("user") or request.headers.get("x-demo-user") or x_demo_user
+    role_val = request.query_params.get("role") or request.headers.get("x-demo-role") or x_demo_role
+    emp = state.master.employee(user_val)
     if emp is None or not emp.active:
         raise HTTPException(status_code=401, detail="unknown demo user")
     try:
-        role = Role(x_demo_role)
+        role = Role(role_val)
     except ValueError as e:
         raise HTTPException(status_code=400, detail="unknown role") from e
     if role not in emp.roles:

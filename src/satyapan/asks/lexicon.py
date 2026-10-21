@@ -30,7 +30,7 @@ LEXICON: list[tuple[str, AskType, str]] = [
     ),
     ("A1.en.switch", AskType.A1, r"\b(move|shift)\s+(our\s+)?(payment|fund|transfer)s?\s+to\b"),
     ("A1.en.safe_wallet", AskType.A1, r"\b(safe|secure|protected)\s+(wallet|a/?c|account)\b"),
-    ("A1.hi.naya_khata", AskType.A1, r"\bnay[ae]a?\s+(account|khate?|khaata)\b"),
+    ("A1.hi.naya_khata", AskType.A1, r"\bnay[ae]a?\s+(bank\s+)?(account|khate?|khaata)\b"),
     ("A1.hi.nayi_account", AskType.A1, r"\bnayi\s+account\b"),
     ("A1.hi.escrow_mein", AskType.A1, r"\bescrow\s+(account\s+)?me[mN]\b"),
     ("A1.deva.naya_khaata", AskType.A1, r"नया\s+(खाता|अकाउंट|खाते)"),
