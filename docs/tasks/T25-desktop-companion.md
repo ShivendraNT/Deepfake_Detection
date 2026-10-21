@@ -39,18 +39,40 @@
 make task T=T25
 ```
 
-## Files to create or modify
+## 6. Companion API (implemented)
+
+The local FastAPI engine exposes a versioned companion contract under `/companion`:
+
+* `GET /companion/health` — liveness, policy authority, `MANUAL_ONLY` flag.
+* `GET /companion/state` — consented mode/source snapshot (never raw scores).
+* `GET /companion/events` — SSE stream (`Last-Event-ID` replay, `?replay_only=true`).
+* `POST /companion/session/start` / `POST /companion/session/stop` — explicit consent lifecycle.
+* `POST /companion/commands` — typed command router (`demo.replay`, `session.sleep`, `ui.hide`, `ui.disable`).
+* `POST /companion/submit-evidence` — consented text intake; deterministic asks only, no band set.
+* `POST /companion/drafts` — Section 63 / helpline-1930 drafts, always `MANUAL_ONLY`.
+* `GET /companion/workspace` — case snapshot for the details window.
+
+The HTTP layer never accepts a `band`, `score`, `confidence` or `probability` field. The demo
+scenario calls `satyapan.policy.engine.decide()` and only relays its `Decision`.
+
+## 7. Files to create or modify
 - `docs/tasks/T25-desktop-companion.md` — keep this task plan and file scope explicit.
-- `docs/GRAND_FINALS_ARCHITECTURE.md` — expand threat handling, UX, counter-challenge, and evidence dossier design.
+- `docs/GRAND_FINALS_ARCHITECTURE.md` — existing master design.
 - `docs/STATUS.md` — record completion and a one-line note after checks pass.
+- `src/satyapan/api/companion/**` — event bus, contracts, service, SSE/command router.
+- `src/satyapan/api/app.py` — mount the companion router.
+- `tests/tasks/test_t25_companion.py` — backend, safety and desktop-integrity tests.
+- `desktop/**` — Electron + React + TypeScript + Tailwind + Framer Motion companion app.
 
-## Agent plan
-1. Review the existing architecture and T25 acceptance boundary; run the strict task test before implementation.
-2. Specify audio quality gates, accent/noise/codec handling, jitter behavior, and a clearly labeled offline demo fallback.
-3. Refine the companion state/alert UX into a respectful cognitive pause that cannot manipulate or control external banking UI.
-4. Define an OOB counter-challenge using independently trusted channels, one-time transaction-bound challenges, and the existing confirmation flow.
-5. Define a verifiable evidence dossier with canonical manifests, chunk hashes, chain/signature fields, time-quality metadata, and a separate 1930 draft artifact.
-6. Add adversarial demo scenarios, failure outcomes, and judge-facing limitations; make no legal admissibility or detection guarantees.
-7. Run T25 after each documentation step, then `make check` (use `make fmt` only if needed), update STATUS, and commit per the task workflow.
+## 8. Agent plan
+1. Read the frozen contracts/policy APIs; keep companion band output as a relay of `Decision`, never a computation.
+2. Build `api/companion/models.py` (versioned envelopes, mode/mood enums, draft models) and `bus.py` (bounded replay, subscriber queues, monotonic ids).
+3. Build `service.py` (Sleep/DND default, consent session lifecycle, fail-closed hide, policy scenario, evidence intake, drafts, workspace snapshot, audit).
+4. Build `router.py` with SSE (`Last-Event-ID`, replay-only, keep-alive), session and command endpoints; mount in `create_app`.
+5. Expand `tests/tasks/test_t25_companion.py`: contract validation, consent, fail-closed, raise-only/band authority, no raw scores, replay, drafts `MANUAL_ONLY`, workspace masking, desktop security/static checks.
+6. Scaffold `desktop/` (electron-vite, React, Tailwind, Framer Motion): frameless transparent always-on-top window, tray, global shortcuts, typed preload bridge, backend SSE proxy, clipboard check.
+7. Build the Satya renderer: animated mascot moods, speech/alert/consent cards, chimes, replay badge, workspace view, mock clients + fake capture for offline demo.
+8. `npm install && npm run typecheck && npm run build`, then `make check`, update STATUS and commit.
 
-BLOCKED (21 Oct 2026, opencode-go / GPT-6 Luna): T25 acceptance passes, but three full-check/format attempts stop at Ruff findings in the out-of-scope `src/satyapan/report/pack.py`. Tried `make check` (391 findings), `make fmt` (6 auto-fixes; 365 findings remain), and `make check` again (391 findings after restoring the formatter's unrelated edits). Exact final error: `Found 391 errors` / `make: *** [lint] Error 1`; findings are primarily E501 lines over 100 characters, plus F541 at `src/satyapan/report/pack.py:643`. Best guess: the current report-pack HTML strings need a separate, authorized cleanup; changing that file is outside T25's listed file scope. Files touched: `docs/tasks/T25-desktop-companion.md`, `docs/GRAND_FINALS_ARCHITECTURE.md`, `docs/STATUS.md`.
+## 9. Resolution of the previous block
+The earlier `make check` block came from Ruff findings in `src/satyapan/report/pack.py`; `pyproject.toml` now carries the authorised `E501` per-file ignore and its `F541` line is fixed. Baseline `make check` is green before this implementation.

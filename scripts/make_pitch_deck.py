@@ -1,25 +1,26 @@
 """Generate Satyapan Hackathon Pitch Deck (14 Slides, 16:9 widescreen)."""
 
 from pathlib import Path
+
 from pptx import Presentation
-from pptx.util import Inches, Pt
-from pptx.enum.text import PP_ALIGN
 from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
+from pptx.enum.text import PP_ALIGN
+from pptx.util import Inches, Pt
 
 # --- Color Palette ---
-BG_DARK = RGBColor(15, 23, 42)        # Slate 900
-BG_LIGHT = RGBColor(248, 250, 252)    # Slate 50
-CARD_BG = RGBColor(255, 255, 255)     # White
-CARD_BORDER = RGBColor(203, 213, 225) # Slate 300
-PRIMARY = RGBColor(29, 78, 216)       # Blue 700
-ACCENT_GREEN = RGBColor(16, 185, 129) # Emerald 500
-ACCENT_RED = RGBColor(220, 38, 38)    # Red 600
+BG_DARK = RGBColor(15, 23, 42)  # Slate 900
+BG_LIGHT = RGBColor(248, 250, 252)  # Slate 50
+CARD_BG = RGBColor(255, 255, 255)  # White
+CARD_BORDER = RGBColor(203, 213, 225)  # Slate 300
+PRIMARY = RGBColor(29, 78, 216)  # Blue 700
+ACCENT_GREEN = RGBColor(16, 185, 129)  # Emerald 500
+ACCENT_RED = RGBColor(220, 38, 38)  # Red 600
 ACCENT_AMBER = RGBColor(217, 119, 6)  # Amber 600
-TEXT_MAIN = RGBColor(15, 23, 42)      # Slate 900
-TEXT_MUTED = RGBColor(71, 85, 105)    # Slate 600
+TEXT_MAIN = RGBColor(15, 23, 42)  # Slate 900
+TEXT_MUTED = RGBColor(71, 85, 105)  # Slate 600
 TEXT_WHITE = RGBColor(255, 255, 255)  # White
-TEXT_CYAN = RGBColor(56, 189, 248)    # Sky 400
+TEXT_CYAN = RGBColor(56, 189, 248)  # Sky 400
 
 
 def create_deck(output_path: Path) -> None:
@@ -73,7 +74,9 @@ def create_deck(output_path: Path) -> None:
     set_slide_bg(s1, BG_DARK)
 
     # Accent badge
-    badge = s1.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.2), Inches(4.2), Inches(0.45))
+    badge = s1.shapes.add_shape(
+        MSO_SHAPE.ROUNDED_RECTANGLE, Inches(0.8), Inches(1.2), Inches(4.2), Inches(0.45)
+    )
     badge.fill.solid()
     badge.fill.fore_color.rgb = RGBColor(30, 41, 59)
     badge.line.color.rgb = PRIMARY
@@ -101,7 +104,15 @@ def create_deck(output_path: Path) -> None:
     p2.font.color.rgb = RGBColor(203, 213, 225)
 
     # Subtitle / Core Idea Card
-    add_card(s1, Inches(0.8), Inches(4.2), Inches(11.7), Inches(1.3), bg_color=RGBColor(30, 41, 59), border_color=PRIMARY)
+    add_card(
+        s1,
+        Inches(0.8),
+        Inches(4.2),
+        Inches(11.7),
+        Inches(1.3),
+        bg_color=RGBColor(30, 41, 59),
+        border_color=PRIMARY,
+    )
     c_box = s1.shapes.add_textbox(Inches(1.0), Inches(4.3), Inches(11.3), Inches(1.1))
     c_tf = c_box.text_frame
     c_tf.word_wrap = True
@@ -141,7 +152,9 @@ def create_deck(output_path: Path) -> None:
 
     # Card 1: The Arup Precedent
     add_card(s2, Inches(0.8), top_pos, col_w, card_h)
-    box1 = s2.shapes.add_textbox(Inches(1.0), top_pos + Inches(0.2), col_w - Inches(0.4), card_h - Inches(0.4))
+    box1 = s2.shapes.add_textbox(
+        Inches(1.0), top_pos + Inches(0.2), col_w - Inches(0.4), card_h - Inches(0.4)
+    )
     tf1 = box1.text_frame
     tf1.word_wrap = True
     p = tf1.paragraphs[0]
@@ -152,7 +165,7 @@ def create_deck(output_path: Path) -> None:
     bullets1 = [
         "In 2024, a finance executive in Hong Kong paid HK$200M (~₹200 Cr) after a video call with a deepfake CFO and cloned colleagues.",
         "Attackers did NOT need flawless video: they used social engineering, urgency, and familiar faces to force compliance.",
-        "Traditional IT security (antivirus, firewalls) was completely blind to this attack vector."
+        "Traditional IT security (antivirus, firewalls) was completely blind to this attack vector.",
     ]
     for b in bullets1:
         p = tf1.add_paragraph()
@@ -162,7 +175,9 @@ def create_deck(output_path: Path) -> None:
 
     # Card 2: Indian SME Landscape
     add_card(s2, Inches(0.8) + col_w + gap, top_pos, col_w, card_h)
-    box2 = s2.shapes.add_textbox(Inches(1.0) + col_w + gap, top_pos + Inches(0.2), col_w - Inches(0.4), card_h - Inches(0.4))
+    box2 = s2.shapes.add_textbox(
+        Inches(1.0) + col_w + gap, top_pos + Inches(0.2), col_w - Inches(0.4), card_h - Inches(0.4)
+    )
     tf2 = box2.text_frame
     tf2.word_wrap = True
     p = tf2.paragraphs[0]
@@ -174,7 +189,7 @@ def create_deck(output_path: Path) -> None:
         "Over 1.1 million financial cyber frauds reported annually on the national 1930 portal.",
         "Indian SME Accounts Payable (AP) clerks transfer ₹10L - ₹1Cr daily via RTGS/NEFT.",
         "When an executive receives an urgent WhatsApp voice note sounding like the CEO, they execute it under pressure.",
-        "Vendors frequently change banks during routine business, creating the perfect camouflage for hackers."
+        "Vendors frequently change banks during routine business, creating the perfect camouflage for hackers.",
     ]
     for b in bullets2:
         p = tf2.add_paragraph()
@@ -184,7 +199,12 @@ def create_deck(output_path: Path) -> None:
 
     # Card 3: The Multi-Vector Trap
     add_card(s2, Inches(0.8) + (col_w + gap) * 2, top_pos, col_w, card_h)
-    box3 = s2.shapes.add_textbox(Inches(1.0) + (col_w + gap) * 2, top_pos + Inches(0.2), col_w - Inches(0.4), card_h - Inches(0.4))
+    box3 = s2.shapes.add_textbox(
+        Inches(1.0) + (col_w + gap) * 2,
+        top_pos + Inches(0.2),
+        col_w - Inches(0.4),
+        card_h - Inches(0.4),
+    )
     tf3 = box3.text_frame
     tf3.word_wrap = True
     p = tf3.paragraphs[0]
@@ -197,7 +217,7 @@ def create_deck(output_path: Path) -> None:
         "Vector 1: Look-alike domain email with altered bank account.",
         "Vector 2: Forged PDF invoice with matching new IFSC.",
         "Vector 3: Urgent AI-cloned voice call on Meet or WhatsApp.",
-        "Checking email alone or audio alone misses the full picture."
+        "Checking email alone or audio alone misses the full picture.",
     ]
     for b in bullets3:
         p = tf3.add_paragraph()
@@ -226,7 +246,7 @@ def create_deck(output_path: Path) -> None:
     pts = [
         "Academic & In-The-Wild Fragility (Deepfake-Eval-2024): Open-source deepfake detectors lose ~50% AUC when exposed to real-world compression, background noise, and codec artifacts.",
         "Commercial Voice Realism (DF26): Modern voice generators deceive human listeners 47.4% of the time. The best detector achieves only 34.5% AUROC against commercial tools.",
-        "The Dangerous Trap: If an AI detector tells a clerk 'This voice is 85% Likely Real', the clerk lets their guard down and releases the payment to the criminal!"
+        "The Dangerous Trap: If an AI detector tells a clerk 'This voice is 85% Likely Real', the clerk lets their guard down and releases the payment to the criminal!",
     ]
     for pt in pts:
         p = tf.add_paragraph()
@@ -235,7 +255,15 @@ def create_deck(output_path: Path) -> None:
         p.font.color.rgb = TEXT_MAIN
 
     # Bottom comparison cards
-    add_card(s3, Inches(0.8), Inches(4.3), Inches(5.7), Inches(2.3), bg_color=RGBColor(254, 242, 242), border_color=ACCENT_RED)
+    add_card(
+        s3,
+        Inches(0.8),
+        Inches(4.3),
+        Inches(5.7),
+        Inches(2.3),
+        bg_color=RGBColor(254, 242, 242),
+        border_color=ACCENT_RED,
+    )
     b1 = s3.shapes.add_textbox(Inches(1.0), Inches(4.4), Inches(5.3), Inches(2.1))
     tf_b1 = b1.text_frame
     tf_b1.word_wrap = True
@@ -247,14 +275,22 @@ def create_deck(output_path: Path) -> None:
     b_pts = [
         "Relies purely on acoustic or video classifiers.",
         "Can be fooled by prompt injection and audio filters.",
-        "Treats high confidence as 'safe to pay'."
+        "Treats high confidence as 'safe to pay'.",
     ]
     for b in b_pts:
         p = tf_b1.add_paragraph()
         p.text = "• " + b
         p.font.size = Pt(12)
 
-    add_card(s3, Inches(6.8), Inches(4.3), Inches(5.7), Inches(2.3), bg_color=RGBColor(240, 253, 244), border_color=ACCENT_GREEN)
+    add_card(
+        s3,
+        Inches(6.8),
+        Inches(4.3),
+        Inches(5.7),
+        Inches(2.3),
+        bg_color=RGBColor(240, 253, 244),
+        border_color=ACCENT_GREEN,
+    )
     b2 = s3.shapes.add_textbox(Inches(7.0), Inches(4.4), Inches(5.3), Inches(2.1))
     tf_b2 = b2.text_frame
     tf_b2.word_wrap = True
@@ -266,7 +302,7 @@ def create_deck(output_path: Path) -> None:
     g_pts = [
         "Anchored to the financial transaction & vendor ledger.",
         "AI scores can only RAISE scrutiny, NEVER lower it.",
-        "Detectors decide WHO verifies, not whether to pay."
+        "Detectors decide WHO verifies, not whether to pay.",
     ]
     for g in g_pts:
         p = tf_b2.add_paragraph()
@@ -333,18 +369,42 @@ def create_deck(output_path: Path) -> None:
     add_header(s5, "System Architecture: The 5 Defense Layers")
 
     layers = [
-        ("Layer 1: Intake & Custody Vault", "SHA-256 fingerprinting before parsing · Tamper-evident hash chain · S3 Object Lock anchor", PRIMARY),
-        ("Layer 2: Multi-Signal Detectors", "Parallel email parser, domain typo-squatting, PDF invoice regex, ONNX acoustic voice AI, Whisper ASR", PRIMARY),
-        ("Layer 3: Policy Engine Brain", "Deterministic floor table · Raise-only escalation lattice · Mathematical rule execution (Zero LLM hallucinations)", ACCENT_AMBER),
-        ("Layer 4: Real-Time Applications", "Accounts Payable Console (React) · Google Meet Extension (WebAssembly) · Out-of-Band (OOB) CFO Confirm", ACCENT_GREEN),
-        ("Layer 5: Golden-Hour Incident Pack", "1-click generation of 1930 Cyber Police calling script (UTR on Line 1) · Bank freeze notice · NCRP complaint draft", ACCENT_RED),
+        (
+            "Layer 1: Intake & Custody Vault",
+            "SHA-256 fingerprinting before parsing · Tamper-evident hash chain · S3 Object Lock anchor",
+            PRIMARY,
+        ),
+        (
+            "Layer 2: Multi-Signal Detectors",
+            "Parallel email parser, domain typo-squatting, PDF invoice regex, ONNX acoustic voice AI, Whisper ASR",
+            PRIMARY,
+        ),
+        (
+            "Layer 3: Policy Engine Brain",
+            "Deterministic floor table · Raise-only escalation lattice · Mathematical rule execution (Zero LLM hallucinations)",
+            ACCENT_AMBER,
+        ),
+        (
+            "Layer 4: Real-Time Applications",
+            "Accounts Payable Console (React) · Google Meet Extension (WebAssembly) · Out-of-Band (OOB) CFO Confirm",
+            ACCENT_GREEN,
+        ),
+        (
+            "Layer 5: Golden-Hour Incident Pack",
+            "1-click generation of 1930 Cyber Police calling script (UTR on Line 1) · Bank freeze notice · NCRP complaint draft",
+            ACCENT_RED,
+        ),
     ]
 
     for i, (title, desc, col) in enumerate(layers):
         y_pos = Inches(1.8) + Inches(i * 1.05)
-        add_card(s5, Inches(0.8), y_pos, Inches(11.7), Inches(0.95), bg_color=CARD_BG, border_color=col)
+        add_card(
+            s5, Inches(0.8), y_pos, Inches(11.7), Inches(0.95), bg_color=CARD_BG, border_color=col
+        )
         # indicator bar
-        bar = s5.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), y_pos, Inches(0.2), Inches(0.95))
+        bar = s5.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE, Inches(0.8), y_pos, Inches(0.2), Inches(0.95)
+        )
         bar.fill.solid()
         bar.fill.fore_color.rgb = col
         bar.line.fill.background()
@@ -372,29 +432,41 @@ def create_deck(output_path: Path) -> None:
     add_header(s6, "Layers 1 & 2: Ingestion & Multi-Signal Detectors")
 
     det_cards = [
-        ("✉️ Email & Domain Checker (T03, T04)", [
-            "Parses raw .eml RFC 822 messages and MTA headers.",
-            "Enforces SPF, DKIM, and DMARC authentication.",
-            "Levenshtein distance & Unicode confusables catch look-alike domains (e.g. acme-supp1ies.example).",
-            "Enforces RBI mandate: claims of Indian banks must reside on legitimate .bank.in domains."
-        ]),
-        ("📄 Invoice PDF Inspector (T08)", [
-            "Extracts text, tables, and metadata via pdfplumber.",
-            "Regex extraction for 11-digit IFSC, Account Number, GSTIN, UPI IDs, and net amounts.",
-            "Master Diff: compares extracted bank details against company's approved vendor ledger.",
-            "Detects PDF editing metadata (Acrobat modification artifacts)."
-        ]),
-        ("🎙️ Voice AI Acoustic Model (T07, T17)", [
-            "Acoustic feature extractor running on 5-second PCM windows at 16kHz.",
-            "ONNX XLS-R acoustic neural network running on CPU / WebAssembly.",
-            "Detects phase and spectral anomalies typical of commercial TTS/voice-cloning engines.",
-            "Transcribes speech to text via Whisper in <3.2s latency."
-        ]),
-        ("⚡ Attacker-Invariant Asks (T05)", [
-            "Deterministic regex engine scanning for fraud intent (Asks A1 - A7).",
-            "Catches urgency, secret escrow requests, credential/OTP demands, and remote desktop installs (AnyDesk).",
-            "Zero LLM latency; operates in English, Devanagari Hindi, and romanised Hinglish."
-        ]),
+        (
+            "✉️ Email & Domain Checker (T03, T04)",
+            [
+                "Parses raw .eml RFC 822 messages and MTA headers.",
+                "Enforces SPF, DKIM, and DMARC authentication.",
+                "Levenshtein distance & Unicode confusables catch look-alike domains (e.g. acme-supp1ies.example).",
+                "Enforces RBI mandate: claims of Indian banks must reside on legitimate .bank.in domains.",
+            ],
+        ),
+        (
+            "📄 Invoice PDF Inspector (T08)",
+            [
+                "Extracts text, tables, and metadata via pdfplumber.",
+                "Regex extraction for 11-digit IFSC, Account Number, GSTIN, UPI IDs, and net amounts.",
+                "Master Diff: compares extracted bank details against company's approved vendor ledger.",
+                "Detects PDF editing metadata (Acrobat modification artifacts).",
+            ],
+        ),
+        (
+            "🎙️ Voice AI Acoustic Model (T07, T17)",
+            [
+                "Acoustic feature extractor running on 5-second PCM windows at 16kHz.",
+                "ONNX XLS-R acoustic neural network running on CPU / WebAssembly.",
+                "Detects phase and spectral anomalies typical of commercial TTS/voice-cloning engines.",
+                "Transcribes speech to text via Whisper in <3.2s latency.",
+            ],
+        ),
+        (
+            "⚡ Attacker-Invariant Asks (T05)",
+            [
+                "Deterministic regex engine scanning for fraud intent (Asks A1 - A7).",
+                "Catches urgency, secret escrow requests, credential/OTP demands, and remote desktop installs (AnyDesk).",
+                "Zero LLM latency; operates in English, Devanagari Hindi, and romanised Hinglish.",
+            ],
+        ),
     ]
 
     col_w2 = Inches(5.7)
@@ -408,7 +480,9 @@ def create_deck(output_path: Path) -> None:
         y = Inches(1.8) + row * (row_h2 + gap2)
 
         add_card(s6, x, y, col_w2, row_h2)
-        tb = s6.shapes.add_textbox(x + Inches(0.2), y + Inches(0.15), col_w2 - Inches(0.4), row_h2 - Inches(0.3))
+        tb = s6.shapes.add_textbox(
+            x + Inches(0.2), y + Inches(0.15), col_w2 - Inches(0.4), row_h2 - Inches(0.3)
+        )
         tf = tb.text_frame
         tf.word_wrap = True
         p = tf.paragraphs[0]
@@ -444,9 +518,21 @@ def create_deck(output_path: Path) -> None:
     p.font.color.rgb = TEXT_MAIN
 
     sections = [
-        ("🟢 PASS Band (Routine Execution)", "Established vendor, historical payment amounts, unchanged bank details, and all detectors clean. Maker proceeds with standard workflow.", ACCENT_GREEN),
-        ("🟡 VERIFY Band (Scrutiny Required)", "Vendor bank account differs from master ledger, dormant account reactivated, or weak signal flags. Mandatory callback on on-file registered phone number OR Out-of-Band CFO approval required before release.", ACCENT_AMBER),
-        ("🔴 HOLD Band (Transaction Frozen)", "Synthetic voice detected (>= 2 consecutive windows), look-alike domain from unauthenticated sender, or OTP/AnyDesk ask. Payment execution button strictly disabled; security notified.", ACCENT_RED),
+        (
+            "🟢 PASS Band (Routine Execution)",
+            "Established vendor, historical payment amounts, unchanged bank details, and all detectors clean. Maker proceeds with standard workflow.",
+            ACCENT_GREEN,
+        ),
+        (
+            "🟡 VERIFY Band (Scrutiny Required)",
+            "Vendor bank account differs from master ledger, dormant account reactivated, or weak signal flags. Mandatory callback on on-file registered phone number OR Out-of-Band CFO approval required before release.",
+            ACCENT_AMBER,
+        ),
+        (
+            "🔴 HOLD Band (Transaction Frozen)",
+            "Synthetic voice detected (>= 2 consecutive windows), look-alike domain from unauthenticated sender, or OTP/AnyDesk ask. Payment execution button strictly disabled; security notified.",
+            ACCENT_RED,
+        ),
     ]
 
     for title, desc, col in sections:
@@ -493,7 +579,7 @@ def create_deck(output_path: Path) -> None:
         "Captures remote party's audio stream via chrome.tabCapture API.",
         "On-Device AI Inference: Runs ONNX neural network in WebAssembly (zero cloud audio latency).",
         "Floating Side Panel UI: Displays real-time synthetic voice meter (e.g. 🚨 Likely Synthetic Voice: 94%).",
-        "Live Intent Chips: Highlights risky requests on screen in real time: [New Account], [Secrecy], [Bypass Approval]."
+        "Live Intent Chips: Highlights risky requests on screen in real time: [New Account], [Secrecy], [Bypass Approval].",
     ]
     for pt in pts1:
         p = tf1.add_paragraph()
@@ -515,7 +601,7 @@ def create_deck(output_path: Path) -> None:
         "Transaction Card: Highlights old vs new bank details, IFSC, and amounts.",
         "Out-of-Band (OOB) CFO Confirm: One-tap button sends instant push/email to real CFO: 'Did you approve this payment?'",
         "Bilingual Explanations: Displays clear Hindi (Devanagari) & English reasons for why payment is held.",
-        "Evidence Dossier: Displays verified SHA-256 fingerprints before anyone opens suspicious files."
+        "Evidence Dossier: Displays verified SHA-256 fingerprints before anyone opens suspicious files.",
     ]
     for pt in pts2:
         p = tf2.add_paragraph()
@@ -551,27 +637,41 @@ def create_deck(output_path: Path) -> None:
     h_p = Inches(3.4)
 
     pack_items = [
-        ("📞 1930 Helpline Call Script", [
-            "UTR Number on Line 1: Gives the operator the critical transaction ID immediately.",
-            "Pre-filled beneficiary account, IFSC, amount (formatted in ₹ Lakhs), and timestamps.",
-            "Step-by-step phone dialogue so panicking clerks don't stutter or miss vital facts."
-        ], PRIMARY),
-        ("🏦 Bank Nodal Freeze Email", [
-            "Formal legal request addressed to beneficiary bank's Nodal Fraud Desk.",
-            "Formats transaction hashes and evidence references.",
-            "Demands immediate lien/freeze on the recipient mule account under RBI guidelines."
-        ], ACCENT_AMBER),
-        ("🏛️ NCRP Cyber Portal Draft", [
-            "Pre-filled incident complaint formatted for cybercrime.gov.in.",
-            "Includes cryptographic SHA-256 evidence chain.",
-            "Human-in-the-Loop: Prepared instantly, reviewed and submitted by the human officer."
-        ], ACCENT_GREEN),
+        (
+            "📞 1930 Helpline Call Script",
+            [
+                "UTR Number on Line 1: Gives the operator the critical transaction ID immediately.",
+                "Pre-filled beneficiary account, IFSC, amount (formatted in ₹ Lakhs), and timestamps.",
+                "Step-by-step phone dialogue so panicking clerks don't stutter or miss vital facts.",
+            ],
+            PRIMARY,
+        ),
+        (
+            "🏦 Bank Nodal Freeze Email",
+            [
+                "Formal legal request addressed to beneficiary bank's Nodal Fraud Desk.",
+                "Formats transaction hashes and evidence references.",
+                "Demands immediate lien/freeze on the recipient mule account under RBI guidelines.",
+            ],
+            ACCENT_AMBER,
+        ),
+        (
+            "🏛️ NCRP Cyber Portal Draft",
+            [
+                "Pre-filled incident complaint formatted for cybercrime.gov.in.",
+                "Includes cryptographic SHA-256 evidence chain.",
+                "Human-in-the-Loop: Prepared instantly, reviewed and submitted by the human officer.",
+            ],
+            ACCENT_GREEN,
+        ),
     ]
 
     for i, (title, blist, col) in enumerate(pack_items):
         xp = Inches(0.8) + i * (w_pack + gap_p)
         add_card(s9, xp, top_p, w_pack, h_p, border_color=col)
-        tb_p = s9.shapes.add_textbox(xp + Inches(0.15), top_p + Inches(0.15), w_pack - Inches(0.3), h_p - Inches(0.3))
+        tb_p = s9.shapes.add_textbox(
+            xp + Inches(0.15), top_p + Inches(0.15), w_pack - Inches(0.3), h_p - Inches(0.3)
+        )
         tf_p = tb_p.text_frame
         tf_p.word_wrap = True
         p = tf_p.paragraphs[0]
@@ -594,18 +694,45 @@ def create_deck(output_path: Path) -> None:
     add_header(s10, "Case Study: Neutralizing a ₹48.5 Lakh CEO Attack in 5 Seconds")
 
     steps = [
-        ("Step 1: The Spoofed Email", "Scammer emails Accounts stating vendor bank account changed due to audit (from abc-l0gistics.com).", "T04 flags Look-alike Domain", ACCENT_AMBER),
-        ("Step 2: The Altered Invoice", "PDF invoice attached requesting ₹48,50,000 to a new ICICI Bank account.", "T08 flags Account Mismatch vs Master", ACCENT_AMBER),
-        ("Step 3: The Deepfake CEO Call", "Scammer joins Google Meet with AI-cloned voice of CFO: 'Wire ₹48.5 Lakhs immediately, confidential acquisition!'", "T07 extension triggers Red Synthetic Voice alert (94%)", ACCENT_RED),
-        ("Step 4: The Automated Lock", "Policy Engine evaluates signals: multiple strong anomalies detected -> HARD HOLD. Payment transfer button disabled.", "Policy Engine forces HOLD band", ACCENT_RED),
-        ("Step 5: OOB Verification", "Clerk taps 'Confirm with CFO'. Real CFO receives push notification on mobile: 'No, not me!' Case locked as FRAUD.", "₹48.5 Lakhs Saved in 5 Seconds!", ACCENT_GREEN),
+        (
+            "Step 1: The Spoofed Email",
+            "Scammer emails Accounts stating vendor bank account changed due to audit (from abc-l0gistics.com).",
+            "T04 flags Look-alike Domain",
+            ACCENT_AMBER,
+        ),
+        (
+            "Step 2: The Altered Invoice",
+            "PDF invoice attached requesting ₹48,50,000 to a new ICICI Bank account.",
+            "T08 flags Account Mismatch vs Master",
+            ACCENT_AMBER,
+        ),
+        (
+            "Step 3: The Deepfake CEO Call",
+            "Scammer joins Google Meet with AI-cloned voice of CFO: 'Wire ₹48.5 Lakhs immediately, confidential acquisition!'",
+            "T07 extension triggers Red Synthetic Voice alert (94%)",
+            ACCENT_RED,
+        ),
+        (
+            "Step 4: The Automated Lock",
+            "Policy Engine evaluates signals: multiple strong anomalies detected -> HARD HOLD. Payment transfer button disabled.",
+            "Policy Engine forces HOLD band",
+            ACCENT_RED,
+        ),
+        (
+            "Step 5: OOB Verification",
+            "Clerk taps 'Confirm with CFO'. Real CFO receives push notification on mobile: 'No, not me!' Case locked as FRAUD.",
+            "₹48.5 Lakhs Saved in 5 Seconds!",
+            ACCENT_GREEN,
+        ),
     ]
 
     for i, (st, desc, flag, col) in enumerate(steps):
         yp = Inches(1.8) + Inches(i * 1.05)
         add_card(s10, Inches(0.8), yp, Inches(11.7), Inches(0.95))
         # left accent
-        s_bar = s10.shapes.add_shape(MSO_SHAPE.RECTANGLE, Inches(0.8), yp, Inches(0.15), Inches(0.95))
+        s_bar = s10.shapes.add_shape(
+            MSO_SHAPE.RECTANGLE, Inches(0.8), yp, Inches(0.15), Inches(0.95)
+        )
         s_bar.fill.solid()
         s_bar.fill.fore_color.rgb = col
         s_bar.line.fill.background()
@@ -624,7 +751,9 @@ def create_deck(output_path: Path) -> None:
         p.font.color.rgb = TEXT_MUTED
 
         # flag pill
-        pill = s10.shapes.add_shape(MSO_SHAPE.ROUNDED_RECTANGLE, Inches(8.8), yp + Inches(0.2), Inches(3.5), Inches(0.55))
+        pill = s10.shapes.add_shape(
+            MSO_SHAPE.ROUNDED_RECTANGLE, Inches(8.8), yp + Inches(0.2), Inches(3.5), Inches(0.55)
+        )
         pill.fill.solid()
         pill.fill.fore_color.rgb = col
         pill.line.fill.background()
@@ -646,10 +775,30 @@ def create_deck(output_path: Path) -> None:
     add_header(s11, "Empirical Validation: Hard Numbers & Benchmarks")
 
     metrics_data = [
-        ("0.0% EER", "Google Meet Codec\n(Opus 16kHz audio)", "Zero error rate on WebRTC video call audio (n=100 items). 4.0% EER on cellular AMR-NB.", ACCENT_GREEN),
-        ("0 / 30 Bypassed", "Adversarial Red-Team\nPrompt Injections", "0/30 injections lowered a security band. 97.8% checker rejection rate on malicious prompts.", ACCENT_GREEN),
-        ("94.3% Recall", "ICFD-31k Large Benchmark\n@ 1% False Alarm Rate", "Evaluated on 31,000 real conversations with 10,000-resample bootstrap 95% CIs [93.5%, 95.1%].", PRIMARY),
-        ("8 / 12 Upgraded", "Decision Relevance\nEnterprise Scenarios", "Detectors upgraded risk outcome from unsafe PASS to HOLD/VERIFY in 8 out of 12 real attack cases.", ACCENT_AMBER),
+        (
+            "0.0% EER",
+            "Google Meet Codec\n(Opus 16kHz audio)",
+            "Zero error rate on WebRTC video call audio (n=100 items). 4.0% EER on cellular AMR-NB.",
+            ACCENT_GREEN,
+        ),
+        (
+            "0 / 30 Bypassed",
+            "Adversarial Red-Team\nPrompt Injections",
+            "0/30 injections lowered a security band. 97.8% checker rejection rate on malicious prompts.",
+            ACCENT_GREEN,
+        ),
+        (
+            "94.3% Recall",
+            "ICFD-31k Large Benchmark\n@ 1% False Alarm Rate",
+            "Evaluated on 31,000 real conversations with 10,000-resample bootstrap 95% CIs [93.5%, 95.1%].",
+            PRIMARY,
+        ),
+        (
+            "8 / 12 Upgraded",
+            "Decision Relevance\nEnterprise Scenarios",
+            "Detectors upgraded risk outcome from unsafe PASS to HOLD/VERIFY in 8 out of 12 real attack cases.",
+            ACCENT_AMBER,
+        ),
     ]
 
     m_w = Inches(2.7)
@@ -660,7 +809,9 @@ def create_deck(output_path: Path) -> None:
     for i, (big_num, sub, desc, col) in enumerate(metrics_data):
         mx = Inches(0.8) + i * (m_w + m_gap)
         add_card(s11, mx, m_top, m_w, m_h, border_color=col)
-        tb_m = s11.shapes.add_textbox(mx + Inches(0.15), m_top + Inches(0.2), m_w - Inches(0.3), m_h - Inches(0.4))
+        tb_m = s11.shapes.add_textbox(
+            mx + Inches(0.15), m_top + Inches(0.2), m_w - Inches(0.3), m_h - Inches(0.4)
+        )
         tf_m = tb_m.text_frame
         tf_m.word_wrap = True
 
@@ -705,7 +856,7 @@ def create_deck(output_path: Path) -> None:
         "RBI .bank.in Domain Rule: Enforces Reserve Bank of India mandates requiring all legitimate bank communications to originate from .bank.in domains.",
         "Indian Accounting Native: Native regex parsers for 11-digit IFSC codes, GSTIN structure, and UPI VPA IDs.",
         "Hinglish & Regional Lexicon: Identifies cultural fraud triggers ('digital arrest', 'bijli connection', 'police FIR', 'OTP batao').",
-        "National Crime Portal Alignment: Output forms align 1:1 with national 1930 Cyber Helpline & cybercrime.gov.in."
+        "National Crime Portal Alignment: Output forms align 1:1 with national 1930 Cyber Helpline & cybercrime.gov.in.",
     ]
     for b in i_pts:
         p = tf_i.add_paragraph()
@@ -725,7 +876,7 @@ def create_deck(output_path: Path) -> None:
         "Amazon S3 Object Lock: WORM (Write Once, Read Many) tamper-evident evidence vault compliant with court standards.",
         "Amazon Bedrock (Claude Haiku): Secure in-country AI summaries with zero training retention and strict data privacy.",
         "Amazon SES (Simple Email Service): Cryptographically signed Out-of-Band (OOB) executive verification emails.",
-        "Amazon Transcribe (hi-IN / en-IN): High-fidelity regional Indian speech-to-text with local Whisper fallback."
+        "Amazon Transcribe (hi-IN / en-IN): High-fidelity regional Indian speech-to-text with local Whisper fallback.",
     ]
     for b in a_pts:
         p = tf_a.add_paragraph()
@@ -757,7 +908,7 @@ def create_deck(output_path: Path) -> None:
         "Deterministic 'Impossible Claim' Engine: Catches Digital Arrests ('CBI video call'), Electricity Disconnection threats, Customs release fees, and fake refunds.",
         "Voice Read-Aloud for Elders ('मेरे सुनाइए'): Built-in Web Speech API reads the advice aloud in Hindi (hi-IN) or English for non-literate users.",
         "Emergency Action Hub: Direct tap-to-call '1930' button, official Chakshu & NCRP links, and one-tap WhatsApp share to warn family members.",
-        "Safety Architecture: Never reveals forensic scores or detector internals, preventing attackers from reverse-engineering the tool."
+        "Safety Architecture: Never reveals forensic scores or detector internals, preventing attackers from reverse-engineering the tool.",
     ]
     for b in c_pts:
         p = tf_c.add_paragraph()
@@ -789,7 +940,7 @@ def create_deck(output_path: Path) -> None:
     p.font.color.rgb = ACCENT_GREEN
     win_pts = [
         "Deterministic Security + AI Speed: The only system where media detectors cannot create a false sense of safety.",
-        "Immediate Production Viability: Works on standard accounting exports (Tally, Zoho, SAP CSVs) with near-zero inference cost."
+        "Immediate Production Viability: Works on standard accounting exports (Tally, Zoho, SAP CSVs) with near-zero inference cost.",
     ]
     for w in win_pts:
         p = tf_e.add_paragraph()
@@ -805,7 +956,7 @@ def create_deck(output_path: Path) -> None:
     road_pts = [
         "Phase 1 (Now): Google Meet extension + React AP Verification Desk (MVP Fully Built).",
         "Phase 2 (Q3 2026): NPCI Vendor Attestation Standard (QR/UPI dynamic verification extension).",
-        "Phase 3 (Q4 2026): Citizen WhatsApp Verification Bot integrated directly with I4C Chakshu."
+        "Phase 3 (Q4 2026): Citizen WhatsApp Verification Bot integrated directly with I4C Chakshu.",
     ]
     for r in road_pts:
         p = tf_e.add_paragraph()
@@ -829,4 +980,3 @@ def create_deck(output_path: Path) -> None:
 if __name__ == "__main__":
     out = Path("c:/Users/Admin/Hackathon/Deepfake_Detection/Satyapan_Pitch_Deck.pptx")
     create_deck(out)
-
