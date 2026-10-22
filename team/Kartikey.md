@@ -118,6 +118,16 @@ def build_report_pack_v2(
 
 *Check:* `uv run pytest tests/finale/test_report_pack_v2.py -q` · `make check`.
 
+**Agent plan.**
+1. Write 10+ tests with a fake `repo` case + custody rows: order, statuses, UTR-first, sources, sensitive fields, manual-only.
+2. Implement `_field()` + imports/reuse of `format_inr`, `_fmt_when`, `_transaction_facts`, `_call_script_1930`, `_bank_email`.
+3. Build `helpline_1930` (UTR on line 1, `tel:1930`, 7 ordered fields).
+4. Build `bank_fraud_desk` (`mailto:` with percent-encoded subject/body, 5 ordered fields).
+5. Build `ncrp_portal` (6 fields in portal order + vault evidence name/SHA-256 fields).
+6. Build `cert_in` (`applies=body_corporate`, exact deadline hint, 6 template fields).
+7. Build `bsa_s63_part_a` (official Part A text, custody SHA-256 per evidence, custodian/signatory blanks).
+8. Assemble `ReportPackV2` (5 sections, `MANUAL_ONLY`, `auto_submit=False`), then run `make check`.
+
 **Prompt.**
 ```
 You are helping Kartikey with task F11 in this repo.

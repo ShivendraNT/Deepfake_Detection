@@ -104,6 +104,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/workflows/status.py` | C10 | T13 | todo |
 | `src/satyapan/workflows/watchlist.py` | C10 (R4) | T13 | todo |
 | `src/satyapan/report/pack.py` | C12 | T16 | todo |
+| `src/satyapan/report/pack_v2.py` | C12 golden-hour report copilot (5 drafts) | F11 | done |
 | `src/satyapan/citizen/rules.py` | stretch S1 | T24 | todo |
 | `src/satyapan/seal/` | C14 Satyapan Seal: Voice Seal + Intent Seal (docs/SEAL.md) | SEAL (lead) | done (R1 prototype) |
 | `src/satyapan/pipeline.py` | evidence → detectors → decision | T01 | done |
