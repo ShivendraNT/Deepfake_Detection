@@ -51,7 +51,7 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F08 | Bubble cards + copy EN/Hinglish/हिन्दी | Saarika | P0 | todo |
 | F09 | Deck + story | Saarika + Shivendra | P0 | todo |
 | F10 | Capture window (loopback spike first) | Kartikey | P0/P1 | todo |
-| F11 | Report pack v2 (5 sections) | Kartikey | P0 | todo |
+| F11 | Report pack v2 (5 sections) | Kartikey | P0 | done — `build_report_pack_v2` builds 5 MANUAL_ONLY drafts; 12/12 tests green |
 | F12 | Demo media (consented clips, replay, email) | Kartikey | P0 | todo |
 | F13 | Gmail "Ask Satya" button | Kartikey | P2 | todo |
 | F14 | Notebook shell + tabs | Saksham | P0 | todo |
