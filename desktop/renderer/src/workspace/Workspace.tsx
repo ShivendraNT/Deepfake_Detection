@@ -84,7 +84,10 @@ export default function Workspace(): JSX.Element {
   )
 
   const watching =
-    live.callId !== null || state?.monitoring === true || state?.mode === 'ACTIVE'
+    state?.monitoring === true ||
+    state?.mode === 'ACTIVE' ||
+    live.callId !== null ||
+    live.callStartedAt !== null
 
   let content: JSX.Element
   switch (tab) {

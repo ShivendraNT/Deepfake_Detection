@@ -6,15 +6,20 @@ import {
   Laptop,
   Lock,
   MicOff,
+  Pause,
   PhoneCall,
+  Play,
+  QrCode,
   Shield,
   ShieldAlert,
   ShieldCheck,
+  Zap,
 } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
 import type { CompanionState, SealStatus } from '../../../../shared/contracts'
 import { ASK_LABELS } from '../../../../shared/contracts'
+import { api } from '../../shared/api'
 import { formatDuration, relativeTime, secondsSince } from '../lib/format'
 import type { LiveSnapshot } from '../lib/live'
 import BandBadge from '../ui/BandBadge'
@@ -41,12 +46,6 @@ function coverageCopy(coverage: LiveSnapshot['coverage']): string {
   }
 }
 
-function coverageColor(coverage: LiveSnapshot['coverage']): string {
-  if (coverage === 'usable') return tone.green
-  if (coverage === 'degraded') return tone.amber
-  return tone.slate
-}
-
 function sealCopy(seal: SealStatus | null): {
   label: string
   color: string
@@ -66,19 +65,59 @@ function sealCopy(seal: SealStatus | null): {
 
 export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.Element {
   const [now, setNow] = useState(() => Date.now())
+  const [simulating, setSimulating] = useState(false)
+  const [switchingMode, setSwitchingMode] = useState(false)
+  const [oobUrl, setOobUrl] = useState<string | null>(null)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
     return () => window.clearInterval(timer)
   }, [])
 
-  const inCall = live.callId !== null || live.callStartedAt !== null
-  const elapsed = live.callStartedAt ? secondsSince(live.callStartedAt, now) : 0
+  useEffect(() => {
+    void api.getConfig().then((cfg) => {
+      if (cfg?.oob_url) setOobUrl(cfg.oob_url)
+    })
+  }, [])
+
   const watching =
-    live.callId !== null || state?.monitoring === true || state?.mode === 'ACTIVE'
+    state?.monitoring === true ||
+    state?.mode === 'ACTIVE' ||
+    live.callId !== null ||
+    live.callStartedAt !== null
+
+  const inCall = live.callId !== null || live.callStartedAt !== null || watching
+  const elapsed = live.callStartedAt ? secondsSince(live.callStartedAt, now) : 0
   const seal = sealCopy(live.seal)
   const SealIcon = seal.Icon
   const alert = live.lastAlert
+
+  const handleSimulateScam = async () => {
+    setSimulating(true)
+    try {
+      await api.command('demo.replay', { scenario: 'cfo_call' })
+    } finally {
+      setSimulating(false)
+    }
+  }
+
+  const handleStartProtection = async () => {
+    setSwitchingMode(true)
+    try {
+      await api.setUserMode('WATCHING')
+    } finally {
+      setSwitchingMode(false)
+    }
+  }
+
+  const handlePauseProtection = async () => {
+    setSwitchingMode(true)
+    try {
+      await api.setUserMode('SLEEPING')
+    } finally {
+      setSwitchingMode(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -86,7 +125,7 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
         title="Live monitoring"
         description={
           watching
-            ? 'Satya is watching the source you chose. He asks before he listens to a call.'
+            ? 'Satya is actively protecting Google Meet & monitoring the screen. Voice asks and payment bypasses are relayed in real-time.'
             : 'Satya is asleep. Nothing is being watched.'
         }
         action={
@@ -100,24 +139,54 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
       >
         {inCall ? (
           <div>
-            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-              <span className="inline-flex items-center gap-1.5 text-[14px] font-semibold">
-                <PhoneCall size={15} style={{ color: tone.watch }} aria-hidden="true" />
-                Live call
-              </span>
-              <span className={surface.muted} aria-hidden="true">
-                ·
-              </span>
-              <span
-                className="text-[14px] font-semibold tabular-nums"
-                aria-label={`Call duration ${formatDuration(elapsed)}`}
-              >
-                {formatDuration(elapsed)}
-              </span>
-              <span className={surface.muted} aria-hidden="true">
-                ·
-              </span>
-              <span className={`text-[12px] ${surface.muted}`}>{coverageCopy(live.coverage)}</span>
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                <span className="inline-flex items-center gap-2 text-[14px] font-semibold text-emerald-400">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <PhoneCall size={15} style={{ color: tone.watch }} aria-hidden="true" />
+                  Live Call: Google Meet & Screen Protected
+                </span>
+                <span className={surface.muted} aria-hidden="true">
+                  ·
+                </span>
+                <span
+                  className="text-[14px] font-semibold tabular-nums"
+                  aria-label={`Call duration ${formatDuration(elapsed)}`}
+                >
+                  {formatDuration(elapsed)}
+                </span>
+                <span className={surface.muted} aria-hidden="true">
+                  ·
+                </span>
+                <span className={`text-[12px] ${surface.muted}`}>{coverageCopy(live.coverage)}</span>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleSimulateScam}
+                  disabled={simulating}
+                  className="inline-flex items-center gap-1.5 rounded-[8px] bg-amber-500/15 border border-amber-500/30 px-3 py-1.5 text-[12px] font-semibold text-amber-300 transition hover:bg-amber-500/25 active:scale-95 disabled:opacity-50"
+                  title="Inject a realistic CFO Deepfake call to demonstrate live detection and OOB verification lockdown"
+                >
+                  <Zap size={13} className="text-amber-400 fill-amber-400" aria-hidden="true" />
+                  {simulating ? 'Injecting Attack...' : '⚡ Simulate CFO Scam Attack'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handlePauseProtection}
+                  disabled={switchingMode}
+                  className="inline-flex items-center gap-1.5 rounded-[8px] border px-2.5 py-1.5 text-[12px] font-medium text-slate-300 transition hover:bg-white/5 active:scale-95"
+                  style={{ borderColor: 'rgba(255,255,255,0.1)' }}
+                  title="Pause live monitoring and put Satya to sleep"
+                >
+                  <Pause size={12} aria-hidden="true" />
+                  Pause
+                </button>
+              </div>
             </div>
 
             <div className="mt-3 flex flex-wrap gap-2">
@@ -138,35 +207,47 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
                 ))
               ) : (
                 <span className={`text-[12px] ${surface.muted}`}>
-                  No payment tricks heard yet. Satya only notes asks; he does not judge the voice.
+                  Actively monitoring call audio and screen text. No payment tricks or urgency detected yet.
                 </span>
               )}
             </div>
 
             <div
-              className={`mt-4 flex items-center gap-2 rounded-[10px] border px-3 py-2 text-[12px] ${surface.line} ${surface.inset}`}
+              className={`mt-4 flex items-center justify-between gap-2 rounded-[10px] border px-3 py-2 text-[12px] ${surface.line} ${surface.inset}`}
             >
-              <SealIcon size={14} style={{ color: seal.color }} aria-hidden="true" />
-              <span>{seal.label}</span>
+              <div className="flex items-center gap-2">
+                <SealIcon size={14} style={{ color: seal.color }} aria-hidden="true" />
+                <span>{seal.label}</span>
+              </div>
+              <span className="text-[11px] text-slate-400">
+                macOS Screen Guard: <span className="text-emerald-400 font-medium">Active (Apple Vision OCR)</span>
+              </span>
             </div>
           </div>
         ) : (
-          <div className="flex items-start gap-3">
-            <div
-              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line} ${inset}`}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div
+                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line} ${inset}`}
+              >
+                <PhoneCall size={17} className={surface.muted} aria-hidden="true" />
+              </div>
+              <div>
+                <p className="text-[14px] font-medium">Sleeping. I am not listening.</p>
+                <p className={`mt-1 text-[12px] leading-relaxed ${surface.muted}`}>
+                  Wake Satya to start live protection for Google Meet calls and on-screen invoices.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleStartProtection}
+              disabled={switchingMode}
+              className="inline-flex items-center gap-2 rounded-[10px] bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 transition hover:bg-emerald-400 active:scale-95 disabled:opacity-50"
             >
-              <PhoneCall size={17} className={surface.muted} aria-hidden="true" />
-            </div>
-            <div>
-              <p className="text-[14px] font-medium">
-                {watching ? 'No call right now.' : 'Sleeping. I am not listening.'}
-              </p>
-              <p className={`mt-1 text-[12px] leading-relaxed ${surface.muted}`}>
-                {watching
-                  ? 'When a call starts, Satya shows a small card and waits for your yes before listening.'
-                  : 'Wake Satya from the mascot menu when you want him to watch for payment tricks.'}
-              </p>
-            </div>
+              <Play size={14} className="fill-slate-950" aria-hidden="true" />
+              {switchingMode ? 'Starting...' : '🛡️ Start Live Call & Screen Protection'}
+            </button>
           </div>
         )}
       </Section>
@@ -177,27 +258,43 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
         action={alert ? <BandBadge band={alert.band} /> : undefined}
       >
         {alert ? (
-          <div className="flex items-start gap-3">
-            <div
-              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line}`}
-              style={{ backgroundColor: `${tone.coral}12` }}
-            >
-              <ShieldAlert size={17} style={{ color: tone.coral }} aria-hidden="true" />
+          <div className="space-y-3">
+            <div className="flex items-start gap-3">
+              <div
+                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line}`}
+                style={{ backgroundColor: `${tone.coral}12` }}
+              >
+                <ShieldAlert size={17} style={{ color: tone.coral }} aria-hidden="true" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="text-[14px] font-semibold">{alert.headline}</p>
+                <p className={`mt-1 text-[12px] ${surface.muted}`}>
+                  Raised {relativeTime(alert.at, now)}. Policy engine band:{' '}
+                  <span className="font-bold text-rose-400">{alert.band}</span>. Satya never lowers this band.
+                </p>
+              </div>
+              <div className="flex items-center gap-2">
+                {oobUrl ? (
+                  <button
+                    type="button"
+                    onClick={() => window.open(oobUrl, '_blank')}
+                    className="inline-flex items-center gap-1.5 rounded-[8px] bg-purple-500/15 border border-purple-500/30 px-3 py-1.5 text-[12px] font-semibold text-purple-300 transition hover:bg-purple-500/25 active:scale-95"
+                    title="Open the Linked Mobile Verification Web App to simulate phone approval/lockdown"
+                  >
+                    <QrCode size={13} aria-hidden="true" />
+                    📱 Open Phone Approver
+                  </button>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={() => onOpenCase(alert.caseId)}
+                  className={`${button.outline} shrink-0`}
+                >
+                  Open case
+                  <ArrowRight size={14} aria-hidden="true" />
+                </button>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <p className="text-[14px] font-semibold">{alert.headline}</p>
-              <p className={`mt-1 text-[12px] ${surface.muted}`}>
-                Raised {relativeTime(alert.at, now)}. Satya never changes this band on his own.
-              </p>
-            </div>
-            <button
-              type="button"
-              onClick={() => onOpenCase(alert.caseId)}
-              className={`${button.outline} shrink-0`}
-            >
-              Open case
-              <ArrowRight size={14} aria-hidden="true" />
-            </button>
           </div>
         ) : (
           <Empty

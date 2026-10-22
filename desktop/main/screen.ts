@@ -24,6 +24,7 @@ export interface ScreenScanResult {
   accounts: string[]
   ifscs: string[]
   rawText: string
+  meetingDetected?: string | null
 }
 
 const FRAUD_PATTERNS = [
@@ -85,14 +86,33 @@ export function analyzeScreenText(text: string): ScreenScanResult {
         m.includes('Approval bypass'),
     )
 
-  let headline = 'Screen looks OK'
+  const isMeetActive =
+    /\b(meet\.google\.com|Google Meet|In-call messages|Meeting details|Turn off microphone|Turn on microphone)\b/i.test(
+      text,
+    )
+  const isTeamsActive =
+    /\b(teams\.microsoft\.com|Microsoft Teams|Leave meeting|Mute mic)\b/i.test(text)
+  const isZoomActive = /\b(zoom\.us|Zoom Meeting|End meeting for all)\b/i.test(text)
+  const meetingDetected = isMeetActive
+    ? 'Google Meet'
+    : isTeamsActive
+      ? 'Microsoft Teams'
+      : isZoomActive
+        ? 'Zoom'
+        : null
+
+  let headline = meetingDetected
+    ? `${meetingDetected} Active · Screen & Call Protected`
+    : 'Screen looks OK'
+
   if (suspicious) {
+    const prefix = meetingDetected ? `${meetingDetected} Alert: ` : ''
     if (matches.some((m) => m.includes('Remote access'))) {
-      headline = 'Remote access scam risk on screen'
+      headline = `${prefix}Remote access scam risk on screen`
     } else if (matches.some((m) => m.includes('Approval bypass'))) {
-      headline = 'Urgent payment bypass on screen'
+      headline = `${prefix}Urgent payment bypass on screen`
     } else {
-      headline = `Suspicious payment instruction on screen`
+      headline = `${prefix}Suspicious payment instruction on screen`
     }
   }
 
@@ -106,11 +126,19 @@ export function analyzeScreenText(text: string): ScreenScanResult {
     suspicious,
     headline,
     matches,
-    reasons: reasons.length > 0 ? reasons : ['No payment fraud indicators detected on screen.'],
+    reasons:
+      reasons.length > 0
+        ? reasons
+        : [
+            meetingDetected
+              ? `Satya is actively protecting ${meetingDetected}. No payment fraud indicators detected.`
+              : 'No payment fraud indicators detected on screen.',
+          ],
     preview,
     accounts,
     ifscs,
     rawText: text,
+    meetingDetected,
   }
 }
 

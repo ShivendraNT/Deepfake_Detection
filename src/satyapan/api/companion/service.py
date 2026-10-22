@@ -152,6 +152,19 @@ DEMO_SCENARIOS: dict[str, DemoScenario] = {
         account_number="99992222009918",
         ifsc="FAKC0000992",
     ),
+    "cfo_call": DemoScenario(
+        key="cfo_call",
+        title="Deepfake CFO call: Urgent wire bypass (demo replay)",
+        text=(
+            "Priya, I am in an urgent board meeting and traveling. Transfer ₹48,50,000 immediately "
+            "to the new account details I am sending. Bypass the checker process and "
+            "keep this confidential between us until the acquisition closes."
+        ),
+        amount_inr=4_850_000,
+        payee="Demo Apex Strategic Ltd (fictional)",
+        account_number="99992222009919",
+        ifsc="FAKC0000993",
+    ),
 }
 
 _MOOD_BY_MODE: dict[CompanionMode, MascotMood] = {

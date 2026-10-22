@@ -125,6 +125,31 @@ export class BackendClient {
     return this.request('/companion/session/stop', { method: 'POST' })
   }
 
+  async startCall(
+    consentId: string,
+    source: string = 'user_selected_loopback',
+  ): Promise<{ call_id: string; case_id: string; events: CompanionEvent[] }> {
+    return this.request('/companion/calls/start', {
+      method: 'POST',
+      body: JSON.stringify({
+        version: '1',
+        consent_id: consentId,
+        source,
+        maker: this.demoUser,
+      }),
+    })
+  }
+
+  async stopCall(callId?: string): Promise<{ call_id: string }> {
+    return this.request('/companion/calls/stop', {
+      method: 'POST',
+      body: JSON.stringify({
+        version: '1',
+        ...(callId ? { call_id: callId } : {}),
+      }),
+    })
+  }
+
   async command(type: string, payload: Record<string, unknown> = {}): Promise<CommandResult> {
     return this.request('/companion/commands', {
       method: 'POST',

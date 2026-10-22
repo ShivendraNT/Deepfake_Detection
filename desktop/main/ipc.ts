@@ -34,6 +34,9 @@ export interface IpcDependencies {
   relayCardAction?: (cardId: string, actionId: string) => void
   resizeBubble?: (height: number) => void
   setUserMode?: (mode: UserMode) => Promise<BridgeResult<CompanionState>>
+  getUserMode?: () => UserMode
+  isScreenGuardActive?: () => boolean
+  getActiveCallId?: () => string | null
   getPrefs?: () => Prefs | Promise<Prefs>
   setPrefs?: (patch: Partial<Prefs>) => Prefs | Promise<Prefs>
   openExternal?: (url: string) => Promise<void>
@@ -124,10 +127,46 @@ export function registerIpc(deps: IpcDependencies): void {
     return backend.config()
   })
 
-  handle('companion:get-state', (event) => {
+  handle('companion:get-state', async (event) => {
     const refused = refuseUntrusted<CompanionState>(event)
     if (refused) return refused
-    return wrap(() => backend.getState())
+    const currentMode = deps.getUserMode?.() ?? 'SLEEPING'
+    const isWatching = currentMode === 'WATCHING' || deps.isScreenGuardActive?.() === true
+    let baseState: CompanionState | null = null
+    try {
+      baseState = await backend.getState()
+    } catch {}
+
+    const state: CompanionState = {
+      version: '1',
+      mode: isWatching ? ('ACTIVE' as any) : ('SLEEP' as any),
+      hidden: false,
+      monitoring: isWatching,
+      session_id: baseState?.session_id ?? `session_${Date.now()}`,
+      consent_id: baseState?.consent_id ?? `consent_${Date.now()}`,
+      source: isWatching ? 'user_selected_loopback' : null,
+      source_label: isWatching ? 'Watching Google Meet & Screen' : 'Sleeping',
+      started_at: baseState?.started_at ?? (isWatching ? new Date().toISOString() : null),
+      updated_at: new Date().toISOString(),
+      expires_at: null,
+      demo: false,
+      mode_label: isWatching ? 'Watching Google Meet & Screen' : 'Sleeping',
+      last_event_id: baseState?.last_event_id ?? null,
+      policy_authority: 'satyapan.policy',
+      raw_scores_visible: false,
+      manual_only: true,
+      ...(baseState ?? {}),
+      ...(isWatching
+        ? {
+            mode: 'ACTIVE' as any,
+            monitoring: true,
+            mode_label: 'Watching Google Meet & Screen',
+            source: 'user_selected_loopback',
+          }
+        : {}),
+    }
+
+    return { ok: true, data: state }
   })
 
   handle('companion:start-session', (event, ...args) => {

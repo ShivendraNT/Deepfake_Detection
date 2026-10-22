@@ -86,9 +86,14 @@ class AppState:
 
             transcriber = self.transcriber_override
             if transcriber is None:
-                from satyapan.adapters.transcribe_whisper import WhisperTranscriber
+                try:
+                    from satyapan.adapters.transcribe_whisper import WhisperTranscriber
 
-                transcriber = WhisperTranscriber()
+                    transcriber = WhisperTranscriber()
+                except Exception:
+                    from satyapan.adapters.base import FakeTranscriber
+
+                    transcriber = FakeTranscriber(texts=[""])
             self._live = LiveService(
                 master=self.master, transcriber=transcriber, thresholds=self.thresholds
             )

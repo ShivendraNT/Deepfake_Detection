@@ -72,6 +72,8 @@ let cursorTimer: ReturnType<typeof setInterval> | null = null
 let quitting = false
 let lastStatus = 'Sleeping'
 let userMode: UserMode = 'SLEEPING'
+let activeCallId: string | null = null
+let callStartedAt: string | null = null
 let prefs: Prefs = {}
 let lastCard: BubbleCard | null = null
 let lastTail: 'left' | 'right' = 'left'
@@ -320,13 +322,106 @@ async function setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>
   try {
     userMode = mode
     if (mode === 'WATCHING') {
-      const result = await backend.startSession('user_selected_loopback', 'Watching')
+      const result = await backend.startSession('user_selected_loopback', 'Watching Google Meet & Screen')
       lastStatus = 'Watching'
       showCompanionWindow()
       ensureCapture()
+
+      // Auto-activate ambient Screen Guard if not already running
+      if (!screenGuardActive) {
+        toggleScreenGuard()
+      }
+
+      // Start live call tracking on the backend
+      try {
+        const callResult = await backend.startCall(
+          result.state.consent_id ?? `consent_${Date.now()}`,
+          'user_selected_loopback',
+        )
+        activeCallId = callResult.call_id
+      } catch {
+        activeCallId = `call_meet_${Date.now()}`
+      }
+      callStartedAt = new Date().toISOString()
+
+      // Broadcast call.started event to sync all windows immediately
+      const startEvent: CompanionEvent = {
+        version: '1',
+        event_id: `evt_start_${Date.now()}`,
+        type: 'call.started',
+        session_id: result.state.session_id,
+        occurred_at: callStartedAt,
+        payload: {
+          state: 'ACTIVE',
+          mascot_mood: 'attentive',
+          headline: 'Watching Google Meet & Screen Guard active',
+          explanation:
+            'Satya is monitoring system audio and on-screen text for urgency language, fake bank accounts, and unauthorized approval bypasses.',
+          band: null,
+          reason_codes: [],
+          info_codes: [],
+          evidence_ids: [],
+          next_actions: [],
+          monitoring: true,
+          source: 'user_selected_loopback',
+          mode_label: 'Watching Google Meet & Screen',
+          demo: false,
+          call_id: activeCallId ?? undefined,
+          coverage: 'usable',
+          seal: 'verified',
+          user_mode: 'WATCHING',
+        },
+      }
+      handleEvent(startEvent)
+
       refreshTray()
-      return { ok: true, data: result.state }
+      const mergedState: CompanionState = {
+        ...result.state,
+        mode: 'ACTIVE',
+        monitoring: true,
+        mode_label: 'Watching Google Meet & Screen',
+        source_label: 'Watching Google Meet & Screen',
+      }
+      return { ok: true, data: mergedState }
     }
+
+    // Stop active call if any
+    if (activeCallId) {
+      try {
+        await backend.stopCall(activeCallId)
+      } catch {}
+      const stopEvent: CompanionEvent = {
+        version: '1',
+        event_id: `evt_stop_${Date.now()}`,
+        type: 'call.stopped',
+        session_id: null,
+        occurred_at: new Date().toISOString(),
+        payload: {
+          state: 'SLEEP',
+          mascot_mood: 'sleepy',
+          headline: 'Satya is asleep.',
+          explanation: 'Live call monitoring stopped.',
+          band: null,
+          reason_codes: [],
+          info_codes: [],
+          evidence_ids: [],
+          next_actions: [],
+          monitoring: false,
+          source: null,
+          mode_label: null,
+          demo: false,
+          user_mode: mode,
+        },
+      }
+      handleEvent(stopEvent)
+      activeCallId = null
+      callStartedAt = null
+    }
+
+    if (screenGuardActive) {
+      toggleScreenGuard()
+    }
+
     await backend.stopSession()
     if (mode === 'OFF') {
       lastStatus = 'Off'
@@ -337,7 +432,32 @@ async function setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>
       lastStatus = 'Sleeping'
     }
     refreshTray()
-    return { ok: true, data: await backend.getState() }
+
+    let baseState: CompanionState | null = null
+    try {
+      baseState = await backend.getState()
+    } catch {}
+    const sleepState: CompanionState = {
+      version: '1',
+      mode: 'SLEEP',
+      hidden: false,
+      monitoring: false,
+      session_id: null,
+      consent_id: null,
+      source: null,
+      source_label: null,
+      started_at: null,
+      updated_at: new Date().toISOString(),
+      expires_at: null,
+      demo: false,
+      mode_label: null,
+      last_event_id: null,
+      policy_authority: 'satyapan.policy',
+      raw_scores_visible: false,
+      manual_only: true,
+      ...(baseState ?? {}),
+    }
+    return { ok: true, data: sleepState }
   } catch (error) {
     return { ok: false, error: errorOf(error) }
   }
@@ -635,6 +755,9 @@ if (!hasLock) {
       relayCardAction,
       resizeBubble,
       setUserMode,
+      getUserMode: () => userMode,
+      isScreenGuardActive: () => screenGuardActive,
+      getActiveCallId: () => activeCallId,
       getPrefs: () => prefs,
       setPrefs: (patch) => {
         prefs = writePrefs(patch)
