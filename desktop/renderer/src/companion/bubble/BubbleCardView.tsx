@@ -17,6 +17,9 @@ const TOAST_TEXT: Record<string, string> = {
   'toast.sleep': "Sleeping. I'm not listening.",
   'toast.off': 'Bye! Bring me back from the menu bar.',
   'clipboard_empty': 'Clipboard is empty — copy an email or message first.',
+  'scanning_screen': 'Scanning screen for fraud indicators…',
+  'screen_guard_active': 'Screen Guard active: watching screen for payment tricks.',
+  'screen_guard_paused': 'Screen Guard paused.',
 }
 
 // Temporary local copy until F08 lands shared/copy.ts. Wording is from MASCOT_SPEC §8.

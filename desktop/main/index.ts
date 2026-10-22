@@ -25,6 +25,7 @@ import { BackendClient } from './backend'
 import { inspectClipboard, registerIpc } from './ipc'
 import { placeBubble, snapToEdges, type Rect } from './placement'
 import { readPrefs, writePrefs } from './prefs'
+import { scanScreen } from './screen'
 import { createTray } from './tray'
 import {
   BUBBLE_MAX_HEIGHT,
@@ -143,6 +144,11 @@ function resizeBubble(height: number): void {
 function relayCardAction(cardId: string, actionId: string): void {
   if (actionId === 'dismiss') {
     hideCard(cardId)
+    return
+  }
+  if (actionId === 'open_workspace') {
+    hideCard(cardId)
+    openWorkspace()
     return
   }
   if (!mascotWindow || mascotWindow.isDestroyed()) return
@@ -377,6 +383,79 @@ function checkClipboard(): void {
   }
 }
 
+let screenGuardInterval: ReturnType<typeof setInterval> | null = null
+let screenGuardActive = false
+let lastScannedTextHash = ''
+
+async function checkScreen(onDemand = true): Promise<void> {
+  showCompanionWindow()
+  if (onDemand) {
+    showCard({
+      id: `screen-scan-${Date.now()}`,
+      kind: 'toast',
+      text_key: 'scanning_screen',
+      tone: 'neutral',
+    })
+  }
+
+  const scan = await scanScreen()
+  if (scan.suspicious) {
+    const textHash = scan.preview
+    if (!onDemand && textHash === lastScannedTextHash) return
+    lastScannedTextHash = textHash
+
+    showCard({
+      id: `screen-alert-${Date.now()}`,
+      kind: 'alert',
+      band: 'HOLD',
+      headline: scan.headline,
+      reasons: scan.matches,
+      chips: [],
+      actions: [
+        { id: 'open_workspace', variant: 'primary' },
+        { id: 'dismiss', variant: 'ghost' },
+      ],
+    })
+  } else if (onDemand) {
+    showCard({
+      id: `screen-ok-${Date.now()}`,
+      kind: 'result',
+      band: 'PASS',
+      headline: 'Screen looks OK',
+      reasons: ['No urgent payment tricks, remote scam tools, or credential requests found on screen.'],
+      actions: [{ id: 'dismiss', variant: 'ghost' }],
+    })
+  }
+}
+
+function toggleScreenGuard(): void {
+  screenGuardActive = !screenGuardActive
+  if (screenGuardActive) {
+    if (screenGuardInterval) clearInterval(screenGuardInterval)
+    screenGuardInterval = setInterval(() => {
+      if (userMode === 'WATCHING' && mascotWindow?.isVisible()) {
+        void checkScreen(false)
+      }
+    }, 8000)
+    showCard({
+      id: `guard-toast-${Date.now()}`,
+      kind: 'toast',
+      text_key: 'screen_guard_active',
+      tone: 'good',
+    })
+  } else {
+    if (screenGuardInterval) clearInterval(screenGuardInterval)
+    screenGuardInterval = null
+    showCard({
+      id: `guard-toast-${Date.now()}`,
+      kind: 'toast',
+      text_key: 'screen_guard_paused',
+      tone: 'neutral',
+    })
+  }
+  refreshTray()
+}
+
 function replayScenario(scenario: string): void {
   showCompanionWindow()
   send('companion:tray-request', { kind: 'demo', scenario } satisfies TrayRequest)
@@ -396,6 +475,10 @@ function registerShortcuts(): void {
   globalShortcut.register('CommandOrControl+Shift+N', () => openWorkspace())
   // Clipboard is read only on this press.
   globalShortcut.register('CommandOrControl+Shift+V', checkClipboard)
+  // Scan Screen for fraud on demand.
+  globalShortcut.register('CommandOrControl+Shift+K', () => void checkScreen(true))
+  // Toggle ambient Screen Guard.
+  globalShortcut.register('CommandOrControl+Shift+G', toggleScreenGuard)
 }
 
 function handleEvent(event: CompanionEvent): void {
@@ -447,7 +530,17 @@ if (!hasLock) {
           click: () => openWorkspace(),
         },
         {
-          label: 'Check Clipboard',
+          label: 'Scan Screen for Fraud (Cmd+Shift+K)',
+          click: () => void checkScreen(true),
+        },
+        {
+          label: screenGuardActive
+            ? 'Screen Guard: Watching (Click to Pause)'
+            : 'Screen Guard: Paused (Click to Watch)',
+          click: toggleScreenGuard,
+        },
+        {
+          label: 'Check Clipboard (Cmd+Shift+V)',
           click: checkClipboard,
         },
         { type: 'separator' },
@@ -510,6 +603,9 @@ if (!hasLock) {
         send('companion:tray-request', request)
       },
       checkClipboard,
+      scanScreen: () => void checkScreen(true),
+      toggleScreenGuard,
+      isScreenGuardActive: () => screenGuardActive,
       statusLabel,
       getMode: () => userMode,
       setMode: (mode) => {

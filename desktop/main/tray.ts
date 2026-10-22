@@ -19,6 +19,9 @@ export interface TrayDependencies {
   setMode?: (mode: UserMode) => void
   toggleVisible?: () => void
   isVisible?: () => boolean
+  scanScreen?: () => void
+  toggleScreenGuard?: () => void
+  isScreenGuardActive?: () => boolean
 }
 
 const SOURCE_ORDER: CompanionSource[] = [
@@ -78,6 +81,21 @@ export function createTray(deps: TrayDependencies): Tray {
             click: () => deps.sendRequest({ kind: 'demo', scenario: demo.key }),
           })),
         },
+        {
+          label: 'Scan screen for fraud',
+          accelerator: 'CommandOrControl+Shift+K',
+          click: () => deps.scanScreen?.(),
+        },
+        ...(deps.toggleScreenGuard
+          ? [
+              {
+                label: deps.isScreenGuardActive?.()
+                  ? 'Screen Guard: Watching (Click to Pause)'
+                  : 'Screen Guard: Paused (Click to Watch)',
+                click: () => deps.toggleScreenGuard?.(),
+              },
+            ]
+          : []),
         {
           label: 'Check clipboard for risk',
           accelerator: 'CommandOrControl+Shift+V',
