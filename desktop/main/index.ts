@@ -487,9 +487,12 @@ async function checkScreen(onDemand = true): Promise<void> {
 function toggleScreenGuard(): void {
   screenGuardActive = !screenGuardActive
   if (screenGuardActive) {
+    if (userMode !== 'WATCHING') {
+      void setUserMode('WATCHING')
+    }
     if (screenGuardInterval) clearInterval(screenGuardInterval)
     screenGuardInterval = setInterval(() => {
-      if (userMode === 'WATCHING' && mascotWindow?.isVisible()) {
+      if (mascotWindow?.isVisible()) {
         void checkScreen(false)
       }
     }, 8000)
@@ -499,6 +502,7 @@ function toggleScreenGuard(): void {
       text_key: 'screen_guard_active',
       tone: 'good',
     })
+    void checkScreen(false)
   } else {
     if (screenGuardInterval) clearInterval(screenGuardInterval)
     screenGuardInterval = null
