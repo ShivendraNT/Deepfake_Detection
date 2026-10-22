@@ -568,46 +568,49 @@
         }
 
         async function boot() {
-          cardSlot.replaceChildren();
-          resultSlot.replaceChildren();
           errorBox.hidden = true;
           empty.hidden = true;
-          loading.hidden = false;
+          loading.hidden = true;
 
-          var chosen = null;
-          var inboxError = null;
-          try {
-            var response = await fetch("/api/oob/inbox", { headers: DEMO_HEADERS });
-            if (!response.ok) {
-              throw new Error(String(response.status) + " " + (await response.text()));
-            }
-            var messages = await response.json();
-            if (Array.isArray(messages) && messages.length > 0) {
-              chosen =
-                messages.find(function (message) {
-                  return token
-                    ? String(message.body || "").indexOf(token) !== -1
-                    : Boolean(tokenFrom(message.body));
-                }) || messages[0];
-            }
-          } catch (reason) {
-            inboxError = reason;
-          }
-
+          // 1. Render immediately so the phone/browser displays the card with 0ms delay
           if (!token) {
-            token = chosen ? tokenFrom(chosen.body) || "" : "";
-          }
-          if (chosen) {
-            details = extractDetails(chosen.body);
-          }
-
-          if (!token) {
-            // Offline demo fallback so testing / phone scan always works without backend:
             token = "demo_token";
-            details = DEFAULT_DETAILS;
+            details = DEFAULTS;
           }
-
           renderCard();
+
+          // 2. In the background, try to check live /api/oob/inbox with a short timeout
+          try {
+            var controller = typeof AbortController !== "undefined" ? new AbortController() : null;
+            var timer = controller
+              ? setTimeout(function () {
+                  controller.abort();
+                }, 1200)
+              : null;
+            var response = await fetch("/api/oob/inbox", {
+              headers: DEMO_HEADERS,
+              signal: controller ? controller.signal : undefined,
+            });
+            if (timer) clearTimeout(timer);
+            if (response.ok) {
+              var messages = await response.json();
+              if (Array.isArray(messages) && messages.length > 0) {
+                var chosen =
+                  messages.find(function (message) {
+                    return token && token !== "demo_token"
+                      ? String(message.body || "").indexOf(token) !== -1
+                      : Boolean(tokenFrom(message.body));
+                  }) || messages[0];
+                if (chosen) {
+                  token = tokenFrom(chosen.body) || token;
+                  details = extractDetails(chosen.body);
+                  renderCard();
+                }
+              }
+            }
+          } catch (e) {
+            // Backend offline — the demo card is already visible and functional
+          }
         }
 
         retry.addEventListener("click", function () {
