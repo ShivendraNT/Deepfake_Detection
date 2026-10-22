@@ -54,11 +54,13 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F11 | Report pack v2 (5 sections) | Kartikey | P0 | done — `build_report_pack_v2` builds 5 MANUAL_ONLY drafts; 12/12 tests green |
 | F12 | Demo media (consented clips, replay, email) | Kartikey | P0 | todo |
 | F13 | Gmail "Ask Satya" button | Kartikey | P2 | todo |
-| F14 | Notebook shell + tabs | Saksham | P0 | todo |
+| F14 | Notebook shell + tabs | Saksham | P0 | done — 1120x720 Notebook shell, sidebar, 7 tabs, anti-slop tokens, 18 desktop tests green |
 | F15 | Reports tab: Scribe + Report Copilot | Saksham | P0 | todo |
 | F16 | Approver phone page (OOB) + QR | Saksham | P0 | todo |
 
 ## Notes log
+
+22 Oct, F14: done — Notebook shell and 7 tabs (Now, Cases, Timeline, Evidence, Reports, Privacy, Settings), BandBadge (no raw scores), masked accounts, anti-slop styling, 18 desktop tests green.
 
 22 Oct, F04: done — X1 cross-channel signal (30-min sequence between call/message ask and payment to new/changed beneficiary raises to VERIFY; A4/A5 urgency raises to HOLD; raise-only verified over all floors; 16 finale tests green; schemas updated; make check ALL GREEN).
 22 Oct, F03: done — `/companion/calls/start|stop`, `/companion/files`, `/companion/oob`, `/companion/report-pack`; live bus fan-in relays AskChips, coverage and the policy `BandEvent.band` unchanged; OOB approver from directory only, `not_requested` hook on `/oob/respond`; 11 finale tests + T25 37/37, make check ALL GREEN (728 passed). 
