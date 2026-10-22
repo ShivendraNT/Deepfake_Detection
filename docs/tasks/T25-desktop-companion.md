@@ -2,6 +2,11 @@
 
 > **Goal:** Transform Satyapan from a static web dashboard into an ambient on-screen desktop guardian ("Pahredaar / Satya") with live call audio listening, email/document verification, and Golden Hour automated incident scribing (BSA 2023 Sec 63 + 1930).
 
+> **Finale redesign (22 Oct):** the backend below stays. The desktop shell is being rebuilt as
+> mascot-only + bubble + Notebook — see `docs/GRAND_FINALS_ARCHITECTURE.md` (v2),
+> `docs/finale/PLAN.md` and the F-cards in `team/<Name>.md`. Section 2 ownership is replaced by
+> PLAN §3.
+
 ---
 
 ## 1. Owner & Scope

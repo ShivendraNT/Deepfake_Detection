@@ -1,5 +1,8 @@
 # The agent workflow (every task, every tool)
 
+> Finale (F-cards): follow `team/<Name>.md` and `docs/finale/PLAN.md` §5. This file is the
+> original T-task loop.
+
 This loop is what makes a free/mid-level model reliable: small specs, executable tests, one step
 at a time, and a hard stop when stuck. Copy-paste prompts are in `docs/harness/PROMPTS.md`.
 

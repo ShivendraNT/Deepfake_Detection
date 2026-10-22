@@ -2,8 +2,8 @@
 
 # Leader-only notes (Claude Code)
 
-- You own the critical path: T01 → T02 → T07 → T11 → T12 → T22, plus T15, T20, T21.
-  T01, T02 and the vault core are already implemented — protect them.
+- Finale: you own F01–F05 (`team/Shivendra.md`): contracts, window manager, backend glue,
+  X1 signal, integration and the demo. Protect the built core (contracts, policy, vault).
 - You are the only one who may change `src/satyapan/contracts/`, `src/satyapan/policy/`,
   `tests/invariants/`, `tests/harness/`, `tests/conftest.py`. After any contract change run
   `make schemas` and update `console/src/types.ts` in the same commit.

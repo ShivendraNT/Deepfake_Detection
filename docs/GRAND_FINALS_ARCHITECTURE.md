@@ -1,369 +1,564 @@
-# Satyapan "Pahredaar" (Satya) — Grand Finals Master Architecture & Spec
-## Amazon Raksham Deepfake Detection Track · IIT Delhi Grand Finals
+# Satya — Grand Finale Architecture (v2)
+
+> **Single source of truth for the finale build** (RAKSHAM, IIT Delhi, 24–25 Oct 2026).
+> 48-hour plan, demo and timeline: [`docs/finale/PLAN.md`](finale/PLAN.md).
+> Mascot art, motion and copy: [`docs/finale/MASCOT_SPEC.md`](finale/MASCOT_SPEC.md).
+> Your tasks: `team/<YourName>.md`. Rules for every agent: `AGENTS.md`.
 
 ---
 
-## 1. Executive Summary: Defense in Depth, Not Certainty
+## 0. The pitch in one breath
 
-**Pahredaar / Satya** is a consent-first desktop companion that helps an accounts-payable maker pause, verify a request through a trusted independent channel, and preserve evidence when asked. It is not an identity oracle, a guarantee that synthetic speech will be detected, or a control that can stop activity in unrelated banking software.
+**Satya** is a tiny, cute guardian that sits on a finance clerk's screen.
+It listens to a call only when you say yes. It reads an email only when you hand it over.
+It connects the dots across channels, and makes you verify through a channel the fraudster cannot touch.
+If money already left, it writes your golden-hour report pack in under a minute.
+**A human always presses Submit.**
 
-The architecture combines independent safeguards:
-* **Payment floor:** The existing policy engine evaluates trusted transaction, vendor-master, and configuration data. Evidence may raise the band; companion UI and models never set or lower it.
-* **Intent and evidence signals:** Existing deterministic ask extraction and evidence checkers can identify suspicious content, but are fallible. Language, accent, emotion, poor audio quality, and a missing voice seal are not proof of fraud or identity.
-* **Provenance:** A verified seal can support a provenance claim only within its documented protocol and validation limits. Passkey authentication, a watermark, a device key, and a statutory certificate are different mechanisms; do not present them as interchangeable.
-* **Independent confirmation:** For sensitive changes, route a transaction-bound confirmation to a known contact using the trusted employee/vendor directory—not a number supplied in the suspicious call or message.
-* **Scribe:** Prepare evidence-linked, editable incident drafts. The user verifies details and submits them manually if appropriate.
-
-### Assurance boundary
-
-Audio classifiers and speech recognition are probabilistic. A hash chain can show that retained bytes have not changed since hashing; it cannot prove who spoke, that the original capture was complete, or that the content is true. A locally generated evidence dossier is technical integrity support, not a promise of admissibility or a substitute for the applicable Bharatiya Sakshya Adhiniyam Section 63 process. Have Indian counsel validate the prescribed certificate fields and signatories before describing an output as compliant. “Golden hour” is a response-design goal, not a statutory deadline or recovery guarantee. Nothing is automatically reported or submitted.
+Problem statement: **03 — Deepfake Detection for Financial Communications** ("verify financial
+communications, detect manipulation, and create an actionable path for review, reporting, or response").
+It also covers parts of 01 (voice clone on calls) and 02 (scam workflow across channels).
 
 ---
 
-## 2. Desktop Architecture & Window Lifecycle
+## 1. What we keep, what we change
+
+**Keep (already built, ~700 tests green).** Policy engine (floor + raise-only bands), ask extractor
+(A1–A7, EN/Hinglish/Devanagari), email / invoice / voice-note checkers, evidence vault + custody
+chain, OOB-Confirm, callbacks, report pack (UTR-first), Satyapan Seal, live transcript path (T11),
+Chrome extension tab capture (T07), companion API + SSE bus (T25 backend).
+
+**Change: the desktop shell.** Today one 380×500 window shows the mascot *and* all the cards all
+the time, so "the whole webpage roams around the screen". The new shell has **three windows**:
+
+| Window | When visible | What it shows |
+|---|---|---|
+| **Mascot** | always (unless Off) | only Satya + a tiny radial menu when clicked |
+| **Bubble** | only when Satya needs to say something | exactly one card (consent, alert, result…) |
+| **Notebook** | when the user opens it | everything: cases, timeline, vault, reports, privacy |
+
+**New features for the finale.**
+1. Three user modes: **Watching / Sleeping / Off** (what the user asked for).
+2. Call listening through **system audio** (any app) with **per-call consent**, plus the existing
+   Chrome-tab route.
+3. **"Should I read this?"** — drag an email, invoice or voice note onto Satya.
+4. **Live chips** during a call, and a calm **alert card** with one safe next step.
+5. **Verify with one tap** (OOB-Confirm) from the alert — the real approver answers on their phone.
+6. **Scribe**: Satya puts on glasses and writes the golden-hour pack, with an animation.
+7. **Report Copilot**: a checklist for 1930, the bank, cybercrime.gov.in, CERT-In and the
+   BSA §63 certificate draft, with copy buttons and a golden-hour timer.
+8. **Notebook**: the info tab where every action Satya took is logged and visible.
+
+---
+
+## 2. Who it is for, and the threat
+
+**Primary user — Priya**, accounts executive (maker) at an Indian SME with 50–500 staff.
+**Approver — Rajesh**, the CFO. **Checker — Arjun.** **Security — Meera.** (All fictional.)
+
+| # | Attack | Channel | What Satya does |
+|---|---|---|---|
+| T-1 | Deepfake "CFO" voice/video: urgent, secret transfer to a new account | Meet / Teams / Zoom / WhatsApp / phone via Mac | live chips → alert → verify on a saved contact |
+| T-2 | Compromised or look-alike vendor mailbox; bank details changed; edited invoice PDF | email + PDF | dropped file → checks → "account differs from vendor master" → call vendor on registered number |
+| T-3 | Cloned voice note ("send it now, I'm in a meeting") | WhatsApp voice note | dropped audio → voice + ask checks |
+| T-4 | Money already left | — | Scribe + Report Copilot inside the golden hour |
+
+**Why a companion and not a dashboard.** Fraud happens *across* apps, at the moment of decision.
+A dashboard is opened after the damage. Satya is already on the screen when the call happens, and
+it sees more than one channel, so it can link "the call asked for a new account" with "an email
+with new bank details arrived 10 minutes later".
+
+---
+
+## 3. System overview
 
 ```mermaid
-flowchart TD
-    subgraph Electron ["Electron Desktop Host (sandboxed, contextIsolated)"]
-        subgraph MainProcess ["Main Process (desktop/main)"]
-            WIN_COMP["Transparent Always-On-Top Window (340x420)"]
-            WIN_DET["Case Details Workspace Window (900x650)"]
-            TRAY["System Tray & Global Hotkeys"]
-        end
-
-        subgraph Preload ["Secure Preload Bridge (desktop/preload)"]
-            BRIDGE["Narrow Typed IPC Bridge (window.satyapan)"]
-        end
-
-        subgraph Renderer ["Renderer Process (React + Tailwind + Framer Motion)"]
-            MASCOT["Companion Overlay (desktop/renderer/src/companion)"]
-            WORKSPACE["Details Workspace (desktop/renderer/src/workspace)"]
-        end
+flowchart LR
+  subgraph MAC["Priya's Mac — everything runs locally"]
+    subgraph EL["Electron app (desktop/)"]
+      MAIN["Main process<br/>window manager · tray · hotkeys<br/>IPC · backend client · permissions"]
+      MW["Mascot window<br/>(companion/)"]
+      BW["Bubble window<br/>(companion/bubble)"]
+      NW["Notebook window<br/>(workspace/)"]
+      CW["Capture window, hidden<br/>(capture/)"]
     end
+    EXT["Chrome extension<br/>Meet/Teams tab capture"]
+    API["FastAPI 127.0.0.1:8000<br/>companion · live · cases · oob · reports"]
+    CORE["policy · asks · email · document · voice<br/>vault · workflows · report · seal"]
+    OLL["Ollama (optional)<br/>summaries, capped"]
+  end
+  PHONE["Approver's phone<br/>OOB page over LAN"]
 
-    subgraph Backend ["Local FastAPI Engine (src/satyapan)"]
-        SSE["SSE Stream /companion/events"]
-        CMD["REST API /companion/commands"]
-        CORE["Policy Engine + Voice Seal + Ask Extractor + T16 Report Pack"]
-    end
-
-    WIN_COMP --> BRIDGE --> MASCOT
-    WIN_DET --> BRIDGE --> WORKSPACE
-    BRIDGE <-->|REST & SSE| Backend
+  MW <--> MAIN
+  BW <--> MAIN
+  NW <--> MAIN
+  CW -- "10 s WAV chunks + voice windows" --> API
+  CW -- "level, call hint" --> MAIN
+  MAIN <-- "REST + SSE /companion/events" --> API
+  EXT -- "chunks + voice windows" --> API
+  API --> CORE
+  CORE -.-> OLL
+  PHONE <-- "/oob/inbox, /oob/respond" --> API
 ```
 
-### Window Management & Security:
-1. **Two Windows:**
-   - **Companion Window:** Frameless, transparent, draggable, always-on-top (`transparent: true, frame: false, alwaysOnTop: true`).
-   - **Details Workspace Window:** Regular window for in-depth case inspection, evidence custody chains, and audit logs. Opens on double-click or "Inspect" action.
-2. **Sandboxing:** Context isolation enabled, Node integration disabled. Renderer talks exclusively through a narrow, typed `preload.ts` bridge (`window.satyapan`).
-3. **Default Launch State:** Always launches into **Sleep / DND**. It never monitors without explicit user consent.
+**Network.** Audio never leaves the laptop. The only other device is the approver's phone, which
+opens the OOB page over the local network (or a phone hotspot on stage). SES email only if AWS
+mode is on.
 
 ---
 
-## 3. Companion State Machine (6 States)
+## 4. Desktop: four windows, one main process
 
-| State | Visual treatment | Capture / processing | Evidence scope | Trigger / transition |
+All windows: `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`, one preload
+(`window.satyapan`), CSP `default-src 'self'; connect-src http://127.0.0.1:8000`.
+The renderer picks its view from `?view=` in `App.tsx`.
+
+| Window (`?view=`) | Size | Electron options (key ones) | Owner |
+|---|---|---|---|
+| `companion` (mascot) | 280×280 | `transparent`, `frame: false`, `alwaysOnTop('floating')`, `skipTaskbar`, `focusable: false`, `hasShadow: false`, visible on all workspaces incl. full-screen | Shivendra (window) / Saarika (content) |
+| `bubble` | 360 × auto (max 480) | `transparent`, `frame: false`, `alwaysOnTop('floating')`, `skipTaskbar`, focusable, hidden by default | Shivendra (window) / Saarika (content) |
+| `workspace` (Notebook) | 1120×720 (min 900×600) | normal window, `titleBarStyle: 'hiddenInset'` | Saksham |
+| `capture` | 1×1, `show: false` | `backgroundThrottling: false` | Kartikey |
+
+### 4.1 The mascot window (the fix for "the webpage roaming around")
+
+- The window is 280×280 but **almost all of it is click-through**. Satya is drawn 96 px in the
+  centre; the extra space is only for the radial menu and the ear "sound rings".
+- **Click-through:** main calls `setIgnoreMouseEvents(true, { forward: true })`. When the pointer
+  enters Satya or a menu petal, the renderer calls `satyapan.setClickThrough(false)`; on leave,
+  `true`. Clicks on empty space go to the app behind.
+- **Drag:** pointer-down on Satya, move > 4 px → renderer sends `dragBy(dx, dy)` every animation
+  frame → main moves the window. Release → snap to the nearest screen edge if within 24 px,
+  save position to `userData/satya.json`. Satya squashes a little while dragged.
+- **Click** (no movement, < 250 ms) → radial menu blooms. **Double-click** → Notebook.
+  **Right-click** → native context menu (all actions, including Off and Quit).
+- **Hover** → Satya looks at the cursor and twitches an ear. Cursor position comes from main
+  (`screen.getCursorScreenPoint()` at 30 Hz, only while visible).
+
+### 4.2 The bubble window
+
+- Shows **exactly one `BubbleCard`** (contract in §9). Never a stack of cards.
+- Placed beside Satya: to the left if Satya is on the right half of the screen, else to the right;
+  moved up if it would go off-screen. Main recomputes after every drag.
+- Passive cards (live chips, toasts) use `showInactive()` so they never steal focus from the call.
+  Cards that need an answer use `show()`.
+- Height follows content (`ResizeObserver` → `resizeBubble(h)`). `Esc` dismisses dismissible cards.
+- Toasts auto-hide after 4 s. Alert cards never auto-hide.
+
+### 4.3 The Notebook (the info tab)
+
+Opened by double-click, the menu, or a card's "Open Notebook" button. Tabs:
+
+| Tab | What it shows | Source |
+|---|---|---|
+| **Now** | current mode, what is being watched, live call panel (chips, coverage, seal), last alert | SSE `/companion/events`, `/companion/state` |
+| **Cases** | payment cases with band, queue, reasons in plain words | `/companion/cases`, `/companion/workspace` |
+| **Timeline** | every action Satya or the user took, newest first (append-only) | `/companion/audit` + events |
+| **Evidence** | every file/recording kept: name, channel, SHA-256, custody rows, "Re-check integrity" | `/cases/{id}/custody` |
+| **Reports** | Scribe animation + Report Copilot checklist + golden-hour timer | `/companion/report-pack` |
+| **Privacy** | what is on, consent receipts, what was kept and for how long, "Delete session data" | `/companion/state`, audit |
+| **Settings** | size S/M/L, sounds, language (EN / Hinglish / हिन्दी), hotkeys, sources, OOB QR code | local prefs |
+
+Makers never see raw scores here either (only checker/security roles, and only in Cases).
+
+### 4.4 Tray, hotkeys, menus
+
+- **Tray icon** (always present while the app runs): shows the mode; items: Watch, Sleep,
+  Show/Hide Satya, Open Notebook, Quit. When Satya is **Off**, the tray is how you bring him back.
+- **Hotkeys:** `⌘⇧S` check clipboard text (read only on press) · `⌘⇧.` **stop listening now**
+  (panic → Sleeping) · `⌘⇧N` open Notebook.
+- **Radial menu** (5 petals): 👁 Watch · 😴 Sleep · 📄 Check something · 📒 Notebook · ✕ Off.
+  (Icons from `lucide-react`, not emoji.) Near a screen edge the petals arc inward.
+
+---
+
+## 5. Modes and states
+
+The user sees **three modes**. Inside Watching, Satya has **moods** (poses).
+
+```mermaid
+stateDiagram-v2
+  [*] --> Sleeping: app start (default)
+  Sleeping --> Watching: Watch + consent (first time)
+  Watching --> Sleeping: Sleep · ⌘⇧. · capture error
+  Watching --> Off: Off
+  Sleeping --> Off: Off
+  Off --> Sleeping: tray "Bring Satya back"
+  state Watching {
+    [*] --> Idle
+    Idle --> Listening: call detected + user says yes
+    Listening --> Idle: call ends / user stops
+    Idle --> Thinking: file dropped + user says yes
+    Listening --> Alert: policy band >= VERIFY
+    Thinking --> Alert: policy band >= VERIFY
+    Thinking --> Idle: looks OK
+    Alert --> Waiting: Verify (OOB sent)
+    Waiting --> Relief: approver confirms exact request
+    Waiting --> Alert: approver says "not me" (HOLD)
+    Alert --> Writing: "Help me report"
+    Writing --> Idle: pack ready
+    Relief --> Idle
+  }
+```
+
+| User mode | Capture | Mascot | Backend `CompanionMode` |
+|---|---|---|---|
+| **Sleeping** (default) | off, released | `sleep` pose, Zz | `SLEEP` |
+| **Watching** | system audio VAD only (in memory) to *notice* a call; nothing transcribed | `idle` | `ACTIVE` |
+| ↳ Listening | this call only, after a yes | `listen` (ears up, sound rings) | `ACTIVE` (call session) |
+| ↳ Thinking | the one file you handed over | `think` | `INVESTIGATING` |
+| ↳ Alert | no new capture implied | `alert` (shield, amber) | `ALERT` |
+| ↳ Writing | capture paused | `write` (glasses, quill) | `SCRIBE` |
+| **Off** | off, mascot window hidden, tray only | `off` (waves bye, shrinks) | `DISABLED` |
+
+**Rules (tests enforce the first four).**
+1. Launch into **Sleeping**. Nothing is captured before a visible consent card is accepted.
+2. Hide / Off / Quit **stop the session first** (`/companion/session/stop`).
+3. Any permission error, device change or capture failure → **Sleeping** + a toast saying why.
+4. `⌘⇧.` works in every state.
+5. While Listening, a visible indicator is always on (ears up + a small teal dot in the tray icon).
+6. Setting "Only when I click" turns off call noticing (no VAD at all).
+
+---
+
+## 6. The five flows
+
+### 6.1 Turn on (consent)
+
+Menu → Watch → bubble `consent` card (first time, and again if scopes change):
+
+> **Can I keep watch?** I'll notice when a call starts and **ask before I listen**. I only look for
+> payment tricks. **Nothing is saved unless you say so.** Stop me anytime with ⌘⇧.
+
+Scopes listed as chips: *Notice calls (no recording)* · *Listen to a call when you say yes* ·
+*Check files you give me*. Buttons: **Start watching** / Not now.
+Accept → `POST /companion/session/start` → consent receipt logged in the Timeline.
+
+### 6.2 Calls (live)
+
+**Where call audio comes from (in priority order for the demo):**
+
+| Route | How | Works with | Status |
+|---|---|---|---|
+| **A. Chrome extension** | `tabCapture` of the Meet/Teams tab (T07), chunks → `/live` (T11) | Meet / Teams in Chrome | built, measured 3.12 s chunk→chip on M4 |
+| **B. System audio loopback** | Electron `getDisplayMedia` + `setDisplayMediaRequestHandler({ audio: 'loopback' })` | any app: Zoom, Teams app, WhatsApp desktop, FaceTime, iPhone calls via Continuity | new (F10). macOS 14.2+ with Electron ≥ 39 (CoreAudio Tap) and `NSAudioCaptureUsageDescription` |
+| **C. Replay** | local WAV fixture, labelled **DEMO REPLAY — NOT LIVE CAPTURE** | anything | fallback |
+
+We copy the **output** audio (the other person's voice). Nothing is re-routed, so the call has zero
+added delay. **We never capture the microphone** — we don't need Priya's own voice.
+
+**Steps.**
+1. Watching: the capture window runs a voice-activity check on system audio **in memory**
+   (no ASR, no storage). ≥ 3 s of speech within 10 s, or the extension says "Meet tab in a call"
+   → `call hint`.
+2. Bubble `call_ask`: **"Sounds like a call. Listen for payment tricks?"** [Listen to this call]
+   [Not this one]. "Not this one" ignores hints for 30 min.
+3. Yes → `POST /companion/calls/start` → `{call_id, case_id}` → capture window starts sending
+   **10 s WAV chunks** to `/live/{call_id}/chunk` and ONNX voice windows to
+   `/live/{call_id}/voice` (same as the extension, same parity-tested JS libs).
+4. Backend: Whisper transcript → ask extractor → signals → **policy decides the band**.
+   The live bus is fanned into `/companion/events` as `live.chips`, `coverage.changed` and,
+   when the band is ≥ VERIFY, `alert.raised`.
+5. Mascot `listen` pose; the ear rings follow the **local** audio level (never sent anywhere).
+   Bubble `live` card (passive) shows the chips as they appear.
+6. Alert → bubble `alert` card (see §6.4). Call ends / user stops → `POST /companion/calls/stop`.
+
+**Latency budget.** 10 s chunk + ~3 s ASR → first chip ≤ 13 s after the words are said (p50
+measured 3.12 s chunk-end→chip on M4, T11). Good enough: the decision to pay takes minutes.
+
+**Quality gates (keep these honest).**
+- Each chunk has a sequence number. Gaps, late or duplicate chunks are marked; never stitched.
+- Degraded audio (silence, clipping, gaps) → `coverage: degraded|incomplete` → **abstain** from any
+  acoustic conclusion. Poor audio never creates an alert by itself.
+- Accent or language is routing metadata only, **never a risk feature**.
+- A missing Seal means **"not verified by Seal"**, never "fake".
+- The voice detector is one raise-only signal. The ask extractor and the payment floor carry most
+  of the weight (see `results/EVIDENCE_LEDGER.md` for honest numbers).
+
+### 6.3 Emails, invoices, voice notes — "Should I read this?"
+
+Satya never reads anything on his own. Three ways to hand something over:
+
+1. **Drag & drop onto Satya**: `.eml` (Apple Mail drag-out, Outlook, Gmail "Download message"),
+   `.pdf`, `.txt`, `.wav/.m4a/.ogg/.opus` (WhatsApp voice notes), images (P2: OCR).
+2. **`⌘⇧S`** — checks the clipboard text, only at that moment.
+3. **Menu → Check something** — bubble with a drop zone and a paste box.
+
+Flow: file hovers over Satya → `catch` pose (mouth open, paws up) → drop → bubble `file_ask`:
+**"Want me to check "Invoice_Oct.pdf"? I'll keep its fingerprint in your Notebook."** [Check it]
+[No thanks] → `POST /companion/files` → vault intake (hash first) → `pipeline.analyze_evidence` →
+merge → `recompute` (**policy decides**) → `analysis.completed` → bubble `result` card:
+**Looks OK / Verify first / Hold**, 1–3 reasons in plain words, one next action.
+
+If a payment case is open, the file attaches to it. If not, the result card offers
+"Link to a payment" (opens Notebook → Cases).
+
+### 6.4 Verify — the real countermeasure (OOB-Confirm)
+
+We do **not** ask the clerk to quiz the caller. A clone can be fed the answers.
+We challenge the **transaction** through a channel the fraudster does not control.
+
+Alert card:
+> **Pause before you pay.** This call asked for: *New account* · *Keep it secret* · *Skip approval*.
+> That doesn't prove who is speaking — so let's check with Rajesh on his own phone.
+> **[Verify with Rajesh]** [Copy a safe reply] [Open Notebook]
+
+- **Verify** → `POST /companion/oob {case_id}` → existing `workflows/oob` → approver and channel
+  come **only from the employee directory**, never from the call or the email.
+- The approver's phone shows the exact request (vendor, ₹ amount, masked account) →
+  **Approve this exact request** / **Reject** / **I did not request this**.
+- `/oob/respond` → policy recompute → `oob.result` event → Satya: `relief` (approved) or `alert`
+  with HOLD ("Rajesh says he didn't ask. I've put this payment on hold.").
+- Timeout or no answer = **not verified**. Silence is never approval.
+- **Safe reply** (one tap to copy): *"I'll verify this through our registered process and call you
+  back."*
+
+### 6.5 Scribe + Report Copilot — the golden hour
+
+Trigger: the case becomes `CONFIRMED_FRAUD`, or the user picks **"Money already left? Help me
+report"** from the menu or the alert card.
+
+1. Bubble: **"Money already left? I can prepare your report pack now. Every minute counts."**
+   [Prepare it] [Not now].
+2. Satya → `write` pose (glasses, quill). Bubble `scribe` card ticks sections off.
+3. Notebook opens on **Reports**. The pack **types itself out**, section by section; every line has
+   a source chip (`maker-entered`, `vault ev_…`, `vendor master`, `you confirmed`).
+   The animation is client-side over the final text, so it can never invent content.
+4. **Report Copilot** — a checklist with a golden-hour timer from the "money left" time:
+
+| # | Destination | What Satya prepares | How the human sends it |
+|---|---|---|---|
+| 1 | **1930** helpline | call script, UTR on line 1, amount, time, beneficiary (masked on screen, full on reveal) | clicks "Call 1930" (`tel:1930`, the Mac asks to call via iPhone) |
+| 2 | **Bank fraud desk** | email with UTR, amount, beneficiary, request to hold/recall | `mailto:` opens their mail app with the draft |
+| 3 | **cybercrime.gov.in** (NCRP) | every field in the portal's order with a copy button; evidence files listed with hashes | opens the portal, logs in with their OTP, pastes, submits |
+| 4 | **CERT-In** (companies) | incident email draft; 6-hour clock | `mailto:incident@cert-in.org.in` — confirm applicability with IT/legal |
+| 5 | **BSA §63 certificate, Part A** | draft with SHA-256 hash of each evidence file (from the vault), device particulars, lawful-control statements | export PDF, a human signs; **Part B needs an expert** |
+
+**Facts behind the checklist (cite these on slides).**
+- **1930 / CFCFRMS**: reporting fast lets police ask banks to hold the money. MHA told the Rajya
+  Sabha (12 Aug 2026) that **₹11,158 crore+** was saved across **3.28 million+** complaints till
+  30 Jun 2026. A 1930 call creates a ticket you complete online; banks can also file on NCRP.
+- **CERT-In Directions (28 Apr 2022)**: service providers, intermediaries, data centres, **body
+  corporates** and government bodies must report listed incidents **within 6 hours**. The list
+  includes *"Identity Theft, spoofing and phishing attacks"*. Whether a given SME incident
+  qualifies is a legal call — Satya says "check with your IT/legal", never "you must".
+- **BSA 2023 §63(4)**: the Schedule certificate's Part A asks for the **hash value** of the record
+  and the algorithm (SHA-256 is an option). The Supreme Court upheld the requirement in
+  *Pune Bar Assn. v. Union of India* (22 May 2026) and called a hash an "electronic fingerprint".
+  Our vault already hashes every file on intake, so Part A is mostly pre-filled.
+- **RBI customer-liability circular (2017)**: for unauthorised electronic transactions, reporting to
+  the bank quickly limits the customer's liability. Mention only for individual accounts.
+
+**Why Satya does not file reports itself.** There is no public 1930/NCRP API; the portal needs the
+victim's own OTP login; a wrong or duplicate filing hurts the victim; and a human must stand behind
+a police complaint. So Satya does 95% of the work and the human does the last click.
+(P3 stretch, only if someone can see the real form: the extension fills fields on the already-open
+NCRP page. It **never** clicks Submit.)
+
+---
+
+## 7. Cross-channel linking (P1 — our "connect the dots" signal)
+
+A real attack is a *sequence*: call with urgency → new beneficiary → payment. Single-channel tools
+miss this. Satya sees several channels, so the backend adds one deterministic signal:
+
+> **X1 — Cross-channel sequence.** Within 30 minutes: a call or message asked for A1 (new account)
+> or A7 (payee change), **and** a payment to a new or changed beneficiary is entered in the same
+> case → raise to **VERIFY** (HOLD if A4 secrecy or A5 bypass also present).
+
+It goes through `Signal.make(...)` and the signal table like every other signal (leader-only
+contract change, with tests in `tests/invariants/`). No ML, fully explainable.
+
+---
+
+## 8. Backend (FastAPI)
+
+**Reused as is.** `/live/{call_id}/start|chunk|voice|events` (T11) · `/cases/{id}/evidence` ·
+`/cases/{id}/oob`, `/oob/inbox`, `/oob/respond` (T12) · `/cases/{id}/custody` ·
+`/cases/{id}/report` (T16) · `/companion/state|events|session/start|session/stop|commands|
+evidence|drafts|workspace|cases|audit` (T25).
+
+**New (thin wrappers — no new detection logic).**
+
+| Endpoint | Body | Returns | Wraps | Owner |
 |---|---|---|---|---|
-| **Sleep / DND (Default)** | Resting, low-motion, no attention-seeking cues | OFF; capture released | No monitoring or analysis | App startup, user clicks Sleep, or a permission/device failure occurs. |
-| **Active / Watching** | Calm, attentive, persistent “Watching [source]” indicator | ON only for the explicitly selected source | User-consented source only | User starts a session after seeing the source and permission scope. |
-| **Investigating** | Focused progress with a cancel control | Process only the submitted/currently consented evidence | Show source, time range, and status; no hidden screen scraping | A scoped detector event or user-requested email/document analysis starts review. |
-| **Alert / Alarm** | Serious, calm shield; plain-language card; no siren or panic animation | No new analysis is implied by the alert | Show observed reason(s), uncertainty, and evidence references | Backend event arrives. Missing seal or one weak detector result alone is not an identity accusation. |
-| **Scribe** | Deliberate typing animation with visible source citations and draft status | Pause new capture by default; offer a separate explicit resume control | Draft only from selected/custodied evidence and user-confirmed facts | User asks to prepare a draft. Outputs remain editable and `MANUAL_ONLY`. |
-| **Disabled** | Removed from the screen | OFF; capture and session resources released | No monitoring | User chooses Disable/Exit. A separate Hide action must not leave monitoring active invisibly. |
+| `POST /companion/calls/start` | `{source, consent_id}` | `{call_id, case_id}` | `live.start` + companion session source | Shivendra |
+| `POST /companion/calls/stop` | `{call_id}` | `CompanionState` | stop live session | Shivendra |
+| `POST /companion/files` | multipart `file`, `case_id?` | `EvidenceResult` | vault intake → pipeline → recompute | Shivendra |
+| `POST /companion/oob` | `{case_id}` | `OobTicket` | `workflows/oob` | Shivendra |
+| `GET /companion/report-pack` | `?case_id=` | `ReportPackV2` | `report/pack` + new sections | Kartikey |
+| fan-in | — | events | live bus + `/oob/respond` → companion bus | Shivendra |
 
-*Safety guardrail:* A global **"Stop Watching"** control exists in every state. Permission errors or device disconnects immediately stop capture and fail closed to **Sleep / DND**. Provide reduced-motion, keyboard, and screen-reader equivalents; color or sound is never the only indication.
-
-### 3.1 Psychological Intervention: A Cognitive Pause, Not Coercion
-
-The goal is to interrupt urgency and authority pressure with a clear, low-arousal pause—not to frighten, shame, or trap the clerk. “Unavoidable” cannot be promised: Satya cannot prevent a person from using another application, and it must not hijack keyboard input, disable a bank’s Send button, impersonate a bank screen, or make a dismissible alert impossible to dismiss.
-
-When a backend alert arrives, present a short, persistent-but-dismissible card:
-
-1. **Pause:** “Pause before changing the beneficiary or sending this payment.”
-2. **Observed facts:** Name the detected request or mismatch and its evidence/time range. Say explicitly that this does not prove who is speaking. Avoid raw scores, accusatory labels, and unsupported certainty.
-3. **Safe next action:** Make **“Verify using a saved contact”** the primary action. The destination comes only from the trusted employee/vendor directory. Never use the phone number, link, or contact method supplied in the suspicious message or call.
-4. **Usable refusal script:** Offer a one-tap-to-copy sentence such as, “I need to verify this through our registered callback process; I’ll get back to you.” It does not disclose a challenge or sensitive internal data.
-5. **Deliberate acknowledgement:** In Satya’s own case/payment workflow, require an explicit user choice to record whether verification was completed before proceeding to the next in-app step. This is not a lock on external net-banking software. Preserve the alert in the case timeline even if dismissed.
-
-Keep Active calm and unobtrusive; Investigating transparent about what it is processing; Alert firm but non-alarming; and Scribe methodical, showing provenance and draft status. Use at most one optional, user-configurable cue (visual, sound, or haptic where supported); avoid repeated sirens that create alarm fatigue or interfere with the call. Measure comprehension and action in consented role-play dry runs before claiming the design changes behavior or prevents payments.
-
-### 3.2 Adversarial Audio, Quality Gates, and Live-Demo Fallback
-
-The audio path must distinguish **what was said** from **whether a voice has a verified provenance signal**. Hindi/Hinglish, a regional accent, emotion, background speech, or a codec artifact must never be treated as evidence of fraud by itself. A missing seal means “not verified by this seal,” not “synthetic.” The team must not claim that a classifier catches a particular commercial voice generator until a versioned, held-out evaluation supports that claim.
-
-#### Bounded live pipeline
-
-1. **Consent and source identity:** Start only after the user selects a source and grants the OS permission. Record session/source IDs and the actual capture format. Do not silently switch from a chosen app to microphone or system-wide capture.
-2. **Sequence before inference:** Give every chunk a monotonically increasing sequence number and capture timestamps. Use a bounded jitter buffer sized from measured T18 channel data. Detect late, missing, duplicate, and out-of-order chunks. Never silently stretch, interpolate, or concatenate a gap and then call the result continuous evidence.
-3. **Quality telemetry:** Track format, duration, silence/VAD, clipping, discontinuity/drop counts, and conservative noise-quality estimates. Mark a window `usable`, `degraded`, or `incomplete`; these are capture-coverage statuses, not fraud bands. Keep the original captured bytes unchanged when preservation is explicitly requested. Any resampled, denoised, or transcoded copy is a separately hashed derivative with its parent and transform recorded. Do not apply aggressive denoising before spoof analysis unless that exact transform has been evaluated: it can erase or invent artifacts.
-4. **Separate analysis paths:** Run speech/ask extraction and any acoustic/provenance detector as independent evidence producers. Treat uncertain ASR as uncertain; never let the UI turn a guessed transcript into a quotation. Attach time ranges and evidence IDs to extracted content. Accent or language identification is routing metadata only, never a risk feature.
-5. **Quality-aware abstention:** Run acoustic inference only on channel conditions represented in validation. If quality is degraded or the stream has gaps, abstain from an acoustic conclusion and show that coverage is incomplete. Do not translate low quality, a missing seal, or a detector score directly into an Alarm. Existing backend signals and the policy engine remain the only route to a band; signals are created through the approved `Signal.make(...)` path, and no maker sees raw scores.
-6. **Bounded latency and storage:** Keep only a short, consented in-memory analysis buffer by default. Persist evidence only through an explicit preserve-evidence action and the existing custody path. If processing falls behind, discard stale inference windows with explicit gap markers rather than building an unbounded queue. Do not send audio to a cloud service as an automatic fallback.
-
-#### Red-team matrix and required behavior
-
-| Judge/input condition | Expected safe behavior |
-|---|---|
-| Hindi/Hinglish, code-switching, unfamiliar accent | Preserve language uncertainty; do not label accent as suspicious. Ask the user to verify if the content or other evidence warrants it. |
-| Fan noise, room echo, clipping, low volume | Mark coverage degraded and abstain from unsupported acoustic conclusions. Do not produce a fraud alarm from noise alone. |
-| Meet/Teams/phone codec, resampling, speaker playback | Test each actual capture route and codec in T18. Calibrate per route or abstain; do not reuse clean-audio thresholds as if equivalent. |
-| High-quality synthetic voice with neutral content | Do not claim guaranteed detection. A missing/unavailable seal is “unverified”; use independent transaction verification rather than identity certainty. |
-| Synthetic voice plus urgent beneficiary/payment change | Surface the independently detected request evidence and guide the user to trusted OOB verification. The policy engine decides any escalation; the detector does not decide identity. |
-| Jitter, device disconnect, OS permission revoked | Mark the affected interval incomplete, stop or pause capture, visibly report the failure, and offer trusted callback/manual verification. Never silently fill the gap. |
-
-For red-team evidence, use consented or generated test material, record the exact codec/noise transforms and model versions, and keep speaker/source splits disjoint. Report false-alert and miss rates with sample counts and confidence intervals. If a scenario has not been tested, state that limitation instead of improvising a performance number.
-
-#### Three-minute pitch resilience
-
-Keep the demo’s inference path local so internet loss does not stop the primary demonstration. Before a **LIVE** run, perform a capture-permission and continuity preflight. If loopback health falls outside limits measured on the target device, stop presenting it as live and switch to a local, deterministic replay fixture. Put a persistent **“DEMO REPLAY — NOT LIVE CAPTURE”** label on the UI; use fake identities and fake transaction data. Do not claim that replay is a live detection. Keep a short screen recording and a verbal/manual walkthrough as further fallback. In a real incident, the safe fallback is to pause the payment and use a trusted callback—not to trust a stale or partial audio result.
-
-### 3.3 Reverse Challenge Through Independent OOB Confirmation
-
-Do **not** make the clerk ask the suspicious caller a “secret question.” Knowledge questions can be learned, guessed, elicited by social engineering, or relayed to a live voice clone; they create false confidence. A challenge spoken on the same call is not an independent factor. Satya’s countermeasure is to challenge the *transaction* through a separately trusted path, using the existing OOB-Confirm workflow.
-
-1. **Create a transaction-bound request:** Bind a one-time challenge ID/nonce to a canonical snapshot of the requested action (vendor/payee identity, amount/currency, action such as beneficiary change, and masked destination reference). Expire it after a short, policy-configured interval; make it single-use and idempotent. The nonce prevents replay and binds the approval to this request; it is not proof of identity by itself.
-2. **Resolve the approver independently:** Select the approver and callback destination from the employee directory or trusted vendor master. Never use a number, link, or “new contact” in the suspicious message/call. Prefer a pre-enrolled authenticated approval channel distinct from the originating communication. If that channel is unavailable, give the clerk a one-click path to call the directory-listed number and read back the exact transaction for confirmation.
-3. **Show the approver the actual intent:** The approver sees the vendor, amount/currency, requested change, and masked destination, then chooses **Approve this exact request**, **Reject**, or **I did not request this**. A generic “yes,” a voice resemblance, or successful answer to a personal question is not sufficient. Do not disclose a code or challenge answer to the original caller.
-4. **Handle no response safely:** Timeout, unreachable approver, mismatched details, or an untrusted route means **not verified**. Keep the request pending and recommend the team’s established escalation process; never convert silence into approval. A response does not itself lower a band—any clearance must go through the existing policy/clearance flow.
-5. **Keep an auditable, minimal record:** Record challenge ID, transaction digest, target directory identity/reference, delivery route, issue/expiry times, response, response-channel authentication result, and evidence IDs. Do not log reusable secrets or unmasked account data in UI text. The event is an OOB result for the policy/workflow layer, not a UI-set risk decision.
-
-This gives the clerk a practical counter-script—“I’ll verify the exact request through our registered channel”—without trying to outsmart the clone acoustically. If the organization has no independent, pre-enrolled route, the system must say verification is unavailable rather than inventing one.
+**New companion event types:** `call.started`, `call.stopped`, `live.chips`, `coverage.changed`,
+`oob.sent`, `oob.result`, `case.updated`, `report.ready` (plus the existing ones).
 
 ---
 
-## 4. Frontend ↔ FastAPI Contract
+## 9. Contracts (frozen at hour 2 by Shivendra — F01)
 
-All messages use versioned envelopes. REST for commands, SSE for live state push. Audio bytes are transmitted as multipart binary (`audio/wav`), never base64 in JSON.
+Only the leader edits these. TypeScript in `desktop/shared/contracts.ts`; Python mirror in
+`src/satyapan/api/companion/models.py`. Everyone else imports them.
 
-### A. Analysis Command: `POST /companion/submit-evidence`
-```json
-{
-  "version": "1",
-  "request_id": "req_demo_001",
-  "type": "evidence.text.submit",
-  "session_id": "session_demo_001",
-  "payload": {
-    "source": "user_selected_email",
-    "consent_id": "consent_demo_001",
-    "text": "Please review the requested beneficiary change using the registered callback process.",
-    "evidence_id": "ev_text_001"
-  }
+```ts
+// ---- Finale additions (F01) ----
+export type UserMode = 'WATCHING' | 'SLEEPING' | 'OFF'
+export type Pose =
+  | 'sleep' | 'idle' | 'listen' | 'think' | 'alert'
+  | 'relief' | 'write' | 'catch' | 'wave' | 'off'
+export type Lang = 'en' | 'hinglish' | 'hi'
+export type Coverage = 'usable' | 'degraded' | 'incomplete'
+export type SealStatus = 'verified' | 'not_verified' | 'unavailable'
+export type CaptureSourceKind = 'extension' | 'loopback' | 'replay'
+
+export interface AskChip { code: 'A1'|'A2'|'A3'|'A4'|'A5'|'A6'|'A7'; at_s: number | null }
+export interface CardAction { id: string; variant: 'primary' | 'outline' | 'ghost' }
+// Text for chips and actions comes from copy.ts by code/id (EN / Hinglish / हिन्दी).
+
+export type BubbleCard =
+  | { kind: 'consent';    id: string; scopes: string[]; actions: CardAction[] }
+  | { kind: 'call_ask';   id: string; source: CaptureSourceKind; actions: CardAction[] }
+  | { kind: 'file_ask';   id: string; file_name: string;
+      file_kind: 'email' | 'pdf' | 'audio' | 'text' | 'image'; actions: CardAction[] }
+  | { kind: 'live';       id: string; chips: AskChip[]; coverage: Coverage;
+      seal: SealStatus; elapsed_s: number }
+  | { kind: 'result';     id: string; band: Band; headline: string; reasons: string[];
+      actions: CardAction[] }
+  | { kind: 'alert';      id: string; band: Band; headline: string; reasons: string[];
+      chips: AskChip[]; actions: CardAction[] }
+  | { kind: 'oob_wait';   id: string; approver_name: string; sent_at: string;
+      actions: CardAction[] }
+  | { kind: 'oob_result'; id: string; approver_name: string;
+      outcome: 'approved' | 'rejected' | 'not_requested' | 'expired'; actions: CardAction[] }
+  | { kind: 'scribe';     id: string; actions: CardAction[];
+      sections: { id: string; title: string; status: 'pending' | 'writing' | 'done' }[] }
+  | { kind: 'toast';      id: string; text_key: string; tone: 'neutral' | 'good' | 'warn' }
+
+export interface OobTicket {
+  oob_id: string; case_id: string; approver_name: string
+  channel: 'console' | 'email'; inbox_url: string; expires_at: string
 }
+
+export interface ReportField {
+  label: string; value: string
+  source: 'maker_entered' | 'vault' | 'vendor_master' | 'user_confirmed' | 'system'
+  evidence_id: string | null; copy: boolean; sensitive: boolean
+}
+export interface ReportSection {
+  id: 'helpline_1930' | 'bank_fraud_desk' | 'ncrp_portal' | 'cert_in' | 'bsa_s63_part_a'
+  title: string; destination: string; deadline_hint: string | null
+  body: string; fields: ReportField[]; open_url: string | null
+  applies: boolean; status: 'DRAFT_REQUIRES_HUMAN_REVIEW'
+}
+export interface ReportPackV2 {
+  version: '2'; case_id: string; generated_at: string; money_left_at: string | null
+  sections: ReportSection[]; submission: 'MANUAL_ONLY'; auto_submit: false
+}
+
+// CompanionPayload gains OPTIONAL fields (old events stay valid):
+//   case_id?: string; chips?: AskChip[]; coverage?: Coverage; seal?: SealStatus;
+//   oob?: { oob_id: string; approver_name: string;
+//           outcome?: 'approved' | 'rejected' | 'not_requested' | 'expired' }
+// CompanionEventType gains: 'call.started' | 'call.stopped' | 'live.chips' |
+//   'coverage.changed' | 'oob.sent' | 'oob.result' | 'case.updated' | 'report.ready'
 ```
 
-### B. Live State Event: `GET /companion/events` (SSE Stream)
-```json
-{
-  "version": "1",
-  "event_id": "evt_9901",
-  "type": "alert.raised",
-  "session_id": "session_demo_001",
-  "occurred_at": "2026-10-21T23:50:00Z",
-  "payload": {
-    "state": "ALERT",
-    "mascot_mood": "calm_alert",
-    "band": "VERIFY",
-    "headline": "Request needs independent verification",
-    "explanation": "A sample beneficiary-change request needs review. This evidence does not establish the caller's identity.",
-    "reason_codes": ["DEMO_ONLY_REASON_CODE"],
-    "evidence_ids": ["ev_audio_001"],
-    "next_actions": [
-      {"id": "oob_verify", "label": "Verify using a saved contact", "variant": "primary"},
-      {"id": "open_scribe", "label": "Prepare an incident draft", "variant": "outline"},
-      {"id": "open_workspace", "label": "View Details", "variant": "outline"}
-    ]
-  }
-}
+**Bridge additions (`window.satyapan`, preload).**
+
+```ts
+// mascot window
+setClickThrough(through: boolean): void
+dragBy(dx: number, dy: number): void
+dragEnd(): void
+onCursor(cb: (p: { dx: number; dy: number; near: boolean }) => void): () => void // vs. Satya's centre
+showCard(card: BubbleCard): void
+hideCard(id?: string): void
+onCardAction(cb: (a: { card_id: string; action_id: string }) => void): () => void
+setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>>
+// bubble window (tail = which side of the card points at Satya)
+onCard(cb: (card: BubbleCard | null, tail: 'left' | 'right') => void): () => void
+cardAction(card_id: string, action_id: string): void
+resizeBubble(height: number): void
+// notebook
+audit(): Promise<BridgeResult<AuditRow[]>>
+custody(caseId: string): Promise<BridgeResult<CustodyRow[]>>   // CustodyRow mirrors contracts/custody.py
+getPrefs(): Promise<Prefs>
+setPrefs(p: Partial<Prefs>): Promise<Prefs>
+// Prefs = { size: 'S'|'M'|'L'; sounds: boolean; lang: Lang; notice_calls: boolean;
+//           source: CaptureSourceKind }
+// AppConfig gains: oob_url (LAN URL of the approver page, for the QR code)
+// files, calls, OOB, reports
+submitFile(name: string, mime: string, bytes: ArrayBuffer, caseId?: string)
+  : Promise<BridgeResult<EvidenceResult>>
+startCall(source: CaptureSourceKind): Promise<BridgeResult<{ call_id: string; case_id: string }>>
+stopCall(): Promise<BridgeResult<CompanionState>>
+onAudioLevel(cb: (level: number) => void): () => void            // 0..1, 20 Hz, local only
+onCallHint(cb: (h: { source: CaptureSourceKind }) => void): () => void
+requestOob(caseId: string): Promise<BridgeResult<OobTicket>>
+reportPack(caseId: string): Promise<BridgeResult<ReportPackV2>>
+openExternal(url: string): Promise<void>   // main allow-lists: tel:1930, mailto:, https://cybercrime.gov.in
 ```
+
+**Rule for everyone:** if you need a field that is not here, **don't invent it**. Write
+`NEEDS-CONTRACT: <what and why>` at the bottom of your card in `team/<YourName>.md` and tell
+Shivendra. Until then use the mock.
 
 ---
 
-## 5. 4-Person Ownership Boundaries & Folder Layout
+## 10. Safety, privacy, responsible AI (15 points — say these out loud)
 
-```
-repository/
-├── desktop/
-│   ├── main/                 # [Shivendra] Electron window lifecycle, tray, security
-│   ├── preload/              # [Shivendra] Typed contextBridge (window.satyapan)
-│   ├── capture/              # [Kartikey] System audio loopback & fake capture adapter
-│   └── renderer/
-│       ├── src/
-│       │   ├── companion/    # [Saarika] Mascot animations, moods, speech bubbles
-│       │   ├── workspace/    # [Saksham] Case details window, telemetry, audit logs
-│       │   └── assets/       # [Saarika] Mascot SVGs and synthesized audio chimes
-├── src/satyapan/
-│   ├── api/
-│   │   └── companion/        # [Shivendra & Kartikey] SSE router & evidence ingest
-│   └── report/               # [Kartikey] BSA Sec 63 + 1930 script generation
-└── tests/tasks/
-    └── test_t25_companion.py # [Shivendra] Acceptance suite
-```
-
-### The 3 Mockable Interfaces (Enabling Parallel Work with Weak Models):
-1. **`CompanionApiClient`:** Emits mock SSE events (`ALARM`, `WATCHING`, etc.) so Saarika and Saksham can test the full UI without running the Python backend.
-2. **`CaptureSource`:** A fake audio generator producing 5-second PCM test chunks so Kartikey and Shivendra can test audio routing without needing a live Google Meet call.
-3. **`ReportDraftClient`:** Returns static Section 63 and 1930 drafts for instant UI testing of "The Scribe".
+- **Consent per scope and per call.** Launches asleep. Listening needs a yes for *this* call.
+- **Local only.** ASR (Whisper on the M4), detectors and policy run on the laptop. No cloud upload,
+  not even as a fallback.
+- **No microphone.** We capture only the other side of the call.
+- **RAM-only audio by default.** Kept only if the user taps "Keep as evidence"; then hash-first
+  into the vault with a custody chain. Derived files (transcripts, resampled audio) get their own
+  hash and a parent link; the original is never replaced.
+- **Raise-only policy.** Only `src/satyapan/policy/` sets a band. LLM/style signals are capped at
+  VERIFY. Nothing lowers a band. Makers never see raw scores (oracle-abuse mitigation).
+- **Abstain on bad audio.** Degraded coverage → no acoustic conclusion.
+- **No accent/language features.** Hindi/Hinglish never counts as suspicious.
+- **Calm, dismissible alerts.** A cognitive pause, not a siren. We never block other apps.
+- **No auto-reporting.** Every draft is `MANUAL_ONLY`, editable, and cites its source.
+- **Visible logging.** Every action is in the Timeline; Privacy tab can delete session data.
+- **DPDP Act 2023** (Rules notified Nov 2025, phased): consent notice in plain words, purpose
+  limitation (fraud checks only), deletion on request, no data shared.
+- **Data hygiene for the build.** Only synthetic or consented voices; fake IFSC `FAK…`, accounts
+  `9999…`, domains `*.example`. All AI-generated content and models are disclosed in the appendix.
 
 ---
 
-## 6. Golden-Hour Evidence Dossier: Integrity and Provenance
+## 11. Adoption, integration, scale (10 points)
 
-### What the cryptography does—and does not prove
+- **SME install:** signed `.dmg` / `.exe` (Electron), vendor master import from CSV/Tally export.
+  Windows works too: system-audio loopback is native there.
+- **Bank integration:** banks can already file on NCRP with their own credentials; Satya exports a
+  bank-ready pack (UTR-first) so the bank's fraud desk can act in minutes.
+- **I4C / NCRP:** our pack is field-mapped to the portal; a structured export is a small step if
+  I4C ever opens an intake API.
+- **Citizens:** the same mascot with the T24 Scam Check rules (no vendor master needed).
+- **Cost:** runs on a normal laptop; no per-call cloud cost.
 
-There is no “mathematically unassailable” recording. Cryptography can make later edits detectable and identify which key signed a manifest. It cannot prove the original capture was complete, the device clock was correct, the speaker was genuine, or a statement was true. A device key certificate is not automatically a BSA certificate. Treat the dossier as tamper-evident technical support; have qualified Indian counsel validate the applicable Section 63 form, required statements, process, and signatories before claiming statutory compliance or admissibility.
+---
 
-Record only after explicit evidence-preservation consent. Live inference may use a bounded volatile buffer; do not imply that unretained audio can later be certified. Preserve the exact captured bytes at the capture boundary when the user elects to retain them. Every normalized, denoised, transcoded, or transcribed object is a **derived artifact**, with its own digest, parent IDs, tool/model version, and transformation description. Never replace the original with a processed copy.
+## 12. Failure modes and fallbacks
 
-### Version 1 dossier layout
+| Failure | What Satya does | Demo fallback |
+|---|---|---|
+| Loopback silent (no `NSAudioCaptureUsageDescription`, or launched from Terminal) | capture reports 0 samples in 3 s → Sleeping + toast | use route A (Chrome extension) |
+| Venue Wi-Fi blocks phone ↔ laptop | OOB page unreachable | laptop joins phone hotspot; or 2nd laptop as approver |
+| Whisper slow / crashes | `coverage: incomplete`, chips stop | replay fixture, labelled |
+| Backend down | mascot shows "can't reach my brain" toast, Sleeping | `make run` restart; mock mode for UI-only demo |
+| Detector misses the clone | ask chips + floor + OOB still catch it | say it: "this is why the floor exists" |
+| Anything else | — | screen recording of a full successful run |
 
-```text
-dossier/
-├── manifest.json                 # canonical metadata + chunk/derivative inventory
-├── chunks/                       # exact retained capture bytes, if preservation was authorized
-├── derivatives/                  # transcript and any transformed audio, each separately hashed
-├── manifest.cose                 # detached COSE_Sign1 signature, if a trusted key is available
-├── certificates/                 # signer/device certificate chain and key-attestation evidence, if available
-├── custody.jsonl                 # append-only custody/export/verification events
-├── section63-draft.json          # counsel-reviewed field mapping; never auto-certified
-├── helpline-1930-draft.json      # separate user-reviewed call aid; MANUAL_ONLY
-└── verification-report.json      # verifier result, gaps, key/time trust limits
-```
+---
 
-Example `manifest.json` structure (all IDs and digest strings below are placeholders, not evidence):
+## 13. What we do NOT claim
 
-```json
-{
-  "schema": "satyapan.evidence-dossier/v1",
-  "dossier_id": "demo-dossier-001",
-  "case_ref": "case-demo-001",
-  "created_at_utc": "2026-10-21T12:00:00Z",
-  "clock": {
-    "wall_clock_source": "OS_CLOCK",
-    "sync_status": "UNVERIFIED_LOCAL_CLOCK",
-    "estimated_uncertainty_ms": null,
-    "monotonic_origin": "SESSION_START"
-  },
-  "capture": {
-    "session_id": "session-demo-001",
-    "consent_receipt_sha256": "EXAMPLE_ONLY_NOT_A_DIGEST",
-    "source": {"kind": "USER_SELECTED_LOOPBACK", "label": "DEMO_SOURCE"},
-    "device": {
-      "platform": "DEMO_ONLY",
-      "app_build": "DEMO_BUILD",
-      "key_id": "device-key-demo",
-      "key_provider": "OS_KEYSTORE",
-      "hardware_backed": false,
-      "certificate_chain_sha256": []
-    },
-    "format": {
-      "captured_encoding": "PCM_S16LE",
-      "sample_rate_hz": 16000,
-      "channels": 1
-    }
-  },
-  "chunks": [
-    {
-      "sequence": 0,
-      "path": "chunks/000000.bin",
-      "byte_length": 0,
-      "capture_start_utc": "2026-10-21T12:00:00Z",
-      "capture_end_utc": "2026-10-21T12:00:05Z",
-      "monotonic_start_ns": 0,
-      "monotonic_end_ns": 5000000000,
-      "gap_before": false,
-      "chunk_sha256": "EXAMPLE_ONLY_NOT_A_DIGEST",
-      "chain_sha256": "EXAMPLE_ONLY_NOT_A_DIGEST"
-    }
-  ],
-  "gaps": [],
-  "derivatives": [
-    {
-      "artifact_id": "transcript-demo-001",
-      "path": "derivatives/transcript.json",
-      "kind": "ASR_TRANSCRIPT",
-      "sha256": "EXAMPLE_ONLY_NOT_A_DIGEST",
-      "derived_from": ["chunk:0"],
-      "engine": "ENGINE_ID_AND_VERSION_REQUIRED",
-      "time_ranges_required": true
-    }
-  ],
-  "hash_profile": {
-    "digest": "SHA-256",
-    "canonical_json": "RFC8785_JCS_UTF8",
-    "chunk_domain": "SATYAPAN:T25:CHUNK:v1",
-    "chain_domain": "SATYAPAN:T25:CHAIN:v1",
-    "manifest_domain": "SATYAPAN:T25:MANIFEST:v1"
-  },
-  "chain_root_sha256": "EXAMPLE_ONLY_NOT_A_DIGEST",
-  "signature": {
-    "format": "COSE_Sign1",
-    "algorithm": "ES256",
-    "protected_key_id": "device-key-demo",
-    "signature_path": "manifest.cose",
-    "certificate_trust_status": "UNVERIFIED_DEMO_KEY"
-  },
-  "time_anchor": {"kind": "NONE", "receipt_path": null},
-  "custody_log_sha256": "EXAMPLE_ONLY_NOT_A_DIGEST",
-  "section63_support": {
-    "status": "DRAFT_REQUIRES_COUNSEL_AND_SIGNATORY_REVIEW",
-    "record_description": "USER_CONFIRMED_DESCRIPTION_REQUIRED",
-    "production_method": "CAPTURE_METHOD_AND_TRANSFORMS_REQUIRED",
-    "device_particulars_ref": "capture.device",
-    "prescribed_form_version": "COUNSEL_VERIFIED_VERSION_REQUIRED",
-    "signatory": null
-  }
-}
-```
-
-### Canonical digest and verification rules
-
-For each chunk, construct a UTF-8 RFC 8785 canonical header containing dossier/session IDs, sequence, UTC and monotonic boundaries, exact captured format, byte length, and `gap_before`. Let `H` be those canonical header bytes and `B` be the exact retained chunk bytes:
-
-```text
-chunk_hash[i] = SHA256(
-    UTF8("SATYAPAN:T25:CHUNK:v1") || 0x00 ||
-    UINT64_BE(length(H)) || H || B
-)
-chain[0] = SHA256(UTF8("SATYAPAN:T25:CHAIN:v1:ROOT") || 0x00 || canonical_session_header)
-chain[i] = SHA256(
-    UTF8("SATYAPAN:T25:CHAIN:v1:LINK") || 0x00 ||
-    chain[i-1] || UINT64_BE(sequence[i]) || chunk_hash[i]
-)
-manifest_hash = SHA256(
-    UTF8("SATYAPAN:T25:MANIFEST:v1") || 0x00 ||
-    RFC8785(canonical_manifest_core_without_signature_and_anchor)
-)
-```
-
-The implementation must pin integer width/endianness, canonicalization version, byte framing, domain strings, and which manifest fields are signed; publish test vectors and reject unknown versions. Sign `manifest_hash` in COSE_Sign1 with ES256 only when the key can actually perform that operation. Keep the private key non-exportable in the OS keystore where supported. Record `hardware_backed` as a measured property, not an assumption. Include the certificate chain and attestation evidence when available; a self-signed key proves possession of that key, not the identity of a trusted organization/device. If no trusted issuer or attestation exists, say so in the verification report.
-
-Use UTC wall time **and** a monotonic offset for ordering. Record synchronization source/status and known uncertainty; a local timestamp is not a trusted timestamp. A trusted timestamp authority receipt or remote append-only anchor may be attached when actually configured, but must never be fabricated or implied by a local hash chain. Any sequence gap is explicitly listed; verification must fail completeness checks rather than silently treating a partial stream as whole. Verification recomputes every file digest, checks order/gaps, chain root, signature/certificate status, and derivative lineage, then emits a verification report with any failures and limitations; sign that report only if a configured trusted signing key is available.
-
-### Separate user-facing incident drafts
-
-`section63-draft.json` maps the evidence inventory to a counsel-verified Section 63 certificate template. Its status remains `DRAFT_REQUIRES_HUMAN_REVIEW` until the proper person confirms the record, process, device particulars, and prescribed statements and signs through the required process. A digest alone does not complete those legal steps.
-
-`helpline-1930-draft.json` is a separate, versioned call aid with `submission: "MANUAL_ONLY"`, case/evidence references, user-confirmed facts, source/provenance for each field, and review status. It may include the pronunciation helper `1930 → “one nine three zero”`; it must not invent a UTR, account, loss, or caller identity. Keep sensitive references masked in the UI and disclose them only when the user deliberately reviews the appropriate official process. Do not automatically dial, transmit, or file anything.
-
-## 7. Grand Finals 3-Minute Live Demo Script
-
-* **0:00–0:30 — Consent and mode:** Satya starts in **Sleep / DND**. The operator selects the demo source and grants capture permission. Show the preflight result and a persistent **LIVE** or **DEMO REPLAY** indicator. If capture is not healthy, use replay from the start rather than pretending a fixture is live.
-* **0:30–1:20 — Request and cognitive pause:** Play a consented/generated synthetic demo voice using fake data and a beneficiary-change/urgency scenario. If live capture jitters or loses permission, show the incomplete interval, stop that path, and switch to the explicitly labeled local replay fixture. The example alert says that a request needs verification and cites its evidence; it does **not** claim that a missing seal proves a clone or that the UI itself set a band.
-* **1:20–1:50 — Reverse challenge:** Open the OOB test approver on a second device/account populated only with demo data. Show the exact masked demo transaction, then have the test approver reject it. Do not represent a real executive or claim that voice similarity authenticated anyone.
-* **1:50–2:35 — Scribe:** The operator explicitly chooses to preserve the selected demo evidence and reviews the generated bundle. Show chunk/gap status, hashes, and the verifier result. Label the Section 63 mapping **DRAFT — HUMAN / COUNSEL REVIEW REQUIRED** and the 1930 call aid **MANUAL_ONLY**. Do not show real UTRs, bank details, or personal data; do not auto-dial or submit.
-* **2:35–3:00 — Honest close:** Explain the measurable design claim: Satya makes monitoring consent-visible, reports coverage failures, routes sensitive requests to an independent trusted confirmation, and detects post-capture file changes. It does not promise detection of every clone, prove speaker identity from a voice score, block external banking software, or guarantee legal admissibility.
-
-### Stage preflight and judge challenge cards
-
-Before doors open, verify the target OS permission, chosen loopback source, audible passthrough, chunk continuity, local backend, saved replay fixture, and screen-recording backup. The operator must be able to switch modes in one visible action. Rehearse these judge challenges with the expected response:
-
-| Challenge | Show / say |
-|---|---|
-| Strong Hindi/Hinglish synthetic voice | “We do not claim universal clone detection. Here is the independent transaction challenge and its result.” |
-| Fan noise, echo, or a compressed call | Show degraded coverage and abstention; do not manufacture an Alarm from poor quality. |
-| Jitter or network disconnected | Show the gap and local-only behavior; switch to labeled replay if live capture cannot continue. Internet loss must not silently trigger cloud upload. |
-| Missing seal or unknown caller | Say “not verified by this seal”; use the registered callback/OOB path. Do not identify the voice as fake. |
-| Judge asks whether the file is “court-admissible” | Show digest verification and limitations; explain that the required Section 63 certificate/form and signatory need applicable legal review. |
-
-Use the same fixture and exact UI mode label in every rehearsal. Never describe fixture playback as a real call or present unmeasured detection accuracy as a result.
+- We do not detect every clone. A voice score never proves who is speaking.
+- A hash proves a file did not change after we hashed it. It does not prove the content is true or
+  the capture was complete.
+- Our §63 output is a **draft** for a human signatory; Part B needs an expert; we are not lawyers.
+- We do not block other apps or the bank's website. We pause, inform, and route to verification.
+- Ask-extractor numbers on held-out data are modest (see `results/EVIDENCE_LEDGER.md`). We quote
+  only measured rows, with n and confidence intervals.

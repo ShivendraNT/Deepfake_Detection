@@ -3,7 +3,7 @@
 Status values: `todo` · `in-progress` · `blocked` · `partial` · `done`.
 A task is `done` only when `make task T=TNN` and `make check` are both green.
 Tasks marked `done` here are tested STRICTLY (their tests may never skip) — see `tests/conftest.py`.
-Owners: Shivendra (lead, Claude Code), Saarika, Kartikey, Saksham. Each person's full plan, tools and prompts: `team/<Name>.md` (lead: `team/MASTER.md`).
+Owners: Shivendra (lead), Saarika, Kartikey, Saksham. Finale cards (F01–F16): `team/<Name>.md`; plan: `docs/finale/PLAN.md`.
 
 Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 
@@ -35,15 +35,28 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T24 | Citizen Scam Check (stretch S1) | Saksham | done | T05, T14 | [spec](tasks/T24-citizen-scam-check.md) | 8/8 strict green; `scam_check` + 7 impossible-claim rules EN/HI, `console/public/scam-check.html` (band + action + 1930/NCRP/Chakshu/WhatsApp + hi-IN speech) |
 | T25 | Desktop Guardian Companion | Shivendra + all | done | — | [spec](tasks/T25-desktop-companion.md) | Electron + React + Framer Motion app + SSE backend bridge + Case Details Workspace; 37/37 T25 tests green, make check ALL GREEN |
 
-## Suggested day plan
+## Finale board (F-tasks, 24–25 Oct)
 
-| Day | Shivendra | Saarika | Kartikey | Saksham |
+Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 · CP3 H24 · CP4 H32 · freeze H36.
+
+| ID | Task | Owner | P | Status |
 |---|---|---|---|---|
-| 0 | lead checklist (team/MASTER.md §3) | setup | setup | setup |
-| 1 | T07 | T05 | T03 → T04 | T09 → T06 |
-| 2 | T11, T07 polish | T05 freeze → T10 | T08 → T17 | T06 → T12 |
-| 3 | T15, T19-D3, T20, first dry run | T18 | T16 → T19 | T14 → T13 |
-| 4 | T21, T22 dry runs | T23, dry runs | T19 | T24 (stretch) / dry runs |
+| F01 | Contracts freeze + mock bridge + stage view | Shivendra | P0 | todo |
+| F02 | Window manager (mascot / bubble / notebook / capture, tray, hotkeys) | Shivendra | P0 | todo |
+| F03 | Backend glue (calls, files, oob, event fan-in) | Shivendra | P0 | todo |
+| F04 | X1 cross-channel signal | Shivendra | P1 | todo |
+| F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | todo |
+| F06 | Mascot component (10 poses) + gallery | Saarika | P0 | todo |
+| F07 | Mascot window: radial menu, drag, brain reducer | Saarika | P0 | todo |
+| F08 | Bubble cards + copy EN/Hinglish/हिन्दी | Saarika | P0 | todo |
+| F09 | Deck + story | Saarika + Shivendra | P0 | todo |
+| F10 | Capture window (loopback spike first) | Kartikey | P0/P1 | todo |
+| F11 | Report pack v2 (5 sections) | Kartikey | P0 | todo |
+| F12 | Demo media (consented clips, replay, email) | Kartikey | P0 | todo |
+| F13 | Gmail "Ask Satya" button | Kartikey | P2 | todo |
+| F14 | Notebook shell + tabs | Saksham | P0 | todo |
+| F15 | Reports tab: Scribe + Report Copilot | Saksham | P0 | todo |
+| F16 | Approver phone page (OOB) + QR | Saksham | P0 | todo |
 
 ## Notes log
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
@@ -68,3 +81,4 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 08 Oct, T16: done — UTR-first 1930 script, bank fraud email, NCRP portal order, BSA Sec 63 evidence index, html escaping; 10/10 acceptance tests green.
 08 Oct, T24: `scam_check` + 4 new impossible-claim rules + `console/public/scam-check.html`; task tests 8/8 green.
 22 Oct, T25: done — Desktop Guardian Companion ("Pahredaar / Satya") Electron app built and bundled; SSE event bus + state machine; 37/37 T25 tests green, full test suite 717 passed, make check ALL GREEN.
+22 Oct, finale: desktop shell redesigned to mascot-only + bubble + Notebook; architecture v2, plan and F-cards written (docs/finale/, team/).
