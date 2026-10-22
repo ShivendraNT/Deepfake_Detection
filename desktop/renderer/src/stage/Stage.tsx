@@ -5,6 +5,7 @@
  */
 
 import { useEffect, useMemo, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import type { BubbleCard, MascotMood, Pose } from '../../../shared/contracts'
 import { USER_MODE_LABELS } from '../../../shared/contracts'
@@ -163,16 +164,26 @@ export default function Stage(): JSX.Element {
         </section>
 
         <section className="min-h-[260px]" aria-label="Bubble">
-          {card ? (
-            <BubbleCardView
-              card={card}
-              onAction={(actionId) => setLastAction(`${card.id} → ${actionId}`)}
-            />
-          ) : (
-            <div className="grid h-full place-items-center rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-400">
-              No card
-            </div>
-          )}
+          <AnimatePresence mode="wait">
+            {card ? (
+              <motion.div
+                key={card.id}
+                initial={{ opacity: 0, scale: 0.88, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 6 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 24, mass: 0.8 }}
+              >
+                <BubbleCardView
+                  card={card}
+                  onAction={(actionId) => setLastAction(`${card.id} → ${actionId}`)}
+                />
+              </motion.div>
+            ) : (
+              <div className="grid h-full place-items-center rounded-2xl border border-dashed border-slate-300 p-6 text-sm text-slate-400">
+                No card
+              </div>
+            )}
+          </AnimatePresence>
         </section>
 
         <section className="rounded-2xl border border-black/10 bg-white/70 p-4" aria-label="Notebook">

@@ -108,6 +108,7 @@ export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow
     hasShadow: false,
     roundedCorners: false,
     alwaysOnTop: true,
+    type: 'panel',
     title: 'Satya — Satyapan companion',
     webPreferences: {
       ...secureWebPreferences(options.preloadPath),
@@ -116,7 +117,7 @@ export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow
   })
 
   win.setAlwaysOnTop(true, 'screen-saver', 1)
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
   // Almost all of the window is empty: clicks pass through to the app behind until the renderer
   // says the pointer is over Satya or a menu petal.
   win.setIgnoreMouseEvents(true, { forward: true })
@@ -125,7 +126,7 @@ export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow
 
   win.once('ready-to-show', () => {
     win.setAlwaysOnTop(true, 'screen-saver', 1)
-    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
     win.showInactive()
   })
   win.on('close', (event) => {
@@ -158,15 +159,16 @@ export function createBubbleWindow(preloadPath: string): BrowserWindow {
     hasShadow: false,
     roundedCorners: false,
     alwaysOnTop: true,
+    type: 'panel',
     title: 'Satya says',
     webPreferences: secureWebPreferences(preloadPath),
   })
   win.setAlwaysOnTop(true, 'screen-saver', 1)
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
   harden(win)
   win.once('ready-to-show', () => {
     win.setAlwaysOnTop(true, 'screen-saver', 1)
-    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
   })
   win.on('close', (event) => {
     event.preventDefault()
@@ -218,7 +220,7 @@ export function createCaptureWindow(preloadPath: string): BrowserWindow {
 export function showCompanion(win: BrowserWindow | null): void {
   if (!win || win.isDestroyed()) return
   win.setAlwaysOnTop(true, 'screen-saver', 1)
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
   win.showInactive()
 }
 

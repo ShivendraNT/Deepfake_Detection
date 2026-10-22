@@ -6,6 +6,7 @@
  */
 
 import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import type { BubbleCard } from '../../../shared/contracts'
 import { api, isMockBridge } from '../shared/api'
@@ -96,15 +97,24 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
           </div>
         </div>
       )}
-      {isMockBridge && card ? (
-        <div className="absolute bottom-2 right-2 z-20">
-          <BubbleCardView
-            card={card}
-            tail={tail}
-            onAction={(actionId) => api.cardAction(card.id, actionId)}
-          />
-        </div>
-      ) : null}
+      <AnimatePresence mode="wait">
+        {isMockBridge && card ? (
+          <motion.div
+            key={card.id}
+            initial={{ opacity: 0, scale: 0.88, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 6 }}
+            transition={{ type: 'spring', stiffness: 420, damping: 24, mass: 0.8 }}
+            className="absolute bottom-2 right-2 z-20"
+          >
+            <BubbleCardView
+              card={card}
+              tail={tail}
+              onAction={(actionId) => api.cardAction(card.id, actionId)}
+            />
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
     </div>
   )
 }

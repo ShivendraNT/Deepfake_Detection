@@ -1,6 +1,7 @@
 /** The bubble window (`?view=bubble`): exactly one card, placed beside Satya by main. */
 
 import { useEffect, useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 
 import type { BubbleCard } from '../../../../shared/contracts'
 import { api } from '../../shared/api'
@@ -65,15 +66,30 @@ export default function BubbleApp(): JSX.Element {
   }, [card])
 
   return (
-    <div className="flex min-h-screen w-full items-start justify-center p-1.5">
-      <div ref={hostRef}>
-        {card ? (
-          <BubbleCardView
-            card={card}
-            tail={tail}
-            onAction={(actionId) => api.cardAction(card.id, actionId)}
-          />
-        ) : null}
+    <div className="flex min-h-screen w-full items-start justify-center p-1.5 overflow-hidden">
+      <div ref={hostRef} className="flex w-full justify-center">
+        <AnimatePresence mode="wait">
+          {card ? (
+            <motion.div
+              key={card.id}
+              initial={{ opacity: 0, scale: 0.85, y: 12 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.88, y: 8 }}
+              transition={{
+                type: 'spring',
+                stiffness: 420,
+                damping: 24,
+                mass: 0.8,
+              }}
+            >
+              <BubbleCardView
+                card={card}
+                tail={tail}
+                onAction={(actionId) => api.cardAction(card.id, actionId)}
+              />
+            </motion.div>
+          ) : null}
+        </AnimatePresence>
       </div>
     </div>
   )

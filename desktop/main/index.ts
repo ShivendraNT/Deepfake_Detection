@@ -117,7 +117,7 @@ function showCard(card: BubbleCard): void {
   lastCard = card
   const win = ensureBubble()
   win.setAlwaysOnTop(true, 'screen-saver', 1)
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
   const tail = placeBubbleWindow()
   deliverCard(win, card, tail)
   // Passive cards must never steal focus from the call (Meet/Teams keeps focus).
@@ -174,6 +174,9 @@ function dragBy(dx: number, dy: number): void {
   }
   const bounds = mascotWindow.getBounds()
   mascotWindow.setPosition(Math.round(bounds.x + dx), Math.round(bounds.y + dy))
+  if (lastCard && bubbleWindow && !bubbleWindow.isDestroyed() && bubbleWindow.isVisible()) {
+    placeBubbleWindow()
+  }
 }
 
 function dragEnd(): void {
@@ -322,6 +325,9 @@ async function quit(): Promise<void> {
 }
 
 function openWorkspace(_tab?: string): void {
+  if (process.platform === 'darwin') {
+    app.dock?.show()
+  }
   if (workspaceWindow && !workspaceWindow.isDestroyed()) {
     workspaceWindow.show()
     workspaceWindow.focus()
@@ -330,6 +336,9 @@ function openWorkspace(_tab?: string): void {
   workspaceWindow = createWorkspaceWindow(preloadPath)
   workspaceWindow.on('closed', () => {
     workspaceWindow = null
+    if (process.platform === 'darwin') {
+      app.dock?.hide()
+    }
   })
 }
 
@@ -406,6 +415,9 @@ if (!hasLock) {
   app.on('second-instance', showCompanionWindow)
 
   void app.whenReady().then(() => {
+    if (process.platform === 'darwin') {
+      app.dock?.hide()
+    }
     app.setAppUserModelId('in.example.satyapan.companion')
     prefs = readPrefs()
 
