@@ -56,10 +56,11 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F13 | Gmail "Ask Satya" button | Kartikey | P2 | todo |
 | F14 | Notebook shell + tabs | Saksham | P0 | done — 1120x720 Notebook shell, sidebar, 7 tabs, anti-slop tokens, 18 desktop tests green |
 | F15 | Reports tab: Scribe + Report Copilot | Saksham | P0 | todo |
-| F16 | Approver phone page (OOB) + QR | Saksham | P0 | todo |
+| F16 | Approver phone page (OOB) + QR | Saksham | P0 | done — mobile-first 3-button OOB screen, oob.html, live QR code in Settings; tests green |
 
 ## Notes log
 
+22 Oct, F16: done — 3-button approver phone UI (OobInbox.tsx, oob.html) with "I did not request this" reason hook, live QR code in SettingsTab via qrcode; desktop typecheck + tests green.
 22 Oct, F10: done — loopback capture window (`desktop/main/capture.ts`), PCM worklet, WebRTC VAD, ONNX scorer, WAV chunking, 9 vitest capture tests green.
 22 Oct, F12: done — demo media generator (`data/demo/finale/`), manifest with fake IFSC/accounts, 4 finale tests green.
 22 Oct, F14: done — Notebook shell and 7 tabs (Now, Cases, Timeline, Evidence, Reports, Privacy, Settings), BandBadge (no raw scores), masked accounts, anti-slop styling, 18 desktop tests green.

@@ -13,6 +13,9 @@ import { useEffect, useState } from 'react'
 
 import type { AppConfig, CaptureSourceKind, Lang, Prefs } from '../../../../shared/contracts'
 import { api } from '../../shared/api'
+// qrcode@1.5.4 ships no TypeScript declarations; Vite still resolves the runtime package.
+// @ts-expect-error - the package has no bundled types and this project does not add @types/qrcode.
+import QRCode from 'qrcode'
 import Section from '../ui/Section'
 import { FONT_MONO, focusRing, inset, surface, tone } from '../ui/theme'
 
@@ -139,6 +142,8 @@ export default function SettingsTab(): JSX.Element {
   const [prefs, setPrefs] = useState<Prefs>(DEFAULT_PREFS)
   const [config, setConfig] = useState<AppConfig | null>(null)
   const [saved, setSaved] = useState(false)
+  const [qrDataUrl, setQrDataUrl] = useState<string | null>(null)
+  const oobUrl = config?.oob_url ?? ''
 
   useEffect(() => {
     let active = true
@@ -151,6 +156,30 @@ export default function SettingsTab(): JSX.Element {
       active = false
     }
   }, [])
+
+  useEffect(() => {
+    let active = true
+    if (!oobUrl) {
+      setQrDataUrl(null)
+      return () => {
+        active = false
+      }
+    }
+    void QRCode.toDataURL(oobUrl, {
+      width: 160,
+      margin: 1,
+      color: { dark: '#2A2238', light: '#FFFFFF' },
+    })
+      .then((url: string) => {
+        if (active) setQrDataUrl(url)
+      })
+      .catch(() => {
+        if (active) setQrDataUrl(null)
+      })
+    return () => {
+      active = false
+    }
+  }, [oobUrl])
 
   async function update(patch: Partial<Prefs>): Promise<void> {
     setPrefs((current) => ({ ...DEFAULT_PREFS, ...current, ...patch }))
@@ -291,23 +320,32 @@ export default function SettingsTab(): JSX.Element {
       <Section title="Approver's phone" description="Out-of-band confirmation (F16).">
         <div className={`flex items-start gap-4 rounded-[14px] border p-4 ${surface.line} ${inset}`}>
           <div
-            className="grid h-24 w-24 shrink-0 place-items-center rounded-[12px] border bg-white"
+            className="grid h-24 w-24 shrink-0 place-items-center rounded-[12px] border bg-white p-1"
             style={{ borderColor: 'rgba(42,34,56,0.12)' }}
-            aria-label="OOB approval QR code placeholder"
           >
-            <QrCode size={48} style={{ color: tone.ink }} aria-hidden="true" />
+            {qrDataUrl ? (
+              <img
+                src={qrDataUrl}
+                alt="Scan with phone"
+                width={88}
+                height={88}
+                className="h-full w-full rounded-[8px] object-contain"
+              />
+            ) : (
+              <QrCode size={48} style={{ color: tone.ink }} aria-hidden="true" />
+            )}
           </div>
           <div className="min-w-0">
             <p className="text-[13px] font-medium">Scan with the approver's phone</p>
             <p className={`mt-1 text-[12px] leading-relaxed ${surface.muted}`}>
-              F16 adds the live QR code. It opens the approval page on the approver's own phone; the
-              approver and the channel come only from the employee directory.
+              Scan this code to open the approval page on the approver's own phone. The approver and
+              the channel come only from the employee directory.
             </p>
             <code
               className={`mt-2 block break-all rounded-[6px] border px-2 py-1 text-[12px] ${surface.line} ${surface.card}`}
               style={{ fontFamily: FONT_MONO }}
             >
-              {config?.oob_url ?? 'No approver URL configured yet'}
+              {oobUrl || 'No approver URL configured yet'}
             </code>
           </div>
         </div>
