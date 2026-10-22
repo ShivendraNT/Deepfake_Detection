@@ -2,26 +2,15 @@
 
 import { useState } from 'react'
 
-import type { MascotMood, Pose } from '../../../shared/contracts'
+import type { Pose } from '../../../shared/contracts'
 import Mascot from './Mascot'
 
 const POSES: Pose[] = ['sleep', 'idle', 'listen', 'think', 'alert', 'relief', 'write', 'catch', 'wave', 'off']
 
-const MOOD: Record<Pose, MascotMood> = {
-  sleep: 'sleepy',
-  idle: 'attentive',
-  listen: 'attentive',
-  think: 'focused',
-  alert: 'calm_alert',
-  relief: 'attentive',
-  write: 'writing',
-  catch: 'attentive',
-  wave: 'attentive',
-  off: 'off',
-}
-
 export default function Gallery(): JSX.Element {
   const [level, setLevel] = useState(0)
+  const [preview, setPreview] = useState<Pose>('idle')
+  const [look, setLook] = useState({ dx: 0, dy: 0, near: false })
 
   return (
     <div className="min-h-screen w-full bg-[#FBF8F3] p-6 text-slate-800">
@@ -46,6 +35,39 @@ export default function Gallery(): JSX.Element {
         </label>
       </header>
 
+      <section className="mt-6 flex flex-col items-center rounded-2xl border border-black/10 bg-white/70 p-4">
+        <div
+          className="h-32 w-32"
+          onMouseMove={(event) => {
+            const rect = event.currentTarget.getBoundingClientRect()
+            setLook({
+              dx: event.clientX - (rect.left + rect.width / 2),
+              dy: event.clientY - (rect.top + rect.height / 2),
+              near: true,
+            })
+          }}
+          onMouseLeave={() => setLook({ dx: 0, dy: 0, near: false })}
+        >
+          <Mascot pose={preview} size={128} audioLevel={level} look={look} />
+        </div>
+        <div className="mt-3 flex flex-wrap justify-center gap-2">
+          {POSES.map((pose) => (
+            <button
+              key={pose}
+              type="button"
+              onClick={() => setPreview(pose)}
+              className={`rounded-full px-3 py-1 font-mono text-xs ${
+                pose === preview
+                  ? 'bg-slate-800 text-white'
+                  : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+              }`}
+            >
+              {pose}
+            </button>
+          ))}
+        </div>
+      </section>
+
       <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
         {POSES.map((pose) => (
           <figure
@@ -53,7 +75,7 @@ export default function Gallery(): JSX.Element {
             className="flex flex-col items-center rounded-2xl border border-black/10 bg-white/70 p-4"
             data-pose={pose}
           >
-            <Mascot mood={MOOD[pose]} size={128} />
+            <Mascot pose={pose} size={128} audioLevel={level} />
             <figcaption className="mt-2 font-mono text-xs text-slate-500">{pose}</figcaption>
             {pose === 'listen' ? (
               <div

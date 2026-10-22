@@ -1,259 +1,491 @@
+import { memo, useMemo } from 'react'
 import { motion, useReducedMotion } from 'framer-motion'
 
-import type { MascotMood } from '../../../shared/contracts'
+import type { MascotMood, Pose } from '../../../shared/contracts'
+import mascot3dImg from '../assets/mascot_3d.png'
+import mascotAlertImg from '../assets/mascot_alert.png'
+import mascotCatchImg from '../assets/mascot_catch.png'
+import mascotListenImg from '../assets/mascot_listen.png'
+import mascotReliefImg from '../assets/mascot_relief.png'
+import mascotSleepImg from '../assets/mascot_sleep.png'
+import mascotThinkImg from '../assets/mascot_think.png'
+import mascotWaveImg from '../assets/mascot_wave.png'
+import mascotWriteImg from '../assets/mascot_write.png'
+import { color, motion as springTokens, size as sizePx } from '../shared/tokens'
+import { Accessories } from './accessories'
+import { POSES } from './poses'
 
-const EYE_RY: Record<MascotMood, number> = {
-  sleepy: 0.9,
-  attentive: 4.2,
-  focused: 2.4,
-  calm_alert: 3.2,
-  writing: 1.6,
-  off: 0.8,
-}
-
-const EYE_X: Record<MascotMood, number> = {
-  sleepy: 0,
-  attentive: 0.6,
-  focused: 0,
-  calm_alert: 0,
-  writing: -0.4,
-  off: 0,
-}
-
-const MOUTH: Record<MascotMood, string> = {
-  sleepy: 'M86 118 Q100 122 114 118',
-  attentive: 'M86 114 Q100 126 114 114',
-  focused: 'M89 118 Q100 121 111 118',
-  calm_alert: 'M88 120 L112 120',
-  writing: 'M88 119 Q100 123 112 119',
-  off: 'M88 120 Q100 114 112 120',
-}
-
-const AURA: Record<MascotMood, string> = {
-  sleepy: '#2a6f66',
-  attentive: '#5ee9b8',
-  focused: '#6fc6ff',
-  calm_alert: '#ffc35c',
-  writing: '#b9a7ff',
-  off: '#3a4650',
-}
+export type MascotSize = keyof typeof sizePx
 
 export interface MascotProps {
-  mood: MascotMood
-  size?: number
+  pose?: Pose
+  mood?: MascotMood | string
   alert?: boolean
+  audioLevel?: number
+  look?: { dx: number; dy: number; near: boolean }
+  size?: number | MascotSize
+  reducedMotion?: boolean
 }
 
-export default function Mascot({ mood, size = 188, alert = false }: MascotProps) {
-  const reduced = useReducedMotion()
-  const duration = reduced ? 0 : 4.2
-  const aura = AURA[mood]
-  const blinking = mood === 'attentive' || mood === 'focused'
+const MOOD_TO_POSE: Record<string, Pose> = {
+  sleepy: 'sleep',
+  attentive: 'idle',
+  focused: 'think',
+  calm_alert: 'alert',
+  writing: 'write',
+  off: 'off',
+}
 
+const soft = springTokens.soft
+
+/**
+ * Pixel-accurate, seamlessly matched procedural facial overlay.
+ * Measured directly from desktop/renderer/src/assets/mascot_3d.png (600x600 scaled into 200x200 viewBox):
+ * - Left Eye Center:  (64.5, 113), radius rx=23, ry=24
+ * - Right Eye Center: (133.0, 115), radius rx=23, ry=24
+ * - Mouth Center:     (99.5, 146), bounds ~ 20x15
+ * - Skin Cyan Fill:   #44D5DE (exact match to base 3D spherical mesh)
+ * - Ink / Line:       #0F172A (crisp dark outline)
+ */
+function FaceOverlay({
+  pose,
+  lookX,
+  lookY,
+  reduced,
+}: {
+  pose: Pose
+  lookX: number
+  lookY: number
+  reduced: boolean
+}) {
   return (
-    <motion.svg
-      width={size}
-      height={size}
+    <svg
       viewBox="0 0 200 200"
-      role="img"
-      aria-label={`Satya mascot, ${mood.replace('_', ' ')}`}
-      initial={{ opacity: 0, scale: 0.92 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{ duration: reduced ? 0 : 0.5, ease: 'easeOut' }}
+      style={{
+        position: 'absolute',
+        inset: 0,
+        width: '100%',
+        height: '100%',
+        overflow: 'visible',
+        pointerEvents: 'none',
+      }}
     >
-      <defs>
-        <radialGradient id="aura" cx="50%" cy="45%" r="50%">
-          <stop offset="0%" stopColor={aura} stopOpacity="0.28" />
-          <stop offset="65%" stopColor={aura} stopOpacity="0.06" />
-          <stop offset="100%" stopColor={aura} stopOpacity="0" />
-        </radialGradient>
-        <linearGradient id="body" x1="30%" y1="10%" x2="70%" y2="92%">
-          <stop offset="0%" stopColor="#183540" />
-          <stop offset="55%" stopColor="#10222b" />
-          <stop offset="100%" stopColor="#0a151c" />
-        </linearGradient>
-        <linearGradient id="rim" x1="20%" y1="0%" x2="80%" y2="100%">
-          <stop offset="0%" stopColor={aura} stopOpacity="0.9" />
-          <stop offset="100%" stopColor={aura} stopOpacity="0.16" />
-        </linearGradient>
-        <filter id="soft-glow" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
-
-      <circle cx="100" cy="102" r="94" fill="url(#aura)" />
-
-      <motion.circle
-        cx="100"
-        cy="100"
-        r="78"
-        fill="none"
-        stroke={aura}
-        strokeOpacity="0.18"
-        strokeWidth="1"
-        animate={{ r: reduced ? 78 : [76, 82, 76], opacity: [0.25, 0.05, 0.25] }}
-        transition={{ duration: 6, repeat: reduced ? 0 : Infinity, ease: 'easeInOut' }}
-      />
-
-      <motion.g
-        animate={
-          reduced
-            ? undefined
-            : mood === 'sleepy'
-              ? { y: [0, 2.5, 0] }
-              : mood === 'calm_alert'
-                ? { scale: [1, 1.018, 1] }
-                : { y: [0, -2, 0] }
-        }
-        transition={{ duration, repeat: reduced ? 0 : Infinity, ease: 'easeInOut' }}
-        style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-      >
-        <path
-          d="M100 18 L154 38 V92 C154 129 130 157 100 176 C70 157 46 129 46 92 V38 Z"
-          fill="url(#body)"
-          stroke="url(#rim)"
-          strokeWidth="1.4"
-        />
-        <path
-          d="M100 27 L146 44 V92 C146 124 126 148 100 165 C74 148 54 124 54 92 V44 Z"
-          fill="none"
-          stroke={aura}
-          strokeOpacity="0.12"
-          strokeWidth="1"
-        />
-
-        {alert && (
-          <motion.circle
-            cx="100"
-            cy="100"
-            r="64"
-            fill="none"
-            stroke={aura}
-            strokeWidth="1.4"
-            strokeDasharray="3 9"
-            animate={reduced ? undefined : { rotate: 360 }}
-            transition={{ duration: 16, repeat: Infinity, ease: 'linear' }}
-            style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-          />
-        )}
-
-        <g
-          className={blinking ? 'animate-soft-blink' : undefined}
-          style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+      {/* 1. SLEEP & OFF POSE: Overlay disabled because 3D image has built-in closed eyelids, rosy cheeks, snoozing bubble & ZZZ */}
+      {false && (pose === 'sleep' || pose === 'off') && (
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.2 }}
         >
-          <motion.ellipse
-            cx={76}
-            cy={88}
-            rx={6.4}
-            fill="#eafff8"
-            animate={{ ry: EYE_RY[mood], cx: 76 + EYE_X[mood] }}
-            transition={{ duration: reduced ? 0 : 0.45, ease: 'easeOut' }}
-          />
-          <motion.ellipse
-            cx={124}
-            cy={88}
-            rx={6.4}
-            fill="#eafff8"
-            animate={{ ry: EYE_RY[mood], cx: 124 + EYE_X[mood] }}
-            transition={{ duration: reduced ? 0 : 0.45, ease: 'easeOut' }}
-          />
-          {(mood === 'attentive' || mood === 'focused' || mood === 'calm_alert') && (
-            <>
-              <motion.circle
-                cx={77}
-                cy={89}
-                r={2.2}
-                fill="#0a1218"
-                animate={{ cx: reduced ? 77 : [77, 79, 77] }}
-                transition={{ duration: 7, repeat: reduced ? 0 : Infinity, ease: 'easeInOut' }}
-              />
-              <motion.circle
-                cx={125}
-                cy={89}
-                r={2.2}
-                fill="#0a1218"
-                animate={{ cx: reduced ? 125 : [125, 127, 125] }}
-                transition={{ duration: 7, repeat: reduced ? 0 : Infinity, ease: 'easeInOut' }}
-              />
-            </>
-          )}
-        </g>
-
-        {mood === 'calm_alert' && (
-          <motion.path
-            d="M67 76 Q76 71 85 75 M115 75 Q124 71 133 76"
+          {/* Eyelids covering open eyes */}
+          <ellipse cx={64.5} cy={113} rx={25} ry={25} fill="#44D5DE" />
+          <ellipse cx={133} cy={115} rx={25} ry={25} fill="#44D5DE" />
+          {/* Cute curved sleeping lash arcs */}
+          <path
+            d="M44 113 Q64.5 125 85 113"
             fill="none"
-            stroke={aura}
-            strokeWidth="2"
+            stroke="#0F172A"
+            strokeWidth={4.5}
             strokeLinecap="round"
-            animate={{ opacity: [0.6, 1, 0.6] }}
-            transition={{ duration: 3.4, repeat: reduced ? 0 : Infinity }}
           />
-        )}
-
-        <motion.path
-          d={MOUTH[mood]}
-          fill="none"
-          stroke="#bff5e4"
-          strokeOpacity="0.75"
-          strokeWidth="2.2"
-          strokeLinecap="round"
-          animate={{ d: MOUTH[mood] }}
-          transition={{ duration: reduced ? 0 : 0.4 }}
-        />
-
-        {mood === 'sleepy' && (
-          <motion.text
-            x="142"
-            y="58"
-            fill="#8ff5d2"
-            fontSize="11"
-            fontWeight="600"
-            animate={reduced ? undefined : { y: [58, 48], opacity: [0.7, 0] }}
-            transition={{ duration: 2.8, repeat: Infinity, ease: 'easeOut' }}
-          >
-            z
-          </motion.text>
-        )}
-
-        {mood === 'writing' && (
-          <motion.path
-            d="M142 120 L156 128"
-            stroke="#b9a7ff"
-            strokeWidth="3"
+          <path
+            d="M112 115 Q133 127 154 115"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={4.5}
             strokeLinecap="round"
-            animate={reduced ? undefined : { x: [0, 4, 0], opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 1.1, repeat: Infinity, ease: 'easeInOut' }}
           />
-        )}
-      </motion.g>
+          {/* Cute sleeping mouth */}
+          <ellipse cx={99.5} cy={146} rx={18} ry={13} fill="#44D5DE" />
+          <path
+            d="M93 145 Q99.5 149 106 145"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={3.5}
+            strokeLinecap="round"
+          />
+        </motion.g>
+      )}
 
-      {[
-        { cx: 34, cy: 70, delay: 0 },
-        { cx: 166, cy: 112, delay: 1.4 },
-        { cx: 52, cy: 148, delay: 2.6 },
-      ].map((dot) => (
-        <motion.circle
-          key={`${dot.cx}-${dot.cy}`}
-          cx={dot.cx}
-          cy={dot.cy}
-          r="1.6"
-          fill={aura}
-          animate={
-            reduced ? undefined : { opacity: [0, 0.8, 0], y: [dot.cy, dot.cy - 8, dot.cy - 12] }
-          }
-          transition={{ duration: 5, delay: dot.delay, repeat: Infinity, ease: 'easeInOut' }}
-        />
-      ))}
+      {/* 2. RELIEF POSE: Overlay disabled because 3D asset has built-in cyber security cap, relieved eyes, puff & blush */}
+      {false && pose === 'relief' && (
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.15 }}
+        >
+          <ellipse cx={64.5} cy={113} rx={25} ry={25} fill="#44D5DE" />
+          <ellipse cx={133} cy={115} rx={25} ry={25} fill="#44D5DE" />
+          <path
+            d="M43 118 Q64.5 101 86 118"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={5}
+            strokeLinecap="round"
+          />
+          <path
+            d="M111 120 Q133 103 155 120"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={5}
+            strokeLinecap="round"
+          />
+          {/* Extra pink happy blush glow */}
+          <ellipse cx={38} cy={124} rx={11} ry={7} fill="#FF6B8B" opacity={0.6} />
+          <ellipse cx={160} cy={126} rx={11} ry={7} fill="#FF6B8B" opacity={0.6} />
+        </motion.g>
+      )}
 
-      <g filter="url(#soft-glow)">
-        <circle cx="157" cy="46" r="2.4" fill={aura} fillOpacity="0.85" />
-        <circle cx="44" cy="118" r="1.7" fill={aura} fillOpacity="0.5" />
-      </g>
-    </motion.svg>
+      {/* 3. THINK POSE: Overlay disabled because image already has built-in thinking brows, chin hand & expression */}
+      {false && pose === 'think' && (
+        <motion.g
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.18 }}
+        >
+          {/* Inquisitive brows */}
+          <path
+            d="M47 80 Q64.5 73 82 80"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={4.5}
+            strokeLinecap="round"
+          />
+          <path
+            d="M116 82 Q133 75 151 79"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={4.5}
+            strokeLinecap="round"
+          />
+          {/* Thoughtful straight mouth */}
+          <ellipse cx={99.5} cy={146} rx={18} ry={13} fill="#44D5DE" />
+          <path
+            d="M89 146 L110 146"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={4}
+            strokeLinecap="round"
+          />
+        </motion.g>
+      )}
+
+      {/* 4. ALERT POSE: Overlay disabled because image already has built-in angry brows & shield */}
+      {false && pose === 'alert' && (
+        <motion.g
+          initial={{ opacity: 0, y: -2 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={soft}
+        >
+          {/* Inward sharply angled brows over eyes */}
+          <path
+            d="M44 80 Q64.5 90 85 91"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={5}
+            strokeLinecap="round"
+          />
+          <path
+            d="M154 82 Q133 92 112 93"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={5}
+            strokeLinecap="round"
+          />
+          {/* Firm determined mouth */}
+          <ellipse cx={99.5} cy={146} rx={18} ry={13} fill="#44D5DE" />
+          <path
+            d="M89 147 Q99.5 142 110 147"
+            fill="none"
+            stroke="#0F172A"
+            strokeWidth={4.5}
+            strokeLinecap="round"
+          />
+        </motion.g>
+      )}
+
+      {/* 5. CATCH POSE: Overlay disabled because 3D asset has built-in cyber security cap, focused brow & reaching paws */}
+      {false && pose === 'catch' && (
+        <motion.g
+          initial={{ opacity: 0, scale: 0.85 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={soft}
+          style={{ transformBox: 'view-box', transformOrigin: '99.5px 146px' }}
+        >
+          <ellipse cx={99.5} cy={146} rx={18} ry={13} fill="#44D5DE" />
+          <ellipse cx={99.5} cy={146} rx={8} ry={10} fill="#B91C1C" stroke="#0F172A" strokeWidth={3.5} />
+          <circle cx={101.5} cy={144} r={3} fill="#F87171" />
+        </motion.g>
+      )}
+
+      {/* 6. WRITE POSE: Overlay disabled because 3D asset has built-in cyber security cap, focused brow & notebook */}
+      {false && pose === 'write' && (
+        <motion.g initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.18 }}>
+          <circle cx={64.5} cy={113} r={23} fill="none" stroke="#0F172A" strokeWidth={3.5} />
+          <circle cx={133} cy={115} r={23} fill="none" stroke="#0F172A" strokeWidth={3.5} />
+          <line x1="87.5" y1="113" x2="110" y2="115" stroke="#0F172A" strokeWidth={3.5} />
+        </motion.g>
+      )}
+    </svg>
   )
 }
+
+const Mascot = memo(function Mascot({
+  pose,
+  mood,
+  audioLevel = 0,
+  look,
+  size = 'M',
+  reducedMotion,
+}: MascotProps) {
+  const activePose: Pose = pose ?? (mood ? MOOD_TO_POSE[mood] ?? 'idle' : 'idle')
+  const reduced = useReducedMotion() || Boolean(reducedMotion)
+  const spec = POSES[activePose] ?? POSES.idle
+  const renderedSize = typeof size === 'number' ? size : sizePx[size]
+
+  // Mouse pupil tracking
+  const lookX =
+    look && look.near && !reduced
+      ? Math.max(-5, Math.min(5, look.dx / 35))
+      : spec.look?.x ?? 0
+  const lookY =
+    look && look.near && !reduced
+      ? Math.max(-4, Math.min(4, look.dy / 35))
+      : spec.look?.y ?? 0
+
+  // Select dedicated high-res asset per state:
+  let currentMascotSrc = mascot3dImg
+  if (activePose === 'wave') {
+    currentMascotSrc = mascotWaveImg
+  } else if (activePose === 'alert') {
+    currentMascotSrc = mascotAlertImg
+  } else if (activePose === 'sleep' || activePose === 'off') {
+    currentMascotSrc = mascotSleepImg
+  } else if (activePose === 'relief') {
+    currentMascotSrc = mascotReliefImg
+  } else if (activePose === 'think') {
+    currentMascotSrc = mascotThinkImg
+  } else if (activePose === 'write') {
+    currentMascotSrc = mascotWriteImg
+  } else if (activePose === 'listen') {
+    currentMascotSrc = mascotListenImg
+  } else if (activePose === 'catch') {
+    currentMascotSrc = mascotCatchImg
+  }
+
+  // Slight zoom-in adjustment for poses to match body proportions across states:
+  const mascotBaseScale =
+    activePose === 'wave'
+      ? 1.15
+      : activePose === 'relief'
+      ? 1.15
+      : 1
+
+  // Stable animation configuration memoized per activePose so Framer Motion
+  // NEVER cancels, restarts, or glitches animations on re-renders:
+  const { figureAnimate, figureTransition } = useMemo(() => {
+    const anim: any = {
+      scaleY: 1,
+      scaleX: 1,
+      y: 0,
+      rotate: 0,
+      opacity: 1,
+    }
+    let trans: any = soft
+
+    if (!reduced) {
+      if (activePose === 'sleep') {
+        // Very accurate, gentle deep-sleep breathing cycle with subtle squash & stretch
+        anim.scaleY = [1, 1.036, 0.984, 1]
+        anim.scaleX = [1, 0.988, 1.012, 1]
+        anim.y = [0, -2.5, 0.8, 0]
+        trans = { duration: 4.2, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'idle') {
+        // Natural awake breathing
+        anim.scaleY = [1, 1.028, 1]
+        anim.y = [0, -2, 0]
+        trans = { duration: 3.6, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'listen') {
+        // Attentive listening perk & audio resonance:
+        // Tilts cupped ear attentively toward audio with curious micro-nods and volume pulse
+        anim.rotate = [-4, -1.5, -4.5, -2, -4]
+        anim.y = [0, 1.2, -1.8, 0.6, 0]
+        anim.scaleY = [1, 1.025, 0.985, 1.015, 1]
+        anim.scaleX = [1, 0.985, 1.015, 0.99, 1]
+        trans = { duration: 2.6, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'think') {
+        // Thoughtful sway
+        anim.rotate = [-3, 3, -3]
+        anim.y = [0, -2, 0]
+        trans = { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'alert') {
+        // Alert zoom-into-screen entrance: smaller first, then zooms to normal size with spring snap
+        anim.scale = [0.65, 1.1, 0.96, 1]
+        anim.y = [-4, 0]
+        trans = { duration: 0.85, ease: [0.34, 1.56, 0.64, 1] }
+      } else if (activePose === 'relief') {
+        // Soothing sigh relief breathing loop ("phew!" relaxing breath)
+        anim.y = [0, -3.5, 0.8, 0]
+        anim.scaleY = [1, 1.035, 0.985, 1]
+        anim.scaleX = [1, 0.99, 1.01, 1]
+        trans = { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'catch') {
+        // Dynamic forward-reaching anticipation grab:
+        // Poised hovering reach forward, ready to intercept dropped document
+        anim.y = [0, -7, 2, -5, 0]
+        anim.scale = [1, 1.055, 0.985, 1.035, 1]
+        anim.rotate = [0, -1.8, 1.8, -1.0, 0]
+        trans = { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'write') {
+        // Diligent note-taking scribbling loop
+        anim.y = [0, 1.8, -0.4, 2.0, 0.4, 1.6, 0]
+        anim.rotate = [0, -1.2, 0.8, -1.0, 0.6, -0.4, 0]
+        anim.scaleY = [1, 0.988, 1.008, 0.99, 1.005, 0.992, 1]
+        trans = { duration: 1.6, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'wave') {
+        // Friendly greeting hand wave motion: continuous lively tilt
+        anim.rotate = [0, 8, -4, 8, -4, 0]
+        anim.y = [0, -3, 0]
+        trans = { duration: 1.4, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'off') {
+        anim.opacity = [1, 0.6, 0]
+        anim.scaleY = [1, 0.85, 0.7]
+        trans = { duration: 1.2, ease: 'easeOut' }
+      }
+    }
+
+    return { figureAnimate: anim, figureTransition: trans }
+  }, [activePose, reduced])
+
+  // Aura Ring Color per MASCOT_SPEC
+  const auraColor =
+    activePose === 'alert'
+      ? color.hold
+      : activePose === 'listen'
+      ? color.watch
+      : activePose === 'relief'
+      ? color.good
+      : activePose === 'write'
+      ? color.write
+      : color.verify
+
+  return (
+    <div
+      style={{
+        width: renderedSize,
+        height: renderedSize,
+        position: 'relative',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        userSelect: 'none',
+        overflow: 'visible',
+      }}
+      role="img"
+      aria-label={`Satya mascot, ${activePose}`}
+    >
+      {/* SVG Underlay for Aura Ring & Accessories (Zero Bottom Shadows!) */}
+      <svg
+        viewBox="0 0 200 200"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          overflow: 'visible',
+          pointerEvents: 'none',
+        }}
+      >
+        {/* State Aura Halo Ring */}
+        <motion.circle
+          cx={100}
+          cy={100}
+          r={96}
+          fill="none"
+          stroke={auraColor}
+          strokeWidth={4}
+          animate={{
+            opacity:
+              activePose === 'alert' ||
+              activePose === 'relief' ||
+              activePose === 'listen' ||
+              activePose === 'write' ||
+              activePose === 'catch'
+                ? 0.7
+                : 0,
+            scale: activePose === 'alert' ? [1, 1.06, 1] : 1,
+          }}
+          transition={{ duration: 1.0, repeat: activePose === 'alert' ? Infinity : 0 }}
+          style={{ transformBox: 'view-box', transformOrigin: '100px 100px' }}
+        />
+
+        {/* Floating Accessories (Floating Zzz, Sound Rings, Pen & Notepad) */}
+        <motion.g
+          id="accessories"
+          animate={figureAnimate}
+          transition={figureTransition}
+          style={{ transformBox: 'view-box', transformOrigin: '100px 100px' }}
+        >
+          {activePose !== 'sleep' && activePose !== 'write' && activePose !== 'relief' && activePose !== 'listen' && activePose !== 'catch' && (
+            <Accessories pose={activePose} audioLevel={audioLevel} reducedMotion={reduced} />
+          )}
+        </motion.g>
+      </svg>
+
+      {/* Perfectly Centered, Full-Frame 3D Mascot Character */}
+      <motion.div
+        animate={figureAnimate}
+        transition={figureTransition}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          transformOrigin: '50% 50%',
+        }}
+      >
+        {/* The Base High-Resolution 3D Character (No bottom shadow, fills frame) */}
+        <motion.img
+          key={activePose}
+          src={currentMascotSrc}
+          alt={`Satya 3D Mascot - ${activePose}`}
+          draggable={false}
+          initial={
+            activePose === 'alert'
+              ? { scale: 0.6 }
+              : { scale: mascotBaseScale }
+          }
+          animate={{
+            scale: mascotBaseScale,
+            x: activePose === 'sleep' ? 0 : activePose === 'write' ? lookX * 0.3 : lookX,
+            y: activePose === 'sleep' ? 0 : activePose === 'write' ? Math.max(1.5, lookY * 0.3) : lookY,
+          }}
+          transition={
+            activePose === 'alert'
+              ? { duration: 0.85, ease: [0.34, 1.56, 0.64, 1] }
+              : soft
+          }
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'contain',
+            pointerEvents: 'none',
+            display: 'block',
+          }}
+        />
+
+        {/* Dynamic Expressions Built from Scratch Aligned Directly on the 3D Eyes and Mouth */}
+        <FaceOverlay
+          pose={activePose}
+          lookX={lookX}
+          lookY={lookY}
+          reduced={reduced}
+        />
+      </motion.div>
+    </div>
+  )
+})
+
+export default Mascot
