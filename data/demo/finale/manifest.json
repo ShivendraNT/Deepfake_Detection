@@ -1,0 +1,63 @@
+{
+  "scenario_id": "cfo_deepfake_rajesh",
+  "target": {
+    "name": "Priya",
+    "role": "Accounts Executive (Maker)"
+  },
+  "impersonated_caller": {
+    "name": "Rajesh",
+    "role": "CFO"
+  },
+  "checker": {
+    "name": "Arjun",
+    "role": "Accounts Manager"
+  },
+  "takes": [
+    {
+      "id": "en",
+      "language": "en",
+      "filename": "rajesh_cfo_call_en.wav",
+      "text": "Priya, it's Rajesh. Confidential acquisition — transfer ₹48.5 lakh to the new escrow account I'm sending you, today. Don't loop in Arjun, I'll explain later.",
+      "format": {
+        "sample_rate": 16000,
+        "channels": 1,
+        "bit_depth": 16,
+        "codec": "PCM16"
+      },
+      "expected_asks": [
+        "A1_NEW_BENEFICIARY",
+        "A2_URGENT_DEADLINE",
+        "A3_SECRECY_BYPASS",
+        "A5_LARGE_AMOUNT"
+      ]
+    },
+    {
+      "id": "hi",
+      "language": "hi",
+      "filename": "rajesh_cfo_call_hi.wav",
+      "text": "Priya, Rajesh bol raha hoon. Ek confidential acquisition hai — jo naya escrow account bheja hai usme turant ₹48.5 lakh transfer kar do, aaj hi. Arjun ko mat batana, main baad mein explain karunga.",
+      "format": {
+        "sample_rate": 16000,
+        "channels": 1,
+        "bit_depth": 16,
+        "codec": "PCM16"
+      },
+      "expected_asks": [
+        "A1_NEW_BENEFICIARY",
+        "A2_URGENT_DEADLINE",
+        "A3_SECRECY_BYPASS",
+        "A5_LARGE_AMOUNT"
+      ]
+    }
+  ],
+  "linked_evidence": {
+    "email": "data/demo/emails/02_bec_bank_change_narmada.eml",
+    "invoice": "data/demo/invoices/inv_narmada_changed_bank.pdf",
+    "case": "data/demo/cases/case_s07.json"
+  },
+  "provenance": {
+    "source_voice": "Consented teammate voice",
+    "consent_form": "docs/consent/signed/consent_rajesh_voice.pdf",
+    "model": "F5-TTS / XTTS-v2"
+  }
+}
