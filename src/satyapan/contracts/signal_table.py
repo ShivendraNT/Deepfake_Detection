@@ -106,6 +106,14 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
     ReasonCode.SEAL_PRESENCE_CONFLICT: SignalSpec(
         SignalGroup.PROVENANCE, TargetRule.HOLD_IF_MONEY_ELSE_VERIFY, Strength.STRONG, _DET
     ),
+    # --- cross-channel (X1: a call/message ask AND a payment, same case, under 30 minutes) ---
+    # The order in the sequence is the finding: no single channel shows it on its own.
+    ReasonCode.CROSS_CHANNEL_SEQUENCE: SignalSpec(
+        SignalGroup.CROSS_CHANNEL, TargetRule.VERIFY, Strength.STRONG, _DET
+    ),
+    ReasonCode.CROSS_CHANNEL_URGENT_BYPASS: SignalSpec(
+        SignalGroup.CROSS_CHANNEL, TargetRule.HOLD, Strength.STRONG, _DET
+    ),
 }
 
 # Codes that only the policy engine may emit (they are never Signals).

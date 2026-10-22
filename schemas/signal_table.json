@@ -191,5 +191,21 @@
     "allowed_sources": [
       "deterministic"
     ]
+  },
+  "CROSS_CHANNEL_SEQUENCE": {
+    "group": "cross_channel",
+    "target": "VERIFY",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
+  },
+  "CROSS_CHANNEL_URGENT_BYPASS": {
+    "group": "cross_channel",
+    "target": "HOLD",
+    "strength": "strong",
+    "allowed_sources": [
+      "deterministic"
+    ]
   }
 }

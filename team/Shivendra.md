@@ -194,3 +194,14 @@ Check after each step: `cd desktop && npm run typecheck && npx vitest run` · `m
 8. `tests/finale/test_companion_finale.py`: consent 403, call events, live chips/band relay, OOB directory contact, files intake, report pack, no score keys anywhere.
 
 Check after each step: `uv run pytest tests/tasks/test_t25_companion.py -q` · new finale tests · `make check`.
+
+## Agent plan — F04 (X1 cross-channel signal)
+
+1. `enums.py`: add `SignalGroup.CROSS_CHANNEL` and `ReasonCode.CROSS_CHANNEL_SEQUENCE` / `CROSS_CHANNEL_URGENT_BYPASS`.
+2. `signal_table.py`: SEQUENCE → (cross_channel, VERIFY, strong, deterministic); URGENT_BYPASS → (cross_channel, HOLD, strong, deterministic).
+3. `templates.py`: EN + Devanagari HI text for both codes (no reassurance words; ≤ 300 chars).
+4. `pipeline.py`: `derive_cross_channel_signals(case, master=None)` — 30-min window around `txn.created_at`, in-window A1/A7/A6 ask signals, new/changed beneficiary from trusted txn + master; `Signal.make(...)` deterministic; URGENT when in-window A4/A5.
+5. `pipeline.py`: `recompute()` appends derived X1 signals (deduplicated, idempotent) before `decide()`; never lowers.
+6. `tests/finale/test_x1.py`: window (30 min vs 31 min), A4/A5 → HOLD, raise-only over every demo floor, deterministic source + no score.
+7. Run `make schemas`, X1 tests, `tests/invariants/`, `tests/tasks/test_t25_companion.py`, `tests/finale/`, then `make check`; fix lint with `make fmt`.
+8. Update `docs/STATUS.md` (F04 done) and commit `F04: X1 cross-channel signal`.

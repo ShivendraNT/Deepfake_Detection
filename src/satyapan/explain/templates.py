@@ -235,6 +235,19 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         "सील लगा रहा है, और इस आवाज़ पर कोई सील नहीं है। इस कॉल पर कार्रवाई न करें; डायरेक्टरी "
         "के नंबर पर उन्हें कॉल-बैक करें और चेकर को बताएँ।",
     },
+    # --- cross-channel (X1: call/message ask + payment, same case, under 30 minutes) ---
+    ReasonCode.CROSS_CHANNEL_SEQUENCE: {
+        Lang.EN: "Cross-channel sequence: A request to change bank details was followed by a "
+        "payment to a new beneficiary within 30 minutes. Verify independently before paying.",
+        Lang.HI: "क्रॉस-चैनल चेतावनी: 30 मिनट के भीतर बैंक विवरण बदलने के अनुरोध के बाद नए "
+        "लाभार्थी को भुगतान दर्ज किया गया। भुगतान से पहले स्वतंत्र रूप से पुष्टि करें।",
+    },
+    ReasonCode.CROSS_CHANNEL_URGENT_BYPASS: {
+        Lang.EN: "High-risk cross-channel sequence: A call/message asked for secrecy or approval "
+        "bypass alongside a new beneficiary. Payment held for verification.",
+        Lang.HI: "अति-जोखिम चेतावनी: नए लाभार्थी के साथ-साथ गोपनीयता या मंज़ूरी बाईपास का "
+        "अनुरोध मिला। भुगतान रोक दिया गया है।",
+    },
     # --- decision-level (policy engine only) ---
     ReasonCode.MULTI_GROUP_STRONG: {
         Lang.EN: "Two or more independent check groups raised a concern together, so this case "
