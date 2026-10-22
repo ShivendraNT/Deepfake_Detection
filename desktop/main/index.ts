@@ -141,6 +141,10 @@ function resizeBubble(height: number): void {
 }
 
 function relayCardAction(cardId: string, actionId: string): void {
+  if (actionId === 'dismiss') {
+    hideCard(cardId)
+    return
+  }
   if (!mascotWindow || mascotWindow.isDestroyed()) return
   mascotWindow.webContents.send('companion:card-action', { card_id: cardId, action_id: actionId })
 }
@@ -331,8 +335,37 @@ function openWorkspace(_tab?: string): void {
 
 function checkClipboard(): void {
   showCompanionWindow()
-  const check = inspectClipboard(clipboard.readText())
+  const text = clipboard.readText()
+  const check = inspectClipboard(text)
   send('companion:tray-request', { kind: 'clipboard', check } satisfies TrayRequest)
+
+  if (check.suspicious) {
+    showCard({
+      id: `clip-${Date.now()}`,
+      kind: 'alert',
+      band: 'HOLD',
+      headline: `Suspicious: ${check.matches.join(' and ')}`,
+      reasons: check.matches,
+      chips: [],
+      actions: [{ id: 'dismiss', variant: 'ghost' }],
+    })
+  } else if (text.trim().length > 0) {
+    showCard({
+      id: `clip-${Date.now()}`,
+      kind: 'result',
+      band: 'PASS',
+      headline: 'Clipboard looks OK',
+      reasons: ['No urgent payment tricks found in copied text'],
+      actions: [{ id: 'dismiss', variant: 'ghost' }],
+    })
+  } else {
+    showCard({
+      id: `clip-${Date.now()}`,
+      kind: 'toast',
+      text_key: 'clipboard_empty',
+      tone: 'neutral',
+    })
+  }
 }
 
 function replayScenario(scenario: string): void {

@@ -16,6 +16,7 @@ const TOAST_TEXT: Record<string, string> = {
   'scribe.done': 'Done. 5 drafts ready — you review and submit.',
   'toast.sleep': "Sleeping. I'm not listening.",
   'toast.off': 'Bye! Bring me back from the menu bar.',
+  'clipboard_empty': 'Clipboard is empty — copy an email or message first.',
 }
 
 // Temporary local copy until F08 lands shared/copy.ts. Wording is from MASCOT_SPEC §8.
