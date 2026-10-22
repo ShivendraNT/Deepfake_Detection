@@ -9,7 +9,7 @@
 
 import { join } from 'node:path'
 
-import { app, BrowserWindow, clipboard, globalShortcut, screen, shell } from 'electron'
+import { app, BrowserWindow, clipboard, globalShortcut, Menu, screen, shell } from 'electron'
 
 import type {
   BridgeResult,
@@ -146,18 +146,33 @@ function relayCardAction(cardId: string, actionId: string): void {
 // ---------------------------------------------------------------------------------------------
 // Drag, click-through and the cursor feed
 // ---------------------------------------------------------------------------------------------
+let mouseIgnored = true
+let manualClickThrough: boolean | null = null
+let isDragging = false
+
 function setClickThrough(through: boolean): void {
+  manualClickThrough = through
   if (!mascotWindow || mascotWindow.isDestroyed()) return
-  mascotWindow.setIgnoreMouseEvents(through, { forward: true })
+  if (mouseIgnored !== through) {
+    mouseIgnored = through
+    mascotWindow.setIgnoreMouseEvents(through, { forward: true })
+  }
 }
 
 function dragBy(dx: number, dy: number): void {
+  isDragging = true
   if (!mascotWindow || mascotWindow.isDestroyed()) return
+  if (mouseIgnored) {
+    mouseIgnored = false
+    mascotWindow.setIgnoreMouseEvents(false)
+  }
   const bounds = mascotWindow.getBounds()
   mascotWindow.setPosition(Math.round(bounds.x + dx), Math.round(bounds.y + dy))
 }
 
 function dragEnd(): void {
+  isDragging = false
+  manualClickThrough = null
   if (!mascotWindow || mascotWindow.isDestroyed()) return
   const snapped = snapToEdges(mascotWindow.getBounds() as Rect, workAreaFor(mascotWindow) as Rect)
   mascotWindow.setBounds({
@@ -188,10 +203,23 @@ function startCursorFeed(): void {
     const bounds = mascotWindow.getBounds()
     const dx = point.x - (bounds.x + bounds.width / 2)
     const dy = point.y - (bounds.y + bounds.height / 2)
+    const dist = Math.hypot(dx, dy)
+
+    if (!isDragging && manualClickThrough === null) {
+      // Satya is centered; 96 px radius covers his 176 px body with margin.
+      // Clicks inside this circle are captured by Satya; clicks outside pass through.
+      const overMascot = dist <= 96
+      const shouldIgnore = !overMascot
+      if (shouldIgnore !== mouseIgnored) {
+        mouseIgnored = shouldIgnore
+        mascotWindow.setIgnoreMouseEvents(shouldIgnore, { forward: true })
+      }
+    }
+
     mascotWindow.webContents.send('companion:cursor', {
       dx,
       dy,
-      near: Math.hypot(dx, dy) < 500,
+      near: dist < 500,
     })
   }, 33)
 }
@@ -359,6 +387,34 @@ if (!hasLock) {
     })
     mascotWindow.on('show', startCursorFeed)
     mascotWindow.on('hide', stopCursorFeed)
+    mascotWindow.webContents.on('context-menu', (_event, params) => {
+      const menu = Menu.buildFromTemplate([
+        { label: `Satya · ${statusLabel()}`, enabled: false },
+        { type: 'separator' },
+        {
+          label: userMode === 'WATCHING' ? 'Sleep' : 'Watch',
+          click: () => void setUserMode(userMode === 'WATCHING' ? 'SLEEPING' : 'WATCHING'),
+        },
+        {
+          label: 'Open Notebook',
+          click: () => openWorkspace(),
+        },
+        {
+          label: 'Check Clipboard',
+          click: checkClipboard,
+        },
+        { type: 'separator' },
+        {
+          label: 'Off',
+          click: () => void setUserMode('OFF'),
+        },
+        {
+          label: 'Quit Satya',
+          click: () => void quit(),
+        },
+      ])
+      menu.popup({ window: mascotWindow ?? undefined, x: params.x, y: params.y })
+    })
     startCursorFeed()
 
     bubbleWindow = createBubbleWindow(preloadPath)

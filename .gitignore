@@ -43,6 +43,9 @@ docs/consent/signed/
 node_modules/
 console/dist/
 
+# External / Local
+sih/
+
 # OS / editors
 .DS_Store
 .idea/

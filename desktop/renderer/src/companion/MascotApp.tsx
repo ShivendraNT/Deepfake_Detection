@@ -5,7 +5,7 @@
  * `<div>` instead of a second window.
  */
 
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 
 import type { BubbleCard } from '../../../shared/contracts'
 import { api, isMockBridge } from '../shared/api'
@@ -20,6 +20,11 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
   const [card, setCard] = useState<BubbleCard | null>(null)
   const [tail, setTail] = useState<'left' | 'right'>('left')
 
+  const isDown = useRef(false)
+  const hasDragged = useRef(false)
+  const downPos = useRef({ x: 0, y: 0 })
+  const lastScreenPos = useRef({ x: 0, y: 0 })
+
   useEffect(() => {
     if (!isMockBridge) return
     return api.onCard((next, side) => {
@@ -28,11 +33,67 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
     })
   }, [])
 
+  const handlePointerDown = (e: React.PointerEvent) => {
+    if (e.button !== 0) return
+    isDown.current = true
+    hasDragged.current = false
+    downPos.current = { x: e.screenX, y: e.screenY }
+    lastScreenPos.current = { x: e.screenX, y: e.screenY }
+    api.setClickThrough(false)
+    try {
+      ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
+    } catch {}
+  }
+
+  const handlePointerMove = (e: React.PointerEvent) => {
+    if (!isDown.current) return
+    const totalDist = Math.hypot(e.screenX - downPos.current.x, e.screenY - downPos.current.y)
+    if (!hasDragged.current && totalDist > 4) {
+      hasDragged.current = true
+    }
+    if (hasDragged.current) {
+      const dx = e.screenX - lastScreenPos.current.x
+      const dy = e.screenY - lastScreenPos.current.y
+      lastScreenPos.current = { x: e.screenX, y: e.screenY }
+      api.dragBy(dx, dy)
+    }
+  }
+
+  const handlePointerUp = (e: React.PointerEvent) => {
+    if (!isDown.current) return
+    isDown.current = false
+    try {
+      ;(e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId)
+    } catch {}
+
+    if (hasDragged.current) {
+      api.dragEnd()
+      hasDragged.current = false
+    }
+  }
+
+  const handleDoubleClick = () => {
+    void api.openWorkspace()
+  }
+
   return (
-    <div className="relative h-full w-full">
+    <div className="relative h-full w-full select-none">
       {companion ?? (
         <div className="grid h-full w-full place-items-center">
-          <Mascot mood="attentive" size={176} />
+          <div
+            className="flex h-[176px] w-[176px] cursor-grab items-center justify-center active:cursor-grabbing"
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerUp}
+            onPointerCancel={handlePointerUp}
+            onDoubleClick={handleDoubleClick}
+            onPointerEnter={() => api.setClickThrough(false)}
+            onPointerLeave={() => {
+              if (!isDown.current) api.setClickThrough(true)
+            }}
+          >
+            <Mascot mood="attentive" size={176} />
+          </div>
         </div>
       )}
       {isMockBridge && card ? (

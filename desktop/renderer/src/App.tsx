@@ -8,9 +8,24 @@ import CaptureApp from './capture/CaptureApp'
 import Stage from './stage/Stage'
 import Workspace from './workspace/Workspace'
 
-export type View = 'companion' | 'bubble' | 'workspace' | 'capture' | 'gallery' | 'stage'
+export type View =
+  | 'companion'
+  | 'bubble'
+  | 'workspace'
+  | 'capture'
+  | 'gallery'
+  | 'stage'
+  | 'legacy'
 
-const VIEWS: View[] = ['companion', 'bubble', 'workspace', 'capture', 'gallery', 'stage']
+const VIEWS: View[] = [
+  'companion',
+  'bubble',
+  'workspace',
+  'capture',
+  'gallery',
+  'stage',
+  'legacy',
+]
 
 class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   state = { failed: false }
@@ -65,7 +80,9 @@ function renderView(view: View): JSX.Element {
       return <Gallery />
     case 'stage':
       return <Stage />
+    case 'legacy':
+      return <Companion />
     default:
-      return <MascotApp companion={<Companion />} />
+      return <MascotApp />
   }
 }
