@@ -115,7 +115,7 @@ export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow
     },
   })
 
-  win.setAlwaysOnTop(true, 'floating')
+  win.setAlwaysOnTop(true, 'screen-saver', 1)
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   // Almost all of the window is empty: clicks pass through to the app behind until the renderer
   // says the pointer is over Satya or a menu petal.
@@ -123,7 +123,11 @@ export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow
   if (process.platform === 'darwin') win.setWindowButtonVisibility(false)
   harden(win)
 
-  win.once('ready-to-show', () => win.showInactive())
+  win.once('ready-to-show', () => {
+    win.setAlwaysOnTop(true, 'screen-saver', 1)
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+    win.showInactive()
+  })
   win.on('close', (event) => {
     event.preventDefault()
     win.hide()
@@ -157,9 +161,13 @@ export function createBubbleWindow(preloadPath: string): BrowserWindow {
     title: 'Satya says',
     webPreferences: secureWebPreferences(preloadPath),
   })
-  win.setAlwaysOnTop(true, 'floating')
+  win.setAlwaysOnTop(true, 'screen-saver', 1)
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   harden(win)
+  win.once('ready-to-show', () => {
+    win.setAlwaysOnTop(true, 'screen-saver', 1)
+    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  })
   win.on('close', (event) => {
     event.preventDefault()
     win.hide()
@@ -209,6 +217,8 @@ export function createCaptureWindow(preloadPath: string): BrowserWindow {
 
 export function showCompanion(win: BrowserWindow | null): void {
   if (!win || win.isDestroyed()) return
+  win.setAlwaysOnTop(true, 'screen-saver', 1)
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   win.showInactive()
 }
 

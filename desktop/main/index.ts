@@ -116,6 +116,8 @@ function deliverCard(win: BrowserWindow, card: BubbleCard | null, tail: 'left' |
 function showCard(card: BubbleCard): void {
   lastCard = card
   const win = ensureBubble()
+  win.setAlwaysOnTop(true, 'screen-saver', 1)
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
   const tail = placeBubbleWindow()
   deliverCard(win, card, tail)
   // Passive cards must never steal focus from the call (Meet/Teams keeps focus).
