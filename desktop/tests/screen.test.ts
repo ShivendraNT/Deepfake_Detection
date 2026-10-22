@@ -46,3 +46,4 @@ describe('Screen Guard analysis', () => {
     expect(result.headline).toBe('Screen looks OK')
   })
 })
+

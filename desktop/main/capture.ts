@@ -120,14 +120,25 @@ export function registerCapture(options: {
   }
 
   const sendToCapture = (channel: string, payload: unknown): void => {
-    if (window.isDestroyed()) return
-    window.webContents.send(channel, payload)
+    if (window.isDestroyed() || window.webContents.isDestroyed()) return
+    try {
+      window.webContents.send(channel, payload)
+    } catch {}
   }
 
   const broadcastToShell = (channel: string, payload: unknown): void => {
     for (const other of BrowserWindow.getAllWindows()) {
-      if (other === window || other.isDestroyed()) continue
-      other.webContents.send(channel, payload)
+      if (
+        other === window ||
+        other.isDestroyed() ||
+        other.webContents.isDestroyed() ||
+        other.webContents.isLoading()
+      ) {
+        continue
+      }
+      try {
+        other.webContents.send(channel, payload)
+      } catch {}
     }
   }
 

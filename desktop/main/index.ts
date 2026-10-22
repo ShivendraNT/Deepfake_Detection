@@ -11,6 +11,25 @@ import { join } from 'node:path'
 
 import { app, BrowserWindow, clipboard, globalShortcut, Menu, screen, shell } from 'electron'
 
+// Prevent unhandled EIO / EPIPE socket errors on stdio from crashing the process or showing dialogs
+for (const stream of [process.stdout, process.stderr]) {
+  stream?.on('error', (err: NodeJS.ErrnoException) => {
+    if (err?.code === 'EPIPE' || err?.code === 'EIO') return
+  })
+}
+
+process.on('uncaughtException', (err: NodeJS.ErrnoException) => {
+  if (
+    err?.code === 'EPIPE' ||
+    err?.code === 'EIO' ||
+    err?.message?.includes('write EIO') ||
+    err?.message?.includes('write EPIPE')
+  ) {
+    return
+  }
+  console.error('Uncaught Exception:', err)
+})
+
 import type {
   BridgeResult,
   BubbleCard,
@@ -64,7 +83,16 @@ function errorOf(error: unknown): string {
 
 function send(channel: string, payload: unknown): void {
   for (const win of [mascotWindow, bubbleWindow, workspaceWindow]) {
-    if (win && !win.isDestroyed()) win.webContents.send(channel, payload)
+    if (
+      win &&
+      !win.isDestroyed() &&
+      !win.webContents.isDestroyed() &&
+      !win.webContents.isLoading()
+    ) {
+      try {
+        win.webContents.send(channel, payload)
+      } catch {}
+    }
   }
 }
 
@@ -107,11 +135,20 @@ function placeBubbleWindow(): 'left' | 'right' {
 
 function deliverCard(win: BrowserWindow, card: BubbleCard | null, tail: 'left' | 'right'): void {
   const payload = { card, tail }
+  if (win.isDestroyed() || win.webContents.isDestroyed()) return
   if (win.webContents.isLoading()) {
-    win.webContents.once('did-finish-load', () => win.webContents.send('companion:card', payload))
+    win.webContents.once('did-finish-load', () => {
+      if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
+        try {
+          win.webContents.send('companion:card', payload)
+        } catch {}
+      }
+    })
     return
   }
-  win.webContents.send('companion:card', payload)
+  try {
+    win.webContents.send('companion:card', payload)
+  } catch {}
 }
 
 function showCard(card: BubbleCard): void {
@@ -151,8 +188,10 @@ function relayCardAction(cardId: string, actionId: string): void {
     openWorkspace()
     return
   }
-  if (!mascotWindow || mascotWindow.isDestroyed()) return
-  mascotWindow.webContents.send('companion:card-action', { card_id: cardId, action_id: actionId })
+  if (!mascotWindow || mascotWindow.isDestroyed() || mascotWindow.webContents.isDestroyed()) return
+  try {
+    mascotWindow.webContents.send('companion:card-action', { card_id: cardId, action_id: actionId })
+  } catch {}
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -208,10 +247,23 @@ function stopCursorFeed(): void {
 /** 30 Hz while Satya is visible; the renderer only needs dx/dy and a near flag. */
 function startCursorFeed(): void {
   stopCursorFeed()
-  if (!mascotWindow || mascotWindow.isDestroyed() || !mascotWindow.isVisible()) return
+  if (
+    !mascotWindow ||
+    mascotWindow.isDestroyed() ||
+    !mascotWindow.isVisible() ||
+    mascotWindow.webContents.isDestroyed() ||
+    mascotWindow.webContents.isLoading()
+  ) {
+    return
+  }
   cursorTimer = setInterval(() => {
-    if (!mascotWindow || mascotWindow.isDestroyed() || !mascotWindow.isVisible()) {
-      stopCursorFeed()
+    if (
+      !mascotWindow ||
+      mascotWindow.isDestroyed() ||
+      !mascotWindow.isVisible() ||
+      mascotWindow.webContents.isDestroyed() ||
+      mascotWindow.webContents.isLoading()
+    ) {
       return
     }
     const point = screen.getCursorScreenPoint()
@@ -227,15 +279,19 @@ function startCursorFeed(): void {
       const shouldIgnore = !overMascot
       if (shouldIgnore !== mouseIgnored) {
         mouseIgnored = shouldIgnore
-        mascotWindow.setIgnoreMouseEvents(shouldIgnore, { forward: true })
+        try {
+          mascotWindow.setIgnoreMouseEvents(shouldIgnore, { forward: true })
+        } catch {}
       }
     }
 
-    mascotWindow.webContents.send('companion:cursor', {
-      dx,
-      dy,
-      near: dist < 500,
-    })
+    try {
+      mascotWindow.webContents.send('companion:cursor', {
+        dx,
+        dy,
+        near: dist < 500,
+      })
+    } catch {}
   }, 33)
 }
 
@@ -555,7 +611,6 @@ if (!hasLock) {
       ])
       menu.popup({ window: mascotWindow ?? undefined, x: params.x, y: params.y })
     })
-    startCursorFeed()
 
     bubbleWindow = createBubbleWindow(preloadPath)
     bubbleWindow.on('closed', () => {
