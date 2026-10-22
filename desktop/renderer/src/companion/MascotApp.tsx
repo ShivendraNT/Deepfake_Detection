@@ -143,7 +143,7 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
                 mood={MOOD[satya.state.pose]}
                 audioLevel={0}
                 look={satya.look}
-                size={96}
+                size={128}
               />
             </motion.div>
           </div>

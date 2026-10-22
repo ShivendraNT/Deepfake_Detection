@@ -294,17 +294,13 @@ const Mascot = memo(function Mascot({
     let trans: any = soft
 
     if (!reduced) {
-      if (activePose === 'sleep') {
-        // Very accurate, gentle deep-sleep breathing cycle with subtle squash & stretch
-        anim.scaleY = [1, 1.036, 0.984, 1]
-        anim.scaleX = [1, 0.988, 1.012, 1]
-        anim.y = [0, -2.5, 0.8, 0]
-        trans = { duration: 4.2, repeat: Infinity, ease: 'easeInOut' }
-      } else if (activePose === 'idle') {
-        // Natural awake breathing
-        anim.scaleY = [1, 1.028, 1]
-        anim.y = [0, -2, 0]
-        trans = { duration: 3.6, repeat: Infinity, ease: 'easeInOut' }
+      if (activePose === 'sleep' || activePose === 'idle') {
+        // Completely stable and static: no 4-5s periodic breathing/fading pulsation
+        anim.scaleY = 1
+        anim.scaleX = 1
+        anim.y = 0
+        anim.opacity = 1
+        trans = soft
       } else if (activePose === 'listen') {
         // Attentive listening perk & audio resonance:
         // Tilts cupped ear attentively toward audio with curious micro-nods and volume pulse
@@ -348,9 +344,9 @@ const Mascot = memo(function Mascot({
         anim.y = [0, -3, 0]
         trans = { duration: 1.4, repeat: Infinity, ease: 'easeInOut' }
       } else if (activePose === 'off') {
-        anim.opacity = [1, 0.6, 0]
-        anim.scaleY = [1, 0.85, 0.7]
-        trans = { duration: 1.2, ease: 'easeOut' }
+        anim.opacity = 0.6
+        anim.scaleY = 0.95
+        trans = soft
       }
     }
 
@@ -473,6 +469,7 @@ const Mascot = memo(function Mascot({
             objectFit: 'contain',
             pointerEvents: 'none',
             display: 'block',
+            opacity: 1,
           }}
         />
 
