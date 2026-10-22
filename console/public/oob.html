@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <meta name="theme-color" content="#FBF8F3" />
+    <title>Satya — confirm this payment</title>
+    <style>
+      :root {
+        --ink: #2a2238;
+        --muted: #6b6478;
+        --paper: #fbf8f3;
+        --card: #fffcf7;
+        --inner: #f6f1e9;
+        --line: #e7dfd3;
+        --teal: #1fb5a3;
+        --green: #3ccb7f;
+        --coral: #ff6b5e;
+        --font: Inter, "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        color-scheme: light;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html,
+      body {
+        min-height: 100%;
+        margin: 0;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+        text-rendering: optimizeLegibility;
+      }
+
+      body {
+        display: flex;
+        min-height: 100svh;
+        padding: 16px;
+        align-items: flex-start;
+        justify-content: center;
+      }
+
+      button {
+        font-family: inherit;
+        -webkit-tap-highlight-color: transparent;
+      }
+
+      button:focus-visible {
+        outline: 2px solid var(--teal);
+        outline-offset: 2px;
+      }
+
+      .shell {
+        width: 100%;
+        max-width: 375px;
+        margin: 0 auto;
+      }
+
+      .card {
+        width: 100%;
+        border: 1px solid var(--line);
+        border-radius: 20px;
+        background: var(--card);
+        padding: 20px;
+        box-shadow: 0 12px 32px rgba(20, 16, 40, 0.08);
+      }
+
+      .state {
+        text-align: center;
+        color: var(--muted);
+        font-size: 13px;
+        line-height: 1.5;
+        padding: 28px 20px;
+      }
+
+      .state p {
+        margin: 0;
+      }
+
+      .state .sub {
+        margin-top: 8px;
+        font-size: 12px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .mark {
+        display: grid;
+        width: 36px;
+        height: 36px;
+        flex: 0 0 36px;
+        place-items: center;
+        border-radius: 999px;
+        background: rgba(31, 181, 163, 0.1);
+        color: var(--teal);
+      }
+
+      .brand-name {
+        margin: 0;
+        font-size: 13px;
+        font-weight: 600;
+      }
+
+      .brand-sub {
+        margin: 0;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .pill {
+        margin-left: auto;
+        flex: 0 0 auto;
+        border: 1px solid var(--line);
+        border-radius: 999px;
+        padding: 2px 8px;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      .prompt {
+        margin: 20px 0 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.35;
+        letter-spacing: -0.01em;
+      }
+
+      .meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px 8px;
+        align-items: center;
+        margin-top: 16px;
+        border-radius: 12px;
+        background: var(--inner);
+        padding: 8px 12px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .meta-strong {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .actions {
+        display: grid;
+        gap: 12px;
+        margin-top: 20px;
+      }
+
+      .btn {
+        display: flex;
+        width: 100%;
+        height: 56px;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        border: 0;
+        border-radius: 12px;
+        padding: 0 16px;
+        font-size: 15px;
+        font-weight: 600;
+        line-height: 1.2;
+        cursor: pointer;
+        transition: background-color 120ms ease, border-color 120ms ease, opacity 120ms ease;
+      }
+
+      .btn:disabled {
+        cursor: wait;
+        opacity: 0.6;
+      }
+
+      .btn svg {
+        flex: 0 0 auto;
+      }
+
+      .btn.approve {
+        background: var(--green);
+        color: #12301f;
+      }
+
+      .btn.reject {
+        border: 1px solid var(--line);
+        background: var(--card);
+        color: var(--ink);
+      }
+
+      .btn.not-requested {
+        background: var(--coral);
+        color: #ffffff;
+      }
+
+      .btn.retry {
+        height: 44px;
+        margin-top: 16px;
+        border: 1px solid var(--line);
+        background: var(--inner);
+        color: var(--ink);
+      }
+
+      .foot {
+        margin: 16px 0 0;
+        color: var(--muted);
+        font-size: 12px;
+        line-height: 1.55;
+      }
+
+      .error {
+        margin: 12px 0 0;
+        color: #c24136;
+        font-size: 12px;
+        line-height: 1.5;
+      }
+
+      .result {
+        text-align: center;
+        padding: 28px 20px;
+      }
+
+      .result-icon {
+        display: grid;
+        width: 64px;
+        height: 64px;
+        margin: 0 auto;
+        place-items: center;
+        border-radius: 999px;
+      }
+
+      .result-title {
+        margin: 20px 0 0;
+        font-size: 20px;
+        font-weight: 600;
+        line-height: 1.4;
+        letter-spacing: -0.01em;
+      }
+
+      .result-sub {
+        margin: 8px 0 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          transition-duration: 0.001ms !important;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <div id="loading" class="card state" role="status">Loading the confirmation request…</div>
+
+      <div id="error" class="card state" role="alert" hidden>
+        <p id="error-text">Could not load the confirmation request.</p>
+        <button id="retry" class="btn retry" type="button">Try again</button>
+      </div>
+
+      <div id="empty" class="card state" hidden>
+        <p>No confirmation request found.</p>
+        <p class="sub">Open the link from Satya's message again.</p>
+      </div>
+
+      <div id="card-slot"></div>
+      <div id="result-slot"></div>
+    </main>
+
+    <template id="card-template">
+      <article class="card">
+        <header class="brand">
+          <span class="mark" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+              <path
+                d="M12 3.5 19 6v5.2c0 4.4-2.9 7.7-7 9.3-4.1-1.6-7-4.9-7-9.3V6l7-2.5Z"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <path
+                d="m8.8 12.1 2.1 2.1 4.4-4.4"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </span>
+          <div>
+            <p class="brand-name">Satya</p>
+            <p class="brand-sub">Out-of-band confirmation</p>
+          </div>
+          <span class="pill" id="for-pill"></span>
+        </header>
+
+        <h1 class="prompt" id="prompt"></h1>
+
+        <div class="meta">
+          <span class="meta-strong">Just now</span>
+          <span aria-hidden="true">·</span>
+          <span id="via"></span>
+        </div>
+
+        <div class="actions">
+          <button class="btn approve" type="button" data-action="approve">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="m5 12.5 4.2 4.2L19 7"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+            Approve this exact payment
+          </button>
+
+          <button class="btn reject" type="button" data-action="reject">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="m7 7 10 10M17 7 7 17"
+                stroke="currentColor"
+                stroke-width="2.2"
+                stroke-linecap="round"
+              />
+            </svg>
+            Reject
+          </button>
+
+          <button class="btn not-requested" type="button" data-action="not_requested">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path
+                d="M12 3.5 21 20H3L12 3.5Z"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linejoin="round"
+              />
+              <path d="M12 9v4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
+              <circle cx="12" cy="16.8" r="1" fill="currentColor" />
+            </svg>
+            I did not request this
+          </button>
+        </div>
+
+        <p class="foot">Only you can answer this. The link alone is not enough.</p>
+        <p class="error" id="card-error" role="alert" hidden></p>
+      </article>
+    </template>
+
+    <template id="result-template">
+      <article class="card result" aria-live="polite">
+        <div class="result-icon" id="result-icon"></div>
+        <p class="result-title" id="result-title"></p>
+        <p class="result-sub">You can close this tab.</p>
+      </article>
+    </template>
+
+    <script>
+      (function () {
+        "use strict";
+
+        var DEMO_HEADERS = {
+          "X-Demo-User": "emp_rajesh",
+          "X-Demo-Role": "requester",
+          "Content-Type": "application/json",
+        };
+        var DEFAULTS = {
+          amount: "₹48,50,000",
+          payee: "Fictional Escrow Ltd ••••4821",
+          maker: "Priya",
+        };
+        var TOKEN_RE = /\/oob\/([A-Za-z0-9_\-]+)/;
+        var RESULT_COPY = {
+          approved: "Payment approved. Priya's desk has been notified.",
+          rejected: "Payment rejected. Transfer cancelled.",
+          not_requested:
+            "Reported as unrequested. Satya has locked this case in HOLD on Priya's desk.",
+        };
+        var RESULT_COLOR = {
+          approved: "#3CCB7F",
+          rejected: "#6B6478",
+          not_requested: "#FF6B5E",
+        };
+        var RESULT_ICON = {
+          approved:
+            '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12.5 4.2 4.2L19 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+          rejected:
+            '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m7 7 10 10M17 7 7 17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>',
+          not_requested:
+            '<svg width="32" height="32" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3.5 19 6v5.2c0 4.4-2.9 7.7-7 9.3-4.1-1.6-7-4.9-7-9.3V6l7-2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M12 8.5v4.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="15.8" r="1" fill="currentColor"/></svg>',
+        };
+
+        var query = new URLSearchParams(window.location.search);
+        var token = query.get("token") || "";
+        var requester = query.get("requester") || "Rajesh";
+        var details = DEFAULTS;
+        var loading = document.getElementById("loading");
+        var errorBox = document.getElementById("error");
+        var errorText = document.getElementById("error-text");
+        var empty = document.getElementById("empty");
+        var cardSlot = document.getElementById("card-slot");
+        var resultSlot = document.getElementById("result-slot");
+        var retry = document.getElementById("retry");
+
+        function tokenFrom(body) {
+          var match = TOKEN_RE.exec(body || "");
+          return match ? match[1] : null;
+        }
+
+        function cleanPayee(value) {
+          return String(value || "")
+            .replace(/\s+today\b.*$/i, "")
+            .replace(/[.,;:!?]+$/, "")
+            .trim();
+        }
+
+        function extractDetails(body) {
+          var amount = /₹\s?([\d,]+)/.exec(body || "");
+          var payee =
+            /\b(?:pay|paid)\b[^\n]*?\bto\s+([^\n.]+?)(?:\s+today\b|[.\n]|$)/i.exec(body || "") ||
+            /\bto\s+([A-Z][^\n.]+?)(?:\s+today\b|[.\n]|$)/i.exec(body || "");
+          var maker = /\b(?:ask|asked)\s+([A-Z][a-z]+)\s+to\s+pay\b/i.exec(body || "");
+          return {
+            amount: amount ? "₹" + amount[1] : DEFAULTS.amount,
+            payee: payee ? cleanPayee(payee[1]) : DEFAULTS.payee,
+            maker: maker ? maker[1] : DEFAULTS.maker,
+          };
+        }
+
+        function showOnly(element) {
+          [loading, errorBox, empty].forEach(function (item) {
+            item.hidden = item !== element;
+          });
+        }
+
+        function showError(message) {
+          cardSlot.replaceChildren();
+          resultSlot.replaceChildren();
+          errorText.textContent = message;
+          showOnly(errorBox);
+        }
+
+        function showEmpty() {
+          cardSlot.replaceChildren();
+          resultSlot.replaceChildren();
+          showOnly(empty);
+        }
+
+        function renderCard() {
+          showOnly(null);
+          loading.hidden = true;
+          errorBox.hidden = true;
+          empty.hidden = true;
+
+          var fragment = document.getElementById("card-template").content.cloneNode(true);
+          var card = fragment.querySelector(".card");
+          card.querySelector("#prompt").textContent =
+            "Did you ask " +
+            details.maker +
+            " to pay " +
+            details.amount +
+            " to " +
+            details.payee +
+            " today?";
+          card.querySelector("#via").textContent =
+            "Asked via Satya on " + details.maker + "'s laptop";
+          card.querySelector("#for-pill").textContent = "For " + requester;
+
+          card.querySelectorAll("[data-action]").forEach(function (button) {
+            button.addEventListener("click", function () {
+              void respond(button.getAttribute("data-action"), card);
+            });
+          });
+
+          cardSlot.replaceChildren(fragment);
+        }
+
+        function showResult(outcome) {
+          var fragment = document.getElementById("result-template").content.cloneNode(true);
+          var card = fragment.querySelector(".card");
+          var icon = card.querySelector("#result-icon");
+          var color = RESULT_COLOR[outcome] || RESULT_COLOR.rejected;
+          icon.style.background = color + "1A";
+          icon.style.color = color;
+          icon.innerHTML = RESULT_ICON[outcome] || RESULT_ICON.rejected;
+          card.querySelector("#result-title").textContent =
+            RESULT_COPY[outcome] || RESULT_COPY.rejected;
+
+          cardSlot.replaceChildren();
+          resultSlot.replaceChildren(fragment);
+          window.scrollTo({ top: 0, behavior: "smooth" });
+        }
+
+        async function respond(action, card) {
+          if (!action) return;
+          var buttons = card.querySelectorAll("button");
+          var error = card.querySelector("#card-error");
+          buttons.forEach(function (button) {
+            button.disabled = true;
+          });
+          error.hidden = true;
+
+          var payload =
+            action === "approve"
+              ? { token: token, approve: true }
+              : action === "not_requested"
+                ? { token: token, approve: false, reason: "not_requested" }
+                : { token: token, approve: false };
+
+          try {
+            var response = await fetch("/api/oob/respond", {
+              method: "POST",
+              headers: DEMO_HEADERS,
+              body: JSON.stringify(payload),
+            });
+            if (!response.ok) {
+              throw new Error(String(response.status) + " " + (await response.text()));
+            }
+            var data = await response.json().catch(function () {
+              return {};
+            });
+            var outcome;
+            if (action === "not_requested" || data.reason === "not_requested") {
+              outcome = "not_requested";
+            } else if (data.result === "APPROVED") {
+              outcome = "approved";
+            } else if (data.result === "DENIED") {
+              outcome = "rejected";
+            } else {
+              outcome = action === "approve" ? "approved" : "rejected";
+            }
+            showResult(outcome);
+          } catch (reason) {
+            buttons.forEach(function (button) {
+              button.disabled = false;
+            });
+            error.hidden = false;
+            error.textContent =
+              "Could not send your answer. " +
+              (reason && reason.message ? reason.message : "Try again.");
+          }
+        }
+
+        async function boot() {
+          cardSlot.replaceChildren();
+          resultSlot.replaceChildren();
+          errorBox.hidden = true;
+          empty.hidden = true;
+          loading.hidden = false;
+
+          var chosen = null;
+          var inboxError = null;
+          try {
+            var response = await fetch("/api/oob/inbox", { headers: DEMO_HEADERS });
+            if (!response.ok) {
+              throw new Error(String(response.status) + " " + (await response.text()));
+            }
+            var messages = await response.json();
+            if (Array.isArray(messages) && messages.length > 0) {
+              chosen =
+                messages.find(function (message) {
+                  return token
+                    ? String(message.body || "").indexOf(token) !== -1
+                    : Boolean(tokenFrom(message.body));
+                }) || messages[0];
+            }
+          } catch (reason) {
+            inboxError = reason;
+          }
+
+          if (!token) {
+            token = chosen ? tokenFrom(chosen.body) || "" : "";
+          }
+          if (chosen) {
+            details = extractDetails(chosen.body);
+          }
+
+          if (!token) {
+            if (inboxError) {
+              showError(
+                "Could not load the confirmation request. " +
+                  (inboxError.message || "Check the connection and try again."),
+              );
+            } else {
+              showEmpty();
+            }
+            return;
+          }
+
+          renderCard();
+        }
+
+        retry.addEventListener("click", function () {
+          void boot();
+        });
+        void boot();
+      })();
+    </script>
+  </body>
+</html>
