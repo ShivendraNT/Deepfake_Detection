@@ -1,0 +1,194 @@
+/** Narrow IPC surface between the sandboxed renderer and the local backend (T25). */
+
+import { app, BrowserWindow, clipboard, ipcMain, type IpcMainInvokeEvent } from 'electron'
+
+import type {
+  BridgeResult,
+  CaseSummary,
+  ClipboardCheck,
+  CommandResult,
+  CompanionSource,
+  CompanionState,
+  DraftArtifact,
+  EvidenceResult,
+  SessionResult,
+  WorkspaceSnapshot,
+} from '../shared/contracts'
+import type { BackendClient } from './backend'
+
+export interface IpcDependencies {
+  backend: BackendClient
+  getCompanion: () => BrowserWindow | null
+  openWorkspace: () => void
+  hideCompanion: () => Promise<void>
+  quit: () => Promise<void>
+}
+
+const URL_PATTERN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//
+
+function trusted(event: IpcMainInvokeEvent): boolean {
+  const url = event.senderFrame?.url ?? ''
+  return url.startsWith('file://') || URL_PATTERN.test(url)
+}
+
+function errorOf(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
+function refuseUntrusted<T>(event: IpcMainInvokeEvent): BridgeResult<T> | null {
+  if (trusted(event)) return null
+  return { ok: false, error: 'untrusted renderer' }
+}
+
+async function wrap<T>(work: () => Promise<T>): Promise<BridgeResult<T>> {
+  try {
+    return { ok: true, data: await work() }
+  } catch (error) {
+    return { ok: false, error: errorOf(error) }
+  }
+}
+
+const SUSPICIOUS: Array<{ label: string; pattern: RegExp }> = [
+  { label: 'urgency or secrecy language', pattern: /\b(urgent|immediately|today|confidential|between us)\b/i },
+  { label: 'bank or payee details', pattern: /\b(account|ifsc|beneficiary|bank details|payee)\b/i },
+  { label: 'credential request', pattern: /\b(otp|pin|password|cvv|login)\b/i },
+  { label: 'remote-access tool', pattern: /\b(anydesk|teamviewer|quick ?support|screen share)\b/i },
+  { label: 'payment instruction', pattern: /\b(transfer|payment|neft|rtgs|imps|upi)\b/i },
+]
+
+export function redact(text: string): string {
+  return text
+    .replace(/\b\d{9,18}\b/g, (value) => `••••${value.slice(-4)}`)
+    .replace(/\b[A-Z]{4}0[A-Z0-9]{6}\b/g, 'FAK•••••••')
+    .replace(/[\w.+-]+@[\w.-]+\.[a-z]{2,}/gi, (value) => {
+      const [name, domain] = value.split('@')
+      return `${name.slice(0, 2)}•••@${domain}`
+    })
+    .replace(/\+?\d[\d\s-]{7,}\d/g, (value) => `••••${value.slice(-4)}`)
+    .replace(/\s+/g, ' ')
+    .trim()
+}
+
+export function inspectClipboard(text: string): ClipboardCheck {
+  const matches = SUSPICIOUS.filter((rule) => rule.pattern.test(text)).map((rule) => rule.label)
+  return {
+    suspicious: matches.length >= 2,
+    matches,
+    preview: redact(text).slice(0, 240),
+    note: 'Checked only because you pressed the shortcut. Nothing is sent anywhere.',
+  }
+}
+
+export function registerIpc(deps: IpcDependencies): void {
+  const { backend } = deps
+  const handle = (
+    channel: string,
+    listener: (event: IpcMainInvokeEvent, ...args: unknown[]) => unknown,
+  ) => {
+    ipcMain.removeHandler(channel)
+    ipcMain.handle(channel, listener)
+  }
+
+  handle('companion:get-config', (event) => {
+    const refused = refuseUntrusted(event)
+    if (refused) return refused
+    return backend.config()
+  })
+
+  handle('companion:get-state', (event) => {
+    const refused = refuseUntrusted<CompanionState>(event)
+    if (refused) return refused
+    return wrap(() => backend.getState())
+  })
+
+  handle('companion:start-session', (event, ...args) => {
+    const refused = refuseUntrusted<SessionResult>(event)
+    if (refused) return refused
+    const [source, label] = args as unknown as [CompanionSource, string | undefined]
+    const win = deps.getCompanion()
+    if (!win || !win.isVisible()) {
+      return { ok: false, error: 'the consent card must be visible before monitoring starts' }
+    }
+    return wrap(() => backend.startSession(source, label))
+  })
+
+  handle('companion:stop-session', (event) => {
+    const refused = refuseUntrusted<SessionResult>(event)
+    if (refused) return refused
+    return wrap(() => backend.stopSession())
+  })
+
+  handle('companion:command', (event, ...args) => {
+    const refused = refuseUntrusted<CommandResult>(event)
+    if (refused) return refused
+    const [type, payload] = args as unknown as [string, Record<string, unknown> | undefined]
+    return wrap(() => backend.command(type, payload ?? {}))
+  })
+
+  handle('companion:submit-evidence', (event, ...args) => {
+    const refused = refuseUntrusted<EvidenceResult>(event)
+    if (refused) return refused
+    const [text, evidenceId] = args as unknown as [string, string | undefined]
+    return wrap(() => backend.submitEvidence(text, evidenceId))
+  })
+
+  handle('companion:draft', (event, ...args) => {
+    const refused = refuseUntrusted<DraftArtifact>(event)
+    if (refused) return refused
+    const [kind, caseId] = args as unknown as ['section63' | 'helpline_1930', string]
+    return wrap(() => backend.draft(kind, caseId))
+  })
+
+  handle('companion:workspace', (event, ...args) => {
+    const refused = refuseUntrusted<WorkspaceSnapshot>(event)
+    if (refused) return refused
+    const [caseId] = args as unknown as [string | undefined]
+    return wrap(() => backend.workspace(caseId))
+  })
+
+  handle('companion:list-cases', (event) => {
+    const refused = refuseUntrusted<CaseSummary[]>(event)
+    if (refused) return refused
+    return wrap(() => backend.listCases())
+  })
+
+  handle('companion:check-clipboard', (event) => {
+    const refused = refuseUntrusted<ClipboardCheck>(event)
+    if (refused) return refused
+    return wrap(async () => inspectClipboard(clipboard.readText()))
+  })
+
+  handle('companion:copy-text', (event, ...args) => {
+    const refused = refuseUntrusted<null>(event)
+    if (refused) return refused
+    const [text] = args as unknown as [string]
+    clipboard.writeText(text)
+    return { ok: true, data: null }
+  })
+
+  handle('companion:open-workspace', (event) => {
+    const refused = refuseUntrusted<null>(event)
+    if (refused) return refused
+    deps.openWorkspace()
+    return { ok: true, data: null }
+  })
+
+  handle('companion:hide', (event) => {
+    const refused = refuseUntrusted<null>(event)
+    if (refused) return refused
+    return deps.hideCompanion().then(() => ({ ok: true, data: null }))
+  })
+
+  handle('companion:quit', (event) => {
+    const refused = refuseUntrusted<null>(event)
+    if (refused) return refused
+    return deps.quit().then(() => ({ ok: true, data: null }))
+  })
+
+  // Keep app metadata available to the workspace without exposing Node to the renderer.
+  handle('companion:app-version', (event) => {
+    const refused = refuseUntrusted<string>(event)
+    if (refused) return refused
+    return { ok: true, data: app.getVersion() }
+  })
+}

@@ -27,6 +27,7 @@ class AppState:
     _watchlist: Any = None  # T13: Watchlist
     _store: Any = None  # T09: BlobStore
     _seal: Any = None  # C14 Satyapan Seal: SealServices (needs the `seal` extra)
+    _companion: Any = None  # T25: CompanionService
     transcriber_override: Transcriber | None = None  # tests inject FakeTranscriber here
 
     @classmethod
@@ -92,3 +93,11 @@ class AppState:
                 master=self.master, transcriber=transcriber, thresholds=self.thresholds
             )
         return self._live
+
+    def companion(self) -> Any:
+        """T25: the desktop companion service (in-memory consent state + SSE bus)."""
+        if self._companion is None:
+            from satyapan.api.companion.service import CompanionService
+
+            self._companion = CompanionService(master=self.master, repo=self.repo)
+        return self._companion
