@@ -151,11 +151,11 @@ let manualClickThrough: boolean | null = null
 let isDragging = false
 
 function setClickThrough(through: boolean): void {
-  manualClickThrough = through
+  manualClickThrough = through ? null : false
   if (!mascotWindow || mascotWindow.isDestroyed()) return
-  if (mouseIgnored !== through) {
-    mouseIgnored = through
-    mascotWindow.setIgnoreMouseEvents(through, { forward: true })
+  if (!through && mouseIgnored) {
+    mouseIgnored = false
+    mascotWindow.setIgnoreMouseEvents(false)
   }
 }
 
@@ -205,7 +205,7 @@ function startCursorFeed(): void {
     const dy = point.y - (bounds.y + bounds.height / 2)
     const dist = Math.hypot(dx, dy)
 
-    if (!isDragging && manualClickThrough === null) {
+    if (!isDragging && manualClickThrough !== false) {
       // Satya is centered; 96 px radius covers his 176 px body with margin.
       // Clicks inside this circle are captured by Satya; clicks outside pass through.
       const overMascot = dist <= 96
