@@ -7,6 +7,7 @@ a confidence or a probability: unknown fields are rejected and payload keys are 
 
 from __future__ import annotations
 
+import warnings
 from datetime import datetime
 from enum import StrEnum
 from typing import Any, Literal
@@ -79,6 +80,131 @@ class CompanionSource(StrEnum):
     USER_SELECTED_MICROPHONE = "user_selected_microphone"
 
 
+# ---------------------------------------------------------------------------------------------
+# Finale additions (F01). Mirrors `desktop/shared/contracts.ts`. No score/probability fields.
+# ---------------------------------------------------------------------------------------------
+class UserMode(StrEnum):
+    """What the user asked for (distinct from CompanionMode, which is what Satya is doing)."""
+
+    WATCHING = "WATCHING"
+    SLEEPING = "SLEEPING"
+    OFF = "OFF"
+
+
+class Pose(StrEnum):
+    """The ten mascot poses from docs/finale/MASCOT_SPEC.md §4."""
+
+    SLEEP = "sleep"
+    IDLE = "idle"
+    LISTEN = "listen"
+    THINK = "think"
+    ALERT = "alert"
+    RELIEF = "relief"
+    WRITE = "write"
+    CATCH = "catch"
+    WAVE = "wave"
+    OFF = "off"
+
+
+class Lang(StrEnum):
+    EN = "en"
+    HINGLISH = "hinglish"
+    HI = "hi"
+
+
+class Coverage(StrEnum):
+    """Audio quality gate: degraded/incomplete audio means abstain from acoustic conclusions."""
+
+    USABLE = "usable"
+    DEGRADED = "degraded"
+    INCOMPLETE = "incomplete"
+
+
+class SealStatus(StrEnum):
+    """A missing Seal means 'not verified by Seal', never 'fake'."""
+
+    VERIFIED = "verified"
+    NOT_VERIFIED = "not_verified"
+    UNAVAILABLE = "unavailable"
+
+
+class CaptureSourceKind(StrEnum):
+    EXTENSION = "extension"
+    LOOPBACK = "loopback"
+    REPLAY = "replay"
+
+
+AskCode = Literal["A1", "A2", "A3", "A4", "A5", "A6", "A7"]
+OobOutcome = Literal["approved", "rejected", "not_requested", "expired"]
+ReportSource = Literal["maker_entered", "vault", "vendor_master", "user_confirmed", "system"]
+
+
+class AskChip(Model):
+    """An ask chip observed in a call or message. `at_s` is seconds in, when known."""
+
+    code: AskCode
+    at_s: float | None = Field(default=None, ge=0)
+
+
+class OobTicket(Model):
+    """A challenge sent to an approver from the directory/master. It never carries a band."""
+
+    oob_id: str = Field(min_length=1, max_length=120)
+    case_id: str = Field(min_length=1, max_length=120)
+    approver_name: str = Field(min_length=1, max_length=120)
+    channel: Literal["console", "email"] = "console"
+    inbox_url: str = Field(min_length=1, max_length=2048)
+    expires_at: datetime
+
+
+class OobSummary(Model):
+    oob_id: str = Field(min_length=1, max_length=120)
+    approver_name: str = Field(min_length=1, max_length=120)
+    outcome: OobOutcome | None = None
+
+
+with warnings.catch_warnings():
+    # `copy` is part of the frozen JSON contract (mirrors contracts.ts); it only shadows
+    # BaseModel.copy(), which companion code never calls.
+    warnings.filterwarnings("ignore", message='Field name "copy"', category=UserWarning)
+
+    class ReportField(Model):
+        """One line of a draft. Every line cites where it came from."""
+
+        label: str = Field(min_length=1, max_length=160)
+        value: str = Field(default="", max_length=4000)
+        source: ReportSource
+        evidence_id: str | None = None
+        copy: bool = True
+        sensitive: bool = False
+
+
+class ReportSection(Model):
+    """A draft section for a destination. Always DRAFT_REQUIRES_HUMAN_REVIEW."""
+
+    id: Literal["helpline_1930", "bank_fraud_desk", "ncrp_portal", "cert_in", "bsa_s63_part_a"]
+    title: str = Field(min_length=1, max_length=160)
+    destination: str = Field(min_length=1, max_length=240)
+    deadline_hint: str | None = Field(default=None, max_length=160)
+    body: str = ""
+    fields: list[ReportField] = Field(default_factory=list)
+    open_url: str | None = Field(default=None, max_length=2048)
+    applies: bool = True
+    status: Literal["DRAFT_REQUIRES_HUMAN_REVIEW"] = "DRAFT_REQUIRES_HUMAN_REVIEW"
+
+
+class ReportPackV2(Model):
+    """Golden-hour report pack. A human always presses Submit; no code path files anything."""
+
+    version: Literal["2"] = "2"
+    case_id: str = Field(min_length=1, max_length=120)
+    generated_at: datetime = Field(default_factory=utcnow)
+    money_left_at: datetime | None = None
+    sections: list[ReportSection] = Field(default_factory=list)
+    submission: Literal["MANUAL_ONLY"] = MANUAL_ONLY
+    auto_submit: Literal[False] = False
+
+
 class CompanionEventType(StrEnum):
     STATE_CHANGED = "state.changed"
     ANALYSIS_STARTED = "analysis.started"
@@ -89,6 +215,15 @@ class CompanionEventType(StrEnum):
     SESSION_STARTED = "session.started"
     SESSION_STOPPED = "session.stopped"
     ERROR = "error"
+    # Finale additions (F01): live/OOB/report fan-in.
+    CALL_STARTED = "call.started"
+    CALL_STOPPED = "call.stopped"
+    LIVE_CHIPS = "live.chips"
+    COVERAGE_CHANGED = "coverage.changed"
+    OOB_SENT = "oob.sent"
+    OOB_RESULT = "oob.result"
+    CASE_UPDATED = "case.updated"
+    REPORT_READY = "report.ready"
 
 
 class DraftKind(StrEnum):
@@ -120,6 +255,17 @@ class CompanionPayload(Model):
     source: CompanionSource | None = None
     mode_label: str | None = Field(default=None, max_length=80)
     demo: bool = False
+    # Finale additions (F01): all optional so old events stay valid. No scores.
+    case_id: str | None = Field(default=None, max_length=120)
+    call_id: str | None = Field(default=None, max_length=120)
+    chips: list[AskChip] = Field(default_factory=list)
+    coverage: Coverage | None = None
+    seal: SealStatus | None = None
+    oob: OobSummary | None = None
+    ticket: OobTicket | None = None
+    report: ReportPackV2 | None = None
+    user_mode: UserMode | None = None
+    pose: Pose | None = None
 
     @model_validator(mode="after")
     def _no_score_fields(self) -> CompanionPayload:

@@ -52,6 +52,7 @@ export class BackendClient {
       demoRole: this.demoRole,
       platform: process.platform,
       version: '1.0.0',
+      oob_url: process.env.SATYAPAN_OOB_URL ?? `${this.baseUrl}/oob/inbox`,
     }
   }
 

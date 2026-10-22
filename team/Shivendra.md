@@ -166,3 +166,18 @@ desktop/main/*.ts, desktop/preload/index.ts, desktop/shared/contracts.ts.
 You may edit ONLY the files listed under F02. Keep sandbox/contextIsolation flags exactly.
 Do step <N> only. Then run: cd desktop && npm run typecheck && npx vitest run. Show the output.
 ```
+
+---
+
+## Agent plan — F01 + F02 (24 Oct, opencode / DeepSeek V4.1 Flash)
+
+1. F01.1 Add finale types, event fields and bridge methods to `desktop/shared/contracts.ts` (backwards compatible).
+2. F01.2 Mirror types in `src/satyapan/api/companion/models.py`; run `make task T=T25` for zero regressions.
+3. F01.3 `renderer/src/shared/api.ts` (real bridge or in-memory mock, `VITE_SATYA_MOCK=1` forces mock).
+4. F01.4 `renderer/src/shared/mockScenario.ts` — `cfo_call`, `vendor_email`, `money_left` (fake data only).
+5. F01.5 `App.tsx` router + stubs (`MascotApp`, `BubbleApp`, `Gallery`, `CaptureApp`, `Stage`) and `vite.web.config.ts` on :5174.
+6. F02.1 `main/placement.ts` (pure `placeBubble`, `snapToEdges`) + `desktop/tests/placement.test.ts`; `main/prefs.ts`.
+7. F02.2 `main/windows.ts` + `main/index.ts` — mascot / bubble / workspace / capture windows, click-through, drag, cursor feed.
+8. F02.3 `main/ipc.ts` + `main/tray.ts` + `preload/index.ts` — bridge methods, allow-listed `openExternal`, mode tray + hotkeys; CSP.
+
+Check after each step: `cd desktop && npm run typecheck && npx vitest run` · `make task T=T25` · at the end `make check`.

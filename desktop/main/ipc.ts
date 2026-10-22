@@ -1,9 +1,10 @@
 /** Narrow IPC surface between the sandboxed renderer and the local backend (T25). */
 
-import { app, BrowserWindow, clipboard, ipcMain, type IpcMainInvokeEvent } from 'electron'
+import { app, BrowserWindow, clipboard, ipcMain, type IpcMainEvent, type IpcMainInvokeEvent } from 'electron'
 
 import type {
   BridgeResult,
+  BubbleCard,
   CaseSummary,
   ClipboardCheck,
   CommandResult,
@@ -11,7 +12,9 @@ import type {
   CompanionState,
   DraftArtifact,
   EvidenceResult,
+  Prefs,
   SessionResult,
+  UserMode,
   WorkspaceSnapshot,
 } from '../shared/contracts'
 import type { BackendClient } from './backend'
@@ -19,14 +22,40 @@ import type { BackendClient } from './backend'
 export interface IpcDependencies {
   backend: BackendClient
   getCompanion: () => BrowserWindow | null
-  openWorkspace: () => void
+  openWorkspace: (tab?: string) => void
   hideCompanion: () => Promise<void>
   quit: () => Promise<void>
+  // Finale window manager (F02). Optional so the T25 surface keeps working on its own.
+  setClickThrough?: (through: boolean) => void
+  dragBy?: (dx: number, dy: number) => void
+  dragEnd?: () => void
+  showCard?: (card: BubbleCard) => void
+  hideCard?: (cardId?: string) => void
+  relayCardAction?: (cardId: string, actionId: string) => void
+  resizeBubble?: (height: number) => void
+  setUserMode?: (mode: UserMode) => Promise<BridgeResult<CompanionState>>
+  getPrefs?: () => Prefs | Promise<Prefs>
+  setPrefs?: (patch: Partial<Prefs>) => Prefs | Promise<Prefs>
+  openExternal?: (url: string) => Promise<void>
+}
+
+/**
+ * `openExternal` is deliberately tiny. Satya may open the 1930 dialler, a mail draft, or the
+ * NCRP portal for the human. Nothing else, and never with a message-supplied phone number.
+ */
+export function isAllowedExternal(url: string): boolean {
+  if (url === 'tel:1930') return true
+  if (/^mailto:[^\s]+@[^\s]+$/i.test(url)) return true
+  return /^https:\/\/cybercrime\.gov\.in(?:\/|$)/i.test(url)
 }
 
 const URL_PATTERN = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//
 
-function trusted(event: IpcMainInvokeEvent): boolean {
+interface RendererEvent {
+  senderFrame?: { url: string } | null
+}
+
+function trusted(event: RendererEvent): boolean {
   const url = event.senderFrame?.url ?? ''
   return url.startsWith('file://') || URL_PATTERN.test(url)
 }
@@ -35,7 +64,7 @@ function errorOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-function refuseUntrusted<T>(event: IpcMainInvokeEvent): BridgeResult<T> | null {
+function refuseUntrusted<T>(event: RendererEvent): BridgeResult<T> | null {
   if (trusted(event)) return null
   return { ok: false, error: 'untrusted renderer' }
 }
@@ -166,10 +195,11 @@ export function registerIpc(deps: IpcDependencies): void {
     return { ok: true, data: null }
   })
 
-  handle('companion:open-workspace', (event) => {
+  handle('companion:open-workspace', (event, ...args) => {
     const refused = refuseUntrusted<null>(event)
     if (refused) return refused
-    deps.openWorkspace()
+    const [tab] = args as [string | undefined]
+    deps.openWorkspace(tab)
     return { ok: true, data: null }
   })
 
@@ -183,6 +213,82 @@ export function registerIpc(deps: IpcDependencies): void {
     const refused = refuseUntrusted<null>(event)
     if (refused) return refused
     return deps.quit().then(() => ({ ok: true, data: null }))
+  })
+
+  // ---- Finale window IPC (F02): fire-and-forget messages from the mascot/bubble windows ----
+  const listen = (
+    channel: string,
+    listener: (event: IpcMainEvent, ...args: unknown[]) => void,
+  ) => {
+    ipcMain.removeAllListeners(channel)
+    ipcMain.on(channel, listener)
+  }
+
+  listen('companion:set-click-through', (event, ...args) => {
+    if (!trusted(event)) return
+    const [through] = args as [boolean]
+    deps.setClickThrough?.(Boolean(through))
+  })
+
+  listen('companion:drag-by', (event, ...args) => {
+    if (!trusted(event)) return
+    const [dx, dy] = args as [number, number]
+    if (Number.isFinite(dx) && Number.isFinite(dy)) deps.dragBy?.(dx, dy)
+  })
+
+  listen('companion:drag-end', (event) => {
+    if (!trusted(event)) return
+    deps.dragEnd?.()
+  })
+
+  listen('companion:show-card', (event, ...args) => {
+    if (!trusted(event)) return
+    const [card] = args as [BubbleCard]
+    if (card?.kind && card?.id) deps.showCard?.(card)
+  })
+
+  listen('companion:hide-card', (event, ...args) => {
+    if (!trusted(event)) return
+    const [cardId] = args as [string | undefined]
+    deps.hideCard?.(cardId)
+  })
+
+  listen('companion:card-click', (event, ...args) => {
+    if (!trusted(event)) return
+    const [cardId, actionId] = args as [string, string]
+    deps.relayCardAction?.(cardId, actionId)
+  })
+
+  listen('companion:resize-bubble', (event, ...args) => {
+    if (!trusted(event)) return
+    const [height] = args as [number]
+    if (Number.isFinite(height) && height > 0) deps.resizeBubble?.(height)
+  })
+
+  handle('companion:set-user-mode', (event, ...args) => {
+    const refused = refuseUntrusted<CompanionState>(event)
+    if (refused) return refused
+    const [mode] = args as [UserMode]
+    if (!deps.setUserMode) return { ok: false, error: 'window manager is not ready' }
+    return deps.setUserMode(mode)
+  })
+
+  handle('companion:get-prefs', (event) => {
+    if (!trusted(event)) throw new Error('untrusted renderer')
+    return deps.getPrefs?.() ?? {}
+  })
+
+  handle('companion:set-prefs', (event, ...args) => {
+    if (!trusted(event)) throw new Error('untrusted renderer')
+    const [patch] = args as [Partial<Prefs>]
+    return deps.setPrefs?.(patch ?? {}) ?? {}
+  })
+
+  handle('companion:open-external', async (event, ...args) => {
+    if (!trusted(event)) throw new Error('untrusted renderer')
+    const [url] = args as [string]
+    if (!isAllowedExternal(url)) throw new Error('link is not on the allow-list')
+    await deps.openExternal?.(url)
   })
 
   // Keep app metadata available to the workspace without exposing Node to the renderer.

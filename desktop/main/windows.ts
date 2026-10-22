@@ -1,14 +1,32 @@
-/** Frameless companion + details windows (T25). Security defaults are deliberate. */
+/**
+ * Four decoupled windows, one main process (docs/GRAND_FINALS_ARCHITECTURE.md §4).
+ *
+ * mascot (`?view=companion`) 280×280, transparent, frameless, click-through, never in the Dock.
+ * bubble (`?view=bubble`)     360 × auto, transparent, appears beside Satya, hidden at start.
+ * workspace (`?view=workspace`) the Notebook, a normal resizable window.
+ * capture  (`?view=capture`)  1×1, hidden, never throttled; F10 fills in the audio path.
+ *
+ * Security defaults are deliberate and must stay: contextIsolation, sandbox, no Node in the
+ * renderer, and a narrow navigation allow-list.
+ */
 
 import { join } from 'node:path'
 
-import { BrowserWindow, screen } from 'electron'
+import { BrowserWindow, screen, type Rectangle } from 'electron'
 
-const COMPANION_WIDTH = 380
-const COMPANION_HEIGHT = 500
+import type { Prefs } from '../shared/contracts'
+import { clampToWorkArea, type Rect } from './placement'
+
+export const MASCOT_WIDTH = 280
+export const MASCOT_HEIGHT = 280
+export const BUBBLE_WIDTH = 360
+export const MASCOT_MARGIN = 24
+export const BUBBLE_MIN_HEIGHT = 96
+export const BUBBLE_MAX_HEIGHT = 480
 
 export interface WindowFactoryOptions {
   preloadPath: string
+  prefs?: Prefs
   onCompanionHidden: () => void
 }
 
@@ -39,13 +57,44 @@ function harden(win: BrowserWindow): void {
   })
 }
 
-export function createCompanionWindow(options: WindowFactoryOptions): BrowserWindow {
+function secureWebPreferences(preloadPath: string): Electron.WebPreferences {
+  return {
+    preload: preloadPath,
+    contextIsolation: true,
+    nodeIntegration: false,
+    sandbox: true,
+    webSecurity: true,
+    spellcheck: false,
+  }
+}
+
+/** Bottom-right with a 24 px margin, unless the user dragged Satya somewhere else. */
+export function mascotPosition(
+  workArea: Rect,
+  prefs?: Prefs,
+): { x: number; y: number } {
+  const saved = prefs?.position
+  const rect: Rect = saved
+    ? { x: saved.x, y: saved.y, width: MASCOT_WIDTH, height: MASCOT_HEIGHT }
+    : {
+        x: workArea.x + workArea.width - MASCOT_WIDTH - MASCOT_MARGIN,
+        y: workArea.y + workArea.height - MASCOT_HEIGHT - MASCOT_MARGIN,
+        width: MASCOT_WIDTH,
+        height: MASCOT_HEIGHT,
+      }
+  const clamped = clampToWorkArea(rect, workArea)
+  return { x: clamped.x, y: clamped.y }
+}
+
+export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow {
   const area = screen.getPrimaryDisplay().workArea
+  const position = mascotPosition(area, options.prefs)
+
   const win = new BrowserWindow({
-    width: COMPANION_WIDTH,
-    height: COMPANION_HEIGHT,
-    x: area.x + area.width - COMPANION_WIDTH - 24,
-    y: area.y + area.height - COMPANION_HEIGHT - 24,
+    width: MASCOT_WIDTH,
+    height: MASCOT_HEIGHT,
+    x: position.x,
+    y: position.y,
     show: false,
     frame: false,
     transparent: true,
@@ -55,23 +104,22 @@ export function createCompanionWindow(options: WindowFactoryOptions): BrowserWin
     minimizable: false,
     fullscreenable: false,
     skipTaskbar: true,
+    focusable: false,
     hasShadow: false,
     roundedCorners: false,
     alwaysOnTop: true,
     title: 'Satya — Satyapan companion',
     webPreferences: {
-      preload: options.preloadPath,
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-      webSecurity: true,
-      spellcheck: false,
+      ...secureWebPreferences(options.preloadPath),
       devTools: true,
     },
   })
 
   win.setAlwaysOnTop(true, 'floating')
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  // Almost all of the window is empty: clicks pass through to the app behind until the renderer
+  // says the pointer is over Satya or a menu petal.
+  win.setIgnoreMouseEvents(true, { forward: true })
   if (process.platform === 'darwin') win.setWindowButtonVisibility(false)
   harden(win)
 
@@ -85,24 +133,52 @@ export function createCompanionWindow(options: WindowFactoryOptions): BrowserWin
   return win
 }
 
+/** Backwards-compatible alias for the T25 name. */
+export function createCompanionWindow(options: WindowFactoryOptions): BrowserWindow {
+  return createMascotWindow(options)
+}
+
+export function createBubbleWindow(preloadPath: string): BrowserWindow {
+  const win = new BrowserWindow({
+    width: BUBBLE_WIDTH,
+    height: 180,
+    show: false,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    resizable: false,
+    maximizable: false,
+    minimizable: false,
+    fullscreenable: false,
+    skipTaskbar: true,
+    hasShadow: false,
+    roundedCorners: false,
+    alwaysOnTop: true,
+    title: 'Satya says',
+    webPreferences: secureWebPreferences(preloadPath),
+  })
+  win.setAlwaysOnTop(true, 'floating')
+  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true })
+  harden(win)
+  win.on('close', (event) => {
+    event.preventDefault()
+    win.hide()
+  })
+  load(win, { view: 'bubble' })
+  return win
+}
+
 export function createWorkspaceWindow(preloadPath: string): BrowserWindow {
   const win = new BrowserWindow({
-    width: 980,
-    height: 720,
-    minWidth: 820,
-    minHeight: 600,
+    width: 900,
+    height: 650,
+    minWidth: 800,
+    minHeight: 560,
     show: false,
-    title: 'Satya — Case details',
+    title: 'Satya — Notebook',
     backgroundColor: '#070d12',
     titleBarStyle: process.platform === 'darwin' ? 'hiddenInset' : 'default',
-    webPreferences: {
-      preload: preloadPath,
-      contextIsolation: true,
-      nodeIntegration: false,
-      sandbox: true,
-      webSecurity: true,
-      spellcheck: false,
-    },
+    webPreferences: secureWebPreferences(preloadPath),
   })
   harden(win)
   load(win, { view: 'workspace' })
@@ -110,8 +186,38 @@ export function createWorkspaceWindow(preloadPath: string): BrowserWindow {
   return win
 }
 
+export function createCaptureWindow(preloadPath: string): BrowserWindow {
+  const win = new BrowserWindow({
+    width: 1,
+    height: 1,
+    show: false,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    skipTaskbar: true,
+    focusable: false,
+    hasShadow: false,
+    webPreferences: {
+      ...secureWebPreferences(preloadPath),
+      backgroundThrottling: false,
+    },
+  })
+  harden(win)
+  load(win, { view: 'capture' })
+  return win
+}
+
 export function showCompanion(win: BrowserWindow | null): void {
-  if (!win) return
-  win.show()
-  win.focus()
+  if (!win || win.isDestroyed()) return
+  win.showInactive()
+}
+
+export function hideWindow(win: BrowserWindow | null): void {
+  if (!win || win.isDestroyed()) return
+  win.hide()
+}
+
+/** Work area of the display that currently contains the window. */
+export function workAreaFor(win: BrowserWindow): Rectangle {
+  return screen.getDisplayMatching(win.getBounds()).workArea
 }

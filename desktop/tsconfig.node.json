@@ -13,5 +13,5 @@
     "resolveJsonModule": true,
     "types": ["node"]
   },
-  "include": ["main/**/*.ts", "preload/**/*.ts", "shared/**/*.ts", "electron.vite.config.ts"]
+  "include": ["main/**/*.ts", "preload/**/*.ts", "shared/**/*.ts", "electron.vite.config.ts", "vite.web.config.ts"]
 }
