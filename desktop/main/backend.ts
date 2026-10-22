@@ -6,6 +6,8 @@
  * headers. No score is parsed or stored here.
  */
 
+import { networkInterfaces } from 'node:os'
+
 import type {
   AppConfig,
   CaseSummary,
@@ -22,6 +24,20 @@ import type {
 
 const DEFAULT_URL = 'http://127.0.0.1:8000'
 const RECONNECT_MS = 2500
+
+function getLocalIp(): string {
+  try {
+    const nets = networkInterfaces()
+    for (const name of Object.keys(nets)) {
+      for (const net of nets[name] ?? []) {
+        if (net.family === 'IPv4' && !net.internal) {
+          return net.address
+        }
+      }
+    }
+  } catch {}
+  return '127.0.0.1'
+}
 
 function messageOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
@@ -46,13 +62,16 @@ export class BackendClient {
   }
 
   config(): AppConfig {
+    const localIp = getLocalIp()
+    const defaultOobUrl =
+      localIp !== '127.0.0.1' ? `http://${localIp}:8000/oob` : `${this.baseUrl}/oob`
     return {
       backendUrl: this.baseUrl,
       demoUser: this.demoUser,
       demoRole: this.demoRole,
       platform: process.platform,
       version: '1.0.0',
-      oob_url: process.env.SATYAPAN_OOB_URL ?? `${this.baseUrl}/oob/inbox`,
+      oob_url: process.env.SATYAPAN_OOB_URL ?? defaultOobUrl,
     }
   }
 

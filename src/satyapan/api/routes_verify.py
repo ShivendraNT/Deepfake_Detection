@@ -7,9 +7,11 @@ task is done, which the app turns into HTTP 501.
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 from typing import Any, Literal
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import FileResponse, HTMLResponse
 from pydantic import BaseModel
 
 from satyapan.api.auth import Actor, get_actor, get_state
@@ -60,11 +62,28 @@ def create_oob(
     return {"oob_id": oob_req.id, "expires_at": oob_req.expires_at.isoformat()}
 
 
+@router.get("/oob", response_class=HTMLResponse)
+@router.get("/oob/app", response_class=HTMLResponse)
+def oob_app() -> Any:
+    """Serve the mobile-first approver phone page directly."""
+    html_path = Path("console/public/oob.html")
+    if html_path.exists():
+        return FileResponse(html_path, media_type="text/html")
+    return HTMLResponse("<h1>Satya OOB Approver Page</h1>")
+
+
 @router.get("/oob/inbox")
 def oob_inbox(
-    state: AppState = Depends(get_state), actor: Actor = Depends(get_actor)
-) -> list[dict[str, str]]:
+    request: Request,
+    state: AppState = Depends(get_state),
+    actor: Actor = Depends(get_actor),
+) -> Any:
     """In-app fallback inbox for the claimed requester (e.g. the CFO's second screen)."""
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept:
+        html_path = Path("console/public/oob.html")
+        if html_path.exists():
+            return FileResponse(html_path, media_type="text/html")
     return [m for m in state.in_app_mailer.outbox if m["to"] == actor.employee.email]
 
 
