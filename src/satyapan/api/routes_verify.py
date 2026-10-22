@@ -6,7 +6,8 @@ task is done, which the app turns into HTTP 501.
 
 from __future__ import annotations
 
-from typing import Any
+import logging
+from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
@@ -20,6 +21,15 @@ from satyapan.contracts.enums import CallbackOutcome, CaseStatus, CustodyEvent, 
 from satyapan.pipeline import recompute
 
 router = APIRouter()
+log = logging.getLogger(__name__)
+
+
+def _notify_companion(state: AppState, case: Any, oob_req: Any, reason: str | None) -> None:
+    """Fan the OOB answer into the companion bus. A UI failure must never fail the answer."""
+    try:
+        state.companion().note_oob_result(case, oob_req, reason)
+    except Exception:  # noqa: BLE001 - best-effort relay, never block the approval path
+        log.exception("companion OOB fan-in failed for case %s", getattr(case, "id", "?"))
 
 
 class OOBCreate(BaseModel):
@@ -29,6 +39,8 @@ class OOBCreate(BaseModel):
 class OOBRespond(BaseModel):
     token: str
     approve: bool
+    # Saksham's third button: "I did not request this". Stronger than a plain reject.
+    reason: Literal["not_requested"] | None = None
 
 
 @router.post("/cases/{case_id}/oob")
@@ -64,7 +76,10 @@ def respond_oob(
 
     try:
         oob_req = state.oob().respond(
-            body.token, body.approve, actor.employee.employee_id, utcnow()
+            body.token,
+            body.approve and body.reason != "not_requested",
+            actor.employee.employee_id,
+            utcnow(),
         )
     except OOBError as e:
         raise HTTPException(status_code=409, detail=type(e).__name__) from e
@@ -75,12 +90,16 @@ def respond_oob(
         case_id=case.id,
         event=CustodyEvent.STATUS_CHANGE,
         actor=actor.employee.employee_id,
-        payload={"oob": oob_req.result.value},
+        payload={"oob": oob_req.result.value, "reason": body.reason},
     )
-    return {
+    out: dict[str, Any] = {
         "result": oob_req.result.value,
         "case_band": case.decision.band if case.decision else None,
     }
+    if body.reason == "not_requested":
+        out["reason"] = "not_requested"
+    _notify_companion(state, case, oob_req, body.reason)
+    return out
 
 
 class CallbackIn(BaseModel):

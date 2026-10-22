@@ -17,11 +17,16 @@ import uuid
 from collections import deque
 from dataclasses import dataclass
 from datetime import timedelta
+from pathlib import Path
+from typing import TYPE_CHECKING
 
 from satyapan.api.companion.bus import CompanionBus
+from satyapan.api.companion.live_fan_in import attach_live_bus
 from satyapan.api.companion.models import (
     MANUAL_ONLY,
+    AskChip,
     AuditRow,
+    CallStartRequest,
     CaseSummary,
     CommandRequest,
     CommandType,
@@ -31,6 +36,7 @@ from satyapan.api.companion.models import (
     CompanionPayload,
     CompanionSource,
     CompanionStateSnapshot,
+    Coverage,
     DraftArtifact,
     DraftKind,
     EvidenceRef,
@@ -38,6 +44,12 @@ from satyapan.api.companion.models import (
     EvidenceSubmitResponse,
     MascotMood,
     NextAction,
+    OobSummary,
+    OobTicket,
+    ReportField,
+    ReportPackV2,
+    ReportSection,
+    SealStatus,
     SessionStartRequest,
     WorkspaceSnapshot,
 )
@@ -49,18 +61,26 @@ from satyapan.contracts.enums import (
     Band,
     CaseKind,
     Channel,
+    CustodyEvent,
     Lang,
     PaymentRail,
     ReasonCode,
     SignalSource,
+    VoiceLabel,
 )
 from satyapan.contracts.evidence import Evidence, Signal
+from satyapan.contracts.live import AskEvent, BandEvent, LiveEvent, VoiceEvent
 from satyapan.contracts.transaction import PaymentAction
-from satyapan.explain.templates import explain_template
+from satyapan.explain.templates import explain_template, reason_text
 from satyapan.master.store import MasterData
+from satyapan.pipeline import PipelineContext, analyze_evidence, merge_output, recompute
+from satyapan.policy.bands import rank as band_rank
 from satyapan.policy.config import DEFAULT_CONFIG, PolicyConfig
 from satyapan.policy.engine import decide
 from satyapan.repository import CaseRepository
+
+if TYPE_CHECKING:  # avoids a runtime import cycle (state -> companion -> state)
+    from satyapan.api.state import AppState
 
 SESSION_TTL = timedelta(hours=8)
 AUDIT_CAPACITY = 200
@@ -70,6 +90,16 @@ _DEFAULT_ACTIONS = [
     NextAction(id="open_scribe", label="Prepare an incident draft", variant="outline"),
     NextAction(id="open_workspace", label="View details", variant="outline"),
 ]
+_ALERT_ACTIONS = [
+    NextAction(id="verify", label="Verify with the approver", variant="primary"),
+    NextAction(id="copy_reply", label="Copy a safe reply", variant="outline"),
+    NextAction(id="open_notebook", label="Open Notebook", variant="outline"),
+]
+# A live chunk is 10 s (T11). AskEvent carries the chunk index, not the span time.
+LIVE_CHUNK_SECONDS = 10.0
+_TEXT_SUFFIXES = {".txt", ".md", ".csv", ".json", ".log"}
+_EMAIL_SUFFIXES = {".eml", ".msg", ".mbox"}
+_VOICE_SUFFIXES = {".wav", ".m4a", ".ogg", ".opus", ".mp3", ".webm"}
 
 
 class CompanionError(ValueError):
@@ -156,6 +186,13 @@ class CompanionService:
         self._audit: deque[AuditRow] = deque(maxlen=AUDIT_CAPACITY)
         self._drafts: dict[str, dict[DraftKind, DraftArtifact]] = {}
         self._last_case_id: str | None = None
+        # F03 live-call state (one call at a time)
+        self._call_id: str | None = None
+        self._call_case_id: str | None = None
+        self._chips: dict[str, float] = {}
+        self._coverage: Coverage = Coverage.USABLE
+        self._seal: SealStatus = SealStatus.NOT_VERIFIED
+        self._live_attached = False
 
     # ---------------------------------------------------------------- read helpers
     def snapshot(self) -> CompanionStateSnapshot:
@@ -192,6 +229,10 @@ class CompanionService:
         if request.consent is not True:
             raise ConsentRequiredError("explicit consent is required before any monitoring")
         with self._lock:
+            # A fresh session never inherits a prior call's fan-in state.
+            self._call_id = None
+            self._call_case_id = None
+            self._chips = {}
             now = utcnow()
             source = request.source
             demo = source == CompanionSource.DEMO_REPLAY
@@ -457,6 +498,535 @@ class CompanionService:
             notes=["DEMO REPLAY — generated fixture; all names and bank details are fake."],
         )
 
+    # ---------------------------------------------------------------- live calls (F03)
+    def start_call(
+        self, request: CallStartRequest, state: AppState, actor: str = "emp_priya"
+    ) -> tuple[str, str, list[CompanionEvent]]:
+        """Start one listened call on an already-consented session. Never starts capture itself."""
+        with self._lock:
+            self._require_consented(request.consent_id)
+            if self._call_id is not None:
+                raise CompanionError("already listening to a call; stop it first")
+            live = state.live()
+            attach_live_bus(live, self._ingest_live_event)
+            call_id = f"call_{uuid.uuid4().hex[:10]}"
+            maker = request.maker or actor
+            session = live.start(call_id, maker)
+            state.repo.put(session.case)
+            self._call_id = call_id
+            self._call_case_id = session.case.id
+            self._chips = {}
+            self._coverage = Coverage.USABLE
+            self._seal = SealStatus.NOT_VERIFIED
+            self._state = self._state.model_copy(
+                update={"mode": CompanionMode.ACTIVE, "monitoring": True, "updated_at": utcnow()}
+            )
+            event = self._publish(
+                CompanionEventType.CALL_STARTED,
+                state=CompanionMode.ACTIVE,
+                headline="Listening to this call.",
+                explanation=(
+                    "Only this call. Ask words and the policy band are relayed; the transcript "
+                    "stays in the live window and is never sent to the companion."
+                ),
+                call_id=call_id,
+                case_id=session.case.id,
+                coverage=self._coverage,
+                seal=self._seal,
+                monitoring=True,
+            )
+            self._record(
+                "call.start",
+                actor,
+                f"call={call_id} case={session.case.id} "
+                f"source={request.source.value} consent=explicit",
+            )
+            return call_id, session.case.id, [event]
+
+    def stop_call(
+        self,
+        state: AppState,
+        call_id: str | None = None,
+        actor: str = "emp_priya",
+    ) -> tuple[str, CompanionStateSnapshot, list[CompanionEvent]]:
+        with self._lock:
+            active = self._call_id
+            if active is None:
+                raise CompanionError("no call is being listened to")
+            target = call_id or active
+            if target != active:
+                raise CompanionError("that is not the active call")
+            state.live().sessions.pop(target, None)
+            self._call_id = None
+            self._call_case_id = None
+            self._chips = {}
+            self._state = self._state.model_copy(
+                update={"mode": CompanionMode.ACTIVE, "monitoring": False, "updated_at": utcnow()}
+            )
+            event = self._publish(
+                CompanionEventType.CALL_STOPPED,
+                state=CompanionMode.ACTIVE,
+                headline="Stopped listening to this call.",
+                explanation="The call session and its in-memory audio buffer are released.",
+                call_id=target,
+                monitoring=False,
+            )
+            self._record("call.stop", actor, f"call={target} monitoring=off")
+            return target, self.snapshot(), [event]
+
+    def _ingest_live_event(self, call_id: str, event: LiveEvent) -> None:
+        """Called synchronously by `CompanionLiveBus.publish`. No scores, no transcript text."""
+        with self._lock:
+            if call_id != self._call_id:
+                return
+            if isinstance(event, AskEvent):
+                code = event.ask_type.value
+                if code not in self._chips:
+                    self._chips[code] = float(event.chunk_index) * LIVE_CHUNK_SECONDS
+                chips = self._chips_list()
+                self._state = self._state.model_copy(
+                    update={"mode": CompanionMode.ACTIVE, "updated_at": utcnow()}
+                )
+                self._publish(
+                    CompanionEventType.LIVE_CHIPS,
+                    state=CompanionMode.ACTIVE,
+                    headline=f"{len(chips)} payment trick word(s) heard so far",
+                    explanation=(
+                        "These are detected requests, not a band. Only the policy engine decides "
+                        "the band. Missing a word does not make the call safe."
+                    ),
+                    chips=chips,
+                    coverage=self._coverage,
+                    seal=self._seal,
+                    call_id=call_id,
+                    case_id=self._call_case_id,
+                    monitoring=True,
+                )
+                self._record(
+                    "call.chips",
+                    "system",
+                    f"call={call_id} codes={','.join(self._chips)}",
+                )
+            elif isinstance(event, VoiceEvent):
+                coverage = _coverage_for(event.label)
+                if coverage == self._coverage:
+                    return
+                self._coverage = coverage
+                self._publish(
+                    CompanionEventType.COVERAGE_CHANGED,
+                    state=self._state.mode,
+                    headline=(
+                        "Audio is clear enough to keep listening."
+                        if coverage == Coverage.USABLE
+                        else "Audio is unclear — I won't judge the voice."
+                    ),
+                    explanation=(
+                        "Coverage is about audio quality only. It never raises a band and poor "
+                        "audio never creates an alert by itself."
+                    ),
+                    chips=self._chips_list(),
+                    coverage=coverage,
+                    seal=self._seal,
+                    call_id=call_id,
+                    case_id=self._call_case_id,
+                    monitoring=True,
+                )
+            elif isinstance(event, BandEvent):
+                # Relay the policy engine's decision. The companion never edits this band.
+                if band_rank(event.band) < band_rank(Band.VERIFY):
+                    return
+                self._state = self._state.model_copy(
+                    update={"mode": CompanionMode.ALERT, "updated_at": utcnow()}
+                )
+                self._publish(
+                    CompanionEventType.ALERT_RAISED,
+                    state=CompanionMode.ALERT,
+                    headline=_alert_headline(event.band),
+                    explanation=self._band_explanation(event),
+                    band=event.band,
+                    reason_codes=list(event.reason_codes),
+                    chips=self._chips_list(),
+                    call_id=call_id,
+                    case_id=self._call_case_id,
+                    monitoring=True,
+                    next_actions=list(_ALERT_ACTIONS),
+                )
+                self._record(
+                    "call.alert", "system", f"call={call_id} band={event.band.value} relayed"
+                )
+
+    def _chips_list(self) -> list[AskChip]:
+        ordered = sorted(self._chips.items(), key=lambda item: (item[1], item[0]))
+        return [AskChip(code=code, at_s=at_s) for code, at_s in ordered]
+
+    def _band_explanation(self, event: BandEvent) -> str:
+        lines = [_reason_line(code) for code in event.reason_codes]
+        intro = "This does not prove who is speaking. The band comes only from the policy engine."
+        return "\n\n".join([intro, *lines])[:2000]
+
+    # ---------------------------------------------------------------- files (F03)
+    def submit_file(
+        self,
+        state: AppState,
+        *,
+        filename: str | None,
+        media_type: str,
+        data: bytes,
+        case_id: str | None,
+        actor: str = "emp_priya",
+    ) -> EvidenceSubmitResponse:
+        """Vault intake -> detectors -> merge -> recompute. The band stays the policy's."""
+        from satyapan.vault.intake import intake
+
+        with self._lock:
+            if self._state.session_id is None:
+                raise ConsentRequiredError("start a consented session before handing Satya a file")
+            case = self._repo.get(case_id) if case_id else None
+            if case_id and case is None:
+                raise CompanionNotFound(f"unknown case: {case_id}")
+            if case is None:
+                case = Case(
+                    id=f"case_file_{uuid.uuid4().hex[:10]}",
+                    title=f"File: {filename or 'untitled'}",
+                    kind=CaseKind.DATA_REQUEST,
+                    created_at=utcnow(),
+                    created_by=actor,
+                )
+            channel = _channel_for(filename, media_type)
+            excerpt = None
+            if channel in (Channel.WHATSAPP_TEXT, Channel.MANUAL):
+                excerpt = data.decode("utf-8", errors="replace")[:300]
+            ev = intake(
+                data,
+                case_id=case.id,
+                channel=channel,
+                filename=filename,
+                media_type=media_type or "application/octet-stream",
+                submitted_by=actor,
+                store=state.store(),
+                log=state.custody,
+                excerpt=excerpt,
+            )
+            case = case.model_copy(update={"evidence": [*case.evidence, ev]})
+            ctx = PipelineContext(
+                master=state.master,
+                settings=state.settings,
+                thresholds=state.thresholds,
+                transcriber=state.transcriber_override,
+            )
+            out = analyze_evidence(data, ev, case, ctx)
+            case = recompute(merge_output(case, ev, out), state.master)
+            state.repo.put(case, redecide=False)
+            state.custody.append(
+                case_id=case.id,
+                evidence_id=ev.id,
+                event=CustodyEvent.ANALYSIS,
+                actor="system",
+                payload={"detector": out.detector, "version": out.version, "error": out.error},
+            )
+            ask_codes = list(
+                dict.fromkeys(s.code for s in out.signals if s.code in set(ASK_TO_REASON.values()))
+            )
+            event = self.note_case_updated(
+                case,
+                actor,
+                headline=(
+                    "Checked the file. The policy engine set the band."
+                    if out.error is None
+                    else "Checked what I could. The policy engine set the band."
+                ),
+            )
+            self._record(
+                "file.analyze",
+                actor,
+                f"case={case.id} evidence={ev.id} detector={out.detector} band_set=false",
+            )
+            return EvidenceSubmitResponse(
+                request_id=f"req_file_{uuid.uuid4().hex[:10]}",
+                accepted=True,
+                evidence_id=ev.id,
+                reason_codes=[],
+                info_codes=ask_codes,
+                ask_count=len(ask_codes),
+                events=[event],
+            )
+
+    def note_case_updated(
+        self, case: Case, actor: str, *, headline: str = "Case updated"
+    ) -> CompanionEvent:
+        """Relay the case's policy decision; never compute one here."""
+        decision = case.decision or decide(case, self._master, self._cfg)
+        self._last_case_id = case.id
+        alerting = band_rank(decision.band) >= band_rank(Band.VERIFY)
+        state = CompanionMode.ALERT if alerting else CompanionMode.ACTIVE
+        self._state = self._state.model_copy(update={"mode": state, "updated_at": utcnow()})
+        return self._publish(
+            CompanionEventType.CASE_UPDATED,
+            state=state,
+            headline=headline,
+            explanation=explain_template(decision, Lang.EN).text,
+            band=decision.band,
+            reason_codes=list(decision.reason_codes),
+            info_codes=list(decision.info_codes),
+            evidence_ids=[ev.id for ev in case.evidence],
+            case_id=case.id,
+        )
+
+    # ---------------------------------------------------------------- OOB (F03)
+    def request_oob(self, state: AppState, case_id: str, actor: str = "emp_priya") -> OobTicket:
+        """Challenge the transaction through the directory identity, never a message contact."""
+        with self._lock:
+            case = self._repo.get(case_id)
+            if case is None:
+                raise CompanionNotFound(f"unknown case: {case_id}")
+            approver = self._resolve_approver(case)
+            maker = self._master.employee(actor)
+            oob_req, _token = state.oob().create(
+                case, approver, maker.name if maker else "the maker", utcnow()
+            )
+            case = recompute(case.model_copy(update={"oob": oob_req}), self._master)
+            state.repo.put(case, redecide=False)
+            self._last_case_id = case.id
+            channel = "email" if "ses" in set(oob_req.channels) else "console"
+            ticket = OobTicket(
+                oob_id=oob_req.id,
+                case_id=case.id,
+                approver_name=approver.name,
+                channel=channel,
+                inbox_url=f"/oob/inbox?oob_id={oob_req.id}",
+                expires_at=oob_req.expires_at,
+            )
+            self._state = self._state.model_copy(
+                update={"mode": CompanionMode.ALERT, "updated_at": utcnow()}
+            )
+            self._publish(
+                CompanionEventType.OOB_SENT,
+                state=CompanionMode.ALERT,
+                headline=f"Asked {approver.name} on their own phone.",
+                explanation=(
+                    "The approver and channel come only from the employee directory, never from "
+                    "the call or the email. Silence is never approval."
+                ),
+                band=case.decision.band if case.decision else None,
+                case_id=case.id,
+                ticket=ticket,
+                oob=OobSummary(oob_id=oob_req.id, approver_name=approver.name),
+                next_actions=list(_ALERT_ACTIONS),
+            )
+            self._record(
+                "oob.create",
+                actor,
+                f"case={case.id} oob={oob_req.id} "
+                f"approver={approver.employee_id} channel={channel}",
+            )
+            return ticket
+
+    def note_oob_result(
+        self, case: Case, oob_req: object, reason: str | None = None
+    ) -> list[CompanionEvent]:
+        """Called by /oob/respond: emits `oob.result` then `case.updated`."""
+        result = getattr(oob_req, "result", None)
+        outcome = _oob_outcome(result, reason)
+        if outcome is None:
+            return []
+        requester_id = getattr(oob_req, "requester_employee_id", None)
+        employee = self._master.employee(requester_id)
+        name = employee.name if employee else "the approver"
+        approved = outcome == "approved"
+        headline = {
+            "approved": f"{name} confirmed this exact payment.",
+            "rejected": f"{name} rejected this request. Keep the payment on hold.",
+            "not_requested": f"{name} says they didn't ask for this. I've put it on hold.",
+            "expired": f"No answer from {name} — that is not a yes. Keep it on hold.",
+        }[outcome]
+        decision = case.decision or decide(case, self._master, self._cfg)
+        mode = CompanionMode.ACTIVE if approved else CompanionMode.ALERT
+        self._state = self._state.model_copy(update={"mode": mode, "updated_at": utcnow()})
+        summary = OobSummary(
+            oob_id=str(getattr(oob_req, "id", "oob_unknown")),
+            approver_name=name,
+            outcome=outcome,  # type: ignore[arg-type]
+        )
+        first = self._publish(
+            CompanionEventType.OOB_RESULT,
+            state=mode,
+            headline=headline,
+            explanation=(
+                "Approval only covers this exact request. Rejection, "
+                "'I did not request this' and silence all leave the payment on hold."
+            ),
+            band=decision.band,
+            reason_codes=list(decision.reason_codes),
+            evidence_ids=[ev.id for ev in case.evidence],
+            case_id=case.id,
+            oob=summary,
+        )
+        second = self.note_case_updated(case, "system", headline="Case updated after OOB")
+        return [first, second]
+
+    def _resolve_approver(self, case: Case) -> object:
+        requester_id = case.oob.requester_employee_id if case.oob else None
+        if requester_id is None and case.txn is not None:
+            requester_id = case.txn.requested_by_employee_id
+        employee = self._master.employee(requester_id)
+        if employee is not None and employee.active:
+            return employee
+        senior = sorted(self._master.senior_approvers(), key=lambda e: e.employee_id)
+        if senior:
+            return senior[0]
+        raise CompanionError("no approver in the employee directory for this case")
+
+    # ---------------------------------------------------------------- report pack (F03)
+    def report_pack(self, case_id: str) -> ReportPackV2:
+        """Golden-hour pack: five drafts, all MANUAL_ONLY. Nothing is ever filed."""
+        case = self._repo.get(case_id)
+        if case is None:
+            raise CompanionNotFound(f"unknown case: {case_id}")
+        txn = case.txn
+        utr = (txn.utr if txn and txn.utr else None) or "Not provided — ask the maker"
+        amount = _format_inr(txn.amount_inr) if txn else "Not provided"
+        payee = txn.beneficiary_masked if txn else "Not provided"
+        evidence = [f"{ev.id} · SHA-256 {ev.sha256}" for ev in case.evidence] or [
+            "No evidence attached yet"
+        ]
+        channels = sorted({ev.channel.value for ev in case.evidence}) or ["not recorded"]
+
+        def rfield(
+            label: str,
+            value: str,
+            source: str,
+            *,
+            evidence_id: str | None = None,
+            copy: bool = True,
+            sensitive: bool = False,
+        ) -> ReportField:
+            return ReportField(
+                label=label,
+                value=value,
+                source=source,  # type: ignore[arg-type]
+                evidence_id=evidence_id,
+                copy=copy,
+                sensitive=sensitive,
+            )
+
+        sections = [
+            ReportSection(
+                id="helpline_1930",
+                title="1930 helpline — call script",
+                destination="1930 (national cyber-fraud helpline)",
+                deadline_hint="Golden hour — call now",
+                body=(
+                    f"UTR {utr}. I want to report a suspected deepfake payment fraud. "
+                    f"Amount {amount}. Beneficiary {payee}. Case {case.id}. "
+                    "The request came on a call and was not verified independently."
+                ),
+                fields=[
+                    rfield("UTR", utr, "maker_entered"),
+                    rfield("Amount", amount, "maker_entered"),
+                    rfield("Beneficiary (masked)", payee, "vendor_master", sensitive=True),
+                    rfield("Case", case.id, "system"),
+                ],
+                open_url="tel:1930",
+                applies=True,
+                status="DRAFT_REQUIRES_HUMAN_REVIEW",
+            ),
+            ReportSection(
+                id="bank_fraud_desk",
+                title="Bank fraud desk — email draft",
+                destination="Your bank's fraud desk (address from the bank's own website)",
+                deadline_hint="Same day",
+                body=(
+                    f"Request: please hold or recall {amount} sent to {payee}. UTR: {utr}. "
+                    "This payment followed a suspected impersonation call. Evidence files are "
+                    f"listed with their SHA-256 hashes below. Case {case.id}."
+                ),
+                fields=[
+                    rfield("UTR", utr, "maker_entered"),
+                    rfield("Amount", amount, "maker_entered"),
+                    rfield("Beneficiary (masked)", payee, "vendor_master", sensitive=True),
+                    rfield("Evidence", "; ".join(evidence), "vault"),
+                ],
+                open_url="mailto:frauddesk@bank.example",
+                applies=True,
+                status="DRAFT_REQUIRES_HUMAN_REVIEW",
+            ),
+            ReportSection(
+                id="ncrp_portal",
+                title="NCRP portal — field helper",
+                destination="cybercrime.gov.in (the human logs in with their own OTP)",
+                deadline_hint="As soon as possible",
+                body=(
+                    "Copy each field in the portal's own order. Satya never logs in, never fills "
+                    "the form and never clicks Submit."
+                ),
+                fields=[
+                    rfield("Category", "Online Financial Fraud / impersonation", "system"),
+                    rfield("Amount lost", amount, "maker_entered"),
+                    rfield("Platform/channel", ", ".join(channels), "vault"),
+                    rfield("UTR", utr, "maker_entered"),
+                    rfield("Case", case.id, "system"),
+                ],
+                open_url="https://cybercrime.gov.in",
+                applies=True,
+                status="DRAFT_REQUIRES_HUMAN_REVIEW",
+            ),
+            ReportSection(
+                id="cert_in",
+                title="CERT-In — incident email",
+                destination="incident@cert-in.org.in (confirm applicability with IT/legal)",
+                deadline_hint="6 hours if applicable",
+                body=(
+                    "Body-corporate incident notification draft. Whether this incident qualifies "
+                    "is a legal call — check with IT/legal before sending."
+                ),
+                fields=[
+                    rfield(
+                        "Incident type",
+                        "Identity theft / impersonation (suspected)",
+                        "user_confirmed",
+                    ),
+                    rfield("Case", case.id, "system"),
+                ],
+                open_url="mailto:incident@cert-in.org.in",
+                applies=False,
+                status="DRAFT_REQUIRES_HUMAN_REVIEW",
+            ),
+            ReportSection(
+                id="bsa_s63_part_a",
+                title="BSA 2023 §63 — Part A draft",
+                destination="PDF export; a human signs. Part B needs an expert.",
+                deadline_hint=None,
+                body=(
+                    "Part A lists the SHA-256 hash of each retained evidence file, device "
+                    "particulars and the lawful-control statement. Draft only."
+                ),
+                fields=[
+                    *[
+                        rfield(
+                            f"SHA-256 · {ev.id}",
+                            ev.sha256,
+                            "vault",
+                            evidence_id=ev.id,
+                            sensitive=False,
+                        )
+                        for ev in case.evidence
+                    ],
+                    rfield("Signatory", "A human must sign — Satya cannot", "system", copy=False),
+                ],
+                open_url=None,
+                applies=True,
+                status="DRAFT_REQUIRES_HUMAN_REVIEW",
+            ),
+        ]
+        return ReportPackV2(
+            case_id=case.id,
+            generated_at=utcnow(),
+            money_left_at=txn.created_at if txn else None,
+            sections=sections,
+            submission=MANUAL_ONLY,  # type: ignore[arg-type]
+            auto_submit=False,
+        )
+
     # ---------------------------------------------------------------- evidence intake
     def submit_evidence(
         self, request: EvidenceSubmitRequest, actor: str = "emp_priya"
@@ -661,6 +1231,15 @@ class CompanionService:
         source: CompanionSource | None = None,
         demo: bool = False,
         mode_label: str | None = None,
+        case_id: str | None = None,
+        call_id: str | None = None,
+        chips: list[AskChip] | None = None,
+        coverage: Coverage | None = None,
+        seal: SealStatus | None = None,
+        oob: OobSummary | None = None,
+        ticket: OobTicket | None = None,
+        report: ReportPackV2 | None = None,
+        next_actions: list[NextAction] | None = None,
     ) -> CompanionEvent:
         payload = CompanionPayload(
             state=state,
@@ -671,11 +1250,19 @@ class CompanionService:
             reason_codes=reason_codes or [],
             info_codes=info_codes or [],
             evidence_ids=evidence_ids or [],
-            next_actions=list(_DEFAULT_ACTIONS),
+            next_actions=next_actions or list(_DEFAULT_ACTIONS),
             monitoring=monitoring,
             source=source or self._state.source,
             demo=demo,
             mode_label=mode_label if mode_label is not None else self._state.mode_label,
+            case_id=case_id,
+            call_id=call_id,
+            chips=chips or [],
+            coverage=coverage,
+            seal=seal,
+            oob=oob,
+            ticket=ticket,
+            report=report,
         )
         event = CompanionEvent(
             type=event_type,
@@ -685,6 +1272,9 @@ class CompanionService:
         return self.bus.publish(event)
 
     def _clear_session(self) -> None:
+        self._call_id = None
+        self._call_case_id = None
+        self._chips = {}
         self._state = self._state.model_copy(
             update={
                 "session_id": None,
@@ -699,6 +1289,12 @@ class CompanionService:
                 "updated_at": utcnow(),
             }
         )
+
+    def _require_consented(self, consent_id: str) -> None:
+        if self._state.session_id is None or self._state.consent_id is None:
+            raise ConsentRequiredError("start a consented session before listening to a call")
+        if consent_id != self._state.consent_id:
+            raise ConsentRequiredError("consent_id does not match the active consented session")
 
     def _require_active_session(self, session_id: str | None) -> None:
         if self._state.session_id is None:
@@ -735,6 +1331,60 @@ def _alert_headline(band: Band) -> str:
     if band == Band.VERIFY:
         return "This request needs independent verification"
     return "No blocking finding — still verify with the saved contact"
+
+
+def _format_inr(amount: int) -> str:
+    """Indian digit grouping: 4850000 -> '₹48,50,000'."""
+    sign = "-" if amount < 0 else ""
+    digits = str(abs(amount))
+    if len(digits) <= 3:
+        return f"{sign}₹{digits}"
+    head, tail = digits[:-3], digits[-3:]
+    groups: list[str] = [tail]
+    while len(head) > 2:
+        groups.insert(0, head[-2:])
+        head = head[:-2]
+    if head:
+        groups.insert(0, head)
+    return f"{sign}₹{','.join(groups)}"
+
+
+def _channel_for(filename: str | None, media_type: str) -> Channel:
+    suffix = Path(filename or "").suffix.lower()
+    if suffix in _EMAIL_SUFFIXES or media_type == "message/rfc822":
+        return Channel.EMAIL
+    if suffix == ".pdf" or media_type == "application/pdf":
+        return Channel.PDF
+    if suffix in _VOICE_SUFFIXES or media_type.startswith("audio/"):
+        return Channel.VOICE_NOTE
+    if suffix in _TEXT_SUFFIXES or media_type.startswith("text/"):
+        return Channel.MANUAL
+    return Channel.MANUAL
+
+
+def _coverage_for(label: VoiceLabel) -> Coverage:
+    """Audio quality only. A synthetic-sounding voice is a verdict, not poor coverage."""
+    if label == VoiceLabel.INCONCLUSIVE:
+        return Coverage.DEGRADED
+    return Coverage.USABLE
+
+
+def _oob_outcome(result: object, reason: str | None) -> str | None:
+    value = getattr(result, "value", result)
+    if value == "APPROVED":
+        return "approved"
+    if value == "EXPIRED":
+        return "expired"
+    if value == "DENIED":
+        return "not_requested" if reason == "not_requested" else "rejected"
+    return None
+
+
+def _reason_line(code: ReasonCode) -> str:
+    try:
+        return reason_text(code, Lang.EN)
+    except KeyError:  # a new code without a template must not break the live stream
+        return code.value.replace("_", " ").capitalize()
 
 
 # Re-exported for tests and the router.

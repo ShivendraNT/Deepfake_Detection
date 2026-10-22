@@ -181,3 +181,16 @@ Do step <N> only. Then run: cd desktop && npm run typecheck && npx vitest run. S
 8. F02.3 `main/ipc.ts` + `main/tray.ts` + `preload/index.ts` — bridge methods, allow-listed `openExternal`, mode tray + hotkeys; CSP.
 
 Check after each step: `cd desktop && npm run typecheck && npx vitest run` · `make task T=T25` · at the end `make check`.
+
+## Agent plan — F03 (backend companion glue)
+
+1. Models: `CallStartRequest/Response`, `CallStopResponse`, `CompanionOobRequest`; reuse `OobTicket`/`ReportPackV2`; no score fields.
+2. `live_fan_in.py`: wrap the live `EventBus` so every `AskEvent`/`VoiceEvent`/`BandEvent` is relayed synchronously (no thread, no order race).
+3. `service.py`: consent-gated `start_call`/`stop_call`, chip accumulation, `coverage.changed`, `alert.raised` relayed from `BandEvent.band`, `call.started`/`call.stopped`.
+4. `service.py`: `submit_file` (vault intake → `analyze_evidence` → `merge_output` → `recompute`) → `case.updated`; report-pack v2 builder (5 sections, MANUAL_ONLY).
+5. `service.py`: `request_oob` — approver from `txn.requested_by_employee_id` / directory senior approver only → `oob.sent`; `note_oob_result` → `oob.result` + `case.updated`.
+6. `routes_verify.py`: optional `reason: "not_requested"` + companion hook on `/oob/respond`.
+7. `router.py`: the five new endpoints; errors map to 403/404/400.
+8. `tests/finale/test_companion_finale.py`: consent 403, call events, live chips/band relay, OOB directory contact, files intake, report pack, no score keys anywhere.
+
+Check after each step: `uv run pytest tests/tasks/test_t25_companion.py -q` · new finale tests · `make check`.

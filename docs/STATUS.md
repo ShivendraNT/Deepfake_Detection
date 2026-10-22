@@ -43,7 +43,7 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 |---|---|---|---|---|
 | F01 | Contracts freeze + mock bridge + stage view | Shivendra | P0 | todo |
 | F02 | Window manager (mascot / bubble / notebook / capture, tray, hotkeys) | Shivendra | P0 | todo |
-| F03 | Backend glue (calls, files, oob, event fan-in) | Shivendra | P0 | todo |
+| F03 | Backend glue (calls, files, oob, event fan-in) | Shivendra | P0 | done |
 | F04 | X1 cross-channel signal | Shivendra | P1 | todo |
 | F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | todo |
 | F06 | Mascot component (10 poses) + gallery | Saarika | P0 | todo |
@@ -59,6 +59,8 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F16 | Approver phone page (OOB) + QR | Saksham | P0 | todo |
 
 ## Notes log
+
+22 Oct, F03: done — `/companion/calls/start|stop`, `/companion/files`, `/companion/oob`, `/companion/report-pack`; live bus fan-in relays AskChips, coverage and the policy `BandEvent.band` unchanged; OOB approver from directory only, `not_requested` hook on `/oob/respond`; 11 finale tests + T25 37/37, make check ALL GREEN (728 passed). 
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
 06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
 07 Oct, T05: done — n=104 sentences, precision=1.000, recall=1.000; lexicon v1.0.0 ready for `lexicon-v1.0` tag.

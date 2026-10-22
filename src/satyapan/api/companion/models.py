@@ -455,3 +455,41 @@ class CompanionAuditFeed(Model):
     rows: list[AuditRow] = Field(default_factory=list)
     policy_authority: Literal["satyapan.policy"] = POLICY_AUTHORITY
     raw_scores_visible: Literal[False] = False
+
+
+# ---------------------------------------------------------------------------------------------
+# F03 — call management, file intake and OOB glue. Still no band input and no score fields.
+# ---------------------------------------------------------------------------------------------
+class CallStartRequest(Model):
+    """Start listening to one call. The companion session must already be consented."""
+
+    version: Literal["1"] = CONTRACT_VERSION
+    source: CaptureSourceKind
+    consent_id: str = Field(min_length=1, max_length=120)
+    maker: str | None = Field(default=None, max_length=120)
+
+
+class CallStartResponse(Model):
+    version: Literal["1"] = CONTRACT_VERSION
+    call_id: str = Field(pattern=r"^call_[A-Za-z0-9_\-]+$")
+    case_id: str = Field(pattern=r"^case_[A-Za-z0-9_\-]+$")
+    events: list[CompanionEvent] = Field(default_factory=list)
+
+
+class CallStopRequest(Model):
+    version: Literal["1"] = CONTRACT_VERSION
+    call_id: str | None = Field(default=None, max_length=120)
+
+
+class CallStopResponse(Model):
+    version: Literal["1"] = CONTRACT_VERSION
+    call_id: str
+    state: CompanionStateSnapshot
+    events: list[CompanionEvent] = Field(default_factory=list)
+
+
+class CompanionOobRequest(Model):
+    """Ask the real approver to confirm this exact transaction (OOB-Confirm)."""
+
+    version: Literal["1"] = CONTRACT_VERSION
+    case_id: str = Field(pattern=r"^case_[A-Za-z0-9_\-]+$")

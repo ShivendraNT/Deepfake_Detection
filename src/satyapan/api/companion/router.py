@@ -10,21 +10,28 @@ import queue
 from collections.abc import Iterator
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
 from fastapi.responses import StreamingResponse
 
 from satyapan.api.auth import Actor, get_actor, get_state
 from satyapan.api.companion.models import (
+    CallStartRequest,
+    CallStartResponse,
+    CallStopRequest,
+    CallStopResponse,
     CaseSummary,
     CommandRequest,
     CommandResponse,
     CompanionAuditFeed,
     CompanionEvent,
+    CompanionOobRequest,
     CompanionStateSnapshot,
     DraftArtifact,
     DraftRequest,
     EvidenceSubmitRequest,
     EvidenceSubmitResponse,
+    OobTicket,
+    ReportPackV2,
     SessionStartRequest,
     SessionStartResponse,
     WorkspaceSnapshot,
@@ -156,6 +163,89 @@ def workspace(
     del actor
     try:
         return _service(state).workspace(case_id)
+    except CompanionNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+
+
+@router.post("/calls/start", response_model=CallStartResponse)
+def start_call(
+    request: CallStartRequest,
+    actor: Actor = Depends(get_actor),
+    state: AppState = Depends(get_state),
+) -> CallStartResponse:
+    """Start one listened call on an already-consented session (403 otherwise)."""
+    try:
+        call_id, case_id, events = _service(state).start_call(
+            request, state, actor=actor.employee.employee_id
+        )
+    except (ConsentRequiredError, CompanionError) as exc:
+        raise _http_error(exc) from exc
+    return CallStartResponse(call_id=call_id, case_id=case_id, events=events)
+
+
+@router.post("/calls/stop", response_model=CallStopResponse)
+def stop_call(
+    request: CallStopRequest,
+    actor: Actor = Depends(get_actor),
+    state: AppState = Depends(get_state),
+) -> CallStopResponse:
+    try:
+        call_id, snapshot, events = _service(state).stop_call(
+            state, request.call_id, actor=actor.employee.employee_id
+        )
+    except (ConsentRequiredError, CompanionError) as exc:
+        raise _http_error(exc) from exc
+    return CallStopResponse(call_id=call_id, state=snapshot, events=events)
+
+
+@router.post("/files", response_model=EvidenceSubmitResponse)
+async def upload_file(
+    file: UploadFile = File(...),
+    case_id: str | None = Form(default=None),
+    actor: Actor = Depends(get_actor),
+    state: AppState = Depends(get_state),
+) -> EvidenceSubmitResponse:
+    """Hand Satya one file. Hash first, then detectors; the policy engine sets the band."""
+    data = await file.read()
+    try:
+        return _service(state).submit_file(
+            state,
+            filename=file.filename,
+            media_type=file.content_type or "application/octet-stream",
+            data=data,
+            case_id=case_id,
+            actor=actor.employee.employee_id,
+        )
+    except CompanionNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except (ConsentRequiredError, CompanionError) as exc:
+        raise _http_error(exc) from exc
+
+
+@router.post("/oob", response_model=OobTicket)
+def request_oob(
+    request: CompanionOobRequest,
+    actor: Actor = Depends(get_actor),
+    state: AppState = Depends(get_state),
+) -> OobTicket:
+    """Challenge the exact transaction with the approver from the directory."""
+    try:
+        return _service(state).request_oob(state, request.case_id, actor=actor.employee.employee_id)
+    except CompanionNotFound as exc:
+        raise HTTPException(status_code=404, detail=str(exc)) from exc
+    except (ConsentRequiredError, CompanionError) as exc:
+        raise _http_error(exc) from exc
+
+
+@router.get("/report-pack", response_model=ReportPackV2)
+def report_pack(
+    case_id: str = Query(..., pattern=r"^case_[A-Za-z0-9_\-]+$"),
+    actor: Actor = Depends(get_actor),
+    state: AppState = Depends(get_state),
+) -> ReportPackV2:
+    del actor
+    try:
+        return _service(state).report_pack(case_id)
     except CompanionNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
