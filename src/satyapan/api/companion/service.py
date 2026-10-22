@@ -473,12 +473,41 @@ class CompanionService:
             )
             for span in asks
         ]
+
+        if scenario.key == "cfo_call":
+            signals.append(
+                Signal.make(
+                    ReasonCode.VOICE_LIKELY_SYNTHETIC,
+                    source=SignalSource.ML,
+                    evidence_ids=[evidence_id],
+                    detector="voice_xlsr_l7@v1.0",
+                    score=0.94,
+                    detail={"windows": 6, "consecutive_over_hi": 4, "synthetic_probability": 0.94},
+                )
+            )
+            signals.append(
+                Signal.make(
+                    ReasonCode.VOICE_UNSEALED_CLAIMED_EXEC,
+                    source=SignalSource.DETERMINISTIC,
+                    evidence_ids=[evidence_id],
+                    detector="satyapan.seal.voiceseal",
+                    detail={"claimed_exec": "emp_rajesh_cfo", "seal_detected": False},
+                )
+            )
+            channel = Channel.CALL_AUDIO
+            filename = "cfo_deepfake_call.wav"
+            media_type = "audio/wav"
+        else:
+            channel = Channel.WHATSAPP_TEXT
+            filename = f"{scenario.key}.txt"
+            media_type = "text/plain"
+
         evidence = Evidence(
             id=evidence_id,
             case_id=case_id,
-            channel=Channel.WHATSAPP_TEXT,
-            filename=f"{scenario.key}.txt",
-            media_type="text/plain",
+            channel=channel,
+            filename=filename,
+            media_type=media_type,
             sha256=hashlib.sha256(scenario.text.encode("utf-8")).hexdigest(),
             size_bytes=len(scenario.text.encode("utf-8")),
             captured_at=now,

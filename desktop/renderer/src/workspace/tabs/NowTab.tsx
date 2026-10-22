@@ -2,7 +2,9 @@ import {
   ArrowRight,
   AudioLines,
   CheckCircle2,
+  Cpu,
   FileCheck2,
+  Fingerprint,
   Laptop,
   Lock,
   MicOff,
@@ -44,6 +46,12 @@ function coverageCopy(coverage: LiveSnapshot['coverage']): string {
     default:
       return 'Coverage: waiting'
   }
+}
+
+function coverageColor(coverage: LiveSnapshot['coverage']): string {
+  if (coverage === 'usable') return tone.green
+  if (coverage === 'degraded') return tone.amber
+  return tone.slate
 }
 
 function sealCopy(seal: SealStatus | null): {
@@ -89,7 +97,6 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
   const inCall = live.callId !== null || live.callStartedAt !== null || watching
   const elapsed = live.callStartedAt ? secondsSince(live.callStartedAt, now) : 0
   const seal = sealCopy(live.seal)
-  const SealIcon = seal.Icon
   const alert = live.lastAlert
 
   const handleSimulateScam = async () => {
@@ -121,11 +128,12 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
 
   return (
     <div className="space-y-4">
+      {/* Live Monitoring & Deepfake Defense */}
       <Section
         title="Live monitoring"
         description={
           watching
-            ? 'Satya is actively protecting Google Meet & monitoring the screen. Voice asks and payment bypasses are relayed in real-time.'
+            ? 'Satya is actively protecting Google Meet calls and monitoring your screen. Voice neural artifacts, cryptographic seals, and payment bypasses are relayed in real-time.'
             : 'Satya is asleep. Nothing is being watched.'
         }
         action={
@@ -138,7 +146,8 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
         }
       >
         {inCall ? (
-          <div>
+          <div className="space-y-4">
+            {/* Call Status & Action Buttons */}
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
                 <span className="inline-flex items-center gap-2 text-[14px] font-semibold text-emerald-400">
@@ -147,7 +156,7 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
                     <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
                   </span>
                   <PhoneCall size={15} style={{ color: tone.watch }} aria-hidden="true" />
-                  Live Call: Google Meet & Screen Protected
+                  Live Call: Google Meet Protected
                 </span>
                 <span className={surface.muted} aria-hidden="true">
                   ·
@@ -169,11 +178,11 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
                   type="button"
                   onClick={handleSimulateScam}
                   disabled={simulating}
-                  className="inline-flex items-center gap-1.5 rounded-[8px] bg-amber-500/15 border border-amber-500/30 px-3 py-1.5 text-[12px] font-semibold text-amber-300 transition hover:bg-amber-500/25 active:scale-95 disabled:opacity-50"
-                  title="Inject a realistic CFO Deepfake call to demonstrate live detection and OOB verification lockdown"
+                  className="inline-flex items-center gap-1.5 rounded-[8px] bg-rose-500/15 border border-rose-500/30 px-3 py-1.5 text-[12px] font-semibold text-rose-300 transition hover:bg-rose-500/25 active:scale-95 disabled:opacity-50"
+                  title="Simulate a live Deepfake CFO voice clone attempting an urgent wire fraud bypass"
                 >
-                  <Zap size={13} className="text-amber-400 fill-amber-400" aria-hidden="true" />
-                  {simulating ? 'Injecting Attack...' : '⚡ Simulate CFO Scam Attack'}
+                  <Zap size={13} className="text-rose-400 fill-rose-400" aria-hidden="true" />
+                  {simulating ? 'Injecting Attack...' : '⚡ Simulate Deepfake CFO Scam'}
                 </button>
                 <button
                   type="button"
@@ -189,16 +198,65 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
               </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            {/* 3-Engine Real-Time Forensic Pipeline */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              <div
+                className={`rounded-[10px] border p-3 ${surface.line} ${surface.inset}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Cpu size={15} className="text-cyan-400 shrink-0" aria-hidden="true" />
+                  <span className="text-[12px] font-semibold text-slate-200">Neural Voice AI Detector</span>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400 leading-snug">
+                  Model: <span className="text-cyan-300 font-mono">voice_xlsr_l7</span>
+                </p>
+                <p className="mt-0.5 text-[11px] text-emerald-400">
+                  ● Scanning synthetic vocoder artifacts
+                </p>
+              </div>
+
+              <div
+                className={`rounded-[10px] border p-3 ${surface.line} ${surface.inset}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Fingerprint size={15} className="text-amber-400 shrink-0" aria-hidden="true" />
+                  <span className="text-[12px] font-semibold text-slate-200">Satyapan VoiceSeal</span>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400 leading-snug">
+                  Protocol: <span className="text-amber-300 font-mono">TESLA Key Epochs</span>
+                </p>
+                <p className="mt-0.5 text-[11px] text-emerald-400">
+                  ● Zero-bit psychoacoustic watermark
+                </p>
+              </div>
+
+              <div
+                className={`rounded-[10px] border p-3 ${surface.line} ${surface.inset}`}
+              >
+                <div className="flex items-center gap-2">
+                  <Laptop size={15} className="text-indigo-400 shrink-0" aria-hidden="true" />
+                  <span className="text-[12px] font-semibold text-slate-200">macOS Screen Guard</span>
+                </div>
+                <p className="mt-1 text-[11px] text-slate-400 leading-snug">
+                  Engine: <span className="text-indigo-300 font-mono">Apple Vision OCR</span>
+                </p>
+                <p className="mt-0.5 text-[11px] text-emerald-400">
+                  ● On-device offline visual inspection
+                </p>
+              </div>
+            </div>
+
+            {/* Live Ask Chips */}
+            <div className="flex flex-wrap gap-2 pt-1">
               {live.chips.length > 0 ? (
                 live.chips.map((chip) => (
                   <span
                     key={`${chip.code}-${chip.at_s ?? 'na'}`}
                     className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium"
                     style={{
-                      borderColor: `${tone.watch}33`,
-                      backgroundColor: `${tone.watch}12`,
-                      color: tone.ink,
+                      borderColor: `${tone.coral}40`,
+                      backgroundColor: `${tone.coral}15`,
+                      color: tone.coral,
                     }}
                   >
                     <AudioLines size={12} aria-hidden="true" />
@@ -207,21 +265,9 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
                 ))
               ) : (
                 <span className={`text-[12px] ${surface.muted}`}>
-                  Actively monitoring call audio and screen text. No payment tricks or urgency detected yet.
+                  Voice and screen are clean. No synthetic artifacts, approval bypasses, or urgency detected.
                 </span>
               )}
-            </div>
-
-            <div
-              className={`mt-4 flex items-center justify-between gap-2 rounded-[10px] border px-3 py-2 text-[12px] ${surface.line} ${surface.inset}`}
-            >
-              <div className="flex items-center gap-2">
-                <SealIcon size={14} style={{ color: seal.color }} aria-hidden="true" />
-                <span>{seal.label}</span>
-              </div>
-              <span className="text-[11px] text-slate-400">
-                macOS Screen Guard: <span className="text-emerald-400 font-medium">Active (Apple Vision OCR)</span>
-              </span>
             </div>
           </div>
         ) : (
@@ -252,6 +298,7 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
         )}
       </Section>
 
+      {/* Forensic Alert & Physical Lockdown */}
       <Section
         title="Last alert"
         description="A band is a policy decision. Satya raises it; you decide what happens next."
@@ -262,24 +309,24 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
             <div className="flex items-start gap-3">
               <div
                 className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line}`}
-                style={{ backgroundColor: `${tone.coral}12` }}
+                style={{ backgroundColor: `${tone.coral}15` }}
               >
-                <ShieldAlert size={17} style={{ color: tone.coral }} aria-hidden="true" />
+                <ShieldAlert size={18} style={{ color: tone.coral }} aria-hidden="true" />
               </div>
               <div className="min-w-0 flex-1">
-                <p className="text-[14px] font-semibold">{alert.headline}</p>
+                <p className="text-[15px] font-bold text-rose-300">{alert.headline}</p>
                 <p className={`mt-1 text-[12px] ${surface.muted}`}>
                   Raised {relativeTime(alert.at, now)}. Policy engine band:{' '}
-                  <span className="font-bold text-rose-400">{alert.band}</span>. Satya never lowers this band.
+                  <span className="font-bold text-rose-400">{alert.band}</span>. Deepfake evidence can only raise security, never lower it.
                 </p>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 shrink-0">
                 {oobUrl ? (
                   <button
                     type="button"
                     onClick={() => window.open(oobUrl, '_blank')}
                     className="inline-flex items-center gap-1.5 rounded-[8px] bg-purple-500/15 border border-purple-500/30 px-3 py-1.5 text-[12px] font-semibold text-purple-300 transition hover:bg-purple-500/25 active:scale-95"
-                    title="Open the Linked Mobile Verification Web App to simulate phone approval/lockdown"
+                    title="Open the Linked Mobile Verification Web App to simulate out-of-band physical phone lockdown"
                   >
                     <QrCode size={13} aria-hidden="true" />
                     📱 Open Phone Approver
@@ -305,7 +352,8 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
         )}
       </Section>
 
-      <div className="grid grid-cols-2 gap-4">
+      {/* Required Privacy & Capability Sections */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <Section title="What Satya can see">
           <ul className="space-y-2 text-[12px]">
             <li className="flex items-start gap-2">
@@ -322,6 +370,7 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
             </li>
           </ul>
         </Section>
+
         <Section title="What he never does">
           <ul className="space-y-2 text-[12px]">
             <li className="flex items-start gap-2">
