@@ -187,6 +187,7 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
               card={satya.state.card}
               tail="right"
               onAction={(actionId) => api.cardAction(satya.state.card!.id, actionId)}
+              onClose={() => api.hideCard()}
             />
           </motion.div>
         ) : null}
