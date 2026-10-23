@@ -659,6 +659,9 @@ export interface HealthInfo {
 }
 
 /** Local signals from main (OS-side) to the renderer windows. Never sent to the backend. */
+/** Capture error reason when the local engine stops answering mid-call (fail closed). */
+export const ENGINE_LOST_REASON = 'engine_lost'
+
 export type SatyaSignal =
   | { kind: 'meeting'; meeting: MeetingInfo | null }
   | {

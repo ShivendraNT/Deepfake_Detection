@@ -24,6 +24,7 @@ import type {
   ScreenFinding,
   UserMode,
 } from '../../../shared/contracts'
+import { ENGINE_LOST_REASON } from '../../../shared/contracts'
 
 export type FileKind = Extract<BubbleCard, { kind: 'file_ask' }>['file_kind']
 
@@ -665,8 +666,12 @@ function reduceSignal(state: SatyaState, signal: SatyaSignal, id: string): Satya
             kind: 'notice',
             id: `notice_capture_${id}`,
             tone: 'warn',
-            title: 'notice.capture_error.title',
-            body: `notice.capture_error.body|reason=${encodeURIComponent(signal.reason ?? 'Capture failed')}`,
+            title:
+              signal.reason === ENGINE_LOST_REASON ? 'notice.backend.title' : 'notice.capture_error.title',
+            body:
+              signal.reason === ENGINE_LOST_REASON
+                ? 'notice.backend.body'
+                : `notice.capture_error.body|reason=${encodeURIComponent(signal.reason ?? 'Capture failed')}`,
             actions: [{ id: 'dismiss', variant: 'ghost' }],
           },
           dismissed: false,

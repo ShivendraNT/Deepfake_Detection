@@ -2,8 +2,14 @@
 # Uses `uv` by default. Without uv, activate your venv and run e.g. `make check RUN=`
 RUN ?= uv run
 T ?=
+# Satya's ears: mlx-whisper on Apple Silicon, faster-whisper everywhere else.
+ifeq ($(shell uname -s)-$(shell uname -m),Darwin-arm64)
+ASR_EXTRAS ?= --extra asr --extra asr-mac
+else
+ASR_EXTRAS ?= --extra asr
+endif
 
-.PHONY: help sync check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
+.PHONY: help sync asr doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -11,11 +17,26 @@ help:
 	@echo "make test          all tests (task tests skip until their task is implemented)"
 	@echo "make task T=T07    run ONLY task T07's acceptance tests, strict (no skipping)"
 	@echo "make run           start the API on http://127.0.0.1:8000 (docs at /docs)"
+	@echo "make asr           install Satya's local speech engine + download the model (once)"
+	@echo "make demo-audio    generate the labelled DEMO REPLAY call (synthetic voice, once)"
+	@echo "make doctor        check the speech engine is ready and fast enough on this laptop"
+	@echo "make live          start the API for a live demo (no auto-reload, model warmed up)"
 	@echo "make demo-data     regenerate data/demo fixtures + schemas and validate them"
 	@echo "make status        print the task board from docs/STATUS.md"
 
 sync:
-	uv sync
+	uv sync --inexact
+
+# Once per laptop, before the demo (needs internet the first time).
+asr:
+	uv sync --inexact $(ASR_EXTRAS)
+	$(RUN) python scripts/asr_check.py
+
+doctor:
+	$(RUN) python scripts/asr_check.py
+
+demo-audio:
+	$(RUN) --with piper-tts python scripts/make_replay_audio.py
 
 lint:
 	$(RUN) ruff check .
@@ -40,6 +61,11 @@ check: lint typecheck test
 
 run:
 	$(RUN) uvicorn --app-dir src satyapan.api.app:app --reload --host 0.0.0.0 --port 8000
+
+# Demo day: no --reload (a saved file must never restart the engine mid-call). 0.0.0.0 so the
+# approver's phone on the same hotspot can open http://<laptop-ip>:8000/oob.
+live:
+	SATYAPAN_ASR_WARMUP=1 $(RUN) uvicorn --app-dir src satyapan.api.app:app --host 0.0.0.0 --port 8000
 
 demo-data:
 	$(RUN) python scripts/make_demo_data.py

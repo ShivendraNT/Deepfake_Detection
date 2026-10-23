@@ -175,9 +175,9 @@ export const COPY_TABLE: Record<string, CopyEntry> = {
     hi: 'मेरे कान अभी इंस्टॉल नहीं हुए',
   },
   'notice.asr_missing.body': {
-    en: "I can't turn speech into words on this laptop. Run `make asr` in the Satyapan folder, then restart the engine.",
-    hinglish: 'Main is laptop par awaaz ko shabdon mein nahi badal pa raha. Satyapan folder mein `make asr` chalaayein, phir engine restart karein.',
-    hi: 'मैं इस लैपटॉप पर आवाज़ को शब्दों में नहीं बदल पा रहा। Satyapan फ़ोल्डर में `make asr` चलाएँ, फिर इंजन दोबारा शुरू करें।',
+    en: "I can't turn speech into words on this laptop. Run “make asr” in the Satyapan folder, then restart the engine.",
+    hinglish: 'Main is laptop par awaaz ko shabdon mein nahi badal pa raha. Satyapan folder mein "make asr" chalaayein, phir engine restart karein.',
+    hi: 'मैं इस लैपटॉप पर आवाज़ को शब्दों में नहीं बदल पा रहा। Satyapan फ़ोल्डर में "make asr" चलाएँ, फिर इंजन दोबारा शुरू करें।',
   },
   'notice.capture_error.title': {
     en: "I couldn't hear the call",
@@ -195,9 +195,9 @@ export const COPY_TABLE: Record<string, CopyEntry> = {
     hi: 'मेरा दिमाग़ (इंजन) नहीं मिल रहा',
   },
   'notice.backend.body': {
-    en: 'Start the local engine with `make run`, then wake me again.',
-    hinglish: '`make run` se local engine chalaayein, phir mujhe jagaayein.',
-    hi: '`make run` से लोकल इंजन चलाएँ, फिर मुझे जगाएँ।',
+    en: 'Start the local engine with "make live", then wake me again.',
+    hinglish: '"make live" se local engine chalaayein, phir mujhe jagaayein.',
+    hi: '"make live" से लोकल इंजन चलाएँ, फिर मुझे जगाएँ।',
   },
   'notice.call_ended.title': {
     en: 'The call ended, so I stopped listening.',

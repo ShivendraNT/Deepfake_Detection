@@ -706,7 +706,7 @@ function registerShortcuts(): void {
   bind('CommandOrControl+Shift+S', wakeOrSleep)
   // Emergency brake: stop listening and reading, from any state.
   bind('CommandOrControl+Shift+.', emergencyStop)
-  bind('CommandOrControl+Shift+N', () => openWorkspace())
+  bind('CommandOrControl+Shift+U', () => openWorkspace())
   bind('CommandOrControl+Shift+L', () => {
     showCompanionWindow()
     signal({ kind: 'hotkey', action: 'listen' })
@@ -715,7 +715,7 @@ function registerShortcuts(): void {
     showCompanionWindow()
     signal({ kind: 'hotkey', action: 'scan' })
   })
-  bind('CommandOrControl+Shift+V', () => {
+  bind('CommandOrControl+Shift+Y', () => {
     showCompanionWindow()
     void checkClipboardText().then((result) => {
       if (!result.ok) signal({ kind: 'hotkey', action: 'clipboard' })

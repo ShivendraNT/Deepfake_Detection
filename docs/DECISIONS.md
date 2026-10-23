@@ -173,3 +173,20 @@ timing, and Google Meet's own processing is untested until the two-laptop test.
 **Safety:** a seal never lowers a band or clears a HOLD; "not sealed" is never shown as "fake".
 
 **Interaction with ADR-021 (merge, 08 Oct):** `VOICE_UNSEALED_CLAIMED_EXEC` is a deterministic signal from a non-ask group, so under policy 1.1 it corroborates a single ask. "Skip the approval" (A5) + a claimed CFO whose voice is not sealed therefore reaches HOLD (checker verifies), while unsealed alone stays at VERIFY. Property test: `tests/seal/test_seal_policy.py::test_unsealed_raises_to_at_most_verify`.
+
+### ADR-024 Live calls: local speech, a live-only phrasebook, cues that never score (finale)
+**Decision:** live calls are transcribed on the laptop (`adapters/transcribe_local.py`:
+mlx-whisper on Apple Silicon, faster-whisper int8 elsewhere; `make asr`), one utterance at a time
+(the capture window cuts at pauses, ~0.5 s, instead of fixed 10 s chunks). Spoken asks go through
+the frozen lexicon v1.0 **plus** `asks/phrasebook.py` (`live-1.0.0`): spoken variants the written
+lexicon misses ("don't involve Rajesh", "read me the code", "I'll sign later", Hinglish). The
+phrasebook is product-only: research scripts keep calling `extract_asks` and never see it, so the
+frozen research lexicon and its numbers are unchanged. The ADR-021 context filter runs first.
+Context **cues** (RUSH, AUTHORITY, UNREACHABLE, AMOUNT) are highlighted for the user but are never a
+`Signal` and never change a band. A missing speech engine is a visible status ("my ears aren't
+installed"), never an empty transcript; a lost engine mid-call fails closed (Satya sleeps).
+**Privacy:** captions travel only on the per-call `/live/{id}/events` stream to the desktop main
+process and live in memory for that call; the companion bus (which has replayable history) never
+carries transcript text, only ask quotes the user needs to see why Satya paused.
+**Why:** judges must see a real call flagged live; a deaf demo that silently "listens" is worse
+than no demo. Local ASR keeps call audio on the laptop.

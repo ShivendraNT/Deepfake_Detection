@@ -12,10 +12,12 @@
  *
  * Telemetry back to main: status, a 20 Hz loudness level (local only, makes Satya nod),
  * speech start/stop and "an utterance was sent". Any error fails closed: capture stops and
- * main puts Satya back to Watching with a note saying why.
+ * main puts Satya to sleep with a note saying why (also when the local engine stops answering).
  */
 
 import { useEffect } from 'react'
+
+import { ENGINE_LOST_REASON as ENGINE_LOST } from '../../../shared/contracts'
 
 import { startPipeline, stopPipeline } from './pipeline'
 import { startReplay, stopReplay } from './replay'
@@ -100,6 +102,9 @@ export default function CaptureApp(): JSX.Element {
       },
       onCallGone: () => {
         if (myToken === token) void stop(true, 'the call was stopped')
+      },
+      onEngineLost: () => {
+        if (myToken === token) void fail(ENGINE_LOST)
       },
     })
 

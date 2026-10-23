@@ -5,7 +5,7 @@ WHY THIS EXISTS. The research lexicon (`lexicon.py`, v1.0.0) is FROZEN so the nu
 (0.33). Real calls use phrasings like "skip the usual approval" or "I'll send the account
 details on WhatsApp" that v1.0 misses. This module adds deterministic patterns for those, used
 ONLY by product surfaces that opt in (live calls, files handed to Satya, screen text).
-Research scripts keep calling `extract_asks` and never see these patterns. See ADR-030.
+Research scripts keep calling `extract_asks` and never see these patterns. See ADR-024.
 
 Written from the team's own knowledge of CEO-fraud / vishing scripts. No ICFD text was used.
 

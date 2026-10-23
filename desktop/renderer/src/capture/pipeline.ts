@@ -36,6 +36,8 @@ export interface PipelineHooks {
   onUtterance?: (info: { index: number; tStart: number; tEnd: number }) => void
   /** The backend no longer knows this call (stopped elsewhere): stop capturing. */
   onCallGone?: () => void
+  /** The local engine stopped answering (crashed or closed): fail closed, never "listen" deaf. */
+  onEngineLost?: () => void
 }
 
 interface VoiceWindowPayload {
@@ -57,6 +59,7 @@ let levelTimer: ReturnType<typeof setInterval> | null = null
 let windower: ReturnType<typeof createWindower> | null = null
 
 let activeCallId: string | null = null
+let chunkFailures = 0
 let runId = 0
 let scores: number[] = []
 let speechTotal = 0
@@ -192,13 +195,18 @@ function enqueueUtterance(callId: string, utterance: Utterance): void {
   const blob = encodeWav(floatToPcm16(utterance.samples), SAMPLE_RATE)
   hooks.onUtterance?.({ index: utterance.index, tStart: utterance.tStart, tEnd: utterance.tEnd })
   chunkQueue = chunkQueue
-    .then(() => postChunk(callId, utterance, blob))
+    .then(async () => {
+      await postChunk(callId, utterance, blob)
+      chunkFailures = 0
+    })
     .catch((error: unknown) => {
       if (error instanceof CallGoneError) {
         if (activeCallId === callId) hooks.onCallGone?.()
         return
       }
       console.warn(`[capture] utterance ${utterance.index} failed`, error)
+      chunkFailures += 1
+      if (chunkFailures >= 2 && activeCallId === callId) hooks.onEngineLost?.()
     })
 }
 
@@ -229,6 +237,7 @@ export async function startPipeline(
 
   const myRun = ++runId
   activeCallId = callId
+  chunkFailures = 0
   hooks = callbacks
   scores = []
   speechTotal = 0

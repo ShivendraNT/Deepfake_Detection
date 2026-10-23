@@ -106,8 +106,8 @@ const HOTKEYS = [
   { keys: 'Ctrl/⌘ + Shift + .', action: 'Stop everything now (emergency)' },
   { keys: 'Ctrl/⌘ + Shift + L', action: 'Listen to the call I am on' },
   { keys: 'Ctrl/⌘ + Shift + K', action: 'Scan my screen now' },
-  { keys: 'Ctrl/⌘ + Shift + V', action: 'Check what I copied' },
-  { keys: 'Ctrl/⌘ + Shift + N', action: 'Open the Notebook' },
+  { keys: 'Ctrl/⌘ + Shift + Y', action: 'Check what I copied' },
+  { keys: 'Ctrl/⌘ + Shift + U', action: 'Open the Notebook' },
   { keys: 'Ctrl/⌘ + Shift + D', action: 'Play the demo call (labelled replay)' },
 ]
 

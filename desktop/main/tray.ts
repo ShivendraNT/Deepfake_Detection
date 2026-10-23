@@ -48,13 +48,13 @@ export function createTray(deps: TrayDependencies): Tray {
           ? { label: 'Stop listening', click: () => deps.stopListening() }
           : { label: 'Listen to a call now', accelerator: 'CommandOrControl+Shift+L', click: () => deps.listenNow() },
         { label: 'Scan my screen now', accelerator: 'CommandOrControl+Shift+K', click: () => deps.scanScreen() },
-        { label: 'Check what I copied', accelerator: 'CommandOrControl+Shift+V', click: () => deps.checkClipboard() },
+        { label: 'Check what I copied', accelerator: 'CommandOrControl+Shift+Y', click: () => deps.checkClipboard() },
       )
     }
     items.push(
       { type: 'separator' },
       { label: deps.isVisible() ? 'Hide Satya' : 'Show Satya', click: () => deps.toggleVisible() },
-      { label: 'Open Notebook', accelerator: 'CommandOrControl+Shift+N', click: () => deps.openWorkspace() },
+      { label: 'Open Notebook', accelerator: 'CommandOrControl+Shift+U', click: () => deps.openWorkspace() },
       {
         label: 'Presenter',
         submenu: [

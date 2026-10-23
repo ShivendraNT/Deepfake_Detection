@@ -37,7 +37,7 @@ class PipelineContext:
     # ADR-021: strip footers / quoted bank notifications / protective warnings before the
     # (frozen) ask extractor. False reproduces the pre-ADR-021 pipeline for before/after runs.
     context_filter: bool = True
-    # ADR-030: product surfaces (files handed to Satya) add the live phrasebook on top of the
+    # ADR-024: product surfaces (files handed to Satya) add the live phrasebook on top of the
     # frozen lexicon. Research runs keep the default (False) so measured numbers reproduce.
     live_phrasebook: bool = False
 

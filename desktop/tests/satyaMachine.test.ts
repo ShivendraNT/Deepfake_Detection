@@ -8,6 +8,7 @@ import type {
   CompanionPayload,
   OobTicket,
 } from '../shared/contracts'
+import { ENGINE_LOST_REASON } from '../shared/contracts'
 import {
   fileKindOf,
   initialSatyaState,
@@ -576,5 +577,15 @@ describe('satyaMachine — finale: captions, quotes, meetings, screen findings',
     expect(state.userMode).toBe('SLEEPING')
     expect(state.callId).toBeNull()
     expect(state.card).toMatchObject({ kind: 'notice', tone: 'warn' })
+  })
+
+  it('says the engine is gone (not a permission problem) when the engine stops answering', () => {
+    const state = satyaReducer(listening(), {
+      type: 'SIGNAL',
+      signal: { kind: 'capture', state: 'error', reason: ENGINE_LOST_REASON },
+    })
+    expect(state.userMode).toBe('SLEEPING')
+    expect(state.callId).toBeNull()
+    expect(state.card).toMatchObject({ kind: 'notice', title: 'notice.backend.title' })
   })
 })

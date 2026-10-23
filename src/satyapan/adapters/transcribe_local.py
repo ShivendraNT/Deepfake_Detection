@@ -47,7 +47,7 @@ _HALLUCINATIONS = re.compile(
     re.IGNORECASE,
 )
 
-FASTER_WHISPER_DEFAULT = "small"
+FASTER_WHISPER_DEFAULT = "small"  # 8+ CPU cores; smaller laptops get "base" (see below)
 MLX_DEFAULT = "mlx-community/whisper-large-v3-turbo"
 
 
@@ -179,7 +179,10 @@ class LocalTranscriber:
             if self.engine == "mlx-whisper":
                 self.model = _env("SATYAPAN_ASR_MODEL", MLX_DEFAULT)
             else:
-                self.model = _env("SATYAPAN_ASR_MODEL", FASTER_WHISPER_DEFAULT)
+                # "small" is clearly more accurate, but needs ~8 cores to keep up with speech.
+                cores = os.cpu_count() or 4
+                default = FASTER_WHISPER_DEFAULT if cores >= 8 else "base"
+                self.model = _env("SATYAPAN_ASR_MODEL", default)
         self.status = EngineStatus(
             engine=self.engine, model=self.model, language=self.language or "auto"
         )
