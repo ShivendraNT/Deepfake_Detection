@@ -71,12 +71,12 @@ scenario calls `satyapan.policy.engine.decide()` and only relays its `Decision`.
 
 ## 8. Agent plan
 1. Run the T25 acceptance test unchanged and record its first failure.
-2. Add Three.js and replace image swapping with one transparent, disposable WebGL scene.
-3. Build the blue jelly body, continuous breathing/jiggle and drag-response physics.
-4. Add articulated eyes, smoothed 3D gaze and timed single/double blinks.
-5. Rig pose-driven paws, shield, writing props and sleep particles with seamless transitions.
-6. Preserve six radial actions and 96 px native click-through hit testing.
-7. Run T25, desktop typecheck/Vitest, `make check` and finale tests after each implementation step.
+2. Inspect the scoped mascot, motion helpers, tokens, contracts, and supplied pose assets.
+3. Preload the official pose renders and add typed, spring-based gaze, breathing, and drag motion.
+4. Add autonomous micro-fidgets and elastic pose transitions without changing Satya's design.
+5. Implement wave, listen, sleep, and alert-specific motion and overlays; preserve hit-area behavior.
+6. Run the desktop typecheck and Vitest suite, fixing only scoped implementation issues.
+7. Re-run T25, then `make check` and `make fmt` if required.
 8. Update STATUS and commit T25 when all checks pass.
 
 ## 9. Resolution of the previous block

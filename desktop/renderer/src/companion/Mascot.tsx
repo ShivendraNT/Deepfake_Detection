@@ -1,5 +1,11 @@
 import { memo, useEffect, useMemo, useRef, useState } from 'react'
-import { AnimatePresence, motion, useReducedMotion, useSpring } from 'framer-motion'
+import {
+  AnimatePresence,
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+} from 'framer-motion'
 import type { MotionValue, TargetAndTransition, Transition } from 'framer-motion'
 
 import type { MascotMood, Pose } from '../../../shared/contracts'
@@ -21,7 +27,7 @@ export type MascotSize = keyof typeof sizePx
 
 export interface MascotProps {
   pose?: Pose
-  mood?: MascotMood | string
+  mood?: MascotMood
   alert?: boolean
   audioLevel?: number
   look?: { dx: number; dy: number; near: boolean }
@@ -31,7 +37,7 @@ export interface MascotProps {
   reducedMotion?: boolean
 }
 
-const MOOD_TO_POSE: Record<string, Pose> = {
+const MOOD_TO_POSE: Record<MascotMood, Pose> = {
   sleepy: 'sleep',
   attentive: 'idle',
   focused: 'think',
@@ -65,29 +71,38 @@ const Mascot = memo(function Mascot({
   size = 'M',
   reducedMotion,
 }: MascotProps) {
-  const activePose: Pose = pose ?? (mood ? MOOD_TO_POSE[mood] ?? 'idle' : 'idle')
+  const activePose: Pose = pose ?? (mood ? MOOD_TO_POSE[mood] : 'idle')
   const reduced = Boolean(useReducedMotion()) || Boolean(reducedMotion)
   const spec = POSES[activePose] ?? POSES.idle
   const renderedSize = typeof size === 'number' ? size : sizePx[size]
   const blinkKey = useBlink(activePose, reduced)
   const supportsBlink = ['idle', 'listen', 'alert', 'catch'].includes(activePose)
 
-  // Preload all high-res 3D blue blob assets in memory so pose switches are instantaneous
+  // Keep decoded pose assets alive so pose transitions can use the browser's image cache.
+  const preloadedImages = useRef<HTMLImageElement[]>([])
   useEffect(() => {
-    for (const src of Object.values(POSE_IMAGES)) {
+    const images: HTMLImageElement[] = []
+    for (const src of new Set(Object.values(POSE_IMAGES))) {
       const img = new Image()
+      img.decoding = 'async'
       img.src = src
+      if (typeof img.decode === 'function') void img.decode().catch(() => undefined)
+      images.push(img)
+    }
+    preloadedImages.current = images
+    return () => {
+      preloadedImages.current = []
     }
   }, [])
 
   // 1. Organic Idle Micro-Fidgets (like Codex Pet)
-  // Every 3.5 - 7 seconds, Satya performs a tiny spontaneous living motion (head cock, ear twitch, happy sigh)
+  // Every 3.5 - 7 seconds, Satya makes a tiny spontaneous head-cock or happy micro-hop.
   const [fidgetIndex, setFidgetIndex] = useState(0)
   useEffect(() => {
-    if (reduced || activePose === 'sleep' || activePose === 'off') return
+    if (reduced || activePose === 'off') return
     let timeoutId: number
     const scheduleNextFidget = () => {
-      const delay = 3500 + Math.random() * 4000
+      const delay = 3500 + Math.random() * 3500
       timeoutId = window.setTimeout(() => {
         setFidgetIndex((prev) => prev + 1)
         scheduleNextFidget()
@@ -97,24 +112,79 @@ const Mascot = memo(function Mascot({
     return () => window.clearTimeout(timeoutId)
   }, [activePose, reduced])
 
+  const fidgetRotationTarget = useMotionValue(0)
+  const fidgetRotation = useSpring(fidgetRotationTarget, springTokens.gaze)
+  const fidgetLiftTarget = useMotionValue(0)
+  const fidgetLift = useSpring(fidgetLiftTarget, springTokens.drag)
+  const fidgetScaleXTarget = useMotionValue(1)
+  const fidgetScaleX = useSpring(fidgetScaleXTarget, springTokens.drag)
+  const fidgetScaleYTarget = useMotionValue(1)
+  const fidgetScaleY = useSpring(fidgetScaleYTarget, springTokens.drag)
+
+  useEffect(() => {
+    if (fidgetIndex === 0 || reduced || activePose === 'off') return
+
+    const resetFidget = () => {
+      fidgetRotationTarget.set(0)
+      fidgetLiftTarget.set(0)
+      fidgetScaleXTarget.set(1)
+      fidgetScaleYTarget.set(1)
+    }
+    const gesture = fidgetIndex % 3
+    if (gesture === 1) {
+      fidgetRotationTarget.set(-2.5)
+    } else if (gesture === 2) {
+      fidgetRotationTarget.set(2.5)
+    } else {
+      fidgetLiftTarget.set(-3)
+      fidgetScaleXTarget.set(0.985)
+      fidgetScaleYTarget.set(1.025)
+    }
+
+    const resetTimer = window.setTimeout(resetFidget, 300)
+    return () => {
+      window.clearTimeout(resetTimer)
+      resetFidget()
+    }
+  }, [
+    activePose,
+    fidgetIndex,
+    fidgetLiftTarget,
+    fidgetRotationTarget,
+    fidgetScaleXTarget,
+    fidgetScaleYTarget,
+    reduced,
+  ])
+
   // 2. Smooth Interactive Cursor Gaze & Head Orientation
   const tracking = Boolean(look?.near) && !reduced
-  const rawLookX = tracking
-    ? Math.max(-6, Math.min(6, (look?.dx ?? 0) / 32))
-    : spec.look?.x ?? 0
-  const rawLookY = tracking
-    ? Math.max(-5, Math.min(5, (look?.dy ?? 0) / 30))
-    : spec.look?.y ?? 0
+  const rawLookX = tracking ? (look?.dx ?? 0) / 32 : spec.look?.x ?? 0
+  const rawLookY = tracking ? (look?.dy ?? 0) / 32 : spec.look?.y ?? 0
 
-  const gazeX = useSpring(rawLookX, { stiffness: 240, damping: 18 })
-  const gazeY = useSpring(rawLookY, { stiffness: 240, damping: 18 })
-  const gazeRotate = useSpring(rawLookX * 0.8, { stiffness: 200, damping: 16 })
+  const gazeX = useSpring(rawLookX, springTokens.gaze)
+  const gazeY = useSpring(rawLookY, springTokens.gaze)
+  const gazeRotate = useSpring(rawLookX * 0.8, springTokens.gaze)
+  const dragLeanTarget = useMotionValue(0)
+  const dragLean = useSpring(dragLeanTarget, springTokens.drag)
 
   useEffect(() => {
     gazeX.set(rawLookX)
     gazeY.set(rawLookY)
     gazeRotate.set(rawLookX * 0.8)
   }, [gazeX, gazeY, gazeRotate, rawLookX, rawLookY])
+
+  useEffect(() => {
+    if (!dragging || !dragVelocity) {
+      dragLeanTarget.set(0)
+      return
+    }
+
+    const followVelocity = (velocity: { x: number; y: number }) => {
+      dragLeanTarget.set(Math.max(-18, Math.min(18, velocity.x * 0.12)))
+    }
+    followVelocity(dragVelocity.get())
+    return dragVelocity.on('change', followVelocity)
+  }, [dragging, dragLeanTarget, dragVelocity])
 
   // Current Mascot Asset Source
   const currentMascotSrc = POSE_IMAGES[activePose] ?? mascot3dImg
@@ -177,9 +247,9 @@ const Mascot = memo(function Mascot({
         trans = { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }
       } else if (activePose === 'alert') {
         // Alert spring hop onto screen with energetic stance
-        anim.scale = [0.85, 1.08, 0.97, 1]
-        anim.y = [-12, 1, 0]
-        trans = { duration: 0.65, ease: [0.34, 1.56, 0.64, 1] }
+        anim.scale = [0.9, 1.08, 1]
+        anim.y = [-12, 0]
+        trans = { type: 'spring', stiffness: 520, damping: 20 }
       } else if (activePose === 'relief') {
         // "Phew!" relieved breath loop
         anim.y = [0, -3.2, 0.8, 0]
@@ -273,7 +343,12 @@ const Mascot = memo(function Mascot({
               ? { duration: 1.0, repeat: Infinity, ease: 'easeInOut' }
               : { duration: 0.3 }
           }
-          style={{ opacity: 0, transformBox: 'view-box', transformOrigin: '100px 100px' }}
+          style={{
+            opacity: 0,
+            filter: activePose === 'alert' ? `drop-shadow(0 0 8px ${color.hold})` : undefined,
+            transformBox: 'view-box',
+            transformOrigin: '100px 100px',
+          }}
         />
 
         {/* Ambient SVG Accessories for Poses that Benefit from Extra Visual Flourish */}
@@ -283,21 +358,12 @@ const Mascot = memo(function Mascot({
           transition={figureTransition}
           style={{ transformBox: 'view-box', transformOrigin: '100px 100px' }}
         >
-          {activePose === 'sleep' ? (
-            <Accessories pose="sleep" audioLevel={audioLevel} reducedMotion={reduced} />
-          ) : activePose === 'listen' ? (
-            <Accessories pose="listen" audioLevel={audioLevel} reducedMotion={reduced} />
-          ) : activePose === 'relief' ? (
-            <Accessories pose="relief" audioLevel={audioLevel} reducedMotion={reduced} />
-          ) : activePose === 'think' ? (
-            <Accessories pose="think" audioLevel={audioLevel} reducedMotion={reduced} />
-          ) : null}
+          <Accessories pose={activePose} audioLevel={audioLevel} reducedMotion={reduced} />
         </motion.g>
       </svg>
 
       {/* Centered Living 3D Blue Blob Character with Codex-Style Springs & Micro-Fidgets */}
       <motion.div
-        key={`fidget-${fidgetIndex}`}
         animate={figureAnimate}
         transition={figureTransition}
         style={{
@@ -314,81 +380,113 @@ const Mascot = memo(function Mascot({
           style={{
             position: 'absolute',
             inset: 0,
-            x: gazeX,
-            y: gazeY,
-            rotate: gazeRotate,
-            transformOrigin: '50% 50%',
+            rotate: dragLean,
+            transformOrigin: '50% 65%',
           }}
         >
-          {/* Smooth Elastic Pose Transitions (Anticipatory Squash & Spring Pop) */}
-          <AnimatePresence mode="popLayout" initial={false}>
-            <motion.img
-              key={activePose}
-              src={currentMascotSrc}
-              alt={`Satya Mascot - ${activePose}`}
-              draggable={false}
-              initial={{ scale: mascotBaseScale * 0.92, opacity: 0.6, y: 3 }}
-              animate={{ scale: mascotBaseScale, opacity: 1, y: 0 }}
-              exit={{ scale: mascotBaseScale * 0.94, opacity: 0, y: -2 }}
-              transition={{
-                scale: { type: 'spring', stiffness: 420, damping: 24 },
-                y: { type: 'spring', stiffness: 380, damping: 22 },
-                opacity: { duration: 0.12 },
-              }}
+          <motion.div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              y: fidgetLift,
+              rotate: fidgetRotation,
+              scaleX: fidgetScaleX,
+              scaleY: fidgetScaleY,
+              transformOrigin: '50% 65%',
+            }}
+          >
+            <motion.div
               style={{
                 position: 'absolute',
                 inset: 0,
-                width: '100%',
-                height: '100%',
-                objectFit: 'contain',
-                pointerEvents: 'none',
-                display: 'block',
-                filter: 'drop-shadow(0 8px 18px rgba(20,16,40,0.24))',
-              }}
-            />
-          </AnimatePresence>
-
-          {/* Natural Eye Blinking Layer with Cyan Eyelids */}
-          {supportsBlink && blinkKey > 0 ? (
-            <svg
-              viewBox="0 0 200 200"
-              aria-hidden="true"
-              style={{
-                position: 'absolute',
-                inset: 0,
-                width: '100%',
-                height: '100%',
-                overflow: 'visible',
-                pointerEvents: 'none',
-                zIndex: 2,
+                x: gazeX,
+                y: gazeY,
+                rotate: gazeRotate,
+                transformOrigin: '50% 50%',
               }}
             >
-              <motion.ellipse
-                key={`left-${blinkKey}`}
-                cx={64.5}
-                cy={113}
-                rx={23}
-                ry={24}
-                fill="#44D5DE"
-                initial={{ scaleY: 0 }}
-                animate={{ scaleY: [0, 1, 0] }}
-                transition={{ duration: BLINK_MS / 1000, ease: 'easeInOut' }}
-                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-              />
-              <motion.ellipse
-                key={`right-${blinkKey}`}
-                cx={133}
-                cy={115}
-                rx={23}
-                ry={24}
-                fill="#44D5DE"
-                initial={{ scaleY: 0 }}
-                animate={{ scaleY: [0, 1, 0] }}
-                transition={{ duration: BLINK_MS / 1000, ease: 'easeInOut' }}
-                style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-              />
-            </svg>
-          ) : null}
+              {/* Smooth Elastic Pose Transitions (Anticipatory Squash & Spring Pop) */}
+              <AnimatePresence mode="popLayout" initial={false}>
+                <motion.img
+                  key={activePose}
+                  src={currentMascotSrc}
+                  alt={`Satya Mascot - ${activePose}`}
+                  draggable={false}
+                  initial={{
+                    scaleX: mascotBaseScale * 1.04,
+                    scaleY: mascotBaseScale * 0.92,
+                    opacity: 0.6,
+                    y: 3,
+                  }}
+                  animate={{ scaleX: mascotBaseScale, scaleY: mascotBaseScale, opacity: 1, y: 0 }}
+                  exit={{
+                    scaleX: mascotBaseScale * 0.97,
+                    scaleY: mascotBaseScale * 0.94,
+                    opacity: 0,
+                    y: -2,
+                  }}
+                  transition={{
+                    scaleX: { type: 'spring', stiffness: 420, damping: 24 },
+                    scaleY: { type: 'spring', stiffness: 420, damping: 24 },
+                    y: { type: 'spring', stiffness: 380, damping: 22 },
+                    opacity: { duration: 0.12 },
+                  }}
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    objectFit: 'contain',
+                    pointerEvents: 'none',
+                    display: 'block',
+                    filter: 'drop-shadow(0 8px 18px rgba(20,16,40,0.24))',
+                  }}
+                />
+              </AnimatePresence>
+
+              {/* Natural Eye Blinking Layer with Cyan Eyelids */}
+              {supportsBlink && blinkKey > 0 ? (
+                <svg
+                  viewBox="0 0 200 200"
+                  aria-hidden="true"
+                  style={{
+                    position: 'absolute',
+                    inset: 0,
+                    width: '100%',
+                    height: '100%',
+                    overflow: 'visible',
+                    pointerEvents: 'none',
+                    zIndex: 2,
+                  }}
+                >
+                  <motion.ellipse
+                    key={`left-${blinkKey}`}
+                    cx={64.5}
+                    cy={113}
+                    rx={23}
+                    ry={24}
+                    fill="#44D5DE"
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: [0, 1, 0] }}
+                    transition={{ duration: BLINK_MS / 1000, ease: 'easeInOut' }}
+                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                  />
+                  <motion.ellipse
+                    key={`right-${blinkKey}`}
+                    cx={133}
+                    cy={115}
+                    rx={23}
+                    ry={24}
+                    fill="#44D5DE"
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: [0, 1, 0] }}
+                    transition={{ duration: BLINK_MS / 1000, ease: 'easeInOut' }}
+                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
+                  />
+                </svg>
+              ) : null}
+            </motion.div>
+          </motion.div>
         </motion.div>
       </motion.div>
     </div>

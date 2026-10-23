@@ -1,4 +1,4 @@
-import { motion } from 'framer-motion'
+import { motion, useReducedMotion } from 'framer-motion'
 
 import type { Pose } from '../../../shared/contracts'
 import { color, motion as spring } from '../shared/tokens'
@@ -12,9 +12,9 @@ export interface AccessoriesProps {
 const STAR_D = 'M0 -12 Q2 -2 12 0 Q2 2 0 12 Q-2 2 -12 0 Q-2 -2 0 -12 Z'
 
 const ZS = [
-  { size: 10, delay: 0 },
-  { size: 12, delay: 0.8 },
-  { size: 14, delay: 1.6 },
+  { size: 10, delay: 0, x: 132, y: 62 },
+  { size: 12, delay: 0.8, x: 150, y: 46 },
+  { size: 14, delay: 1.6, x: 166, y: 30 },
 ]
 
 const SPARKLES = [
@@ -27,42 +27,54 @@ function Zzz({ reducedMotion }: { reducedMotion: boolean }) {
   return (
     <>
       {ZS.map((z) => (
-        <motion.text
+        <motion.g
           key={z.size}
-          x={132}
-          y={62}
-          fill={color.ink}
-          fillOpacity={0.4}
-          fontSize={z.size}
-          fontWeight={600}
-          animate={
-            reducedMotion
-              ? undefined
-              : { x: [132, 144], y: [62, 38], opacity: [1, 0] }
-          }
+          initial={reducedMotion ? false : { x: 0, y: 0, opacity: 0.45 }}
+          animate={reducedMotion ? undefined : { x: [0, 12], y: [0, -24], opacity: [0.45, 0] }}
           transition={
             reducedMotion
               ? undefined
               : { duration: 2.4, delay: z.delay, repeat: Infinity, ease: 'easeOut' }
           }
         >
-          z
-        </motion.text>
+          <g transform={`translate(${z.x} ${z.y})`}>
+            <circle
+              r={z.size}
+              fill="#FFFFFF"
+              fillOpacity={0.62}
+              stroke={color.sleep}
+              strokeOpacity={0.28}
+              strokeWidth={1}
+            />
+            <text
+              x={0}
+              y={z.size * 0.35}
+              textAnchor="middle"
+              fill={color.ink}
+              fontSize={z.size}
+              fontWeight={600}
+            >
+              z
+            </text>
+          </g>
+        </motion.g>
       ))}
     </>
   )
 }
 
 function Rings({ level, color: ringColor = color.watch }: { level: number; color?: string }) {
-  const scale = 1 + 0.35 * level
-  const opacity = 0.25 + 0.6 * level
+  const reducedMotion = Boolean(useReducedMotion())
+  const audioLevel = Number.isFinite(level) ? Math.min(1, Math.max(0, level)) : 0
+  const scale = 1 + 0.35 * audioLevel
+  const opacity = 0.25 + 0.6 * audioLevel
 
   return (
     <>
       <motion.g
         initial={{ scale, opacity }}
         animate={{ scale, opacity }}
-        transition={spring.soft}
+        transition={reducedMotion ? undefined : spring.soft}
         style={{ opacity, transformBox: 'view-box', transformOrigin: '40px 90px' }}
       >
         <path
@@ -84,7 +96,7 @@ function Rings({ level, color: ringColor = color.watch }: { level: number; color
       <motion.g
         initial={{ scale, opacity }}
         animate={{ scale, opacity }}
-        transition={spring.soft}
+        transition={reducedMotion ? undefined : spring.soft}
         style={{ opacity, transformBox: 'view-box', transformOrigin: '160px 90px' }}
       >
         <path
@@ -108,8 +120,13 @@ function Rings({ level, color: ringColor = color.watch }: { level: number; color
 }
 
 function Shield() {
+  const reducedMotion = Boolean(useReducedMotion())
   return (
-    <motion.g initial={{ y: 14, opacity: 0.7 }} animate={{ y: 0, opacity: 1 }} transition={spring.snappy}>
+    <motion.g
+      initial={reducedMotion ? false : { y: 14, opacity: 0.7 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={reducedMotion ? undefined : spring.snappy}
+    >
       <path d="M151 145 Q166 135 156 116" fill="none" stroke={color.bodyDark} strokeWidth={13} strokeLinecap="round" />
       <ellipse cx={155} cy={113} rx={9} ry={8} fill={color.bodyDark} stroke={color.sticker} strokeWidth={3} />
       <path

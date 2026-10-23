@@ -33,7 +33,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T22 | Demo assets + 10 dry runs | Shivendra + all | todo | T07-T17 | [spec](tasks/T22-demo-assets-dry-runs.md) | consent forms first |
 | T23 | Pitch deck + backup recording | Saarika + Shivendra | todo | T18, T21, T22 | [spec](tasks/T23-pitch-deck.md) | |
 | T24 | Citizen Scam Check (stretch S1) | Saksham | done | T05, T14 | [spec](tasks/T24-citizen-scam-check.md) | 8/8 strict green; `scam_check` + 7 impossible-claim rules EN/HI, `console/public/scam-check.html` (band + action + 1930/NCRP/Chakshu/WhatsApp + hi-IN speech) |
-| T25 | Desktop Guardian Companion | Shivendra + all | done | — | [spec](tasks/T25-desktop-companion.md) | Procedural Three.js WebGL blue blob, 3D pose rig, breathing/blink/gaze, drag bounce, six petals and Notebook navigation; T25 37/37, desktop 65/65, make check ALL GREEN |
+| T25 | Desktop Guardian Companion | Shivendra + all | done | — | [spec](tasks/T25-desktop-companion.md) | Preloaded pose renders, jelly breathing, spring gaze/drag, 3.5–7s fidgets, elastic transitions, wave/listen/sleep/alert effects; T25 37/37, desktop 65/65, make check green |
 
 ## Finale board (F-tasks, 24–25 Oct)
 
@@ -67,6 +67,7 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 
 22 Oct, F04: done — X1 cross-channel signal (30-min sequence between call/message ask and payment to new/changed beneficiary raises to VERIFY; A4/A5 urgency raises to HOLD; raise-only verified over all floors; 16 finale tests green; schemas updated; make check ALL GREEN).
 22 Oct, F03: done — `/companion/calls/start|stop`, `/companion/files`, `/companion/oob`, `/companion/report-pack`; live bus fan-in relays AskChips, coverage and the policy `BandEvent.band` unchanged; OOB approver from directory only, `not_requested` hook on `/oob/respond`; 11 finale tests + T25 37/37, make check ALL GREEN (728 passed). 
+23 Oct, T25: done — preloaded pose renders with jelly breathing, spring gaze/drag, timed fidgets, elastic transitions, and state-specific effects; T25 37/37, desktop 65/65, make check green.
 23 Oct, F06: mascot animation pass — verified all 10 poses use the blue-blob 3D art (no shield mascot imports); pose changes now cross-fade over 220 ms, one transform layer (no double-applied motion), subtle spring loops, alert hops once and holds, and duplicated SVG shield/paw overlays were removed; desktop typecheck + 65 vitest tests + make check ALL GREEN.
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
 06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
