@@ -112,7 +112,38 @@ const Mascot = memo(function Mascot({
     }
   }, [])
 
-  // 1. Organic Idle Micro-Fidgets (Codex-style living companion physics)
+  // 1. Organic Wake-Up Reaction Animation
+  // When transitioning from 'sleep' to 'idle', Satya stretches upward, shakes off sleep, and perks up.
+  const previousPoseRef = useRef<Pose>(activePose)
+  const [isWakingUp, setIsWakingUp] = useState(false)
+
+  // 2. Ear Twitch Animation Controls (random + acoustic peak reactivity + wake-up perk)
+  const leftEarControls = useAnimationControls()
+  const rightEarControls = useAnimationControls()
+  const previousAudioLevel = useRef(safeAudioLevel)
+  const nextAudioEar = useRef<'left' | 'right'>('left')
+
+  useEffect(() => {
+    if (previousPoseRef.current === 'sleep' && activePose === 'idle' && !reduced) {
+      setIsWakingUp(true)
+      void leftEarControls.start({
+        rotate: [0, -7, 0],
+        y: [0, -3.5, 0],
+        transition: { duration: 0.5, ease: 'easeOut' },
+      })
+      void rightEarControls.start({
+        rotate: [0, 7, 0],
+        y: [0, -3.5, 0],
+        transition: { duration: 0.5, ease: 'easeOut' },
+      })
+      const timer = window.setTimeout(() => setIsWakingUp(false), 900)
+      previousPoseRef.current = activePose
+      return () => window.clearTimeout(timer)
+    }
+    previousPoseRef.current = activePose
+  }, [activePose, leftEarControls, reduced, rightEarControls])
+
+  // 3. Organic Idle Micro-Fidgets (Codex-style living companion physics)
   // Every 3.5 - 7 seconds, Satya performs a spontaneous micro-expression (head cock, ear perk, happy sigh)
   const [fidgetIndex, setFidgetIndex] = useState(0)
   useEffect(() => {
@@ -139,7 +170,7 @@ const Mascot = memo(function Mascot({
   const fidgetScaleY = useSpring(fidgetScaleYTarget, springTokens.drag)
 
   useEffect(() => {
-    if (fidgetIndex === 0 || reduced || activePose === 'off') return
+    if (fidgetIndex === 0 || reduced || activePose === 'off' || isWakingUp) return
 
     const resetFidget = () => {
       fidgetRotationTarget.set(0)
@@ -170,15 +201,11 @@ const Mascot = memo(function Mascot({
     fidgetRotationTarget,
     fidgetScaleXTarget,
     fidgetScaleYTarget,
+    isWakingUp,
     reduced,
   ])
 
-  // 2. Ear Twitch Animation Controls (random + acoustic peak reactivity)
-  const leftEarControls = useAnimationControls()
-  const rightEarControls = useAnimationControls()
-  const previousAudioLevel = useRef(safeAudioLevel)
-  const nextAudioEar = useRef<'left' | 'right'>('left')
-
+  // Spontaneous idle ear twitches
   useEffect(() => {
     if (reduced || activePose === 'off') return
 
@@ -214,6 +241,7 @@ const Mascot = memo(function Mascot({
     }
   }, [activePose, leftEarControls, reduced, rightEarControls])
 
+  // Audio peak reactive ear perks
   useEffect(() => {
     const crossedAudioPeak = previousAudioLevel.current < 0.72 && safeAudioLevel >= 0.72
     previousAudioLevel.current = safeAudioLevel
@@ -229,7 +257,7 @@ const Mascot = memo(function Mascot({
     })
   }, [activePose, leftEarControls, reduced, rightEarControls, safeAudioLevel])
 
-  // 3. Interactive Head Gaze & Spring-Driven Pupils
+  // 4. Interactive Head Gaze & Orientation (Follows Cursor Smoothly via Natural Head Physics)
   const tracking = Boolean(look?.near) && !reduced
   const rawLookX = tracking ? (look?.dx ?? 0) / 32 : spec.look?.x ?? 0
   const rawLookY = tracking ? (look?.dy ?? 0) / 32 : spec.look?.y ?? 0
@@ -238,20 +266,13 @@ const Mascot = memo(function Mascot({
   const gazeY = useSpring(rawLookY, springTokens.gaze)
   const gazeRotate = useSpring(rawLookX * 0.8, springTokens.gaze)
 
-  const pupilTargetX = tracking ? Math.max(-3.5, Math.min(3.5, (look?.dx ?? 0) / 36)) : 0
-  const pupilTargetY = tracking ? Math.max(-3, Math.min(3, (look?.dy ?? 0) / 36)) : 0
-  const pupilX = useSpring(pupilTargetX, springTokens.gaze)
-  const pupilY = useSpring(pupilTargetY, springTokens.gaze)
-
   useEffect(() => {
     gazeX.set(rawLookX)
     gazeY.set(rawLookY)
     gazeRotate.set(rawLookX * 0.8)
-    pupilX.set(pupilTargetX)
-    pupilY.set(pupilTargetY)
-  }, [gazeRotate, gazeX, gazeY, pupilTargetX, pupilTargetY, pupilX, pupilY, rawLookX, rawLookY])
+  }, [gazeRotate, gazeX, gazeY, rawLookX, rawLookY])
 
-  // 4. Drag Inertia and Velocity Tilt
+  // 5. Drag Inertia and Velocity Tilt
   const dragLeanTarget = useMotionValue(0)
   const dragLean = useSpring(dragLeanTarget, springTokens.drag)
 
@@ -268,7 +289,7 @@ const Mascot = memo(function Mascot({
     return dragVelocity.on('change', followVelocity)
   }, [dragging, dragLeanTarget, dragVelocity])
 
-  // 5. Living Procedural Physics Loop per Pose (Squash, Stretch, Breathing, Pose Gestures)
+  // 6. Living Procedural Physics Loop per Pose (Squash, Stretch, Breathing, Pose Gestures)
   const { figureAnimate, figureTransition } = useMemo((): {
     figureAnimate: TargetAndTransition
     figureTransition: Transition
@@ -290,6 +311,12 @@ const Mascot = memo(function Mascot({
         anim.scaleY = 1.08
         anim.y = -4
         trans = { type: 'spring', stiffness: 450, damping: 22 }
+      } else if (isWakingUp) {
+        // Joyful wake-up stretch: squashes, stretches upward, and settles gently
+        anim.scaleY = [1, 0.93, 1.07, 0.98, 1]
+        anim.scaleX = [1, 1.05, 0.95, 1.01, 1]
+        anim.y = [0, 2, -5.5, 0.5, 0]
+        trans = { duration: 0.9, ease: 'easeOut' }
       } else if (activePose === 'idle') {
         // Continuous alive jelly micro-breathing loop (volume-preserving)
         anim.y = [0, -2.0, 0.4, 0]
@@ -350,9 +377,9 @@ const Mascot = memo(function Mascot({
     }
 
     return { figureAnimate: anim, figureTransition: trans }
-  }, [activePose, dragging, reduced])
+  }, [activePose, dragging, isWakingUp, reduced])
 
-  // 6. Halo Aura Ring
+  // 7. Halo Aura Ring
   const auraColor =
     activePose === 'alert'
       ? color.hold
@@ -483,62 +510,66 @@ const Mascot = memo(function Mascot({
                 transformOrigin: '50% 50%',
               }}
             >
-              {/* Authentic 3D Blue Blob Character with Smooth Anticipatory Squash & Spring Transitions */}
-              <AnimatePresence mode="wait" initial={false}>
-                <motion.div
-                  key={activePose}
-                  initial={{
-                    scaleX: mascotBaseScale * 1.05,
-                    scaleY: mascotBaseScale * 0.93,
-                    opacity: 0.7,
-                    y: 3,
-                  }}
-                  animate={{
-                    scaleX: mascotBaseScale,
-                    scaleY: mascotBaseScale,
-                    opacity: 1,
-                    y: 0,
-                  }}
-                  exit={{
-                    scaleX: mascotBaseScale * 0.95,
-                    scaleY: mascotBaseScale * 1.03,
-                    opacity: 0,
-                    y: -2,
-                  }}
-                  transition={{
-                    scaleX: { type: 'spring', stiffness: 420, damping: 24 },
-                    scaleY: { type: 'spring', stiffness: 420, damping: 24 },
-                    y: { type: 'spring', stiffness: 380, damping: 22 },
-                    opacity: { duration: 0.15 },
-                  }}
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    transformOrigin: '50% 65%',
-                  }}
-                >
-                  <img
-                    src={POSE_IMAGES[activePose] ?? mascot3dImg}
-                    alt={`Satya Mascot - ${activePose}`}
-                    draggable={false}
+              {/* Simultaneous Cross-Fade & Organic Morph Transition between Poses */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <AnimatePresence initial={false}>
+                  <motion.div
+                    key={activePose}
+                    initial={{
+                      opacity: 0,
+                      scale: mascotBaseScale * 0.94,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      scale: mascotBaseScale,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: mascotBaseScale * 1.04,
+                    }}
+                    transition={{
+                      opacity: { duration: 0.26, ease: 'easeInOut' },
+                      scale: { type: 'spring', stiffness: 320, damping: 25 },
+                    }}
                     style={{
+                      position: 'absolute',
+                      inset: 0,
                       width: '100%',
                       height: '100%',
-                      objectFit: 'contain',
-                      pointerEvents: 'none',
-                      display: 'block',
-                      filter: 'drop-shadow(0 8px 18px rgba(20,16,40,0.22))',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transformOrigin: '50% 65%',
                     }}
-                  />
-                </motion.div>
-              </AnimatePresence>
+                  >
+                    <img
+                      src={POSE_IMAGES[activePose] ?? mascot3dImg}
+                      alt={`Satya Mascot - ${activePose}`}
+                      draggable={false}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        pointerEvents: 'none',
+                        display: 'block',
+                        filter: 'drop-shadow(0 8px 18px rgba(20,16,40,0.22))',
+                      }}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
 
-              {/* Foreground Interactive SVG Overlay: Ear Twitches, Moving Pupils, and Natural Top-Down Eyelids */}
+              {/* Foreground Interactive SVG Overlay: Ear Twitches & Natural Top-Down Eyelids */}
               <svg
                 viewBox="0 0 200 200"
                 aria-hidden="true"
@@ -584,28 +615,8 @@ const Mascot = memo(function Mascot({
                   style={{ transformBox: 'view-box', transformOrigin: '142px 65px' }}
                 />
 
-                {/* Interactive Moving Eye Pupils (Idle & Listen Poses) */}
-                {(activePose === 'idle' || activePose === 'listen') && !reduced ? (
-                  <g opacity={0.92}>
-                    <g clipPath={`url(#${svgId}-left-eye-clip)`}>
-                      <motion.g style={{ x: pupilX, y: pupilY }}>
-                        <ellipse cx={66.2} cy={115.2} rx={9.5} ry={9.5} fill="#141122" />
-                        <circle cx={63.5} cy={112} r={3} fill="#FFFFFF" />
-                        <circle cx={70.5} cy={118} r={1.4} fill="#FFFFFF" opacity={0.7} />
-                      </motion.g>
-                    </g>
-                    <g clipPath={`url(#${svgId}-right-eye-clip)`}>
-                      <motion.g style={{ x: pupilX, y: pupilY }}>
-                        <ellipse cx={131.3} cy={115.3} rx={9.5} ry={9.5} fill="#141122" />
-                        <circle cx={128.5} cy={112} r={3} fill="#FFFFFF" />
-                        <circle cx={135.5} cy={118} r={1.4} fill="#FFFFFF" opacity={0.7} />
-                      </motion.g>
-                    </g>
-                  </g>
-                ) : null}
-
-                {/* Natural Top-Down Eyelid Blink Animation (Only inside eye sockets, never on stomach) */}
-                {supportsBlink && blinkKey > 0 ? (
+                {/* Natural Top-Down Eyelid Blink Animation (Only active during blinks in open-eye poses) */}
+                {supportsBlink && blinkKey > 0 && !isWakingUp ? (
                   <>
                     <g clipPath={`url(#${svgId}-left-eye-clip)`}>
                       <motion.ellipse
