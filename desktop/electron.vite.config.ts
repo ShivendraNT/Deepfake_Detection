@@ -21,6 +21,7 @@ export default defineConfig({
   renderer: {
     root: resolve(__dirname, 'renderer'),
     plugins: [react()],
+    assetsInclude: ['**/*.glb'],
     resolve: {
       alias: { '@': resolve(__dirname, 'renderer/src') },
     },
