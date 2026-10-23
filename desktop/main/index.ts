@@ -216,6 +216,7 @@ function showCard(card: BubbleCard): void {
 
 function hideCard(cardId?: string): void {
   if (cardId && lastCard?.id !== cardId) return
+  if (lastCard?.id.startsWith('screen-alert-')) snoozeScreenAlert()
   lastCard = null
   if (!bubbleWindow || bubbleWindow.isDestroyed()) return
   deliverCard(bubbleWindow, null, lastTail)
@@ -676,9 +677,18 @@ function checkClipboard(): void {
   }
 }
 
+const SCREEN_ALERT_COOLDOWN_MS = 5 * 60_000
+
 let screenGuardInterval: ReturnType<typeof setInterval> | null = null
 let screenGuardActive = false
-let lastScannedTextHash = ''
+let screenAlertSignature = ''
+let screenAlertCooldownUntil = 0
+
+/** Closing an alert pauses the same finding for 5 minutes. */
+function snoozeScreenAlert(): void {
+  if (!screenAlertSignature) return
+  screenAlertCooldownUntil = Date.now() + SCREEN_ALERT_COOLDOWN_MS
+}
 
 async function checkScreen(onDemand = true): Promise<void> {
   showCompanionWindow()
@@ -693,9 +703,14 @@ async function checkScreen(onDemand = true): Promise<void> {
 
   const scan = await scanScreen()
   if (scan.suspicious) {
-    const textHash = scan.preview
-    if (!onDemand && textHash === lastScannedTextHash) return
-    lastScannedTextHash = textHash
+    const signature =
+      scan.matches.length > 0 ? [...scan.matches].sort().join('|') : scan.headline
+    const now = Date.now()
+    if (!onDemand && signature === screenAlertSignature && now < screenAlertCooldownUntil) {
+      return
+    }
+    screenAlertSignature = signature
+    screenAlertCooldownUntil = now + SCREEN_ALERT_COOLDOWN_MS
 
     showCard({
       id: `screen-alert-${Date.now()}`,
@@ -709,20 +724,29 @@ async function checkScreen(onDemand = true): Promise<void> {
         { id: 'dismiss', variant: 'ghost' },
       ],
     })
-  } else if (onDemand) {
-    showCard({
-      id: `screen-ok-${Date.now()}`,
-      kind: 'result',
-      band: 'PASS',
-      headline: 'Screen looks OK',
-      reasons: ['No urgent payment tricks, remote scam tools, or credential requests found on screen.'],
-      actions: [{ id: 'dismiss', variant: 'ghost' }],
-    })
+  } else {
+    // The screen is clear: forget the old finding so it can alert again if it returns.
+    screenAlertSignature = ''
+    screenAlertCooldownUntil = 0
+    if (onDemand) {
+      showCard({
+        id: `screen-ok-${Date.now()}`,
+        kind: 'result',
+        band: 'PASS',
+        headline: 'Screen looks OK',
+        reasons: [
+          'No urgent payment tricks, remote scam tools, or credential requests found on screen.',
+        ],
+        actions: [{ id: 'dismiss', variant: 'ghost' }],
+      })
+    }
   }
 }
 
 function toggleScreenGuard(): void {
   screenGuardActive = !screenGuardActive
+  screenAlertSignature = ''
+  screenAlertCooldownUntil = 0
   if (screenGuardActive) {
     if (userMode !== 'WATCHING') {
       void setUserMode('WATCHING')
