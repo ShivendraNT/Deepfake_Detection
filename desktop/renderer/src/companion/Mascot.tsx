@@ -1,25 +1,34 @@
-import { memo, useEffect, useRef, useState } from 'react'
-import { useReducedMotion } from 'framer-motion'
-import type { MotionValue } from 'framer-motion'
-import * as THREE from 'three'
+import { memo, useEffect, useId, useMemo, useRef, useState } from 'react'
+import {
+  AnimatePresence,
+  motion,
+  useAnimationControls,
+  useMotionValue,
+  useReducedMotion,
+  useSpring,
+} from 'framer-motion'
+import type { MotionValue, TargetAndTransition, Transition } from 'framer-motion'
 
 import type { MascotMood, Pose } from '../../../shared/contracts'
-import mascotAlert from '../assets/mascot_alert.png'
-import mascotCatch from '../assets/mascot_catch.png'
-import mascotIdle from '../assets/mascot_3d.png'
-import mascotListen from '../assets/mascot_listen.png'
-import mascotRelief from '../assets/mascot_relief.png'
-import mascotSleep from '../assets/mascot_sleep.png'
-import mascotThink from '../assets/mascot_think.png'
-import mascotWave from '../assets/mascot_wave.png'
-import mascotWrite from '../assets/mascot_write.png'
-import { size as sizePx } from '../shared/tokens'
+import mascot3dImg from '../assets/mascot_3d.png'
+import mascotAlertImg from '../assets/mascot_alert.png'
+import mascotCatchImg from '../assets/mascot_catch.png'
+import mascotListenImg from '../assets/mascot_listen.png'
+import mascotReliefImg from '../assets/mascot_relief.png'
+import mascotSleepImg from '../assets/mascot_sleep.png'
+import mascotThinkImg from '../assets/mascot_think.png'
+import mascotWaveImg from '../assets/mascot_wave.png'
+import mascotWriteImg from '../assets/mascot_write.png'
+import { color, motion as springTokens, size as sizePx } from '../shared/tokens'
+import { Accessories } from './accessories'
+import { POSES } from './poses'
+import { BLINK_MS, useBlink } from './useBlink'
 
 export type MascotSize = keyof typeof sizePx
 
 export interface MascotProps {
   pose?: Pose
-  mood?: MascotMood | string
+  mood?: MascotMood
   alert?: boolean
   audioLevel?: number
   look?: { dx: number; dy: number; near: boolean }
@@ -29,7 +38,7 @@ export interface MascotProps {
   reducedMotion?: boolean
 }
 
-const MOOD_TO_POSE: Record<string, Pose> = {
+const MOOD_TO_POSE: Record<MascotMood, Pose> = {
   sleepy: 'sleep',
   attentive: 'idle',
   focused: 'think',
@@ -38,238 +47,34 @@ const MOOD_TO_POSE: Record<string, Pose> = {
   off: 'off',
 }
 
-const POSE_IMAGE: Record<Pose, string> = {
-  sleep: mascotSleep,
-  idle: mascotIdle,
-  listen: mascotListen,
-  think: mascotThink,
-  alert: mascotAlert,
-  relief: mascotRelief,
-  write: mascotWrite,
-  catch: mascotCatch,
-  wave: mascotWave,
-  off: mascotSleep,
+const POSE_IMAGES: Record<Pose, string> = {
+  sleep: mascotSleepImg,
+  idle: mascot3dImg,
+  listen: mascotListenImg,
+  think: mascotThinkImg,
+  alert: mascotAlertImg,
+  relief: mascotReliefImg,
+  write: mascotWriteImg,
+  catch: mascotCatchImg,
+  wave: mascotWaveImg,
+  off: mascotSleepImg,
 }
 
-function createRenderer(canvas: HTMLCanvasElement): THREE.WebGLRenderer | null {
-  try {
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
-    renderer.setSize(200, 200, false)
-    renderer.setClearColor(0x000000, 0)
-    renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.15
-    return renderer
-  } catch (error) {
-    console.warn('Satya: WebGL unavailable, using the static mascot instead.', error)
-    return null
-  }
+// Optical mass normalization: balances rendered volume across pose renders
+const POSE_SCALE: Record<Pose, number> = {
+  idle: 1.0,
+  listen: 1.04,
+  think: 1.03,
+  alert: 1.02,
+  relief: 1.15,
+  catch: 1.05,
+  write: 1.03,
+  wave: 1.18,
+  sleep: 0.98,
+  off: 0.94,
 }
 
-interface EyeRig {
-  group: THREE.Group
-  lid: THREE.Mesh<THREE.SphereGeometry, THREE.MeshStandardMaterial>
-}
-
-interface ArmRig {
-  pivot: THREE.Group
-  wrist: THREE.Group
-  hand: THREE.Group
-}
-
-interface LiveState {
-  pose: Pose
-  lookX: number
-  lookY: number
-  audioLevel: number
-  dragging: boolean
-  dragVelocity: { x: number; y: number }
-  reducedMotion: boolean
-}
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(max, Math.max(min, value))
-}
-
-function randomBlinkDelay(): number {
-  return 2500 + Math.random() * 3500
-}
-
-function createEye(parent: THREE.Object3D, x: number): EyeRig {
-  const group = new THREE.Group()
-  group.position.set(x, 0.2, 0.92)
-  parent.add(group)
-
-  const white = new THREE.Mesh(
-    new THREE.SphereGeometry(0.205, 28, 20),
-    new THREE.MeshPhysicalMaterial({ color: '#F8FCFF', roughness: 0.28, clearcoat: 0.35 }),
-  )
-  group.add(white)
-
-  const iris = new THREE.Mesh(
-    new THREE.SphereGeometry(0.112, 24, 18),
-    new THREE.MeshStandardMaterial({ color: '#075985', roughness: 0.24 }),
-  )
-  iris.position.set(0, 0, 0.16)
-  group.add(iris)
-
-  const pupil = new THREE.Mesh(
-    new THREE.SphereGeometry(0.063, 20, 16),
-    new THREE.MeshStandardMaterial({ color: '#071B36', roughness: 0.16 }),
-  )
-  pupil.position.set(0, 0, 0.235)
-  group.add(pupil)
-
-  const highlight = new THREE.Mesh(
-    new THREE.SphereGeometry(0.026, 12, 10),
-    new THREE.MeshBasicMaterial({ color: '#FFFFFF' }),
-  )
-  highlight.position.set(-0.028, 0.035, 0.285)
-  group.add(highlight)
-
-  const lid = new THREE.Mesh(
-    new THREE.SphereGeometry(0.207, 28, 20),
-    new THREE.MeshStandardMaterial({ color: '#44D5DE', roughness: 0.3 }),
-  )
-  lid.position.z = 0.08
-  lid.scale.set(1, 0.05, 0.52)
-  group.add(lid)
-
-  return { group, lid }
-}
-
-function createArm(character: THREE.Group, side: -1 | 1): ArmRig {
-  const pivot = new THREE.Group()
-  pivot.position.set(side * 0.72, -0.18, 0.48)
-  character.add(pivot)
-
-  const armMaterial = new THREE.MeshPhysicalMaterial({
-    color: '#0284C7',
-    roughness: 0.24,
-    metalness: 0.04,
-    clearcoat: 0.4,
-  })
-  const upper = new THREE.Mesh(new THREE.CylinderGeometry(0.095, 0.125, 0.34, 18), armMaterial)
-  upper.position.y = -0.16
-  pivot.add(upper)
-
-  const wrist = new THREE.Group()
-  wrist.position.y = -0.34
-  pivot.add(wrist)
-  const lower = new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.095, 0.24, 16), armMaterial)
-  lower.position.y = -0.12
-  wrist.add(lower)
-
-  const hand = new THREE.Group()
-  hand.position.y = -0.25
-  wrist.add(hand)
-  const palm = new THREE.Mesh(
-    new THREE.SphereGeometry(0.145, 20, 16),
-    new THREE.MeshPhysicalMaterial({ color: '#38BDF8', roughness: 0.2, clearcoat: 0.5 }),
-  )
-  palm.scale.set(1, 0.84, 0.72)
-  hand.add(palm)
-
-  return { pivot, wrist, hand }
-}
-
-function createShield(hand: THREE.Group): THREE.Group {
-  const group = new THREE.Group()
-  group.position.set(0.1, 0.05, 0.16)
-  group.rotation.z = -0.18
-  group.scale.setScalar(0.65)
-
-  const shape = new THREE.Shape()
-  shape.moveTo(-0.2, 0.22)
-  shape.lineTo(0.2, 0.22)
-  shape.lineTo(0.17, -0.04)
-  shape.quadraticCurveTo(0.13, -0.19, 0, -0.28)
-  shape.quadraticCurveTo(-0.13, -0.19, -0.17, -0.04)
-  shape.closePath()
-  const shield = new THREE.Mesh(
-    new THREE.ExtrudeGeometry(shape, {
-      depth: 0.07,
-      bevelEnabled: true,
-      bevelSegments: 2,
-      bevelSize: 0.025,
-      bevelThickness: 0.02,
-    }),
-    new THREE.MeshPhysicalMaterial({ color: '#F5C542', metalness: 0.28, roughness: 0.25, clearcoat: 0.6 }),
-  )
-  group.add(shield)
-
-  const emblem = new THREE.Mesh(
-    new THREE.OctahedronGeometry(0.075, 0),
-    new THREE.MeshStandardMaterial({ color: '#FFF2B2', metalness: 0.2, roughness: 0.3 }),
-  )
-  emblem.position.set(0, 0.02, 0.1)
-  group.add(emblem)
-  hand.add(group)
-  return group
-}
-
-function createTablet(character: THREE.Group): { group: THREE.Group; stylus: THREE.Group } {
-  const group = new THREE.Group()
-  group.position.set(0.31, -0.42, 0.76)
-  group.rotation.z = -0.08
-  group.visible = false
-  character.add(group)
-
-  const tablet = new THREE.Mesh(
-    new THREE.BoxGeometry(0.48, 0.32, 0.07),
-    new THREE.MeshStandardMaterial({ color: '#FFF0C2', roughness: 0.68 }),
-  )
-  group.add(tablet)
-  const paper = new THREE.Mesh(
-    new THREE.BoxGeometry(0.39, 0.23, 0.012),
-    new THREE.MeshStandardMaterial({ color: '#FFFBEC', roughness: 0.75 }),
-  )
-  paper.position.z = 0.042
-  group.add(paper)
-
-  const stylus = new THREE.Group()
-  stylus.position.set(0.12, 0.1, 0.1)
-  const shaft = new THREE.Mesh(
-    new THREE.CylinderGeometry(0.018, 0.014, 0.3, 12),
-    new THREE.MeshStandardMaterial({ color: '#6D5A9B', metalness: 0.2, roughness: 0.35 }),
-  )
-  shaft.rotation.z = -0.55
-  stylus.add(shaft)
-  const nib = new THREE.Mesh(
-    new THREE.ConeGeometry(0.025, 0.07, 12),
-    new THREE.MeshStandardMaterial({ color: '#E8B95C', metalness: 0.35, roughness: 0.3 }),
-  )
-  nib.position.set(-0.09, -0.13, 0)
-  nib.rotation.z = -0.55
-  stylus.add(nib)
-  group.add(stylus)
-  return { group, stylus }
-}
-
-function createZParticle(character: THREE.Group, index: number): THREE.Group {
-  const group = new THREE.Group()
-  group.position.set(0.52 + index * 0.12, 0.65 + index * 0.08, 0.7)
-  group.visible = false
-  const points = [
-    new THREE.Vector3(-0.08, 0.08, 0),
-    new THREE.Vector3(0.08, 0.08, 0),
-    new THREE.Vector3(-0.08, -0.08, 0),
-    new THREE.Vector3(0.08, -0.08, 0),
-  ]
-  const mesh = new THREE.Mesh(
-    new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points), 16, 0.018, 8, false),
-    new THREE.MeshBasicMaterial({ color: '#B7F3FF', transparent: true, opacity: 0.85 }),
-  )
-  group.add(mesh)
-  character.add(group)
-  return group
-}
+const soft = springTokens.soft
 
 const Mascot = memo(function Mascot({
   pose,
@@ -281,320 +86,315 @@ const Mascot = memo(function Mascot({
   size = 'M',
   reducedMotion,
 }: MascotProps) {
-  const activePose: Pose = pose ?? (mood ? MOOD_TO_POSE[mood] ?? 'idle' : 'idle')
-  const systemReducedMotion = useReducedMotion()
-  const reduced = Boolean(systemReducedMotion) || Boolean(reducedMotion)
+  const activePose: Pose = pose ?? (mood ? MOOD_TO_POSE[mood] : 'idle')
+  const reduced = Boolean(useReducedMotion()) || Boolean(reducedMotion)
+  const spec = POSES[activePose] ?? POSES.idle
   const renderedSize = typeof size === 'number' ? size : sizePx[size]
-  const canvasRef = useRef<HTMLCanvasElement | null>(null)
-  const [webglFailed, setWebglFailed] = useState(false)
-  const stateRef = useRef<LiveState>({
-    pose: activePose,
-    lookX: 0,
-    lookY: 0,
-    audioLevel,
-    dragging,
-    dragVelocity: dragVelocity?.get() ?? { x: 0, y: 0 },
-    reducedMotion: reduced,
-  })
+  const safeAudioLevel = Number.isFinite(audioLevel) ? Math.min(1, Math.max(0, audioLevel)) : 0
+  const blinkKey = useBlink(activePose, reduced)
+  const supportsBlink = ['idle', 'listen', 'alert', 'catch'].includes(activePose)
+  const svgId = useId().replace(/[^a-zA-Z0-9_-]/g, '')
 
-  const tracking = Boolean(look?.near) && !reduced
-  stateRef.current = {
-    pose: activePose,
-    lookX: tracking ? clamp((look?.dx ?? 0) / 35, -5, 5) : 0,
-    lookY: tracking ? clamp((look?.dy ?? 0) / 35, -4, 4) : 0,
-    audioLevel: clamp(audioLevel, 0, 1),
-    dragging,
-    dragVelocity: stateRef.current.dragVelocity,
-    reducedMotion: reduced,
-  }
+  // Keep decoded 3D pose assets in browser memory so pose transitions are instantaneous
+  const preloadedImages = useRef<HTMLImageElement[]>([])
+  useEffect(() => {
+    const images: HTMLImageElement[] = []
+    for (const src of new Set(Object.values(POSE_IMAGES))) {
+      const img = new Image()
+      img.decoding = 'async'
+      img.src = src
+      if (typeof img.decode === 'function') void img.decode().catch(() => undefined)
+      images.push(img)
+    }
+    preloadedImages.current = images
+    return () => {
+      preloadedImages.current = []
+    }
+  }, [])
+
+  // 1. Organic Wake-Up Reaction Animation
+  // When transitioning from 'sleep' to 'idle', Satya stretches upward, shakes off sleep, and perks up.
+  const previousPoseRef = useRef<Pose>(activePose)
+  const [isWakingUp, setIsWakingUp] = useState(false)
+
+  // 2. Ear Twitch Animation Controls (random + acoustic peak reactivity + wake-up perk)
+  const leftEarControls = useAnimationControls()
+  const rightEarControls = useAnimationControls()
+  const previousAudioLevel = useRef(safeAudioLevel)
+  const nextAudioEar = useRef<'left' | 'right'>('left')
 
   useEffect(() => {
-    if (!dragVelocity) return
-    return dragVelocity.on('change', (velocity) => {
-      stateRef.current.dragVelocity = velocity
+    if (previousPoseRef.current === 'sleep' && activePose === 'idle' && !reduced) {
+      setIsWakingUp(true)
+      void leftEarControls.start({
+        rotate: [0, -7, 0],
+        y: [0, -3.5, 0],
+        transition: { duration: 0.5, ease: 'easeOut' },
+      })
+      void rightEarControls.start({
+        rotate: [0, 7, 0],
+        y: [0, -3.5, 0],
+        transition: { duration: 0.5, ease: 'easeOut' },
+      })
+      const timer = window.setTimeout(() => setIsWakingUp(false), 900)
+      previousPoseRef.current = activePose
+      return () => window.clearTimeout(timer)
+    }
+    previousPoseRef.current = activePose
+  }, [activePose, leftEarControls, reduced, rightEarControls])
+
+  // 3. Organic Idle Micro-Fidgets (Codex-style living companion physics)
+  // Every 3.5 - 7 seconds, Satya performs a spontaneous micro-expression (head cock, ear perk, happy sigh)
+  const [fidgetIndex, setFidgetIndex] = useState(0)
+  useEffect(() => {
+    if (reduced || activePose === 'off') return
+    let timeoutId: number
+    const scheduleNextFidget = () => {
+      const delay = 3500 + Math.random() * 3500
+      timeoutId = window.setTimeout(() => {
+        setFidgetIndex((prev) => prev + 1)
+        scheduleNextFidget()
+      }, delay)
+    }
+    scheduleNextFidget()
+    return () => window.clearTimeout(timeoutId)
+  }, [activePose, reduced])
+
+  const fidgetRotationTarget = useMotionValue(0)
+  const fidgetRotation = useSpring(fidgetRotationTarget, springTokens.gaze)
+  const fidgetLiftTarget = useMotionValue(0)
+  const fidgetLift = useSpring(fidgetLiftTarget, springTokens.drag)
+  const fidgetScaleXTarget = useMotionValue(1)
+  const fidgetScaleX = useSpring(fidgetScaleXTarget, springTokens.drag)
+  const fidgetScaleYTarget = useMotionValue(1)
+  const fidgetScaleY = useSpring(fidgetScaleYTarget, springTokens.drag)
+
+  useEffect(() => {
+    if (fidgetIndex === 0 || reduced || activePose === 'off' || isWakingUp) return
+
+    const resetFidget = () => {
+      fidgetRotationTarget.set(0)
+      fidgetLiftTarget.set(0)
+      fidgetScaleXTarget.set(1)
+      fidgetScaleYTarget.set(1)
+    }
+    const gesture = fidgetIndex % 3
+    if (gesture === 1) {
+      fidgetRotationTarget.set(-2.5)
+    } else if (gesture === 2) {
+      fidgetRotationTarget.set(2.5)
+    } else {
+      fidgetLiftTarget.set(-3)
+      fidgetScaleXTarget.set(0.985)
+      fidgetScaleYTarget.set(1.025)
+    }
+
+    const resetTimer = window.setTimeout(resetFidget, 320)
+    return () => {
+      window.clearTimeout(resetTimer)
+      resetFidget()
+    }
+  }, [
+    activePose,
+    fidgetIndex,
+    fidgetLiftTarget,
+    fidgetRotationTarget,
+    fidgetScaleXTarget,
+    fidgetScaleYTarget,
+    isWakingUp,
+    reduced,
+  ])
+
+  // Spontaneous idle ear twitches
+  useEffect(() => {
+    if (reduced || activePose === 'off') return
+
+    const twitch = (controls: typeof leftEarControls, direction: number) => {
+      void controls.start({
+        rotate: [0, direction * 5, 0],
+        y: [0, -2.5, 0],
+        transition: { duration: 0.38, ease: 'easeOut' },
+      })
+    }
+    let leftTimer: number
+    let rightTimer: number
+    const scheduleLeft = () => {
+      leftTimer = window.setTimeout(() => {
+        twitch(leftEarControls, -1)
+        scheduleLeft()
+      }, 6000 + Math.random() * 4000)
+    }
+    const scheduleRight = () => {
+      rightTimer = window.setTimeout(() => {
+        twitch(rightEarControls, 1)
+        scheduleRight()
+      }, 6000 + Math.random() * 4000)
+    }
+
+    scheduleLeft()
+    scheduleRight()
+    return () => {
+      window.clearTimeout(leftTimer)
+      window.clearTimeout(rightTimer)
+      leftEarControls.stop()
+      rightEarControls.stop()
+    }
+  }, [activePose, leftEarControls, reduced, rightEarControls])
+
+  // Audio peak reactive ear perks
+  useEffect(() => {
+    const crossedAudioPeak = previousAudioLevel.current < 0.72 && safeAudioLevel >= 0.72
+    previousAudioLevel.current = safeAudioLevel
+    if (reduced || !crossedAudioPeak || activePose === 'off') return
+
+    const isLeft = nextAudioEar.current === 'left'
+    const controls = isLeft ? leftEarControls : rightEarControls
+    nextAudioEar.current = isLeft ? 'right' : 'left'
+    void controls.start({
+      rotate: [0, (isLeft ? -1 : 1) * 6, 0],
+      y: [0, -3.5, 0],
+      transition: { duration: 0.36, ease: 'easeOut' },
     })
-  }, [dragVelocity])
+  }, [activePose, leftEarControls, reduced, rightEarControls, safeAudioLevel])
+
+  // 4. Interactive Head Gaze & Orientation (Follows Cursor Smoothly via Natural Head Physics)
+  const tracking = Boolean(look?.near) && !reduced
+  const rawLookX = tracking ? (look?.dx ?? 0) / 32 : spec.look?.x ?? 0
+  const rawLookY = tracking ? (look?.dy ?? 0) / 32 : spec.look?.y ?? 0
+
+  const gazeX = useSpring(rawLookX, springTokens.gaze)
+  const gazeY = useSpring(rawLookY, springTokens.gaze)
+  const gazeRotate = useSpring(rawLookX * 0.8, springTokens.gaze)
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas) return
+    gazeX.set(rawLookX)
+    gazeY.set(rawLookY)
+    gazeRotate.set(rawLookX * 0.8)
+  }, [gazeRotate, gazeX, gazeY, rawLookX, rawLookY])
 
-    const scene = new THREE.Scene()
-    const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50)
-    camera.position.set(0, 0, 4.8)
+  // 5. Drag Inertia and Velocity Tilt
+  const dragLeanTarget = useMotionValue(0)
+  const dragLean = useSpring(dragLeanTarget, springTokens.drag)
 
-    const renderer = createRenderer(canvas)
-    if (!renderer) {
-      setWebglFailed(true)
+  useEffect(() => {
+    if (!dragging || !dragVelocity) {
+      dragLeanTarget.set(0)
       return
     }
 
-    let failed = false
-    const handleContextLost = (event: Event): void => {
-      event.preventDefault()
-      failed = true
-      console.warn('Satya: WebGL context was lost, using the static mascot instead.')
-      setWebglFailed(true)
+    const followVelocity = (velocity: { x: number; y: number }) => {
+      dragLeanTarget.set(Math.max(-18, Math.min(18, velocity.x * 0.12)))
     }
-    canvas.addEventListener('webglcontextlost', handleContextLost)
+    followVelocity(dragVelocity.get())
+    return dragVelocity.on('change', followVelocity)
+  }, [dragging, dragLeanTarget, dragVelocity])
 
-    scene.add(new THREE.HemisphereLight('#F4FBFF', '#14517A', 2.1))
-    const keyLight = new THREE.DirectionalLight('#FFFFFF', 3.2)
-    keyLight.position.set(-3.5, 4.5, 5)
-    scene.add(keyLight)
-    const rimLight = new THREE.DirectionalLight('#67E8F9', 1.8)
-    rimLight.position.set(3, 0.8, -2)
-    scene.add(rimLight)
+  // 6. Living Procedural Physics Loop per Pose (Squash, Stretch, Breathing, Pose Gestures)
+  const { figureAnimate, figureTransition } = useMemo((): {
+    figureAnimate: TargetAndTransition
+    figureTransition: Transition
+  } => {
+    const anim: TargetAndTransition = {
+      scaleY: 1,
+      scaleX: 1,
+      scale: 1,
+      y: 0,
+      rotate: 0,
+      opacity: 1,
+    }
+    let trans: Transition = soft
 
-    const character = new THREE.Group()
-    scene.add(character)
-
-    const body = new THREE.Mesh(
-      new THREE.SphereGeometry(1, 64, 48),
-      new THREE.MeshPhysicalMaterial({
-        color: '#38BDF8',
-        roughness: 0.2,
-        metalness: 0.1,
-        clearcoat: 0.6,
-        clearcoatRoughness: 0.16,
-      }),
-    )
-    body.scale.set(1, 1.08, 0.9)
-    body.position.y = -0.02
-    character.add(body)
-
-    const eyes = [createEye(body, -0.37), createEye(body, 0.37)]
-    const arms = [createArm(character, -1), createArm(character, 1)]
-    const [leftArm, rightArm] = arms
-    const shield = createShield(rightArm.hand)
-    const tablet = createTablet(character)
-    const zParticles = [0, 1, 2].map((index) => createZParticle(character, index))
-
-    const halo = new THREE.Mesh(
-      new THREE.TorusGeometry(1.2, 0.022, 12, 64),
-      new THREE.MeshBasicMaterial({ color: '#F4C95D', transparent: true, opacity: 0.75 }),
-    )
-    halo.position.set(0, 0, -0.12)
-    halo.visible = false
-    character.add(halo)
-
-    const soundRings = [-1, 1].map((side) => {
-      const ring = new THREE.Mesh(
-        new THREE.TorusGeometry(0.18, 0.018, 8, 32),
-        new THREE.MeshBasicMaterial({ color: '#9CECF5', transparent: true, opacity: 0.35 }),
-      )
-      ring.position.set(side * 1.03, 0.08, 0.36)
-      ring.visible = false
-      character.add(ring)
-      return ring
-    })
-
-    const sparkles = [-1, 0, 1].map((index) => {
-      const sparkle = new THREE.Mesh(
-        new THREE.OctahedronGeometry(0.075 + Math.abs(index) * 0.018, 0),
-        new THREE.MeshBasicMaterial({ color: '#FFE08A', transparent: true, opacity: 0.9 }),
-      )
-      sparkle.position.set(index * 0.8, 0.5 + Math.abs(index) * 0.16, 0.72)
-      sparkle.visible = false
-      character.add(sparkle)
-      return sparkle
-    })
-
-    const mouthPath = new THREE.CatmullRomCurve3([
-      new THREE.Vector3(-0.17, -0.22, 0.97),
-      new THREE.Vector3(0, -0.28, 1),
-      new THREE.Vector3(0.17, -0.22, 0.97),
-    ])
-    const mouth = new THREE.Mesh(
-      new THREE.TubeGeometry(mouthPath, 18, 0.022, 8, false),
-      new THREE.MeshStandardMaterial({ color: '#075985', roughness: 0.35 }),
-    )
-    body.add(mouth)
-
-    let frameId = 0
-    let blinkStartAt = -1
-    let nextBlinkAt = performance.now() + randomBlinkDelay()
-    let doubleBlinkAt: number | null = null
-    let previousPose = activePose
-    let poseChangedAt = performance.now()
-    let previouslyDragging = false
-    let lastDragStrength = 0
-    let dropStartedAt = 0
-    let dropStrength = 0
-    let poseStretchY = 1
-    const targetQuaternion = new THREE.Quaternion()
-    const targetEuler = new THREE.Euler(0, 0, 0, 'XYZ')
-
-    const renderFrame = (now: number): void => {
-      if (failed) return
-      frameId = window.requestAnimationFrame(renderFrame)
-      if (document.visibilityState === 'hidden') return
-
-      const state = stateRef.current
-      const time = now / 1000
-      const sleeping = state.pose === 'sleep' || state.pose === 'off'
-      const period = sleeping ? 4.5 : state.pose === 'relief' ? 2.8 : 3.6
-      const breath = state.reducedMotion ? 0 : Math.sin((time * Math.PI * 2) / period)
-      if (state.pose !== previousPose) {
-        previousPose = state.pose
-        poseChangedAt = now
-      }
-      const catching = state.pose === 'catch'
-      const targetPoseStretchY = catching ? 1.08 : 1
-      poseStretchY += (targetPoseStretchY - poseStretchY) * 0.12
-      const dragSpeed = Math.hypot(state.dragVelocity.x, state.dragVelocity.y)
-      const dragStretch = state.dragging ? clamp((dragSpeed / 36) * 0.16, 0, 0.16) : 0
-      if (state.dragging) lastDragStrength = Math.max(lastDragStrength, dragStretch)
-      if (previouslyDragging && !state.dragging) {
-        dropStartedAt = now
-        dropStrength = lastDragStrength
-        lastDragStrength = 0
-      }
-      previouslyDragging = state.dragging
-      const dropElapsed = Math.max(0, (now - dropStartedAt) / 1000)
-      const dropBounce = !state.dragging && dropStartedAt > 0
-        ? Math.exp(-dropElapsed * 8) * Math.sin(dropElapsed * 20) * dropStrength
-        : 0
-      const stretch = dragStretch + dropBounce
-      body.scale.x = 1 - breath * 0.015 - stretch * 0.2
-      body.scale.y = 1.08 * poseStretchY + breath * 0.03 + stretch * 0.5
-      body.scale.z = 0.9 + breath * 0.008 + stretch * 0.15
-
-      const alertProgress = clamp((now - poseChangedAt) / 520, 0, 1)
-      const alertHop = state.pose === 'alert' && !state.reducedMotion
-        ? Math.sin(alertProgress * Math.PI) * 0.18
-        : 0
-      const targetY = (sleeping ? -0.08 : 0) + alertHop
-      character.position.y += (targetY - character.position.y) * 0.12
-      const cameraTilt = state.pose === 'listen' ? 0.018 : state.pose === 'think' ? -0.014 : 0
-      camera.rotation.z += (cameraTilt - camera.rotation.z) * 0.12
-      const dragTilt = state.dragging && dragSpeed > 0.1
-        ? Math.atan2(-state.dragVelocity.y, state.dragVelocity.x) - Math.PI / 2
-        : null
-      const targetTilt = dragTilt ?? (state.pose === 'listen' ? -0.05 : state.pose === 'think' ? 0.035 : 0)
-      character.rotation.z += (targetTilt - character.rotation.z) * 0.12
-
-      const wave = state.pose === 'wave' && !state.reducedMotion
-      const leftArmTarget = catching
-        ? -2.6
-        : state.pose === 'alert'
-          ? -0.05
-          : state.pose === 'listen'
-            ? -2.25
-            : 0.25
-      const rightArmTarget = catching
-        ? 2.6
-        : state.pose === 'alert'
-          ? 2.25
-          : wave
-            ? 0.55 + Math.sin(time * 4.2) * 0.44
-            : state.pose === 'write'
-              ? 0.95
-              : 0.25
-      leftArm.pivot.rotation.z += (leftArmTarget - leftArm.pivot.rotation.z) * 0.12
-      rightArm.pivot.rotation.z += (rightArmTarget - rightArm.pivot.rotation.z) * 0.12
-      const leftAnchorY = catching ? -0.06 : -0.18
-      const rightAnchorY = catching ? -0.06 : state.pose === 'write' ? -0.28 : -0.18
-      leftArm.pivot.position.y += (leftAnchorY - leftArm.pivot.position.y) * 0.12
-      rightArm.pivot.position.y += (rightAnchorY - rightArm.pivot.position.y) * 0.12
-      const leftAnchorX = catching ? -0.76 : -0.72
-      const rightAnchorX = catching ? 0.76 : 0.72
-      leftArm.pivot.position.x += (leftAnchorX - leftArm.pivot.position.x) * 0.12
-      rightArm.pivot.position.x += (rightAnchorX - rightArm.pivot.position.x) * 0.12
-      leftArm.wrist.rotation.z += ((catching ? -0.18 : 0) - leftArm.wrist.rotation.z) * 0.12
-      const wristLag = wave && !state.reducedMotion ? Math.sin(time * 4.2 - 0.55) * 0.2 : 0
-      rightArm.wrist.rotation.z += (wristLag - rightArm.wrist.rotation.z) * 0.18
-
-      shield.visible = state.pose === 'alert'
-      tablet.group.visible = state.pose === 'write'
-      tablet.stylus.rotation.y = Math.sin(time * 4.8) * 0.2
-      tablet.stylus.position.x = 0.12 + Math.sin(time * 4.8) * 0.045
-      halo.visible = state.pose === 'alert'
-      const haloPulse = 1 + (state.pose === 'alert' && !state.reducedMotion ? Math.sin(time * 3) * 0.045 : 0)
-      halo.scale.setScalar(haloPulse)
-
-      const listening = state.pose === 'listen'
-      const level = state.audioLevel
-      for (const ring of soundRings) {
-        ring.visible = listening
-        const pulse = 1 + level * 1.2 + Math.sin(time * 5) * 0.035
-        ring.scale.setScalar(pulse)
-        ;(ring.material as THREE.MeshBasicMaterial).opacity = listening ? 0.22 + level * 0.55 : 0
-      }
-
-      const relieved = state.pose === 'relief'
-      sparkles.forEach((sparkle, index) => {
-        sparkle.visible = relieved
-        sparkle.rotation.y += 0.04 + index * 0.01
-        sparkle.scale.setScalar(relieved ? 0.85 + Math.sin(time * 4 + index) * 0.2 : 0.01)
-      })
-      zParticles.forEach((particle, index) => {
-        particle.visible = sleeping
-        const phase = ((time * 0.45 + index * 0.31) % 1 + 1) % 1
-        particle.position.y = 0.65 + index * 0.08 + phase * 0.42
-        const mesh = particle.children[0] as THREE.Mesh
-        ;(mesh.material as THREE.MeshBasicMaterial).opacity = sleeping ? 0.85 * (1 - phase) : 0
-      })
-
-      targetEuler.set(
-        state.pose === 'alert' ? 0 : -state.lookY * 0.055,
-        state.pose === 'alert' ? 0 : state.lookX * 0.055,
-        0,
-      )
-      targetQuaternion.setFromEuler(targetEuler)
-      const eyeHeight = catching || state.pose === 'alert' ? 1.08 : state.pose === 'think' ? 0.92 : 1
-      for (const eye of eyes) {
-        eye.group.quaternion.slerp(targetQuaternion, 0.15)
-        eye.group.scale.y += (eyeHeight - eye.group.scale.y) * 0.12
-      }
-
-      if (!sleeping) {
-        if (doubleBlinkAt !== null) {
-          if (now >= doubleBlinkAt) {
-            blinkStartAt = now
-            doubleBlinkAt = null
-            nextBlinkAt = now + randomBlinkDelay()
-          }
-        } else if (now >= nextBlinkAt) {
-          blinkStartAt = now
-          if (Math.random() < 0.2) doubleBlinkAt = now + 250
-          else nextBlinkAt = now + randomBlinkDelay()
-        }
-      }
-
-      const blinkProgress = blinkStartAt < 0 ? 1 : clamp((now - blinkStartAt) / 120, 0, 1)
-      const blinkScale = blinkProgress < 0.5
-        ? THREE.MathUtils.lerp(0.05, 1, blinkProgress * 2)
-        : THREE.MathUtils.lerp(1, 0.05, (blinkProgress - 0.5) * 2)
-      for (const eye of eyes) {
-        eye.lid.scale.y = sleeping ? 1 : blinkScale
-      }
-
-      try {
-        renderer.render(scene, camera)
-      } catch (error) {
-        failed = true
-        window.cancelAnimationFrame(frameId)
-        console.warn('Satya: WebGL render failed, using the static mascot instead.', error)
-        setWebglFailed(true)
+    if (!reduced) {
+      if (dragging) {
+        // Jelly drag squash: stretches vertically and thins horizontally when held
+        anim.scaleX = 0.94
+        anim.scaleY = 1.08
+        anim.y = -4
+        trans = { type: 'spring', stiffness: 450, damping: 22 }
+      } else if (isWakingUp) {
+        // Joyful wake-up stretch: squashes, stretches upward, and settles gently
+        anim.scaleY = [1, 0.93, 1.07, 0.98, 1]
+        anim.scaleX = [1, 1.05, 0.95, 1.01, 1]
+        anim.y = [0, 2, -5.5, 0.5, 0]
+        trans = { duration: 0.9, ease: 'easeOut' }
+      } else if (activePose === 'idle') {
+        // Continuous alive jelly micro-breathing loop (volume-preserving)
+        anim.y = [0, -2.0, 0.4, 0]
+        anim.scaleY = [1, 1.025, 0.988, 1]
+        anim.scaleX = [1, 0.988, 1.012, 1]
+        trans = { duration: 3.2, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'sleep') {
+        // Peaceful slow rhythmic sleep breathing with gentle droop
+        anim.y = [0, -1.0, 0]
+        anim.scaleY = [1, 1.025, 1]
+        anim.scaleX = [1, 0.99, 1]
+        trans = { duration: 4.2, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'listen') {
+        // Attentive listening perk & gentle head tilt toward incoming audio
+        anim.rotate = [-3.5, -1, -4.0, -1.5, -3.5]
+        anim.y = [0, 1.4, -1.8, 0.6, 0]
+        anim.scaleY = [1, 1.025, 0.988, 1.02, 1]
+        trans = { duration: 2.6, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'think') {
+        // Thoughtful float & sway
+        anim.rotate = [-2.8, 2.8, -2.8]
+        anim.y = [0, -2.4, 0]
+        anim.scaleY = [1, 1.018, 1]
+        trans = { duration: 2.2, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'alert') {
+        // Energetic spring hop onto screen with solid stance
+        anim.scale = [0.9, 1.08, 1]
+        anim.y = [-12, 0]
+        trans = { type: 'spring', stiffness: 520, damping: 20 }
+      } else if (activePose === 'relief') {
+        // "Phew!" relieved breath loop and micro-hop
+        anim.y = [0, -3.2, 0.8, 0]
+        anim.scaleY = [1, 1.04, 0.98, 1]
+        anim.scaleX = [1, 0.985, 1.015, 1]
+        trans = { duration: 2.8, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'catch') {
+        // Reaching upward to catch dropped files
+        anim.y = [0, -6, 1.5, -4, 0]
+        anim.scale = [1, 1.06, 0.985, 1.03, 1]
+        anim.rotate = [0, -1.5, 1.5, -0.8, 0]
+        trans = { duration: 1.8, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'write') {
+        // Scribing/writing rhythmic micro-loop
+        anim.y = [0, 1.8, -0.4, 2.0, 0.4, 0]
+        anim.rotate = [0, -1.2, 0.9, -0.9, 0.6, 0]
+        anim.scaleY = [1, 0.988, 1.01, 0.99, 1]
+        trans = { duration: 1.5, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'wave') {
+        // High-energy friendly hand wave sway and bounce
+        anim.rotate = [0, 6, -5, 6, -5, 0]
+        anim.y = [0, -3, 0]
+        trans = { duration: 1.2, repeat: Infinity, ease: 'easeInOut' }
+      } else if (activePose === 'off') {
+        anim.opacity = 0.5
+        anim.scaleY = 0.94
+        trans = soft
       }
     }
 
-    frameId = window.requestAnimationFrame(renderFrame)
+    return { figureAnimate: anim, figureTransition: trans }
+  }, [activePose, dragging, isWakingUp, reduced])
 
-    return () => {
-      window.cancelAnimationFrame(frameId)
-      canvas.removeEventListener('webglcontextlost', handleContextLost)
-      scene.traverse((object) => {
-        if (!(object instanceof THREE.Mesh)) return
-        object.geometry.dispose()
-        const materials = Array.isArray(object.material) ? object.material : [object.material]
-        for (const material of materials) material.dispose()
-      })
-      renderer.dispose()
-      renderer.forceContextLoss()
-    }
-  }, [])
+  // 7. Halo Aura Ring
+  const auraColor =
+    activePose === 'alert'
+      ? color.hold
+      : activePose === 'listen'
+      ? color.watch
+      : activePose === 'relief'
+      ? color.good
+      : activePose === 'write'
+      ? color.write
+      : color.verify
+
+  const showAura = ['alert', 'relief', 'listen', 'write', 'catch'].includes(activePose)
+  const listenAura = 0.25 + Math.min(1, Math.max(0, safeAudioLevel)) * 0.55
+  const auraOpacity = activePose === 'alert' ? 0.7 : activePose === 'listen' ? listenAura : 0.4
+  const mascotBaseScale = POSE_SCALE[activePose] ?? 1.0
 
   return (
     <div
@@ -602,35 +402,295 @@ const Mascot = memo(function Mascot({
         width: renderedSize,
         height: renderedSize,
         position: 'relative',
-        overflow: 'visible',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
         userSelect: 'none',
+        overflow: 'visible',
       }}
       role="img"
-      aria-label={`Satya living 3D mascot, ${activePose}`}
+      aria-label={`Satya living mascot, ${activePose}`}
     >
-      {webglFailed ? (
-        <img
-          src={POSE_IMAGE[activePose]}
-          alt=""
-          aria-hidden="true"
-          draggable={false}
+      {/* Background SVG: Grounding Shadow & Halo Aura Ring */}
+      <svg
+        viewBox="0 0 200 200"
+        style={{
+          position: 'absolute',
+          inset: 0,
+          width: '100%',
+          height: '100%',
+          overflow: 'visible',
+          pointerEvents: 'none',
+        }}
+      >
+        <ellipse
+          cx={100}
+          cy={188}
+          rx={44}
+          ry={7}
+          fill="rgba(3, 51, 84, 0.28)"
+          style={{ filter: 'blur(3px)' }}
+        />
+
+        <motion.circle
+          cx={100}
+          cy={100}
+          r={96}
+          fill="none"
+          stroke={auraColor}
+          strokeWidth={4}
+          initial={{ opacity: 0 }}
+          animate={{
+            opacity: showAura ? auraOpacity : 0,
+            scale: activePose === 'alert' && !reduced ? [1, 1.07, 1] : 1,
+          }}
+          transition={
+            activePose === 'alert' && !reduced
+              ? { duration: 1.0, repeat: Infinity, ease: 'easeInOut' }
+              : { duration: 0.3 }
+          }
           style={{
-            width: '100%',
-            height: '100%',
-            display: 'block',
-            objectFit: 'contain',
-            pointerEvents: 'none',
+            transformBox: 'view-box',
+            transformOrigin: '100px 100px',
+            filter: activePose === 'alert' ? `drop-shadow(0 0 8px ${color.hold})` : undefined,
           }}
         />
-      ) : (
-        <canvas
-          ref={canvasRef}
-          width={200}
-          height={200}
-          aria-hidden="true"
-          style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }}
-        />
-      )}
+
+        {/* Ambient SVG Accessories */}
+        <motion.g
+          id="accessories"
+          animate={figureAnimate}
+          transition={figureTransition}
+          style={{ transformBox: 'view-box', transformOrigin: '100px 100px' }}
+        >
+          <Accessories pose={activePose} audioLevel={safeAudioLevel} reducedMotion={reduced} />
+        </motion.g>
+      </svg>
+
+      {/* Main Living Character Rig (Physics Springs, Drag Lean, Micro-Fidgets, and Gaze Tracking) */}
+      <motion.div
+        animate={figureAnimate}
+        transition={figureTransition}
+        style={{
+          width: '100%',
+          height: '100%',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          position: 'relative',
+          transformOrigin: '50% 65%',
+        }}
+      >
+        <motion.div
+          style={{
+            position: 'absolute',
+            inset: 0,
+            rotate: dragLean,
+            transformOrigin: '50% 65%',
+          }}
+        >
+          <motion.div
+            style={{
+              position: 'absolute',
+              inset: 0,
+              y: fidgetLift,
+              rotate: fidgetRotation,
+              scaleX: fidgetScaleX,
+              scaleY: fidgetScaleY,
+              transformOrigin: '50% 65%',
+            }}
+          >
+            <motion.div
+              style={{
+                position: 'absolute',
+                inset: 0,
+                x: gazeX,
+                y: gazeY,
+                rotate: gazeRotate,
+                transformOrigin: '50% 50%',
+              }}
+            >
+              {/* Simultaneous Cross-Fade & Organic Morph Transition between Poses */}
+              <div
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                }}
+              >
+                <AnimatePresence initial={false}>
+                  <motion.div
+                    key={activePose}
+                    initial={{
+                      opacity: 0,
+                      scale: mascotBaseScale * 0.94,
+                    }}
+                    animate={{
+                      opacity: 1,
+                      scale: mascotBaseScale,
+                    }}
+                    exit={{
+                      opacity: 0,
+                      scale: mascotBaseScale * 1.04,
+                    }}
+                    transition={{
+                      opacity: { duration: 0.26, ease: 'easeInOut' },
+                      scale: { type: 'spring', stiffness: 320, damping: 25 },
+                    }}
+                    style={{
+                      position: 'absolute',
+                      inset: 0,
+                      width: '100%',
+                      height: '100%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      transformOrigin: '50% 65%',
+                    }}
+                  >
+                    <img
+                      src={POSE_IMAGES[activePose] ?? mascot3dImg}
+                      alt={`Satya Mascot - ${activePose}`}
+                      draggable={false}
+                      style={{
+                        width: '100%',
+                        height: '100%',
+                        objectFit: 'contain',
+                        pointerEvents: 'none',
+                        display: 'block',
+                        filter: 'drop-shadow(0 8px 18px rgba(20,16,40,0.22))',
+                      }}
+                    />
+                  </motion.div>
+                </AnimatePresence>
+              </div>
+
+              {/* Foreground Interactive SVG Overlay: Ear Twitches & Natural Top-Down Eyelids */}
+              <svg
+                viewBox="0 0 200 200"
+                aria-hidden="true"
+                style={{
+                  position: 'absolute',
+                  inset: 0,
+                  width: '100%',
+                  height: '100%',
+                  overflow: 'visible',
+                  pointerEvents: 'none',
+                  zIndex: 2,
+                }}
+              >
+                <defs>
+                  {/* Exact Eye Clip Paths matching Satya's 3D Blue Blob Eyes */}
+                  <clipPath id={`${svgId}-left-eye-clip`}>
+                    <ellipse cx={66.2} cy={115.2} rx={16} ry={14} />
+                  </clipPath>
+                  <clipPath id={`${svgId}-right-eye-clip`}>
+                    <ellipse cx={131.3} cy={115.3} rx={16} ry={14} />
+                  </clipPath>
+
+                  {/* Top-down eyelid gradients matching Satya's skin tones & lighting */}
+                  <linearGradient id={`${svgId}-lid-left`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#21C4CB" />
+                    <stop offset="100%" stopColor="#1B9EA5" />
+                  </linearGradient>
+                  <linearGradient id={`${svgId}-lid-right`} x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#98E4E2" />
+                    <stop offset="100%" stopColor="#5BC8C5" />
+                  </linearGradient>
+                </defs>
+
+                {/* Left Ear Twitching Impulse */}
+                <motion.g
+                  animate={leftEarControls}
+                  style={{ transformBox: 'view-box', transformOrigin: '48px 65px' }}
+                />
+
+                {/* Right Ear Twitching Impulse */}
+                <motion.g
+                  animate={rightEarControls}
+                  style={{ transformBox: 'view-box', transformOrigin: '142px 65px' }}
+                />
+
+                {/* Natural Top-Down Eyelid Blink Animation (Only active during blinks in open-eye poses) */}
+                {supportsBlink && blinkKey > 0 && !isWakingUp ? (
+                  <>
+                    <g clipPath={`url(#${svgId}-left-eye-clip)`}>
+                      <motion.ellipse
+                        key={`left-lid-${blinkKey}`}
+                        cx={66.2}
+                        cy={115.2}
+                        rx={16}
+                        ry={14}
+                        fill={`url(#${svgId}-lid-left)`}
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: [0, 1, 0] }}
+                        transition={{
+                          duration: BLINK_MS / 1000,
+                          times: [0, 0.5, 1],
+                          ease: 'easeInOut',
+                        }}
+                        style={{ transformBox: 'fill-box', transformOrigin: 'center top' }}
+                      />
+                      <motion.path
+                        key={`left-lash-${blinkKey}`}
+                        d="M 52 117 Q 66.2 124 80 117"
+                        stroke="#141122"
+                        strokeWidth={2.4}
+                        strokeLinecap="round"
+                        fill="none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 1, 0] }}
+                        transition={{
+                          duration: BLINK_MS / 1000,
+                          times: [0, 0.5, 1],
+                          ease: 'easeInOut',
+                        }}
+                      />
+                    </g>
+                    <g clipPath={`url(#${svgId}-right-eye-clip)`}>
+                      <motion.ellipse
+                        key={`right-lid-${blinkKey}`}
+                        cx={131.3}
+                        cy={115.3}
+                        rx={16}
+                        ry={14}
+                        fill={`url(#${svgId}-lid-right)`}
+                        initial={{ scaleY: 0 }}
+                        animate={{ scaleY: [0, 1, 0] }}
+                        transition={{
+                          duration: BLINK_MS / 1000,
+                          times: [0, 0.5, 1],
+                          ease: 'easeInOut',
+                        }}
+                        style={{ transformBox: 'fill-box', transformOrigin: 'center top' }}
+                      />
+                      <motion.path
+                        key={`right-lash-${blinkKey}`}
+                        d="M 118 117 Q 131.3 124 144 117"
+                        stroke="#141122"
+                        strokeWidth={2.4}
+                        strokeLinecap="round"
+                        fill="none"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: [0, 1, 0] }}
+                        transition={{
+                          duration: BLINK_MS / 1000,
+                          times: [0, 0.5, 1],
+                          ease: 'easeInOut',
+                        }}
+                      />
+                    </g>
+                  </>
+                ) : null}
+              </svg>
+            </motion.div>
+          </motion.div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 })

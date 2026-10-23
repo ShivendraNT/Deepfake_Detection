@@ -56,11 +56,10 @@ export function createTray(deps: TrayDependencies): Tray {
         { label: deps.statusLabel(), enabled: false },
         { type: 'separator' },
         ...(current === 'OFF'
-          ? [{ label: 'Bring Satya back', click: () => deps.setMode?.('SLEEPING') }]
-          : [
-              { label: 'Watch', click: () => deps.setMode?.('WATCHING') },
-              { label: 'Sleep', click: () => deps.setMode?.('SLEEPING') },
-            ]),
+          ? [{ label: 'Turn On / Wake Satya', click: () => deps.setMode?.('WATCHING') }]
+          : current === 'WATCHING'
+            ? [{ label: 'Sleep / Pause Protection', click: () => deps.setMode?.('SLEEPING') }]
+            : [{ label: 'Wake / Start Watching', click: () => deps.setMode?.('WATCHING') }]),
         {
           label: visible ? 'Hide Satya' : 'Show Satya',
           click: () => (deps.toggleVisible ? deps.toggleVisible() : deps.showCompanion()),
@@ -102,7 +101,7 @@ export function createTray(deps: TrayDependencies): Tray {
           click: () => deps.checkClipboard(),
         },
         { type: 'separator' },
-        { label: 'Turn off', click: () => deps.setMode?.('OFF') },
+        ...(current !== 'OFF' ? [{ label: 'Turn off', click: () => deps.setMode?.('OFF') }] : []),
         { label: 'Quit Satya', click: () => deps.quit() },
       ]),
     )

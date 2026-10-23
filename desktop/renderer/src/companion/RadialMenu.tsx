@@ -31,18 +31,29 @@ const EDGE_MARGIN = 96
 
 const FULL_ANGLES = [-90, -30, 30, 90, 150, 210]
 
-export function anglesForEdge(edge: MenuEdge): number[] {
+export function anglesForEdge(edge: MenuEdge, count = 6): number[] {
+  if (count <= 1) return [-90]
   switch (edge) {
-    case 'left':
-      return [-90, -54, -18, 18, 54, 90]
-    case 'right':
-      return [90, 126, 162, 198, 234, 270]
-    case 'top':
-      return [0, 36, 72, 108, 144, 180]
-    case 'bottom':
-      return [180, 216, 252, 288, 324, 360]
-    default:
-      return FULL_ANGLES
+    case 'left': {
+      const step = 180 / (count - 1)
+      return Array.from({ length: count }, (_, i) => -90 + i * step)
+    }
+    case 'right': {
+      const step = 180 / (count - 1)
+      return Array.from({ length: count }, (_, i) => 90 + i * step)
+    }
+    case 'top': {
+      const step = 180 / (count - 1)
+      return Array.from({ length: count }, (_, i) => 0 + i * step)
+    }
+    case 'bottom': {
+      const step = 180 / (count - 1)
+      return Array.from({ length: count }, (_, i) => 180 + i * step)
+    }
+    default: {
+      const step = 360 / count
+      return Array.from({ length: count }, (_, i) => -90 + i * step)
+    }
   }
 }
 
@@ -65,18 +76,11 @@ export function menuEdgeFromWindow(): MenuEdge {
   return nearest[1] < EDGE_MARGIN ? nearest[0] : 'none'
 }
 
-const PETALS: Array<{
+interface PetalItem {
   action: MenuAction
   label: string
   Icon: typeof Eye
-}> = [
-  { action: 'watch', label: 'Watch', Icon: Eye },
-  { action: 'check', label: 'Check File', Icon: FileSearch },
-  { action: 'notebook', label: 'Notebook', Icon: BookOpen },
-  { action: 'guard', label: 'Screen Guard', Icon: ShieldCheck },
-  { action: 'off', label: 'Sleep / Off', Icon: Power },
-  { action: 'quit', label: 'Quit Satya', Icon: LogOut },
-]
+}
 
 function point(angle: number): { x: number; y: number } {
   const radians = (angle * Math.PI) / 180
@@ -118,18 +122,40 @@ export default function RadialMenu({
     }
   }, [])
 
-  const isWatching = userMode !== undefined ? userMode === 'WATCHING' : watching
-  const angles = useMemo(() => anglesForEdge(edge), [edge])
-  const petals = useMemo(
-    () =>
-      isWatching
-        ? [
-            { ...PETALS[0], action: 'sleep' as const, label: 'Sleep', Icon: Moon },
-            ...PETALS.slice(1),
-          ]
-        : PETALS,
-    [isWatching],
-  )
+  const effectiveMode: UserMode = userMode ?? (watching ? 'WATCHING' : 'SLEEPING')
+
+  const petals: PetalItem[] = useMemo(() => {
+    if (effectiveMode === 'OFF') {
+      return [
+        { action: 'watch', label: 'Turn On', Icon: Power },
+        { action: 'notebook', label: 'Notebook', Icon: BookOpen },
+        { action: 'quit', label: 'Quit Satya', Icon: LogOut },
+      ]
+    }
+
+    if (effectiveMode === 'WATCHING') {
+      return [
+        { action: 'sleep', label: 'Sleep', Icon: Moon },
+        { action: 'check', label: 'Check File', Icon: FileSearch },
+        { action: 'notebook', label: 'Notebook', Icon: BookOpen },
+        { action: 'guard', label: 'Screen Guard', Icon: ShieldCheck },
+        { action: 'off', label: 'Turn Off', Icon: Power },
+        { action: 'quit', label: 'Quit Satya', Icon: LogOut },
+      ]
+    }
+
+    // Default: 'SLEEPING' mode
+    return [
+      { action: 'watch', label: 'Wake Satya', Icon: Eye },
+      { action: 'check', label: 'Check File', Icon: FileSearch },
+      { action: 'notebook', label: 'Notebook', Icon: BookOpen },
+      { action: 'guard', label: 'Screen Guard', Icon: ShieldCheck },
+      { action: 'off', label: 'Turn Off', Icon: Power },
+      { action: 'quit', label: 'Quit Satya', Icon: LogOut },
+    ]
+  }, [effectiveMode])
+
+  const angles = useMemo(() => anglesForEdge(edge, petals.length), [edge, petals.length])
   const tooltip = useMemo(() => {
     if (hovered === null) return null
     const { x, y } = point(angles[hovered])
@@ -222,6 +248,7 @@ export default function RadialMenu({
                       leave()
                       onClose()
                       if (petal.action === 'sleep' || petal.action === 'off') setWatching(false)
+                      if (petal.action === 'watch') setWatching(true)
                       onAction(petal.action)
                     }}
                     className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/70 bg-[rgba(255,252,247,0.97)] text-[#2A2238] shadow-[0_8px_20px_rgba(20,16,40,0.24)] outline-none focus-visible:ring-2 focus-visible:ring-[#1FB5A3]"
