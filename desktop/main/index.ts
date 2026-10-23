@@ -83,6 +83,19 @@ function errorOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+function pinMascotWindow(): void {
+  if (!mascotWindow || mascotWindow.isDestroyed()) return
+  try {
+    mascotWindow.setAlwaysOnTop(true, 'screen-saver', 1)
+    mascotWindow.setVisibleOnAllWorkspaces(true, {
+      visibleOnFullScreen: true,
+      skipTransformProcessType: true,
+    })
+  } catch {
+    // Window teardown can race with native Space/activation notifications.
+  }
+}
+
 function send(channel: string, payload: unknown): void {
   for (const win of [mascotWindow, bubbleWindow, workspaceWindow]) {
     if (
@@ -104,6 +117,7 @@ function refreshTray(): void {
 }
 
 function showCompanionWindow(): void {
+  pinMascotWindow()
   showMascotWindow(mascotWindow)
   startCursorFeed()
 }
@@ -206,9 +220,18 @@ let isDragging = false
 function setClickThrough(through: boolean): void {
   manualClickThrough = through ? null : false
   if (!mascotWindow || mascotWindow.isDestroyed()) return
-  if (!through && mouseIgnored) {
-    mouseIgnored = false
-    mascotWindow.setIgnoreMouseEvents(false)
+  if (!isDragging) {
+    const bounds = mascotWindow.getBounds()
+    const point = screen.getCursorScreenPoint()
+    const distance = Math.hypot(
+      point.x - (bounds.x + bounds.width / 2),
+      point.y - (bounds.y + bounds.height / 2),
+    )
+    const shouldIgnore = through && distance > 96
+    if (shouldIgnore !== mouseIgnored) {
+      mouseIgnored = shouldIgnore
+      mascotWindow.setIgnoreMouseEvents(shouldIgnore, { forward: true })
+    }
   }
 }
 
@@ -706,8 +729,14 @@ if (!hasLock) {
     mascotWindow.on('closed', () => {
       mascotWindow = null
     })
+    mascotWindow.on('blur', pinMascotWindow)
+    mascotWindow.on('focus', pinMascotWindow)
     mascotWindow.on('show', startCursorFeed)
     mascotWindow.on('hide', stopCursorFeed)
+    screen.on('display-added', pinMascotWindow)
+    screen.on('display-removed', pinMascotWindow)
+    screen.on('display-metrics-changed', pinMascotWindow)
+    pinMascotWindow()
     mascotWindow.webContents.on('context-menu', (_event, params) => {
       const menu = Menu.buildFromTemplate([
         { label: `Satya · ${statusLabel()}`, enabled: false },
@@ -759,6 +788,7 @@ if (!hasLock) {
       hideCompanion,
       quit,
       setClickThrough,
+      toggleScreenGuard,
       dragBy,
       dragEnd,
       showCard,

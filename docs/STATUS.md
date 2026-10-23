@@ -33,7 +33,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T22 | Demo assets + 10 dry runs | Shivendra + all | todo | T07-T17 | [spec](tasks/T22-demo-assets-dry-runs.md) | consent forms first |
 | T23 | Pitch deck + backup recording | Saarika + Shivendra | todo | T18, T21, T22 | [spec](tasks/T23-pitch-deck.md) | |
 | T24 | Citizen Scam Check (stretch S1) | Saksham | done | T05, T14 | [spec](tasks/T24-citizen-scam-check.md) | 8/8 strict green; `scam_check` + 7 impossible-claim rules EN/HI, `console/public/scam-check.html` (band + action + 1930/NCRP/Chakshu/WhatsApp + hi-IN speech) |
-| T25 | Desktop Guardian Companion | Shivendra + all | done | — | [spec](tasks/T25-desktop-companion.md) | Electron + React + Framer Motion app + SSE backend bridge + Case Details Workspace; 37/37 T25 tests green, make check ALL GREEN |
+| T25 | Desktop Guardian Companion | Shivendra + all | done | — | [spec](tasks/T25-desktop-companion.md) | Pinned all-Spaces window, procedural animated SVG mascot, state-aware radial menu, and responsive/chimed cards; 37/37 T25 + 65 desktop tests green, make check ALL GREEN |
 
 ## Finale board (F-tasks, 24–25 Oct)
 

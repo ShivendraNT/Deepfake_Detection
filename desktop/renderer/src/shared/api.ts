@@ -234,5 +234,13 @@ const mockBridge = FORCE_MOCK || !realBridge ? createMockBridge() : null
 /** The app's only transport. Import this, never `window.satyapan`. */
 export const api: CompanionBridge = mockBridge ?? (realBridge as CompanionBridge)
 
+/** Toggle ambient screen analysis through the narrow Electron bridge when available. */
+export function toggleScreenGuard(): void {
+  const bridge = (window as unknown as {
+    satyapan?: CompanionBridge & { toggleScreenGuard?: () => void }
+  }).satyapan
+  bridge?.toggleScreenGuard?.()
+}
+
 /** True in browser mock mode, so a view can render cards inline instead of in a window. */
 export const isMockBridge = mockBridge !== null

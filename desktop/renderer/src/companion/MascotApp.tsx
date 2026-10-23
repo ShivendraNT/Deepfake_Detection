@@ -10,7 +10,7 @@ import { useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
 import type { MascotMood, Pose } from '../../../shared/contracts'
-import { api, isMockBridge } from '../shared/api'
+import { api, isMockBridge, toggleScreenGuard } from '../shared/api'
 import Mascot from './Mascot'
 import BubbleCardView from './bubble/BubbleCardView'
 import RadialMenu, { menuEdgeFromWindow, type MenuAction, type MenuEdge } from './RadialMenu'
@@ -65,7 +65,7 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
     },
     onDoubleClick: () => {
       setMenuOpen(false)
-      void api.openWorkspace('now')
+      satya.onMenu('notebook')
     },
   })
 
@@ -74,6 +74,10 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
   function handleMenu(action: MenuAction): void {
     if (action === 'check') {
       fileInput.current?.click()
+      return
+    }
+    if (action === 'guard') {
+      toggleScreenGuard()
       return
     }
     satya.onMenu(action)
@@ -153,6 +157,7 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
       <RadialMenu
         open={menuOpen}
         edge={menuEdge}
+        userMode={satya.state.userMode}
         onAction={handleMenu}
         onClose={() => setMenuOpen(false)}
         onPointerEnter={hit.onPointerEnter}

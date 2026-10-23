@@ -27,6 +27,7 @@ export interface IpcDependencies {
   quit: () => Promise<void>
   // Finale window manager (F02). Optional so the T25 surface keeps working on its own.
   setClickThrough?: (through: boolean) => void
+  toggleScreenGuard?: () => void
   dragBy?: (dx: number, dy: number) => void
   dragEnd?: () => void
   showCard?: (card: BubbleCard) => void
@@ -267,6 +268,11 @@ export function registerIpc(deps: IpcDependencies): void {
     if (!trusted(event)) return
     const [through] = args as [boolean]
     deps.setClickThrough?.(Boolean(through))
+  })
+
+  listen('companion:toggle-screen-guard', (event) => {
+    if (!trusted(event)) return
+    deps.toggleScreenGuard?.()
   })
 
   listen('companion:drag-by', (event, ...args) => {

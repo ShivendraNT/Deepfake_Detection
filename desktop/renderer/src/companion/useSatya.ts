@@ -14,6 +14,7 @@ import type {
   CompanionEvent,
 } from '../../../shared/contracts'
 import { api } from '../shared/api'
+import { playChime } from './chime'
 import type { MenuAction } from './RadialMenu'
 import {
   fileKindOf,
@@ -80,6 +81,7 @@ export function useSatya(): SatyaController {
   const [look, setLook] = useState<SatyaLook>({ dx: 0, dy: 0, near: false })
   const [notice, setNotice] = useState<string | null>(null)
   const noticeTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const soundEnabled = useRef(false)
 
   const seenEvents = useRef(new Set<string>())
   const shownCard = useRef<string | null>(null)
@@ -99,6 +101,19 @@ export function useSatya(): SatyaController {
     },
     [],
   )
+
+  useEffect(() => {
+    let cancelled = false
+    void api
+      .getPrefs()
+      .then((prefs) => {
+        if (!cancelled) soundEnabled.current = Boolean(prefs.sound ?? prefs.sounds)
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+    }
+  }, [])
 
   const setWatching = useCallback(async () => {
     try {
@@ -125,9 +140,18 @@ export function useSatya(): SatyaController {
   const setOff = useCallback(() => {
     dispatch({ type: 'SET_MODE', mode: 'OFF' })
     window.setTimeout(() => {
-      void api.setUserMode('OFF').catch((error: unknown) => {
+      try {
+        void api
+          .setUserMode('OFF')
+          .then((result) => {
+            if (!result.ok) notify(result.error)
+          })
+          .catch((error: unknown) => {
+            notify(error instanceof Error ? error.message : 'Could not turn Satya off.')
+          })
+      } catch (error) {
         notify(error instanceof Error ? error.message : 'Could not turn Satya off.')
-      })
+      }
     }, 400)
   }, [notify])
 
@@ -183,6 +207,13 @@ export function useSatya(): SatyaController {
 
   const handleAction = useCallback(
     async (actionId: string, cardId: string) => {
+      if (soundEnabled.current) {
+        if (['start_watching', 'check_it', 'copy_reply', 'copy_safe_reply', 'open_reports'].includes(actionId)) {
+          playChime('soft')
+        } else if (['verify', 'verify_with_approver', 'oob_verify'].includes(actionId)) {
+          playChime('alert')
+        }
+      }
       switch (actionId) {
         case 'start_watching':
           await setWatching()
@@ -208,20 +239,30 @@ export function useSatya(): SatyaController {
           await requestOob()
           return
         case 'copy_safe_reply':
+        case 'copy_reply':
           try {
-            await api.copyText(SAFE_REPLY)
+            const result = await api.copyText(SAFE_REPLY)
+            if (!result.ok) throw new Error(result.error)
             notify('Safe reply copied. It discloses nothing internal.')
           } catch {
             notify('Copy failed. Read the safe reply from the card.')
           }
           return
         case 'open_notebook':
-          await api.openWorkspace('now')
+          try {
+            await api.openWorkspace('now')
+          } catch (error) {
+            notify(error instanceof Error ? error.message : 'Could not open the Notebook.')
+          }
           return
         case 'open_reports':
         case 'prepare_report':
         case 'open_scribe':
-          await api.openWorkspace('reports')
+          try {
+            await api.openWorkspace('reports')
+          } catch (error) {
+            notify(error instanceof Error ? error.message : 'Could not open Reports.')
+          }
           return
         case 'close':
         case 'dismiss':
@@ -234,7 +275,9 @@ export function useSatya(): SatyaController {
     [notify, requestOob, setWatching, startCall, submitPendingFile],
   )
   actionRef.current = (actionId, cardId) => {
-    void handleAction(actionId, cardId)
+    void handleAction(actionId, cardId).catch((error: unknown) => {
+      notify(error instanceof Error ? error.message : 'That action could not be completed.')
+    })
   }
 
   useEffect(() => {
@@ -334,13 +377,15 @@ export function useSatya(): SatyaController {
           setOff()
           return
         case 'notebook':
-          void api.openWorkspace('now')
+          void api.openWorkspace('now').catch((error: unknown) => {
+            notify(error instanceof Error ? error.message : 'Could not open the Notebook.')
+          })
           return
         default:
           return
       }
     },
-    [setSleeping, setOff],
+    [notify, setSleeping, setOff],
   )
 
   const onFileHover = useCallback((active: boolean) => {

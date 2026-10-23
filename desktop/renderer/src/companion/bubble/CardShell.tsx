@@ -47,7 +47,12 @@ export default function CardShell({
     const node = containerRef.current
     if (!node || typeof ResizeObserver === 'undefined') return
     const observer = new ResizeObserver((entries) => {
-      const height = Math.ceil(entries[0]?.borderBoxSize?.[0]?.blockSize ?? entries[0]?.contentRect.height ?? 0)
+      const entry = entries[0]
+      const borderBox = entry?.borderBoxSize
+      const blockSize = Array.isArray(borderBox)
+        ? borderBox[0]?.blockSize
+        : (borderBox as unknown as ResizeObserverSize | undefined)?.blockSize
+      const height = Math.ceil(blockSize ?? entry?.contentRect.height ?? 0)
       if (height > 0) {
         api.resizeBubble(height + 16) // small padding buffer for drop shadow
       }
@@ -165,4 +170,3 @@ export default function CardShell({
     </motion.div>
   )
 }
-

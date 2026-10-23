@@ -68,6 +68,20 @@ function secureWebPreferences(preloadPath: string): Electron.WebPreferences {
   }
 }
 
+/** Restore the mascot's floating level after macOS Space and activation transitions. */
+export function pinMascotWindow(win: BrowserWindow | null): void {
+  if (!win || win.isDestroyed()) return
+  try {
+    win.setAlwaysOnTop(true, 'screen-saver', 1)
+    win.setVisibleOnAllWorkspaces(true, {
+      visibleOnFullScreen: true,
+      skipTransformProcessType: true,
+    })
+  } catch {
+    // Native window operations can race with shutdown; never let that hide/crash the companion.
+  }
+}
+
 /** Bottom-right with a 24 px margin, unless the user dragged Satya somewhere else. */
 export function mascotPosition(
   workArea: Rect,
@@ -116,17 +130,19 @@ export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow
     },
   })
 
-  win.setAlwaysOnTop(true, 'screen-saver', 1)
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
+  pinMascotWindow(win)
   // Almost all of the window is empty: clicks pass through to the app behind until the renderer
   // says the pointer is over Satya or a menu petal.
   win.setIgnoreMouseEvents(true, { forward: true })
   if (process.platform === 'darwin') win.setWindowButtonVisibility(false)
   harden(win)
 
+  // A panel can lose its level when macOS changes Spaces or another app activates.
+  win.on('blur', () => pinMascotWindow(win))
+  win.on('focus', () => pinMascotWindow(win))
+
   win.once('ready-to-show', () => {
-    win.setAlwaysOnTop(true, 'screen-saver', 1)
-    win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
+    pinMascotWindow(win)
     win.showInactive()
   })
   win.on('close', (event) => {
@@ -219,8 +235,7 @@ export function createCaptureWindow(preloadPath: string): BrowserWindow {
 
 export function showCompanion(win: BrowserWindow | null): void {
   if (!win || win.isDestroyed()) return
-  win.setAlwaysOnTop(true, 'screen-saver', 1)
-  win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
+  pinMascotWindow(win)
   win.showInactive()
 }
 

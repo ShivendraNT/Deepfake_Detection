@@ -70,14 +70,13 @@ scenario calls `satyapan.policy.engine.decide()` and only relays its `Decision`.
 - `desktop/**` — Electron + React + TypeScript + Tailwind + Framer Motion companion app.
 
 ## 8. Agent plan
-1. Read the frozen contracts/policy APIs; keep companion band output as a relay of `Decision`, never a computation.
-2. Build `api/companion/models.py` (versioned envelopes, mode/mood enums, draft models) and `bus.py` (bounded replay, subscriber queues, monotonic ids).
-3. Build `service.py` (Sleep/DND default, consent session lifecycle, fail-closed hide, policy scenario, evidence intake, drafts, workspace snapshot, audit).
-4. Build `router.py` with SSE (`Last-Event-ID`, replay-only, keep-alive), session and command endpoints; mount in `create_app`.
-5. Expand `tests/tasks/test_t25_companion.py`: contract validation, consent, fail-closed, raise-only/band authority, no raw scores, replay, drafts `MANUAL_ONLY`, workspace masking, desktop security/static checks.
-6. Scaffold `desktop/` (electron-vite, React, Tailwind, Framer Motion): frameless transparent always-on-top window, tray, global shortcuts, typed preload bridge, backend SSE proxy, clipboard check.
-7. Build the Satya renderer: animated mascot moods, speech/alert/consent cards, chimes, replay badge, workspace view, mock clients + fake capture for offline demo.
-8. `npm install && npm run typecheck && npm run build`, then `make check`, update STATUS and commit.
+1. Run the T25 acceptance test unchanged and record its first failure.
+2. Stabilize mascot window initialization, all-workspace visibility and floating-layer pinning.
+3. Implement continuous SVG mascot animation, pose-driven limbs, natural blinking, gaze and breathing.
+4. Make radial actions state-aware and ensure hit areas disable click-through while interactive.
+5. Resize bubble windows from mounted cards and make card actions/chimes/pose transitions immediate.
+6. Re-run T25 after each small change, then run `make check` and fix formatting/lint.
+7. Mark T25 done in STATUS and commit the completed task.
 
 ## 9. Resolution of the previous block
 The earlier `make check` block came from Ruff findings in `src/satyapan/report/pack.py`; `pyproject.toml` now carries the authorised `E501` per-file ignore and its `F541` line is fixed. Baseline `make check` is green before this implementation.

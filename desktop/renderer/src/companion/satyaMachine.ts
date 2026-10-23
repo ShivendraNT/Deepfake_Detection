@@ -77,7 +77,8 @@ const REPORT_ACTIONS: CardAction[] = [
 const DISMISS_ACTIONS = new Set(['close', 'dismiss', 'no'])
 const WALK_AWAY_ACTIONS = new Set(['not_now', 'not_this_call', 'no_thanks'])
 const VERIFY_ACTIONS = new Set(['verify', 'verify_with_approver', 'oob_verify'])
-const WRITE_ACTIONS = new Set(['prepare', 'prepare_report', 'open_scribe'])
+const WRITE_ACTIONS = new Set(['prepare', 'prepare_report', 'open_scribe', 'open_reports'])
+const COPY_ACTIONS = new Set(['copy_reply', 'copy_safe_reply'])
 
 /** Display-only file-kind inference. The bytes themselves never enter this module. */
 export function fileKindOf(name: string, mediaType = ''): FileKind {
@@ -570,6 +571,9 @@ export function satyaReducer(state: SatyaState, action: SatyaAction): SatyaState
       }
       if (VERIFY_ACTIONS.has(action.actionId)) {
         return { ...state, pose: 'alert' }
+      }
+      if (COPY_ACTIONS.has(action.actionId)) {
+        return { ...state, pose: 'relief' }
       }
       if (WRITE_ACTIONS.has(action.actionId)) {
         return { ...state, pose: 'write' }

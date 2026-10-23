@@ -31,7 +31,7 @@ function subscribe<T>(channel: string, callback: (payload: T) => void): () => vo
   return () => ipcRenderer.removeListener(channel, listener)
 }
 
-const api: CompanionBridge = {
+const api: CompanionBridge & { toggleScreenGuard: () => void } = {
   getConfig: () => ipcRenderer.invoke('companion:get-config') as Promise<AppConfig>,
   getState: () =>
     ipcRenderer.invoke('companion:get-state') as Promise<BridgeResult<CompanionState>>,
@@ -92,6 +92,7 @@ const api: CompanionBridge = {
     ipcRenderer.invoke('companion:set-prefs', patch) as Promise<Prefs>,
   openExternal: (url: string) =>
     ipcRenderer.invoke('companion:open-external', url) as Promise<void>,
+  toggleScreenGuard: () => ipcRenderer.send('companion:toggle-screen-guard'),
 }
 
 contextBridge.exposeInMainWorld('satyapan', api)

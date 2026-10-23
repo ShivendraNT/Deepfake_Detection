@@ -7,14 +7,18 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { BookOpen, Eye, FileSearch, Moon, Power } from 'lucide-react'
+import { BookOpen, Eye, FileSearch, Moon, ShieldCheck } from 'lucide-react'
+
+import type { UserMode } from '../../../shared/contracts'
+import { api } from '../shared/api'
 
 export type MenuEdge = 'none' | 'left' | 'right' | 'top' | 'bottom'
-export type MenuAction = 'watch' | 'sleep' | 'check' | 'notebook' | 'off'
+export type MenuAction = 'watch' | 'sleep' | 'check' | 'notebook' | 'off' | 'guard'
 
 export interface RadialMenuProps {
   open: boolean
   edge?: MenuEdge
+  userMode?: UserMode
   onAction: (action: MenuAction) => void
   onClose: () => void
   onPointerEnter?: () => void
@@ -67,10 +71,9 @@ const PETALS: Array<{
   Icon: typeof Eye
 }> = [
   { action: 'watch', label: 'Watch', Icon: Eye },
-  { action: 'sleep', label: 'Sleep', Icon: Moon },
-  { action: 'check', label: 'Check something', Icon: FileSearch },
+  { action: 'check', label: 'Check File', Icon: FileSearch },
   { action: 'notebook', label: 'Notebook', Icon: BookOpen },
-  { action: 'off', label: 'Turn off', Icon: Power },
+  { action: 'guard', label: 'Screen Guard', Icon: ShieldCheck },
 ]
 
 function point(angle: number): { x: number; y: number } {
@@ -81,6 +84,7 @@ function point(angle: number): { x: number; y: number } {
 export default function RadialMenu({
   open,
   edge = 'none',
+  userMode,
   onAction,
   onClose,
   onPointerEnter,
@@ -90,17 +94,46 @@ export default function RadialMenu({
   const menuRef = useRef<HTMLDivElement | null>(null)
   const hoverTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [hovered, setHovered] = useState<number | null>(null)
+  const [watching, setWatching] = useState(false)
 
+  useEffect(() => {
+    let cancelled = false
+    const off = api.onEvent((event) => {
+      const mode = event.payload.user_mode
+      if (mode) setWatching(mode === 'WATCHING')
+      else if (event.type === 'session.started') setWatching(true)
+      else if (event.type === 'session.stopped') setWatching(false)
+    })
+    void api
+      .getState()
+      .then((result) => {
+        if (!cancelled && result.ok) setWatching(result.data.mode === 'ACTIVE')
+      })
+      .catch(() => undefined)
+    return () => {
+      cancelled = true
+      off()
+    }
+  }, [])
+
+  const isWatching = userMode !== undefined ? userMode === 'WATCHING' : watching
   const angles = useMemo(() => anglesForEdge(edge), [edge])
+  const petals = useMemo(
+    () =>
+      isWatching
+        ? [{ ...PETALS[0], action: 'sleep' as const, label: 'Sleep', Icon: Moon }, ...PETALS.slice(1)]
+        : PETALS,
+    [isWatching],
+  )
   const tooltip = useMemo(() => {
     if (hovered === null) return null
     const { x, y } = point(angles[hovered])
     return {
-      label: PETALS[hovered].label,
+      label: petals[hovered].label,
       left: Math.min(236, Math.max(44, CENTRE + (x - CENTRE) * 1.34)),
       top: Math.min(248, Math.max(32, CENTRE + (y - CENTRE) * 1.34)),
     }
-  }, [angles, hovered])
+  }, [angles, hovered, petals])
 
   useEffect(() => {
     if (!open) return
@@ -144,7 +177,7 @@ export default function RadialMenu({
     <div ref={menuRef} className="pointer-events-none absolute inset-0 z-30" aria-hidden={!open}>
       <AnimatePresence>
         {open
-          ? PETALS.map((petal, index) => {
+          ? petals.map((petal, index) => {
               const { x, y } = point(angles[index])
               return (
                 <motion.div
@@ -174,6 +207,7 @@ export default function RadialMenu({
                     onClick={() => {
                       leave()
                       onClose()
+                      if (petal.action === 'sleep') setWatching(false)
                       onAction(petal.action)
                     }}
                     className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/70 bg-[rgba(255,252,247,0.97)] text-[#2A2238] shadow-[0_8px_20px_rgba(20,16,40,0.24)] outline-none focus-visible:ring-2 focus-visible:ring-[#1FB5A3]"
