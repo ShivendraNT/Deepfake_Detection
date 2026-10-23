@@ -60,9 +60,10 @@ function Rings({ level, color: ringColor = color.watch }: { level: number; color
   return (
     <>
       <motion.g
+        initial={{ scale, opacity }}
         animate={{ scale, opacity }}
         transition={spring.soft}
-        style={{ transformBox: 'view-box', transformOrigin: '40px 90px' }}
+        style={{ opacity, transformBox: 'view-box', transformOrigin: '40px 90px' }}
       >
         <path
           d="M40 70 Q30 90 40 110"
@@ -81,9 +82,10 @@ function Rings({ level, color: ringColor = color.watch }: { level: number; color
         />
       </motion.g>
       <motion.g
+        initial={{ scale, opacity }}
         animate={{ scale, opacity }}
         transition={spring.soft}
-        style={{ transformBox: 'view-box', transformOrigin: '160px 90px' }}
+        style={{ opacity, transformBox: 'view-box', transformOrigin: '160px 90px' }}
       >
         <path
           d="M160 70 Q170 90 160 110"

@@ -770,6 +770,9 @@ if (!hasLock) {
         void stopSafely()
       },
     })
+    mascotWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
+      console.log(`[Renderer ${level}] ${message} (${sourceId}:${line})`)
+    })
     mascotWindow.on('closed', () => {
       mascotWindow = null
     })
