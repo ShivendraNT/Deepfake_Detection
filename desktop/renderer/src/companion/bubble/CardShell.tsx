@@ -91,14 +91,14 @@ export default function CardShell({
       )}
 
       {/* Header Row: State Dot + Title + Optional Ghost Close '×' */}
-      <header className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 overflow-hidden">
+      <header className="flex items-start justify-between gap-2">
+        <div className="flex min-w-0 flex-1 items-start gap-2">
           <span
-            className="h-2 w-2 flex-shrink-0 rounded-full"
+            className="mt-1.5 h-2 w-2 flex-shrink-0 rounded-full"
             style={{ backgroundColor: accentColor }}
             aria-hidden="true"
           />
-          <h2 className="truncate text-[15px] font-semibold text-[#2A2238] dark:text-[#EDE8F5]">
+          <h2 className="min-w-0 flex-1 break-words text-[15px] font-semibold leading-snug text-[#2A2238] dark:text-[#EDE8F5]">
             {title}
           </h2>
         </div>
@@ -108,7 +108,7 @@ export default function CardShell({
             type="button"
             onClick={onClose}
             aria-label="Close"
-            className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-black/5 hover:text-slate-600 dark:text-[#A8A0B8] dark:hover:bg-white/5 dark:hover:text-white transition-colors"
+            className="mt-0.5 flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full text-slate-400 hover:bg-black/5 hover:text-slate-600 dark:text-[#A8A0B8] dark:hover:bg-white/5 dark:hover:text-white transition-colors"
           >
             <svg viewBox="0 0 16 16" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
               <path d="M3 3 L13 13 M13 3 L3 13" />

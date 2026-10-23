@@ -168,19 +168,17 @@ export default function BubbleApp(): JSX.Element {
   return (
     <div className="flex min-h-screen w-full flex-col items-center justify-start p-2 overflow-hidden bg-transparent">
       {/* Optional Tiny Dev Language Picker for Visual QA */}
-      <div className="mb-1 flex items-center gap-1.5 opacity-40 hover:opacity-100 transition-opacity">
-        {(['en', 'hinglish', 'hi'] as Lang[]).map((l) => (
-          <button
-            key={l}
-            type="button"
-            onClick={() => setLang(l)}
-            className={`rounded px-1.5 py-0.5 text-[10px] font-mono ${
-              lang === l ? 'bg-slate-800 text-white dark:bg-white dark:text-black font-semibold' : 'text-slate-500 hover:text-slate-800 dark:text-slate-400'
-            }`}
-          >
-            {l}
-          </button>
-        ))}
+      <div className="mb-1 flex w-full justify-end pr-1 opacity-40 transition-opacity hover:opacity-100 focus-within:opacity-100">
+        <select
+          value={lang}
+          onChange={(event) => setLang(event.target.value as Lang)}
+          aria-label="Language"
+          className="cursor-pointer rounded-md border border-black/10 bg-[#FFFCF7]/85 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 outline-none dark:border-white/15 dark:bg-[#1C1828]/85 dark:text-[#A8A0B8]"
+        >
+          <option value="en">en</option>
+          <option value="hinglish">hinglish</option>
+          <option value="hi">hi</option>
+        </select>
       </div>
 
       <div ref={hostRef} className="flex w-full justify-center">
