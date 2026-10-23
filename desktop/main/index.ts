@@ -11,6 +11,21 @@ import { join } from 'node:path'
 
 import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, Menu, screen, shell } from 'electron'
 
+if (process.platform === 'win32') {
+  // Prevent DirectX DXGI Duplicator timeouts on hybrid GPU/Windows displays
+  app.commandLine.appendSwitch('disable-features', 'DxgiDuplicatorController')
+}
+
+if (process.platform === 'darwin') {
+  // Electron 33 hides Chromium's macOS system-audio loopback behind these features.
+  // Without them `audio: 'loopback'` is Windows-only; with them macOS 13+ can capture
+  // system audio through ScreenCaptureKit with no virtual audio driver.
+  app.commandLine.appendSwitch(
+    'enable-features',
+    'MacLoopbackAudioForScreenShare,MacSckSystemAudioLoopbackOverride',
+  )
+}
+
 // Prevent unhandled EIO / EPIPE socket errors on stdio from crashing the process or showing dialogs
 for (const stream of [process.stdout, process.stderr]) {
   stream?.on('error', (err: NodeJS.ErrnoException) => {
@@ -41,6 +56,7 @@ import type {
 } from '../shared/contracts'
 import { MODE_LABELS } from '../shared/contracts'
 import { BackendClient } from './backend'
+import { registerCapture } from './capture'
 import { inspectClipboard, registerIpc } from './ipc'
 import { placeBubble, snapToEdges, type Rect } from './placement'
 import { readPrefs, writePrefs } from './prefs'
@@ -100,7 +116,7 @@ function pinMascotWindow(): void {
 }
 
 function send(channel: string, payload: unknown): void {
-  for (const win of [mascotWindow, bubbleWindow, workspaceWindow]) {
+  for (const win of [mascotWindow, bubbleWindow, workspaceWindow, captureWindow]) {
     if (
       win &&
       !win.isDestroyed() &&
@@ -112,6 +128,22 @@ function send(channel: string, payload: unknown): void {
       } catch {}
     }
   }
+}
+
+/** Re-send `call.started` if the hidden capture renderer subscribed a little late. */
+function sendToCapture(event: CompanionEvent): void {
+  const win = captureWindow
+  if (
+    !win ||
+    win.isDestroyed() ||
+    win.webContents.isDestroyed() ||
+    win.webContents.isLoading()
+  ) {
+    return
+  }
+  try {
+    win.webContents.send('companion:event', event)
+  } catch {}
 }
 
 function refreshTray(): void {
@@ -323,22 +355,38 @@ function startCursorFeed(): void {
 // ---------------------------------------------------------------------------------------------
 // Modes, capture and lifecycle
 // ---------------------------------------------------------------------------------------------
-function ensureCapture(): void {
-  if (captureWindow && !captureWindow.isDestroyed()) return
-  captureWindow = createCaptureWindow(preloadPath)
-  captureWindow.on('closed', () => {
-    captureWindow = null
-  })
-  try {
-    // Kartikey's F10 module owns this file. Until it lands, the hidden window just exists.
-    /* eslint-disable @typescript-eslint/no-var-requires */
-    const captureModule = require(join(__dirname, 'capture.js')) as {
-      registerCapture?: (options: { window: BrowserWindow; backend: BackendClient }) => void
-    }
-    captureModule.registerCapture?.({ window: captureWindow, backend })
-  } catch {
-    // capture.ts is not built yet (F10); the guardian simply does not start loopback capture.
+async function ensureCapture(): Promise<void> {
+  if (!captureWindow || captureWindow.isDestroyed()) {
+    const win = createCaptureWindow(preloadPath)
+    captureWindow = win
+    win.on('closed', () => {
+      if (captureWindow === win) captureWindow = null
+    })
+    registerCapture({ window: win, backend })
   }
+
+  const win = captureWindow
+  if (!win || win.isDestroyed() || !win.webContents.isLoading()) return
+
+  // The capture renderer subscribes to `call.started`; wait for its first load so the
+  // event that starts the audio pipeline cannot be missed.
+  await new Promise<void>((resolve) => {
+    let settled = false
+    let timer: ReturnType<typeof setTimeout> | null = null
+    const finish = (): void => {
+      if (settled) return
+      settled = true
+      if (timer) clearTimeout(timer)
+      win.webContents.removeListener('did-finish-load', finish)
+      win.webContents.removeListener('did-fail-load', finish)
+      win.removeListener('closed', finish)
+      resolve()
+    }
+    timer = setTimeout(finish, 5000)
+    win.webContents.once('did-finish-load', finish)
+    win.webContents.once('did-fail-load', finish)
+    win.once('closed', finish)
+  })
 }
 
 async function setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>> {
@@ -348,7 +396,7 @@ async function setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>
       const result = await backend.startSession('user_selected_loopback', 'Watching Google Meet & Screen')
       lastStatus = 'Watching'
       showCompanionWindow()
-      ensureCapture()
+      await ensureCapture()
 
       // Auto-activate ambient Screen Guard if not already running
       if (!screenGuardActive) {
@@ -396,6 +444,13 @@ async function setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>
         },
       }
       handleEvent(startEvent)
+
+      const startedCallId = activeCallId
+      for (const delay of [300, 1200]) {
+        setTimeout(() => {
+          if (startedCallId && activeCallId === startedCallId) sendToCapture(startEvent)
+        }, delay)
+      }
 
       refreshTray()
       const mergedState: CompanionState = {

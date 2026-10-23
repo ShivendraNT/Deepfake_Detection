@@ -1,9 +1,18 @@
-import { memo, useEffect, useRef } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { useReducedMotion } from 'framer-motion'
 import type { MotionValue } from 'framer-motion'
 import * as THREE from 'three'
 
 import type { MascotMood, Pose } from '../../../shared/contracts'
+import mascotAlert from '../assets/mascot_alert.png'
+import mascotCatch from '../assets/mascot_catch.png'
+import mascotIdle from '../assets/mascot_3d.png'
+import mascotListen from '../assets/mascot_listen.png'
+import mascotRelief from '../assets/mascot_relief.png'
+import mascotSleep from '../assets/mascot_sleep.png'
+import mascotThink from '../assets/mascot_think.png'
+import mascotWave from '../assets/mascot_wave.png'
+import mascotWrite from '../assets/mascot_write.png'
 import { size as sizePx } from '../shared/tokens'
 
 export type MascotSize = keyof typeof sizePx
@@ -27,6 +36,40 @@ const MOOD_TO_POSE: Record<string, Pose> = {
   calm_alert: 'alert',
   writing: 'write',
   off: 'off',
+}
+
+const POSE_IMAGE: Record<Pose, string> = {
+  sleep: mascotSleep,
+  idle: mascotIdle,
+  listen: mascotListen,
+  think: mascotThink,
+  alert: mascotAlert,
+  relief: mascotRelief,
+  write: mascotWrite,
+  catch: mascotCatch,
+  wave: mascotWave,
+  off: mascotSleep,
+}
+
+function createRenderer(canvas: HTMLCanvasElement): THREE.WebGLRenderer | null {
+  try {
+    const renderer = new THREE.WebGLRenderer({
+      canvas,
+      alpha: true,
+      antialias: true,
+      powerPreference: 'high-performance',
+    })
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
+    renderer.setSize(200, 200, false)
+    renderer.setClearColor(0x000000, 0)
+    renderer.outputColorSpace = THREE.SRGBColorSpace
+    renderer.toneMapping = THREE.ACESFilmicToneMapping
+    renderer.toneMappingExposure = 1.15
+    return renderer
+  } catch (error) {
+    console.warn('Satya: WebGL unavailable, using the static mascot instead.', error)
+    return null
+  }
 }
 
 interface EyeRig {
@@ -243,6 +286,7 @@ const Mascot = memo(function Mascot({
   const reduced = Boolean(systemReducedMotion) || Boolean(reducedMotion)
   const renderedSize = typeof size === 'number' ? size : sizePx[size]
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const [webglFailed, setWebglFailed] = useState(false)
   const stateRef = useRef<LiveState>({
     pose: activePose,
     lookX: 0,
@@ -279,18 +323,20 @@ const Mascot = memo(function Mascot({
     const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50)
     camera.position.set(0, 0, 4.8)
 
-    const renderer = new THREE.WebGLRenderer({
-      canvas,
-      alpha: true,
-      antialias: true,
-      powerPreference: 'high-performance',
-    })
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2))
-    renderer.setSize(200, 200, false)
-    renderer.setClearColor(0x000000, 0)
-    renderer.outputColorSpace = THREE.SRGBColorSpace
-    renderer.toneMapping = THREE.ACESFilmicToneMapping
-    renderer.toneMappingExposure = 1.15
+    const renderer = createRenderer(canvas)
+    if (!renderer) {
+      setWebglFailed(true)
+      return
+    }
+
+    let failed = false
+    const handleContextLost = (event: Event): void => {
+      event.preventDefault()
+      failed = true
+      console.warn('Satya: WebGL context was lost, using the static mascot instead.')
+      setWebglFailed(true)
+    }
+    canvas.addEventListener('webglcontextlost', handleContextLost)
 
     scene.add(new THREE.HemisphereLight('#F4FBFF', '#14517A', 2.1))
     const keyLight = new THREE.DirectionalLight('#FFFFFF', 3.2)
@@ -380,6 +426,7 @@ const Mascot = memo(function Mascot({
     const targetEuler = new THREE.Euler(0, 0, 0, 'XYZ')
 
     const renderFrame = (now: number): void => {
+      if (failed) return
       frameId = window.requestAnimationFrame(renderFrame)
       if (document.visibilityState === 'hidden') return
 
@@ -523,13 +570,21 @@ const Mascot = memo(function Mascot({
         eye.lid.scale.y = sleeping ? 1 : blinkScale
       }
 
-      renderer.render(scene, camera)
+      try {
+        renderer.render(scene, camera)
+      } catch (error) {
+        failed = true
+        window.cancelAnimationFrame(frameId)
+        console.warn('Satya: WebGL render failed, using the static mascot instead.', error)
+        setWebglFailed(true)
+      }
     }
 
     frameId = window.requestAnimationFrame(renderFrame)
 
     return () => {
       window.cancelAnimationFrame(frameId)
+      canvas.removeEventListener('webglcontextlost', handleContextLost)
       scene.traverse((object) => {
         if (!(object instanceof THREE.Mesh)) return
         object.geometry.dispose()
@@ -553,13 +608,29 @@ const Mascot = memo(function Mascot({
       role="img"
       aria-label={`Satya living 3D mascot, ${activePose}`}
     >
-      <canvas
-        ref={canvasRef}
-        width={200}
-        height={200}
-        aria-hidden="true"
-        style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }}
-      />
+      {webglFailed ? (
+        <img
+          src={POSE_IMAGE[activePose]}
+          alt=""
+          aria-hidden="true"
+          draggable={false}
+          style={{
+            width: '100%',
+            height: '100%',
+            display: 'block',
+            objectFit: 'contain',
+            pointerEvents: 'none',
+          }}
+        />
+      ) : (
+        <canvas
+          ref={canvasRef}
+          width={200}
+          height={200}
+          aria-hidden="true"
+          style={{ width: '100%', height: '100%', display: 'block', pointerEvents: 'none' }}
+        />
+      )}
     </div>
   )
 })

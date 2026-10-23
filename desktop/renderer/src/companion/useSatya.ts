@@ -33,12 +33,6 @@ export interface SatyaLook {
 interface FinaleBridge {
   startCall?: (source?: CaptureSourceKind) => Promise<unknown>
   stopCall?: (callId?: string) => Promise<unknown>
-  submitFile?: (
-    name: string,
-    mediaType: string,
-    bytes: ArrayBuffer,
-    caseId?: string | null,
-  ) => Promise<unknown>
   requestOob?: (caseId: string) => Promise<unknown>
 }
 
@@ -187,19 +181,34 @@ export function useSatya(): SatyaController {
   const submitPendingFile = useCallback(async () => {
     const file = pendingFile.current
     if (!file) return
-    if (typeof finale.submitFile !== 'function') {
+    const submitFile = api.submitFile
+    if (typeof submitFile !== 'function') {
       notify('File checks need the desktop bridge (F03). Nothing left this laptop.')
       return
     }
     try {
       const bytes = await file.arrayBuffer()
-      await finale.submitFile(
+      const result = await submitFile(
         file.name,
         file.type || 'application/octet-stream',
         bytes,
         stateRef.current.caseId,
       )
+      if (!result.ok) {
+        notify(result.error || 'Could not check that file.')
+        return
+      }
       pendingFile.current = null
+      const events = result.data.events ?? []
+      if (events.length === 0) {
+        notify(`${file.name} was checked. Open the Notebook to see the result.`)
+        return
+      }
+      for (const event of events) {
+        if (seenEvents.current.has(event.event_id)) continue
+        seenEvents.current.add(event.event_id)
+        dispatch({ type: 'EVENT', event })
+      }
     } catch (error) {
       notify(error instanceof Error ? error.message : 'Could not hand the file over.')
     }

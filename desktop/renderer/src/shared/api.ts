@@ -152,6 +152,16 @@ export function createMockBridge(): CompanionBridge {
     command: (type: string, payload: Record<string, unknown> = {}) =>
       wrap(() => client.command(type, payload)),
     submitEvidence: (text: string, _evidenceId?: string) => wrap(() => client.submitEvidence(text)),
+    submitFile: (
+      filename: string,
+      _mediaType: string,
+      _bytes: ArrayBuffer,
+      _caseId?: string | null,
+    ) =>
+      wrap(async () => {
+        const result = await client.submitEvidence(`Mock file check: ${filename}`)
+        return { ...result, evidence_id: `ev_file_mock_${Date.now().toString(36)}` }
+      }),
     draft: (kind: 'section63' | 'helpline_1930', caseId: string) =>
       wrap(() => client.draft(kind, caseId)),
     workspace: (caseId?: string) => wrap(() => client.workspace(caseId)),

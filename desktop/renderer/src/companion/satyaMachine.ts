@@ -437,7 +437,13 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
 
     case 'case.updated': {
       let card: BubbleCard | null = state.card
-      if (state.card?.kind === 'scribe' && payload.report) {
+      const checkedBand = payload.band ?? null
+      if (state.card?.kind === 'file_ask' && checkedBand) {
+        card =
+          checkedBand === 'PASS'
+            ? resultCard(event, checkedBand)
+            : alertCard(event, checkedBand, payload.chips ?? state.chips)
+      } else if (state.card?.kind === 'scribe' && payload.report) {
         card = { ...state.card, sections: scribeCard(event, true).sections }
       }
       const pose: Pose =

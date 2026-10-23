@@ -260,6 +260,16 @@ export interface CompanionBridge {
   stopSession(): Promise<BridgeResult<SessionResult>>
   command(type: string, payload?: Record<string, unknown>): Promise<BridgeResult<CommandResult>>
   submitEvidence(text: string, evidenceId?: string): Promise<BridgeResult<EvidenceResult>>
+  /**
+   * F03: hand one user-chosen file (PDF/email/text/voice note) to the backend.
+   * Optional so existing bridges and the in-browser mock remain source-compatible.
+   */
+  submitFile?(
+    filename: string,
+    mediaType: string,
+    bytes: ArrayBuffer,
+    caseId?: string | null,
+  ): Promise<BridgeResult<EvidenceResult>>
   draft(kind: 'section63' | 'helpline_1930', caseId: string): Promise<BridgeResult<DraftArtifact>>
   workspace(caseId?: string): Promise<BridgeResult<WorkspaceSnapshot>>
   listCases(): Promise<BridgeResult<CaseSummary[]>>

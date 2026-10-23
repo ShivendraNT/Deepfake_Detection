@@ -178,6 +178,43 @@ export class BackendClient {
     })
   }
 
+  /** F03: POST one file as multipart/form-data to `/companion/files`. */
+  async submitFile(
+    filename: string,
+    mediaType: string,
+    bytes: ArrayBuffer | Uint8Array,
+    caseId?: string | null,
+  ): Promise<EvidenceResult> {
+    const source = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes)
+    const body = new Uint8Array(source.byteLength)
+    body.set(source)
+    const form = new FormData()
+    form.append('file', new Blob([body.buffer], { type: mediaType }), filename)
+    if (caseId) form.append('case_id', caseId)
+
+    const response = await fetch(`${this.baseUrl}/companion/files`, {
+      method: 'POST',
+      // No Content-Type here: fetch must set the multipart boundary itself.
+      headers: {
+        'X-Demo-User': this.demoUser,
+        'X-Demo-Role': this.demoRole,
+      },
+      body: form,
+      signal: AbortSignal.timeout(60_000),
+    })
+    if (!response.ok) {
+      let detail = `${response.status} ${response.statusText}`
+      try {
+        const parsed = (await response.json()) as { detail?: string }
+        if (parsed.detail) detail = parsed.detail
+      } catch {
+        // keep the status text
+      }
+      throw new Error(detail)
+    }
+    return (await response.json()) as EvidenceResult
+  }
+
   async draft(kind: 'section63' | 'helpline_1930', caseId: string): Promise<DraftArtifact> {
     return this.request('/companion/drafts', {
       method: 'POST',

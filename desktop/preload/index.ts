@@ -50,6 +50,15 @@ const api: CompanionBridge & {
     ipcRenderer.invoke('companion:submit-evidence', text, evidenceId) as Promise<
       BridgeResult<EvidenceResult>
     >,
+  submitFile: (
+    filename: string,
+    mediaType: string,
+    bytes: ArrayBuffer,
+    caseId?: string | null,
+  ) =>
+    ipcRenderer.invoke('companion:submit-file', filename, mediaType, bytes, caseId) as Promise<
+      BridgeResult<EvidenceResult>
+    >,
   draft: (kind: 'section63' | 'helpline_1930', caseId: string) =>
     ipcRenderer.invoke('companion:draft', kind, caseId) as Promise<BridgeResult<DraftArtifact>>,
   workspace: (caseId?: string) =>

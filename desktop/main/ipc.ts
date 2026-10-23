@@ -201,6 +201,35 @@ export function registerIpc(deps: IpcDependencies): void {
     return wrap(() => backend.submitEvidence(text, evidenceId))
   })
 
+  handle('companion:submit-file', (event, ...args) => {
+    const refused = refuseUntrusted<EvidenceResult>(event)
+    if (refused) return refused
+    const [filename, mediaType, rawBytes, rawCaseId] = args as unknown as [
+      unknown,
+      unknown,
+      unknown,
+      unknown,
+    ]
+    if (typeof filename !== 'string' || filename.trim().length === 0) {
+      return { ok: false, error: 'file name is required' } satisfies BridgeResult<EvidenceResult>
+    }
+    const bytes =
+      rawBytes instanceof ArrayBuffer
+        ? new Uint8Array(rawBytes)
+        : rawBytes instanceof Uint8Array
+          ? rawBytes
+          : null
+    if (!bytes || bytes.byteLength === 0) {
+      return { ok: false, error: 'file bytes are required' } satisfies BridgeResult<EvidenceResult>
+    }
+    const type =
+      typeof mediaType === 'string' && mediaType.length > 0
+        ? mediaType
+        : 'application/octet-stream'
+    const caseId = typeof rawCaseId === 'string' && rawCaseId.length > 0 ? rawCaseId : null
+    return wrap(() => backend.submitFile(filename, type, bytes, caseId))
+  })
+
   handle('companion:draft', (event, ...args) => {
     const refused = refuseUntrusted<DraftArtifact>(event)
     if (refused) return refused

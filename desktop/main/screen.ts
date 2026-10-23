@@ -1,7 +1,8 @@
 /**
  * On-device Screen Guard for Satya.
  *
- * Captures screen via native macOS screencapture and runs Apple Vision OCR locally.
+ * macOS: native `screencapture` + Apple Vision OCR.
+ * Windows: PowerShell screen capture + Windows.Media.Ocr (both on-device).
  * Strictly offline, on-device only. Inspects on-screen content for:
  * 1. Urgency / secrecy language & approval bypass attempts
  * 2. New bank accounts, changed IFSCs, or suspicious wire requests
@@ -11,6 +12,8 @@
 
 import { execFile } from 'node:child_process'
 import { existsSync, unlinkSync, writeFileSync } from 'node:fs'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import { promisify } from 'node:util'
 
 const execFileAsync = promisify(execFile)
@@ -187,7 +190,109 @@ async function ensureOcrEngine(): Promise<string> {
   return SCRIPT_PATH
 }
 
-export async function scanScreen(): Promise<ScreenScanResult> {
+const WINDOWS_OCR_SOURCE = `param([Parameter(Mandatory = $true)][string]$Path)
+
+Add-Type -AssemblyName System.Windows.Forms
+Add-Type -AssemblyName System.Drawing
+Add-Type -AssemblyName System.Runtime.WindowsRuntime
+
+Add-Type -TypeDefinition @"
+using System;
+using System.Runtime.InteropServices;
+public static class SatyaDpi {
+  [DllImport("user32.dll")]
+  public static extern bool SetProcessDPIAware();
+}
+"@
+
+[void][SatyaDpi]::SetProcessDPIAware()
+
+$bounds = [System.Windows.Forms.Screen]::PrimaryScreen.Bounds
+$bmp = New-Object System.Drawing.Bitmap $bounds.Width, $bounds.Height
+$graphics = [System.Drawing.Graphics]::FromImage($bmp)
+$graphics.CopyFromScreen($bounds.Location, [System.Drawing.Point]::Empty, $bounds.Size)
+$bmp.Save($Path, [System.Drawing.Imaging.ImageFormat]::Png)
+$graphics.Dispose()
+$bmp.Dispose()
+
+$null = [Windows.Media.Ocr.OcrEngine, Windows.Foundation, ContentType = WindowsRuntime]
+$null = [Windows.Graphics.Imaging.BitmapDecoder, Windows.Foundation, ContentType = WindowsRuntime]
+$null = [Windows.Storage.StorageFile, Windows.Foundation, ContentType = WindowsRuntime]
+
+$asTaskGeneric = ([System.WindowsRuntimeSystemExtensions].GetMethods() | Where-Object {
+  $_.Name -eq 'AsTask' -and $_.GetParameters().Count -eq 1 -and $_.GetParameters()[0].ParameterType.Name -like 'IAsyncOperation*'
+})[0]
+
+function Await($WinRtTask, $ResultType) {
+  $asTask = $asTaskGeneric.MakeGenericMethod($ResultType)
+  $netTask = $asTask.Invoke($null, @($WinRtTask))
+  $netTask.Wait(-1) | Out-Null
+  return $netTask.Result
+}
+
+$file = Await ([Windows.Storage.StorageFile]::GetFileFromPathAsync($Path)) ([Windows.Storage.StorageFile])
+$stream = Await ($file.OpenAsync([Windows.Storage.FileAccessMode]::Read)) ([Windows.Storage.Streams.IRandomAccessStream])
+$decoder = Await ([Windows.Graphics.Imaging.BitmapDecoder]::CreateAsync($stream)) ([Windows.Graphics.Imaging.BitmapDecoder])
+$bitmap = Await ($decoder.GetSoftwareBitmapAsync()) ([Windows.Graphics.Imaging.SoftwareBitmap])
+$engine = [Windows.Media.Ocr.OcrEngine]::TryCreateFromUserProfileLanguages()
+if ($null -eq $engine) {
+  Write-Error 'No Windows OCR engine is installed.'
+  exit 2
+}
+$result = Await ($engine.RecognizeAsync($bitmap)) ([Windows.Media.Ocr.OcrResult])
+
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$result.Text
+`
+
+const WINDOWS_SCRIPT_PATH = join(tmpdir(), 'satyapan_screen_ocr.ps1')
+
+function powershellPath(): string {
+  const systemRoot = process.env.SystemRoot ?? 'C:\\Windows'
+  return join(systemRoot, 'System32', 'WindowsPowerShell', 'v1.0', 'powershell.exe')
+}
+
+function scanError(error: unknown): ScreenScanResult {
+  return {
+    suspicious: false,
+    headline: 'Screen scan error',
+    matches: [],
+    reasons: [error instanceof Error ? error.message : String(error)],
+    preview: '',
+    accounts: [],
+    ifscs: [],
+    rawText: '',
+  }
+}
+
+async function scanScreenWindows(): Promise<ScreenScanResult> {
+  const tmpImage = join(tmpdir(), `satyapan_screen_${Date.now()}.png`)
+  try {
+    writeFileSync(WINDOWS_SCRIPT_PATH, WINDOWS_OCR_SOURCE, 'utf-8')
+    const { stdout } = await execFileAsync(
+      powershellPath(),
+      [
+        '-NoProfile',
+        '-NonInteractive',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-File',
+        WINDOWS_SCRIPT_PATH,
+        tmpImage,
+      ],
+      { timeout: 20000, windowsHide: true, maxBuffer: 10 * 1024 * 1024 },
+    )
+    return analyzeScreenText(stdout.replace(/^\uFEFF/, ''))
+  } catch (error) {
+    return scanError(error)
+  } finally {
+    try {
+      if (existsSync(tmpImage)) unlinkSync(tmpImage)
+    } catch {}
+  }
+}
+
+async function scanScreenMac(): Promise<ScreenScanResult> {
   const tmpImage = `/tmp/satyapan_screen_${Date.now()}.png`
   try {
     // 1. Capture screen silently via macOS screencapture
@@ -207,19 +312,25 @@ export async function scanScreen(): Promise<ScreenScanResult> {
 
     return analyzeScreenText(text)
   } catch (error) {
-    return {
-      suspicious: false,
-      headline: 'Screen scan error',
-      matches: [],
-      reasons: [error instanceof Error ? error.message : String(error)],
-      preview: '',
-      accounts: [],
-      ifscs: [],
-      rawText: '',
-    }
+    return scanError(error)
   } finally {
     try {
       if (existsSync(tmpImage)) unlinkSync(tmpImage)
     } catch {}
+  }
+}
+
+export async function scanScreen(): Promise<ScreenScanResult> {
+  if (process.platform === 'win32') return scanScreenWindows()
+  if (process.platform === 'darwin') return scanScreenMac()
+  return {
+    suspicious: false,
+    headline: 'Screen scan unavailable',
+    matches: [],
+    reasons: ['Screen scanning is available on macOS and Windows only.'],
+    preview: '',
+    accounts: [],
+    ifscs: [],
+    rawText: '',
   }
 }
