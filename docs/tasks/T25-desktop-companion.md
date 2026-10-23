@@ -71,12 +71,13 @@ scenario calls `satyapan.policy.engine.decide()` and only relays its `Decision`.
 
 ## 8. Agent plan
 1. Run the T25 acceptance test unchanged and record its first failure.
-2. Humanize the existing 3D mascot assets with spring transitions, breathing, blinking and gaze.
-3. Add state-aware radial actions for mode, file check, Notebook, Screen Guard and Quit.
-4. Make mascot and petal hit areas reliably toggle native click-through.
-5. Restore or recreate the Notebook window and route requested tabs reliably.
-6. Re-run T25 after each small implementation step; fix issues without changing tests.
-7. Run desktop typecheck/tests and `make check`, then update STATUS and commit T25.
+2. Add Three.js and replace image swapping with one transparent, disposable WebGL scene.
+3. Build the blue jelly body, continuous breathing/jiggle and drag-response physics.
+4. Add articulated eyes, smoothed 3D gaze and timed single/double blinks.
+5. Rig pose-driven paws, shield, writing props and sleep particles with seamless transitions.
+6. Preserve six radial actions and 96 px native click-through hit testing.
+7. Run T25, desktop typecheck/Vitest, `make check` and finale tests after each implementation step.
+8. Update STATUS and commit T25 when all checks pass.
 
 ## 9. Resolution of the previous block
 The earlier `make check` block came from Ruff findings in `src/satyapan/report/pack.py`; `pyproject.toml` now carries the authorised `E501` per-file ignore and its `F541` line is fixed. Baseline `make check` is green before this implementation.

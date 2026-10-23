@@ -2,7 +2,7 @@
   "name": "satyapan-companion",
   "version": "1.0.0",
   "private": true,
-  "description": "Satya \u2014 the Satyapan desktop guardian companion (T25)",
+  "description": "Satya — the Satyapan desktop guardian companion (T25)",
   "main": "out/main/index.js",
   "author": "Team Satyapan (DTU)",
   "license": "MIT",
@@ -17,15 +17,17 @@
   "dependencies": {
     "framer-motion": "^11.15.0",
     "lucide-react": "^0.468.0",
+    "onnxruntime-web": "^1.20.1",
+    "qrcode": "^1.5.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "onnxruntime-web": "^1.20.1",
-    "qrcode": "^1.5.4"
+    "three": "^0.186.1"
   },
   "devDependencies": {
     "@types/node": "^22.10.2",
     "@types/react": "^18.3.17",
     "@types/react-dom": "^18.3.5",
+    "@types/three": "^0.186.0",
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "electron": "^33.2.1",

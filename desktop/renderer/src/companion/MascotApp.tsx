@@ -8,6 +8,7 @@
 
 import { useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
+import type { MotionValue } from 'framer-motion'
 
 import type { MascotMood, Pose } from '../../../shared/contracts'
 import { api, isMockBridge, toggleScreenGuard } from '../shared/api'
@@ -40,6 +41,8 @@ interface CompatMascotProps {
   mood: MascotMood
   audioLevel: number
   look: { dx: number; dy: number; near: boolean }
+  dragging: boolean
+  dragVelocity: MotionValue<{ x: number; y: number }>
   size: number
   reducedMotion?: boolean
 }
@@ -147,6 +150,8 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
                 mood={MOOD[satya.state.pose]}
                 audioLevel={0}
                 look={satya.look}
+                dragging={drag.dragging}
+                dragVelocity={drag.velocity}
                 size={128}
               />
             </motion.div>

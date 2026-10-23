@@ -33,6 +33,7 @@ export interface DragHandlers {
 export interface DragController {
   handlers: DragHandlers
   tilt: MotionValue<number>
+  velocity: MotionValue<{ x: number; y: number }>
   dragging: boolean
   pressed: boolean
 }
@@ -43,6 +44,7 @@ function clamp(value: number, min: number, max: number): number {
 
 export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOptions): DragController {
   const tilt = useMotionValue(0)
+  const velocity = useMotionValue({ x: 0, y: 0 })
   const [dragging, setDragging] = useState(false)
   const [pressed, setPressed] = useState(false)
 
@@ -75,8 +77,12 @@ export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOption
     if (dx === 0 && dy === 0) return
     api.dragBy(dx, dy)
     const velocityPerFrame = (dx / dt) * 16.67
+    velocity.set({
+      x: clamp((dx / dt) * 16.67, -36, 36),
+      y: clamp((dy / dt) * 16.67, -36, 36),
+    })
     tilt.set(clamp(velocityPerFrame * 0.4, -8, 8))
-  }, [tilt])
+  }, [tilt, velocity])
 
   const cancelFrame = useCallback(() => {
     if (frame.current !== null) {
@@ -96,6 +102,7 @@ export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOption
       if (!down.current) return
       down.current = false
       setPressed(false)
+      velocity.set({ x: 0, y: 0 })
       try {
         event.currentTarget.releasePointerCapture?.(event.pointerId)
       } catch {
@@ -131,7 +138,7 @@ export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOption
         handlersRef.current.onClick()
       }, CLICK_DELAY_MS)
     },
-    [cancelFrame, clearClickTimer, flush, tilt],
+    [cancelFrame, clearClickTimer, flush, tilt, velocity],
   )
 
   const onPointerDown = useCallback(
@@ -140,6 +147,7 @@ export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOption
       down.current = true
       draggingRef.current = false
       downAt.current = performance.now()
+      velocity.set({ x: 0, y: 0 })
       downPoint.current = { x: event.screenX, y: event.screenY }
       lastPoint.current = { x: event.screenX, y: event.screenY }
       lastTime.current = downAt.current
@@ -151,7 +159,7 @@ export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOption
         // Some synthetic pointers cannot be captured; dragging still works through moves.
       }
     },
-    [],
+    [velocity],
   )
 
   const onPointerMove = useCallback(
@@ -186,13 +194,15 @@ export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOption
     () => () => {
       cancelFrame()
       clearClickTimer()
+      velocity.set({ x: 0, y: 0 })
     },
-    [cancelFrame, clearClickTimer],
+    [cancelFrame, clearClickTimer, velocity],
   )
 
   return {
     handlers: { onPointerDown, onPointerMove, onPointerUp, onPointerCancel },
     tilt,
+    velocity,
     dragging,
     pressed,
   }
