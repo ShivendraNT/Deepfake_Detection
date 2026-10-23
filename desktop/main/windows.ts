@@ -68,6 +68,13 @@ function secureWebPreferences(preloadPath: string): Electron.WebPreferences {
   }
 }
 
+let isQuittingApp = false
+
+/** Signal to all windows that the application is terminating and should close rather than hide. */
+export function markAppQuitting(): void {
+  isQuittingApp = true
+}
+
 /** Restore the mascot's floating level after macOS Space and activation transitions. */
 export function pinMascotWindow(win: BrowserWindow | null): void {
   if (!win || win.isDestroyed()) return
@@ -146,6 +153,7 @@ export function createMascotWindow(options: WindowFactoryOptions): BrowserWindow
     win.showInactive()
   })
   win.on('close', (event) => {
+    if (isQuittingApp) return
     event.preventDefault()
     win.hide()
     options.onCompanionHidden()
@@ -187,6 +195,7 @@ export function createBubbleWindow(preloadPath: string): BrowserWindow {
     win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
   })
   win.on('close', (event) => {
+    if (isQuittingApp) return
     event.preventDefault()
     win.hide()
   })

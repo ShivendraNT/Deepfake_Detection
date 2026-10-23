@@ -55,6 +55,7 @@ import {
   createMascotWindow,
   createWorkspaceWindow,
   hideWindow,
+  markAppQuitting,
   showCompanion as showMascotWindow,
   workAreaFor,
 } from './windows'
@@ -522,11 +523,26 @@ async function hideCompanion(): Promise<void> {
 }
 
 async function quit(): Promise<void> {
+  if (quitting) return
   quitting = true
-  await stopSafely()
+  markAppQuitting()
+  try {
+    await Promise.race([
+      stopSafely(),
+      new Promise((resolve) => setTimeout(resolve, 500)),
+    ])
+  } catch {}
   stopCursorFeed()
   backend.disconnect()
-  app.quit()
+  for (const win of [mascotWindow, bubbleWindow, workspaceWindow, captureWindow]) {
+    if (win && !win.isDestroyed()) {
+      win.removeAllListeners('close')
+      try {
+        win.destroy()
+      } catch {}
+    }
+  }
+  app.exit(0)
 }
 
 function openWorkspace(_tab?: string): void {
