@@ -21,6 +21,7 @@ import {
 import BandBadge from '../ui/BandBadge'
 import Empty from '../ui/Empty'
 import Hash from '../ui/Hash'
+import PolicyTrace from '../ui/PolicyTrace'
 import Section from '../ui/Section'
 import { FONT_MONO, focusRing, inset, surface, tone } from '../ui/theme'
 
@@ -114,6 +115,7 @@ function CaseDetail({ snapshot }: { snapshot: WorkspaceSnapshot }): JSX.Element 
             <span>No adverse reason was recorded for this case.</span>
           </p>
         )}
+        {snapshot.trace ? <PolicyTrace trace={snapshot.trace} /> : null}
       </Section>
 
       <div className="grid grid-cols-2 gap-4">

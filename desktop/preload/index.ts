@@ -19,6 +19,7 @@ import type {
   DraftArtifact,
   EvidenceResult,
   Prefs,
+  ReportOptions,
   SatyaSignal,
   Scopes,
   SessionResult,
@@ -116,7 +117,8 @@ const api: CompanionBridge & {
   startCall: (source) => ipcRenderer.invoke('companion:start-call', source ?? 'loopback'),
   stopCall: () => ipcRenderer.invoke('companion:stop-call'),
   requestOob: (caseId: string) => ipcRenderer.invoke('companion:request-oob', caseId),
-  reportPack: (caseId: string) => ipcRenderer.invoke('companion:report-pack', caseId),
+  reportPack: (caseId: string, options?: ReportOptions) =>
+    ipcRenderer.invoke('companion:report-pack', caseId, options),
   scanScreen: () => ipcRenderer.invoke('companion:scan-screen'),
   checkClipboardText: () => ipcRenderer.invoke('companion:check-clipboard-text'),
   submitLastScreenText: () =>

@@ -149,6 +149,7 @@ export class BackendClient {
     consentId: string,
     source: 'loopback' | 'replay' | 'extension' = 'loopback',
     language?: 'en' | 'hi' | 'auto',
+    app?: string,
   ): Promise<{ call_id: string; case_id: string; events: CompanionEvent[] }> {
     return this.request('/companion/calls/start', {
       method: 'POST',
@@ -158,6 +159,7 @@ export class BackendClient {
         source,
         maker: this.demoUser,
         ...(language ? { language } : {}),
+        ...(app ? { app: app.slice(0, 40) } : {}),
       }),
     })
   }
@@ -205,8 +207,11 @@ export class BackendClient {
     })
   }
 
-  async reportPack(caseId: string): Promise<ReportPackV2> {
-    return this.request(`/companion/report-pack?case_id=${encodeURIComponent(caseId)}`)
+  async reportPack(caseId: string, utr?: string, moneyLeftAt?: string): Promise<ReportPackV2> {
+    const query = new URLSearchParams({ case_id: caseId })
+    if (utr) query.set('utr', utr)
+    if (moneyLeftAt) query.set('money_left_at', moneyLeftAt)
+    return this.request(`/companion/report-pack?${query.toString()}`)
   }
 
   /**

@@ -17,7 +17,7 @@ import threading
 import uuid
 from collections import deque
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -49,12 +49,14 @@ from satyapan.api.companion.models import (
     NextAction,
     OobSummary,
     OobTicket,
+    PolicyTrace,
     ReportField,
     ReportPackV2,
     ReportSection,
     ScreenFinding,
     SealStatus,
     SessionStartRequest,
+    TraceSignal,
     WorkspaceSnapshot,
 )
 from satyapan.asks.extractor import extract_asks
@@ -571,6 +573,10 @@ class CompanionService:
             maker = request.maker or actor
             session = live.start(call_id, maker)
             session.language = request.language
+            title = f"Call on {request.app}" if request.app else "Live call"
+            if request.source == CaptureSourceKind.REPLAY:
+                title = "Demo call (replay)"
+            session.case = session.case.model_copy(update={"title": title})
             state.repo.put(session.case)
             self._call_id = call_id
             self._call_case_id = session.case.id
@@ -1043,13 +1049,22 @@ class CompanionService:
         return finding
 
     # ---------------------------------------------------------------- report pack (F03)
-    def report_pack(self, case_id: str) -> ReportPackV2:
-        """Golden-hour pack: five drafts, all MANUAL_ONLY. Nothing is ever filed."""
+    def report_pack(
+        self,
+        case_id: str,
+        *,
+        utr: str | None = None,
+        money_left_at: datetime | None = None,
+    ) -> ReportPackV2:
+        """Golden-hour pack: five drafts, all MANUAL_ONLY. Nothing is ever filed.
+
+        `utr` / `money_left_at` are maker-entered at report time (the payment already left), so
+        the 1930 script can start with the UTR. They only fill text; they never touch a band."""
         case = self._repo.get(case_id)
         if case is None:
             raise CompanionNotFound(f"unknown case: {case_id}")
         txn = case.txn
-        utr = (txn.utr if txn and txn.utr else None) or "Not provided — ask the maker"
+        utr = utr or (txn.utr if txn and txn.utr else None) or "Not provided — ask the maker"
         amount = _format_inr(txn.amount_inr) if txn else "Not provided"
         payee = txn.beneficiary_masked if txn else "Not provided"
         evidence = [f"{ev.id} · SHA-256 {ev.sha256}" for ev in case.evidence] or [
@@ -1187,7 +1202,7 @@ class CompanionService:
         return ReportPackV2(
             case_id=case.id,
             generated_at=utcnow(),
-            money_left_at=txn.created_at if txn else None,
+            money_left_at=money_left_at or (txn.created_at if txn else None),
             sections=sections,
             submission=MANUAL_ONLY,  # type: ignore[arg-type]
             auto_submit=False,
@@ -1379,6 +1394,27 @@ class CompanionService:
             evidence=refs,
             drafts=drafts,
             audit=self.audit(),
+            trace=PolicyTrace(
+                floor_band=decision.floor_band,
+                action_type=decision.action_type,
+                signals=[
+                    TraceSignal(
+                        code=sig.code,
+                        group=sig.group.value,
+                        strength=sig.strength.value,
+                        source=sig.source.value,
+                        target=sig.target.value,
+                        detector=sig.detector,
+                        evidence_ids=list(sig.evidence_ids),
+                    )
+                    for sig in case.signals
+                ],
+                grey=decision.grey,
+                clearance_methods=[m.value for m in decision.clearance.methods],
+                clearance_who=[r.value for r in decision.clearance.who],
+                clearance_notes=list(decision.clearance.notes),
+                policy_version=decision.policy_version,
+            ),
         )
 
     # ---------------------------------------------------------------- internals

@@ -521,9 +521,9 @@ export const COPY_TABLE: Record<string, CopyEntry> = {
     hi: 'तैयार करें',
   },
   'action.prepare_report': {
-    en: 'Prepare it',
-    hinglish: 'Bana do',
-    hi: 'तैयार करें',
+    en: 'Write the report pack',
+    hinglish: 'Report pack likho',
+    hi: 'रिपोर्ट पैक लिखें',
   },
   'scribe.writing': {
     en: 'Writing your report pack…',

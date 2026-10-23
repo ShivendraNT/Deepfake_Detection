@@ -167,9 +167,32 @@ export interface WorkspaceSnapshot {
   evidence: EvidenceRef[]
   drafts: DraftArtifact[]
   audit: AuditRow[]
+  /** Expert view: how the policy reached the band. Never contains a score. */
+  trace?: PolicyTrace | null
   policy_authority: 'satyapan.policy'
   raw_scores_visible: false
   manual_only: true
+}
+
+export interface TraceSignal {
+  code: string
+  group: string
+  strength: string
+  source: string
+  target: string
+  detector: string
+  evidence_ids: string[]
+}
+
+export interface PolicyTrace {
+  floor_band: Band
+  action_type: string
+  signals: TraceSignal[]
+  grey: boolean
+  clearance_methods: string[]
+  clearance_who: string[]
+  clearance_notes: string[]
+  policy_version: string
 }
 
 export interface CaseSummary {
@@ -665,6 +688,12 @@ export const CUE_LABELS: Record<CueCode, string> = {
   AMOUNT: 'Money amount',
 }
 
+/** Maker-entered at report time: the payment already left. Text only; never a band input. */
+export interface ReportOptions {
+  utr?: string
+  money_left_at?: string
+}
+
 export interface CallStarted {
   call_id: string
   case_id: string
@@ -675,7 +704,7 @@ export interface FinaleBridge {
   startCall?(source?: CaptureSourceKind): Promise<BridgeResult<CallStarted>>
   stopCall?(): Promise<BridgeResult<null>>
   requestOob?(caseId: string): Promise<BridgeResult<OobTicket>>
-  reportPack?(caseId: string): Promise<BridgeResult<ReportPackV2>>
+  reportPack?(caseId: string, options?: ReportOptions): Promise<BridgeResult<ReportPackV2>>
   scanScreen?(): Promise<BridgeResult<ScreenFinding>>
   checkClipboardText?(): Promise<BridgeResult<ScreenFinding>>
   getHealth?(): Promise<BridgeResult<HealthInfo>>

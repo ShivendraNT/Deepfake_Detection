@@ -353,11 +353,13 @@ export function registerIpc(deps: IpcDependencies): void {
   handle('companion:report-pack', (event, ...args) => {
     const refused = refuseUntrusted<ReportPackV2>(event)
     if (refused) return refused
-    const [caseId] = args as [unknown]
+    const [caseId, options] = args as [unknown, { utr?: unknown; money_left_at?: unknown } | undefined]
     if (typeof caseId !== 'string' || !/^case_[A-Za-z0-9_-]+$/.test(caseId)) {
       return { ok: false, error: 'a case id is required' }
     }
-    return wrap(() => backend.reportPack(caseId))
+    const utr = typeof options?.utr === 'string' && /^[A-Za-z0-9]{6,30}$/.test(options.utr) ? options.utr : undefined
+    const left = typeof options?.money_left_at === 'string' ? options.money_left_at : undefined
+    return wrap(() => backend.reportPack(caseId, utr, left))
   })
 
   handle('companion:scan-screen', (event) => {

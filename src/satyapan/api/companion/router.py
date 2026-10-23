@@ -10,6 +10,7 @@ import os
 import queue
 import re
 from collections.abc import Iterator
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
@@ -292,12 +293,14 @@ def replay_audio(name: str) -> FileResponse:
 @router.get("/report-pack", response_model=ReportPackV2)
 def report_pack(
     case_id: str = Query(..., pattern=r"^case_[A-Za-z0-9_\-]+$"),
+    utr: str | None = Query(default=None, pattern=r"^[A-Za-z0-9]{6,30}$"),
+    money_left_at: datetime | None = Query(default=None),
     actor: Actor = Depends(get_actor),
     state: AppState = Depends(get_state),
 ) -> ReportPackV2:
     del actor
     try:
-        return _service(state).report_pack(case_id)
+        return _service(state).report_pack(case_id, utr=utr, money_left_at=money_left_at)
     except CompanionNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 

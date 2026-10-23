@@ -449,6 +449,31 @@ class AuditRow(Model):
     detail: str = ""
 
 
+class TraceSignal(Model):
+    """One signal the policy weighed, for the expert view. Deliberately has NO score field."""
+
+    code: ReasonCode
+    group: str
+    strength: str
+    source: str
+    target: str
+    detector: str
+    evidence_ids: list[str] = Field(default_factory=list)
+
+
+class PolicyTrace(Model):
+    """How the band was reached: floor first, then every raise-only signal, then clearance."""
+
+    floor_band: Band
+    action_type: ActionType
+    signals: list[TraceSignal] = Field(default_factory=list)
+    grey: bool = False
+    clearance_methods: list[str] = Field(default_factory=list)
+    clearance_who: list[str] = Field(default_factory=list)
+    clearance_notes: list[str] = Field(default_factory=list)
+    policy_version: str = ""
+
+
 class WorkspaceSnapshot(Model):
     """Safe case view for the details window: no detector scores, masked payee details."""
 
@@ -469,6 +494,7 @@ class WorkspaceSnapshot(Model):
     evidence: list[EvidenceRef] = Field(default_factory=list)
     drafts: list[DraftArtifact] = Field(default_factory=list)
     audit: list[AuditRow] = Field(default_factory=list)
+    trace: PolicyTrace | None = None
     policy_authority: Literal["satyapan.policy"] = POLICY_AUTHORITY
     raw_scores_visible: Literal[False] = False
     manual_only: Literal[True] = True
@@ -503,6 +529,8 @@ class CallStartRequest(Model):
     # Speech language hint: "en", "hi", or None for auto-detect. Routing only, never a risk
     # feature (accent and language never change a band).
     language: str | None = Field(default=None, pattern=r"^(en|hi|auto)$")
+    # The meeting app noticed from its window name ("Google Meet"), for a readable case title.
+    app: str | None = Field(default=None, max_length=40)
 
 
 class CallStartResponse(Model):

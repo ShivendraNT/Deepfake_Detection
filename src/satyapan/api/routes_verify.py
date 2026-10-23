@@ -87,6 +87,35 @@ def oob_inbox(
     return [m for m in state.in_app_mailer.outbox if m["to"] == actor.employee.email]
 
 
+@router.get("/oob/request")
+def oob_request(
+    token: str,
+    state: AppState = Depends(get_state),
+    actor: Actor = Depends(get_actor),
+) -> dict[str, Any]:
+    """What the approver's phone shows: the exact question the backend wrote (never a demo
+    default), the case title, and whether it is still open. Requester-only."""
+    from satyapan.workflows.oob import OOBError
+
+    try:
+        req = state.oob().lookup(token, actor.employee.employee_id)
+    except OOBError as e:
+        raise HTTPException(status_code=409, detail=type(e).__name__) from e
+    case = state.repo.get(req.case_id)
+    maker = state.master.employee(case.created_by) if case else None
+    expired = utcnow() > req.expires_at
+    return {
+        "oob_id": req.id,
+        "question": req.message_text,
+        "case_title": case.title if case else req.case_id,
+        "maker": maker.name if maker else None,
+        "created_at": req.created_at.isoformat(),
+        "expires_at": req.expires_at.isoformat(),
+        "state": "answered" if req.spent else ("expired" if expired else "pending"),
+        "result": req.result.value,
+    }
+
+
 @router.post("/oob/respond")
 def respond_oob(
     body: OOBRespond, state: AppState = Depends(get_state), actor: Actor = Depends(get_actor)

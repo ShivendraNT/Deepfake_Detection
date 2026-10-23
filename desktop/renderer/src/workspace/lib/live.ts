@@ -28,6 +28,8 @@ export interface LiveSnapshot {
   coverage: Coverage | null
   seal: SealStatus | null
   lastAlert: LastAlert | null
+  /** Band the policy relayed for the call in progress (reset per call). */
+  callBand: Band | null
 }
 
 export const EMPTY_LIVE: LiveSnapshot = {
@@ -37,6 +39,7 @@ export const EMPTY_LIVE: LiveSnapshot = {
   coverage: null,
   seal: null,
   lastAlert: null,
+  callBand: null,
 }
 
 export function reduceLive(previous: LiveSnapshot, event: CompanionEvent): LiveSnapshot {
@@ -54,6 +57,7 @@ export function reduceLive(previous: LiveSnapshot, event: CompanionEvent): LiveS
         ...next,
         callStartedAt: event.occurred_at,
         callId: payload.call_id ?? previous.callId,
+        callBand: null,
       }
     case 'call.stopped':
       return {
@@ -63,6 +67,7 @@ export function reduceLive(previous: LiveSnapshot, event: CompanionEvent): LiveS
         chips: [],
         coverage: null,
         seal: null,
+        callBand: null,
       }
     case 'live.chips':
       return {
@@ -73,6 +78,7 @@ export function reduceLive(previous: LiveSnapshot, event: CompanionEvent): LiveS
     case 'alert.raised':
       return {
         ...next,
+        callBand: previous.callId && payload.band ? payload.band : previous.callBand,
         lastAlert: payload.band
           ? {
               band: payload.band,

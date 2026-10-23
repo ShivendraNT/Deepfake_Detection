@@ -419,7 +419,12 @@ async function startCall(source: CaptureSourceKind): Promise<BridgeResult<CallSt
     if (!state.consent_id) return { ok: false, error: 'Start watching first (consent is needed).' }
     const kind = source === 'replay' ? 'replay' : 'loopback'
     const language = prefs.call_language ?? 'en'
-    const started = await backend.startCall(state.consent_id, kind, language === 'auto' ? undefined : language)
+    const started = await backend.startCall(
+      state.consent_id,
+      kind,
+      language === 'auto' ? undefined : language,
+      kind === 'loopback' ? meetingWatcher.meeting?.app : undefined,
+    )
     activeCall = { call_id: started.call_id, case_id: started.case_id, source: kind }
     stopLiveStream?.()
     stopLiveStream = backend.streamLive(started.call_id, onLiveEvent)
