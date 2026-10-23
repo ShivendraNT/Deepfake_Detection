@@ -673,9 +673,20 @@ function handleEvent(event: CompanionEvent): void {
 
 const hasLock = app.requestSingleInstanceLock()
 if (!hasLock) {
+  console.warn(
+    '\n[Satya] Another instance of Satyapan is already running in the background.\n' +
+    'The secondary instance has signaled the primary instance to display and is exiting.\n' +
+    'To restart cleanly, stop any background instances with: killall Electron || pkill -f electron\n'
+  )
   app.quit()
 } else {
-  app.on('second-instance', showCompanionWindow)
+  app.on('second-instance', () => {
+    showCompanionWindow()
+    if (mascotWindow && !mascotWindow.isDestroyed()) {
+      mascotWindow.show()
+      mascotWindow.focus()
+    }
+  })
 
   void app.whenReady().then(() => {
     if (process.platform === 'darwin') {
