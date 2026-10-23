@@ -9,7 +9,7 @@
 
 import { join } from 'node:path'
 
-import { app, BrowserWindow, clipboard, globalShortcut, Menu, screen, shell } from 'electron'
+import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, Menu, screen, shell } from 'electron'
 
 // Prevent unhandled EIO / EPIPE socket errors on stdio from crashing the process or showing dialogs
 for (const stream of [process.stdout, process.stderr]) {
@@ -79,6 +79,8 @@ let prefs: Prefs = {}
 let lastCard: BubbleCard | null = null
 let lastTail: 'left' | 'right' = 'left'
 let bubbleHeight = BUBBLE_MIN_HEIGHT
+let workspaceReady = false
+let pendingWorkspaceTab: string | null = null
 
 function errorOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
@@ -220,20 +222,22 @@ let isDragging = false
 
 function setClickThrough(through: boolean): void {
   manualClickThrough = through ? null : false
-  if (!mascotWindow || mascotWindow.isDestroyed()) return
-  if (!isDragging) {
-    const bounds = mascotWindow.getBounds()
-    const point = screen.getCursorScreenPoint()
-    const distance = Math.hypot(
-      point.x - (bounds.x + bounds.width / 2),
-      point.y - (bounds.y + bounds.height / 2),
-    )
-    const shouldIgnore = through && distance > 96
-    if (shouldIgnore !== mouseIgnored) {
-      mouseIgnored = shouldIgnore
-      mascotWindow.setIgnoreMouseEvents(shouldIgnore, { forward: true })
-    }
-  }
+  applyMouseHitTest()
+}
+
+function applyMouseHitTest(point = screen.getCursorScreenPoint()): void {
+  if (!mascotWindow || mascotWindow.isDestroyed() || isDragging) return
+  const bounds = mascotWindow.getBounds()
+  const distance = Math.hypot(
+    point.x - (bounds.x + bounds.width / 2),
+    point.y - (bounds.y + bounds.height / 2),
+  )
+  const shouldIgnore = manualClickThrough !== false && distance > 96
+  if (shouldIgnore === mouseIgnored) return
+
+  mouseIgnored = shouldIgnore
+  if (shouldIgnore) mascotWindow.setIgnoreMouseEvents(true, { forward: true })
+  else mascotWindow.setIgnoreMouseEvents(false)
 }
 
 function dragBy(dx: number, dy: number): void {
@@ -263,6 +267,7 @@ function dragEnd(): void {
   })
   prefs = writePrefs({ position: { x: snapped.x, y: snapped.y } })
   placeBubbleWindow()
+  applyMouseHitTest()
 }
 
 function stopCursorFeed(): void {
@@ -282,6 +287,7 @@ function startCursorFeed(): void {
   ) {
     return
   }
+  applyMouseHitTest()
   cursorTimer = setInterval(() => {
     if (
       !mascotWindow ||
@@ -298,18 +304,11 @@ function startCursorFeed(): void {
     const dy = point.y - (bounds.y + bounds.height / 2)
     const dist = Math.hypot(dx, dy)
 
-    if (!isDragging && manualClickThrough !== false) {
-      // Satya is centered; 96 px radius covers his 176 px body with margin.
-      // Clicks inside this circle are captured by Satya; clicks outside pass through.
-      const overMascot = dist <= 96
-      const shouldIgnore = !overMascot
-      if (shouldIgnore !== mouseIgnored) {
-        mouseIgnored = shouldIgnore
-        try {
-          mascotWindow.setIgnoreMouseEvents(shouldIgnore, { forward: true })
-        } catch {}
-      }
-    }
+    // Satya is centered; 96 px radius covers his 176 px body with margin. The renderer may
+    // temporarily force hit testing while a petal is hovered; otherwise empty pixels pass through.
+    try {
+      applyMouseHitTest(point)
+    } catch {}
 
     try {
       mascotWindow.webContents.send('companion:cursor', {
@@ -545,22 +544,46 @@ async function quit(): Promise<void> {
   app.exit(0)
 }
 
-function openWorkspace(_tab?: string): void {
+function sendWorkspaceNavigation(): void {
+  if (
+    !pendingWorkspaceTab ||
+    !workspaceReady ||
+    !workspaceWindow ||
+    workspaceWindow.isDestroyed() ||
+    workspaceWindow.webContents.isDestroyed()
+  ) {
+    return
+  }
+  try {
+    workspaceWindow.webContents.send('companion:navigate-workspace', pendingWorkspaceTab)
+    pendingWorkspaceTab = null
+  } catch {}
+}
+
+function openWorkspace(tab?: string): void {
+  pendingWorkspaceTab = tab ?? null
   if (process.platform === 'darwin') {
     app.dock?.show()
   }
-  if (workspaceWindow && !workspaceWindow.isDestroyed()) {
-    workspaceWindow.show()
-    workspaceWindow.focus()
+  if (!workspaceWindow || workspaceWindow.isDestroyed()) {
+    workspaceReady = false
+    const win = createWorkspaceWindow(preloadPath)
+    workspaceWindow = win
+    win.on('closed', () => {
+      if (workspaceWindow === win) workspaceWindow = null
+      workspaceReady = false
+      if (process.platform === 'darwin') app.dock?.hide()
+    })
+    win.webContents.on('did-start-loading', () => {
+      workspaceReady = false
+    })
     return
   }
-  workspaceWindow = createWorkspaceWindow(preloadPath)
-  workspaceWindow.on('closed', () => {
-    workspaceWindow = null
-    if (process.platform === 'darwin') {
-      app.dock?.hide()
-    }
-  })
+
+  if (workspaceWindow.isMinimized()) workspaceWindow.restore()
+  workspaceWindow.show()
+  workspaceWindow.focus()
+  sendWorkspaceNavigation()
 }
 
 function checkClipboard(): void {
@@ -728,6 +751,11 @@ if (!hasLock) {
   })
 
   void app.whenReady().then(() => {
+    ipcMain.on('companion:workspace-ready', (event) => {
+      if (event.sender !== workspaceWindow?.webContents) return
+      workspaceReady = true
+      sendWorkspaceNavigation()
+    })
     if (process.platform === 'darwin') {
       app.dock?.hide()
     }

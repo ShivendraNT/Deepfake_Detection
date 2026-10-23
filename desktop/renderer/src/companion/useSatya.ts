@@ -376,6 +376,16 @@ export function useSatya(): SatyaController {
         case 'off':
           setOff()
           return
+        case 'quit':
+          void api
+            .quit()
+            .then((result) => {
+              if (!result.ok) notify(result.error)
+            })
+            .catch((error: unknown) => {
+              notify(error instanceof Error ? error.message : 'Could not quit Satya.')
+            })
+          return
         case 'notebook':
           void api.openWorkspace('now').catch((error: unknown) => {
             notify(error instanceof Error ? error.message : 'Could not open the Notebook.')

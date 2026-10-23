@@ -15,7 +15,8 @@ export function useBlink(pose: Pose, reducedMotion: boolean): number {
   const [blinkKey, setBlinkKey] = useState(0)
 
   useEffect(() => {
-    if (pose === 'sleep' || pose === 'off' || reducedMotion) return
+    setBlinkKey(0)
+    if (!['idle', 'listen', 'alert', 'catch'].includes(pose) || reducedMotion) return
 
     let cancelled = false
     let timer = 0

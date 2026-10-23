@@ -106,7 +106,7 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
         ref={fileInput}
         type="file"
         className="hidden"
-        accept=".eml,.msg,.pdf,.txt,.md,.csv,.wav,.m4a,.mp3,.ogg,.opus,.aac,.flac,image/*"
+        accept=".pdf,.eml,.wav,.mp3,image/*"
         onChange={(event) => {
           const file = event.target.files?.[0]
           if (file) satya.onFileDrop(file)

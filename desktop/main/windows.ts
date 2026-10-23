@@ -217,7 +217,10 @@ export function createWorkspaceWindow(preloadPath: string): BrowserWindow {
   })
   harden(win)
   load(win, { view: 'workspace' })
-  win.once('ready-to-show', () => win.show())
+  win.once('ready-to-show', () => {
+    win.show()
+    win.focus()
+  })
   return win
 }
 

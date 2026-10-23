@@ -127,7 +127,6 @@ export function useDrag({ onClick, onDoubleClick, disabled = false }: DragOption
       lastClickAt.current = now
       clearClickTimer()
       clickTimer.current = setTimeout(() => {
-        lastClickAt.current = 0
         clickTimer.current = null
         handlersRef.current.onClick()
       }, CLICK_DELAY_MS)

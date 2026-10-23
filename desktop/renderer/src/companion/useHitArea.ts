@@ -17,16 +17,18 @@ export interface HitAreaHandlers {
 export function useHitArea(forceActive: boolean): HitAreaHandlers {
   const depth = useRef(0)
   const forceRef = useRef(forceActive)
+  const previousForceActive = useRef(forceActive)
   forceRef.current = forceActive
 
   const sync = useCallback(() => {
-    api.setClickThrough(depth.current === 0 && !forceRef.current)
+    const interactive = depth.current > 0 || forceRef.current
+    api.setClickThrough(!interactive)
   }, [])
 
   const onPointerEnter = useCallback(() => {
     depth.current += 1
-    sync()
-  }, [sync])
+    api.setClickThrough(false)
+  }, [])
 
   const onPointerLeave = useCallback(() => {
     depth.current = Math.max(0, depth.current - 1)
@@ -34,6 +36,8 @@ export function useHitArea(forceActive: boolean): HitAreaHandlers {
   }, [sync])
 
   useEffect(() => {
+    if (previousForceActive.current && !forceActive) depth.current = 0
+    previousForceActive.current = forceActive
     sync()
   }, [forceActive, sync])
 

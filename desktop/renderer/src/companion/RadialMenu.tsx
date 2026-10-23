@@ -7,13 +7,13 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { BookOpen, Eye, FileSearch, Moon, ShieldCheck } from 'lucide-react'
+import { BookOpen, Eye, FileSearch, LogOut, Moon, Power, ShieldCheck } from 'lucide-react'
 
 import type { UserMode } from '../../../shared/contracts'
 import { api } from '../shared/api'
 
 export type MenuEdge = 'none' | 'left' | 'right' | 'top' | 'bottom'
-export type MenuAction = 'watch' | 'sleep' | 'check' | 'notebook' | 'off' | 'guard'
+export type MenuAction = 'watch' | 'sleep' | 'check' | 'notebook' | 'off' | 'guard' | 'quit'
 
 export interface RadialMenuProps {
   open: boolean
@@ -29,18 +29,18 @@ const RADIUS = 78
 const CENTRE = 140
 const EDGE_MARGIN = 96
 
-const FULL_ANGLES = [-90, -18, 54, 126, 198]
+const FULL_ANGLES = [-90, -30, 30, 90, 150, 210]
 
 export function anglesForEdge(edge: MenuEdge): number[] {
   switch (edge) {
     case 'left':
-      return [-90, -45, 0, 45, 90]
+      return [-90, -54, -18, 18, 54, 90]
     case 'right':
-      return [90, 135, 180, 225, 270]
+      return [90, 126, 162, 198, 234, 270]
     case 'top':
-      return [0, 45, 90, 135, 180]
+      return [0, 36, 72, 108, 144, 180]
     case 'bottom':
-      return [180, 225, 270, 315, 360]
+      return [180, 216, 252, 288, 324, 360]
     default:
       return FULL_ANGLES
   }
@@ -74,6 +74,8 @@ const PETALS: Array<{
   { action: 'check', label: 'Check File', Icon: FileSearch },
   { action: 'notebook', label: 'Notebook', Icon: BookOpen },
   { action: 'guard', label: 'Screen Guard', Icon: ShieldCheck },
+  { action: 'off', label: 'Sleep / Off', Icon: Power },
+  { action: 'quit', label: 'Quit Satya', Icon: LogOut },
 ]
 
 function point(angle: number): { x: number; y: number } {
@@ -121,7 +123,10 @@ export default function RadialMenu({
   const petals = useMemo(
     () =>
       isWatching
-        ? [{ ...PETALS[0], action: 'sleep' as const, label: 'Sleep', Icon: Moon }, ...PETALS.slice(1)]
+        ? [
+            { ...PETALS[0], action: 'sleep' as const, label: 'Sleep', Icon: Moon },
+            ...PETALS.slice(1),
+          ]
         : PETALS,
     [isWatching],
   )
@@ -144,6 +149,15 @@ export default function RadialMenu({
     return () => {
       window.removeEventListener('keydown', onKey)
     }
+  }, [open, onClose])
+
+  useEffect(() => {
+    if (!open) return
+    const onOutsidePointerDown = (event: PointerEvent): void => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) onClose()
+    }
+    document.addEventListener('pointerdown', onOutsidePointerDown)
+    return () => document.removeEventListener('pointerdown', onOutsidePointerDown)
   }, [open, onClose])
 
   useEffect(() => {
@@ -207,7 +221,7 @@ export default function RadialMenu({
                     onClick={() => {
                       leave()
                       onClose()
-                      if (petal.action === 'sleep') setWatching(false)
+                      if (petal.action === 'sleep' || petal.action === 'off') setWatching(false)
                       onAction(petal.action)
                     }}
                     className="pointer-events-auto grid h-10 w-10 place-items-center rounded-full border border-white/70 bg-[rgba(255,252,247,0.97)] text-[#2A2238] shadow-[0_8px_20px_rgba(20,16,40,0.24)] outline-none focus-visible:ring-2 focus-visible:ring-[#1FB5A3]"

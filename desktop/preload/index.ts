@@ -31,7 +31,11 @@ function subscribe<T>(channel: string, callback: (payload: T) => void): () => vo
   return () => ipcRenderer.removeListener(channel, listener)
 }
 
-const api: CompanionBridge & { toggleScreenGuard: () => void } = {
+const api: CompanionBridge & {
+  toggleScreenGuard: () => void
+  onWorkspaceNavigate: (callback: (tab: string) => void) => () => void
+  workspaceReady: () => void
+} = {
   getConfig: () => ipcRenderer.invoke('companion:get-config') as Promise<AppConfig>,
   getState: () =>
     ipcRenderer.invoke('companion:get-state') as Promise<BridgeResult<CompanionState>>,
@@ -93,6 +97,8 @@ const api: CompanionBridge & { toggleScreenGuard: () => void } = {
   openExternal: (url: string) =>
     ipcRenderer.invoke('companion:open-external', url) as Promise<void>,
   toggleScreenGuard: () => ipcRenderer.send('companion:toggle-screen-guard'),
+  onWorkspaceNavigate: (callback) => subscribe<string>('companion:navigate-workspace', callback),
+  workspaceReady: () => ipcRenderer.send('companion:workspace-ready'),
 }
 
 contextBridge.exposeInMainWorld('satyapan', api)

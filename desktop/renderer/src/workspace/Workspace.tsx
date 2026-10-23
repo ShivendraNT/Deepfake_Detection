@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import type { CompanionEvent, CompanionState } from '../../../shared/contracts'
-import { api } from '../shared/api'
+import { api, onWorkspaceNavigate, workspaceReady } from '../shared/api'
 import Sidebar, {
   TAB_IDS,
   TAB_TITLES,
@@ -74,6 +74,14 @@ export default function Workspace(): JSX.Element {
       // A sandboxed renderer may block history updates; the tab still switches.
     }
   }, [])
+
+  useEffect(() => {
+    const unsubscribe = onWorkspaceNavigate((requested) => {
+      if ((TAB_IDS as readonly string[]).includes(requested)) selectTab(requested as TabId)
+    })
+    workspaceReady()
+    return unsubscribe
+  }, [selectTab])
 
   const openCase = useCallback(
     (caseId: string | null) => {

@@ -234,6 +234,23 @@ const mockBridge = FORCE_MOCK || !realBridge ? createMockBridge() : null
 /** The app's only transport. Import this, never `window.satyapan`. */
 export const api: CompanionBridge = mockBridge ?? (realBridge as CompanionBridge)
 
+interface WorkspaceNavigationBridge {
+  onWorkspaceNavigate?: (callback: (tab: string) => void) => () => void
+  workspaceReady?: () => void
+}
+
+function workspaceNavigationBridge(): WorkspaceNavigationBridge | undefined {
+  return (window as unknown as { satyapan?: WorkspaceNavigationBridge }).satyapan
+}
+
+export function onWorkspaceNavigate(callback: (tab: string) => void): () => void {
+  return workspaceNavigationBridge()?.onWorkspaceNavigate?.(callback) ?? (() => undefined)
+}
+
+export function workspaceReady(): void {
+  workspaceNavigationBridge()?.workspaceReady?.()
+}
+
 /** Toggle ambient screen analysis through the narrow Electron bridge when available. */
 export function toggleScreenGuard(): void {
   const bridge = (window as unknown as {
