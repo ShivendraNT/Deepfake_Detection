@@ -186,8 +186,19 @@ const Mascot = memo(function Mascot({
     return dragVelocity.on('change', followVelocity)
   }, [dragging, dragLeanTarget, dragVelocity])
 
-  // Current Mascot Asset Source
-  const currentMascotSrc = POSE_IMAGES[activePose] ?? mascot3dImg
+  const [isBlinking, setIsBlinking] = useState(false)
+  useEffect(() => {
+    if (blinkKey === 0) return
+    setIsBlinking(true)
+    const timer = window.setTimeout(() => setIsBlinking(false), BLINK_MS)
+    return () => window.clearTimeout(timer)
+  }, [blinkKey])
+
+  // Current Mascot Asset Source — when blinking in idle/listen, uses the natural closed-eye 3D render
+  const currentMascotSrc =
+    isBlinking && (activePose === 'idle' || activePose === 'listen')
+      ? mascotSleepImg
+      : POSE_IMAGES[activePose] ?? mascot3dImg
 
   // 3. Optical Mass Normalization per Pose
   const mascotBaseScale =
@@ -443,48 +454,6 @@ const Mascot = memo(function Mascot({
                   }}
                 />
               </AnimatePresence>
-
-              {/* Natural Eye Blinking Layer with Cyan Eyelids */}
-              {supportsBlink && blinkKey > 0 ? (
-                <svg
-                  viewBox="0 0 200 200"
-                  aria-hidden="true"
-                  style={{
-                    position: 'absolute',
-                    inset: 0,
-                    width: '100%',
-                    height: '100%',
-                    overflow: 'visible',
-                    pointerEvents: 'none',
-                    zIndex: 2,
-                  }}
-                >
-                  <motion.ellipse
-                    key={`left-${blinkKey}`}
-                    cx={64.5}
-                    cy={113}
-                    rx={23}
-                    ry={24}
-                    fill="#44D5DE"
-                    initial={{ scaleY: 0 }}
-                    animate={{ scaleY: [0, 1, 0] }}
-                    transition={{ duration: BLINK_MS / 1000, ease: 'easeInOut' }}
-                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-                  />
-                  <motion.ellipse
-                    key={`right-${blinkKey}`}
-                    cx={133}
-                    cy={115}
-                    rx={23}
-                    ry={24}
-                    fill="#44D5DE"
-                    initial={{ scaleY: 0 }}
-                    animate={{ scaleY: [0, 1, 0] }}
-                    transition={{ duration: BLINK_MS / 1000, ease: 'easeInOut' }}
-                    style={{ transformBox: 'fill-box', transformOrigin: 'center' }}
-                  />
-                </svg>
-              ) : null}
             </motion.div>
           </motion.div>
         </motion.div>
