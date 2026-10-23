@@ -79,6 +79,17 @@ describe('satyaMachine — start and modes', () => {
       chips: [],
       lastBand: null,
       dismissed: false,
+      // Finale: no captions, quotes, meeting or call state exist before consent.
+      lines: [],
+      quotes: [],
+      meeting: null,
+      speaking: false,
+      transcribing: false,
+      approver: null,
+      callStartedAt: null,
+      callDemo: false,
+      callStatus: null,
+      health: null,
     })
   })
 
@@ -416,5 +427,154 @@ describe('satyaMachine — card actions, timers and purity', () => {
         event: unknown as unknown as CompanionEvent,
       }),
     ).toBe(state)
+  })
+})
+
+describe('satyaMachine — finale: captions, quotes, meetings, screen findings', () => {
+  function listening(): SatyaState {
+    return stateFrom([
+      { type: 'SET_MODE', mode: 'WATCHING' },
+      { type: 'EVENT', event: event('call.started', { state: 'ACTIVE', headline: 'Call', call_id: 'call_1', case_id: 'case_1' }) },
+    ])
+  }
+
+  const LINE = {
+    id: 'l1',
+    text: 'Transfer it to a new escrow account and keep this between us.',
+    t_start_s: 4,
+    t_end_s: 8,
+    spans: [{ kind: 'ask' as const, code: 'A1', start: 17, end: 31 }],
+    latency_ms: 800,
+  }
+
+  it('shows captions of the current call in the live card, newest last', () => {
+    const state = satyaReducer(listening(), { type: 'SIGNAL', signal: { kind: 'caption', call_id: 'call_1', line: LINE } })
+    expect(state.lines).toEqual([LINE])
+    expect(state.card).toMatchObject({ kind: 'live', lines: [LINE] })
+  })
+
+  it('drops captions from another call and keeps at most eight lines', () => {
+    const other = satyaReducer(listening(), { type: 'SIGNAL', signal: { kind: 'caption', call_id: 'call_x', line: LINE } })
+    expect(other.lines).toEqual([])
+    let state = listening()
+    for (let i = 0; i < 12; i += 1) {
+      state = satyaReducer(state, {
+        type: 'SIGNAL',
+        signal: { kind: 'caption', call_id: 'call_1', line: { ...LINE, id: `l${i}` } },
+      })
+    }
+    expect(state.lines.map((l) => l.id)).toEqual(['l4', 'l5', 'l6', 'l7', 'l8', 'l9', 'l10', 'l11'])
+  })
+
+  it('clears captions when the call stops (memory only)', () => {
+    const withLine = satyaReducer(listening(), { type: 'SIGNAL', signal: { kind: 'caption', call_id: 'call_1', line: LINE } })
+    const stopped = satyaReducer(withLine, { type: 'EVENT', event: event('call.stopped', { state: 'ACTIVE', headline: 'stop' }) })
+    expect(stopped.lines).toEqual([])
+    expect(stopped.callId).toBeNull()
+  })
+
+  it('puts the exact quotes and the directory approver on a call alert, relaying the band', () => {
+    const chips = satyaReducer(listening(), {
+      type: 'EVENT',
+      event: event('live.chips', {
+        state: 'ACTIVE',
+        headline: 'chips',
+        call_id: 'call_1',
+        chips: [{ code: 'A5', at_s: 9 }],
+        quotes: [{ code: 'A5', text: 'Skip the usual approval', at_s: 9 }],
+      }),
+    })
+    const alert = satyaReducer(chips, {
+      type: 'EVENT',
+      event: event('alert.raised', {
+        state: 'ALERT',
+        headline: 'Pause',
+        band: 'HOLD',
+        call_id: 'call_1',
+        approver_name: 'Rajesh Iyer',
+        next_actions: [
+          { id: 'verify', label: 'Verify', variant: 'primary' },
+          { id: 'copy_reply', label: 'Copy', variant: 'outline' },
+          { id: 'open_notebook', label: 'Notebook', variant: 'outline' },
+        ],
+      }),
+    })
+    expect(alert.card).toMatchObject({
+      kind: 'alert',
+      band: 'HOLD',
+      approver: 'Rajesh Iyer',
+      context: 'call',
+      quotes: [{ code: 'A5', text: 'Skip the usual approval' }],
+    })
+    // In a call the third action offers video liveness tips.
+    expect(alert.card?.kind === 'alert' && alert.card.actions.map((a) => a.id)).toEqual(['verify', 'copy_reply', 'liveness'])
+  })
+
+  it('goes back to the live captions when an alert is dismissed during a call', () => {
+    const alert = satyaReducer(listening(), {
+      type: 'EVENT',
+      event: event('alert.raised', { state: 'ALERT', headline: 'Pause', band: 'VERIFY', call_id: 'call_1' }),
+    })
+    const dismissed = satyaReducer(alert, { type: 'CARD_ACTION', cardId: alert.card!.id, actionId: 'dismiss' })
+    expect(dismissed.card?.kind).toBe('live')
+    expect(dismissed.card?.kind === 'live' && dismissed.card.band).toBe('VERIFY')
+  })
+
+  it('names the meeting app on the call ask', () => {
+    const state = satyaReducer(watching(), { type: 'CALL_HINT', hintId: 'm1', source: 'loopback', app: 'Google Meet' })
+    expect(state.card).toMatchObject({ kind: 'call_ask', app: 'Google Meet' })
+  })
+
+  const FINDING = {
+    app: 'Google Chrome',
+    meeting: null,
+    asks: [{ code: 'A7' as const, text: 'Updated bank details', at_s: null }],
+    cues: [],
+    accounts_masked: ['••••7788'],
+    unknown_accounts_masked: ['••••7788'],
+    vendors: ['Narmada Demo Logistics LLP'],
+    suspicious: true,
+  }
+
+  it('shows a screen finding, but never over an alert', () => {
+    const shown = satyaReducer(watching(), {
+      type: 'SIGNAL',
+      id: 's1',
+      signal: { kind: 'text_check', source: 'screen', finding: FINDING, on_demand: false },
+    })
+    expect(shown.card).toMatchObject({ kind: 'screen', source: 'screen' })
+    const alert = satyaReducer(watching(), {
+      type: 'EVENT',
+      event: event('alert.raised', { state: 'ALERT', headline: 'Pause', band: 'HOLD' }),
+    })
+    const blocked = satyaReducer(alert, {
+      type: 'SIGNAL',
+      signal: { kind: 'text_check', source: 'screen', finding: FINDING, on_demand: false },
+    })
+    expect(blocked.card?.kind).toBe('alert')
+  })
+
+  it('ignores a clean ambient scan but answers an on-demand one', () => {
+    const clean = { ...FINDING, asks: [], unknown_accounts_masked: [], vendors: [], suspicious: false }
+    const ambient = satyaReducer(watching(), {
+      type: 'SIGNAL',
+      signal: { kind: 'text_check', source: 'screen', finding: clean, on_demand: false },
+    })
+    expect(ambient.card).toBeNull()
+    const asked = satyaReducer(watching(), {
+      type: 'SIGNAL',
+      signal: { kind: 'text_check', source: 'clipboard', finding: clean, on_demand: true },
+    })
+    expect(asked.card).toMatchObject({ kind: 'screen', source: 'clipboard' })
+  })
+
+  it('fails closed on a capture error: sleeps, clears the call and says why', () => {
+    const state = satyaReducer(listening(), {
+      type: 'SIGNAL',
+      signal: { kind: 'capture', state: 'error', reason: 'no system audio track' },
+    })
+    expect(state.userMode).toBe('SLEEPING')
+    expect(state.callId).toBeNull()
+    expect(state.card).toMatchObject({ kind: 'notice', tone: 'warn' })
   })
 })

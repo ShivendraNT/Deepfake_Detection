@@ -6,7 +6,7 @@
  * `DEMO REPLAY — NOT LIVE CAPTURE`. Nothing is uploaded except the normal local `/live` chunks.
  */
 
-import { startPipeline, stopPipeline } from './pipeline'
+import { startPipeline, stopPipeline, type PipelineHooks } from './pipeline'
 
 export const REPLAY_LABEL = 'DEMO REPLAY — NOT LIVE CAPTURE'
 
@@ -19,9 +19,10 @@ export interface ReplayStatus {
   reason?: string
 }
 
-export interface ReplayOptions {
-  onLevel?: (rms: number) => void
+export interface ReplayOptions extends PipelineHooks {
   onStatus?: (status: ReplayStatus) => void
+  /** Also play the recording on the speakers, so the room hears the "caller". */
+  audible?: boolean
 }
 
 let replayContext: AudioContext | null = null
@@ -53,8 +54,6 @@ export async function startReplay(
 ): Promise<void> {
   await stopReplay(false)
   const run = ++replayRun
-  options.onStatus?.({ state: 'capturing', label: REPLAY_LABEL })
-
   try {
     const bytes = await loadAudioBytes(source)
     if (run !== replayRun) return
@@ -74,16 +73,19 @@ export async function startReplay(
     const node = ctx.createBufferSource()
     node.buffer = decoded
     node.connect(destination)
+    if (options.audible) node.connect(ctx.destination)
     replaySource = node
     node.onended = () => {
       void stopReplay(true, options)
     }
 
-    await startPipeline(destination.stream, callId, options.onLevel)
+    const { onStatus: _status, audible: _audible, ...hooks } = options
+    await startPipeline(destination.stream, callId, hooks)
     if (run !== replayRun) return
 
     if (ctx.state === 'suspended') await ctx.resume()
     node.start()
+    options.onStatus?.({ state: 'capturing', label: REPLAY_LABEL })
   } catch (error) {
     if (run !== replayRun) return
     options.onStatus?.({ state: 'error', label: REPLAY_LABEL, reason: errorOf(error) })

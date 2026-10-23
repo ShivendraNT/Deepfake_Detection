@@ -50,3 +50,6 @@ sih/
 .DS_Store
 .idea/
 .vscode/
+
+# Local model / voice caches (make asr, make demo-audio)
+.cache/

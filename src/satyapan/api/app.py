@@ -2,7 +2,11 @@
 
 from __future__ import annotations
 
+import os
 import re
+import threading
+from collections.abc import AsyncIterator
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,9 +28,33 @@ from satyapan.settings import Settings, get_settings
 _TASK_RE = re.compile(r"(T\d{2})")
 
 
+def _warm_speech_engine(state: AppState) -> None:
+    """`make run` sets SATYAPAN_ASR_WARMUP=1: load Whisper now, in the background, so the first
+    sentence of the demo call is not slow. Off by default (tests never load a model)."""
+    if os.environ.get("SATYAPAN_ASR_WARMUP") != "1":
+        return
+    warm = getattr(state.transcriber(), "warm_up", None)
+    if warm is None:
+        return
+
+    def run() -> None:
+        try:
+            warm()
+        except Exception:  # noqa: BLE001 - the error is reported by /companion/health
+            return
+
+    threading.Thread(target=run, name="asr-warmup", daemon=True).start()
+
+
 def create_app(settings: Settings | None = None, state: AppState | None = None) -> FastAPI:
     settings = settings or get_settings()
-    app = FastAPI(title="Satyapan — Payment Verification Desk", version="0.1.0")
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI) -> AsyncIterator[None]:
+        _warm_speech_engine(app.state.satyapan)
+        yield
+
+    app = FastAPI(title="Satyapan — Payment Verification Desk", version="0.1.0", lifespan=lifespan)
     app.state.satyapan = state or AppState.build(settings)
     app.add_middleware(
         CORSMiddleware,

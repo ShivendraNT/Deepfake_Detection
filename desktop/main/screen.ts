@@ -265,6 +265,52 @@ function scanError(error: unknown): ScreenScanResult {
   }
 }
 
+async function ocrWindows(): Promise<string> {
+  const tmpImage = join(tmpdir(), `satyapan_screen_${Date.now()}.png`)
+  try {
+    writeFileSync(WINDOWS_SCRIPT_PATH, WINDOWS_OCR_SOURCE, 'utf-8')
+    const { stdout } = await execFileAsync(
+      powershellPath(),
+      ['-NoProfile', '-NonInteractive', '-ExecutionPolicy', 'Bypass', '-File', WINDOWS_SCRIPT_PATH, tmpImage],
+      { timeout: 20000, windowsHide: true, maxBuffer: 10 * 1024 * 1024 },
+    )
+    return stdout.replace(/^\uFEFF/, '')
+  } finally {
+    try {
+      if (existsSync(tmpImage)) unlinkSync(tmpImage)
+    } catch {}
+  }
+}
+
+async function ocrMac(): Promise<string> {
+  const tmpImage = join(tmpdir(), `satyapan_screen_${Date.now()}.png`)
+  try {
+    await execFileAsync('/usr/sbin/screencapture', ['-x', tmpImage], { timeout: 3000 })
+    const enginePath = await ensureOcrEngine()
+    if (enginePath === BINARY_PATH) {
+      const { stdout } = await execFileAsync(BINARY_PATH, [tmpImage], { timeout: 4000 })
+      return stdout
+    }
+    const { stdout } = await execFileAsync('/usr/bin/swift', [SCRIPT_PATH, tmpImage], { timeout: 8000 })
+    return stdout
+  } finally {
+    try {
+      if (existsSync(tmpImage)) unlinkSync(tmpImage)
+    } catch {}
+  }
+}
+
+/**
+ * On-device OCR of the screen, as plain text (finale). The screenshot file is deleted at once
+ * and the text is only handed to the local engine for a check; Satya's own windows are hidden
+ * from capture (content protection), so he never reads his own warnings.
+ */
+export async function captureScreenText(): Promise<string> {
+  if (process.platform === 'darwin') return ocrMac()
+  if (process.platform === 'win32') return ocrWindows()
+  throw new Error('Screen reading is available on macOS and Windows only.')
+}
+
 async function scanScreenWindows(): Promise<ScreenScanResult> {
   const tmpImage = join(tmpdir(), `satyapan_screen_${Date.now()}.png`)
   try {

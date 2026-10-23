@@ -48,6 +48,9 @@ export type CompanionEventType =
   | 'oob.result'
   | 'case.updated'
   | 'report.ready'
+  // Finale: speech-engine status for the active call (e.g. "asr_unavailable").
+  | 'call.status'
+  | 'screen.finding'
 
 export interface NextAction {
   id: string
@@ -80,6 +83,12 @@ export interface CompanionPayload {
   report?: ReportPackV2
   user_mode?: UserMode
   pose?: Pose
+  /** The exact words behind each ask chip, so the user sees *why* (finale). */
+  quotes?: AskQuote[]
+  status_code?: string | null
+  screen?: ScreenFinding | null
+  /** Who "Verify" will ask: resolved from the employee directory, never from the message. */
+  approver_name?: string | null
 }
 
 export interface CompanionEvent {
@@ -253,7 +262,7 @@ export interface ConnectionStatus {
 }
 
 /** The narrow surface exposed by `preload/index.ts` as `window.satyapan`. */
-export interface CompanionBridge {
+export interface CompanionBridge extends FinaleBridge {
   getConfig(): Promise<AppConfig>
   getState(): Promise<BridgeResult<CompanionState>>
   startSession(source: CompanionSource, label?: string): Promise<BridgeResult<SessionResult>>
@@ -307,7 +316,7 @@ export interface CompanionBridge {
   cardAction(cardId: string, actionId: string): void
   /** Bubble: content height changed; main re-places the window. */
   resizeBubble(height: number): void
-  setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>>
+  setUserMode(mode: UserMode, scopes?: Scopes): Promise<BridgeResult<CompanionState>>
   getPrefs(): Promise<Prefs>
   setPrefs(patch: Partial<Prefs>): Promise<Prefs>
   /** Main allow-lists `tel:1930`, `mailto:` and `https://cybercrime.gov.in`. */
@@ -379,7 +388,14 @@ export interface CardAction {
 /** Exactly one card is visible at a time. Text comes from copy.ts by key/code. */
 export type BubbleCard =
   | { kind: 'consent'; id: string; scopes: string[]; actions: CardAction[] }
-  | { kind: 'call_ask'; id: string; source: CaptureSourceKind; actions: CardAction[] }
+  | {
+      kind: 'call_ask'
+      id: string
+      source: CaptureSourceKind
+      actions: CardAction[]
+      /** e.g. "Google Meet", when the meeting was noticed from its window title. */
+      app?: string | null
+    }
   | {
       kind: 'file_ask'
       id: string
@@ -394,6 +410,13 @@ export type BubbleCard =
       coverage: Coverage
       seal: SealStatus
       elapsed_s: number
+      /** Finale: the last caption lines (memory only), the relayed band, engine status. */
+      lines?: CaptionLine[]
+      band?: Band | null
+      status?: string | null
+      transcribing?: boolean
+      demo?: boolean
+      started_at?: string | null
     }
   | { kind: 'result'; id: string; band: Band; headline: string; reasons: string[]; actions: CardAction[] }
   | {
@@ -404,7 +427,26 @@ export type BubbleCard =
       reasons: string[]
       chips: AskChip[]
       actions: CardAction[]
+      quotes?: AskQuote[]
+      approver?: string | null
+      context?: 'call' | 'file' | 'screen'
     }
+  | {
+      kind: 'screen'
+      id: string
+      source: 'screen' | 'clipboard'
+      finding: ScreenFinding
+      actions: CardAction[]
+    }
+  | {
+      kind: 'notice'
+      id: string
+      tone: 'neutral' | 'good' | 'warn'
+      title: string
+      body: string
+      actions: CardAction[]
+    }
+  | { kind: 'liveness'; id: string; actions: CardAction[] }
   | { kind: 'oob_wait'; id: string; approver_name: string; sent_at: string; actions: CardAction[] }
   | {
       kind: 'oob_result'
@@ -472,6 +514,12 @@ export interface ReportPackV2 {
 
 /** Local preferences only. Never leaves the laptop. */
 export interface Prefs {
+  /** Consent scopes the user chose (finale). */
+  scopes?: Scopes
+  /** Hide Satya's windows from screen sharing / screenshots (on by default). */
+  hide_from_capture?: boolean
+  /** Speech language for calls: English, Hindi, or auto-detect (routing only). */
+  call_language?: 'en' | 'hi' | 'auto'
   position?: { x: number; y: number }
   size?: 'S' | 'M' | 'L'
   sound?: boolean
@@ -503,4 +551,134 @@ export const USER_MODE_LABELS: Record<UserMode, string> = {
   WATCHING: 'Watching',
   SLEEPING: 'Sleeping',
   OFF: 'Off',
+}
+
+// ---------------------------------------------------------------------------------------------
+// Finale additions (live captions, meeting notice, Screen Guard, readiness). Still no scores.
+// ---------------------------------------------------------------------------------------------
+
+/** The exact words that produced an ask chip. */
+export interface AskQuote {
+  code: AskCode
+  text: string
+  at_s: number | null
+}
+
+export type CueCode = 'RUSH' | 'AUTHORITY' | 'UNREACHABLE' | 'AMOUNT'
+
+/** A highlight inside a caption. kind "cue" is informational and never changes a band. */
+export interface TranscriptHighlight {
+  kind: 'ask' | 'cue'
+  code: string
+  start: number
+  end: number
+}
+
+/** One caption line from the other side of the call. Memory only; never saved. */
+export interface CaptionLine {
+  id: string
+  text: string
+  t_start_s: number
+  t_end_s: number | null
+  spans: TranscriptHighlight[]
+  latency_ms: number | null
+}
+
+/** What Screen Guard / the clipboard check noticed. No text is kept. */
+export interface ScreenFinding {
+  app: string | null
+  meeting: string | null
+  asks: AskQuote[]
+  cues: string[]
+  accounts_masked: string[]
+  unknown_accounts_masked: string[]
+  vendors: string[]
+  suspicious: boolean
+}
+
+/** What the user agreed to on the consent card. Each scope can be switched off. */
+export interface Scopes {
+  /** Notice meetings from window titles (no audio, no recording). */
+  meetings: boolean
+  /** Offer to listen when a call starts; listen only after a yes for that call. */
+  listen: boolean
+  /** Glance at on-screen text every few seconds (on-device OCR, nothing stored). */
+  screen: boolean
+  /** Check files you hand over. */
+  files: boolean
+}
+
+export const DEFAULT_SCOPES: Scopes = { meetings: true, listen: true, screen: true, files: true }
+
+export interface MeetingInfo {
+  app: string
+  title: string
+}
+
+export interface AsrHealth {
+  engine: string
+  model: string
+  ready: boolean
+  loading?: boolean
+  error: string | null
+  warmup_ms?: number | null
+  last_latency_ms?: number | null
+  language?: string
+}
+
+export interface HealthInfo {
+  backend: boolean
+  asr: AsrHealth | null
+  voice_model: boolean
+  vendors: number
+  oob_url?: string
+  error?: string
+}
+
+/** Local signals from main (OS-side) to the renderer windows. Never sent to the backend. */
+export type SatyaSignal =
+  | { kind: 'meeting'; meeting: MeetingInfo | null }
+  | {
+      kind: 'capture'
+      state: 'starting' | 'capturing' | 'stopped' | 'error'
+      reason?: string
+      source?: CaptureSourceKind
+      call_id?: string
+    }
+  | { kind: 'speech'; active: boolean }
+  | { kind: 'level'; value: number }
+  | { kind: 'transcribing'; index: number }
+  | { kind: 'caption'; call_id: string; line: CaptionLine }
+  | {
+      kind: 'text_check'
+      source: 'screen' | 'clipboard'
+      finding: ScreenFinding
+      on_demand: boolean
+    }
+  | { kind: 'health'; health: HealthInfo }
+  | { kind: 'hotkey'; action: 'stop' | 'wake' | 'listen' | 'scan' | 'replay' | 'clipboard' }
+
+export const CUE_LABELS: Record<CueCode, string> = {
+  RUSH: 'Rushing you',
+  AUTHORITY: 'Claims to be the boss',
+  UNREACHABLE: "Says they can't talk",
+  AMOUNT: 'Money amount',
+}
+
+export interface CallStarted {
+  call_id: string
+  case_id: string
+}
+
+/** Finale bridge methods. Optional so the browser mock and older builds stay compatible. */
+export interface FinaleBridge {
+  startCall?(source?: CaptureSourceKind): Promise<BridgeResult<CallStarted>>
+  stopCall?(): Promise<BridgeResult<null>>
+  requestOob?(caseId: string): Promise<BridgeResult<OobTicket>>
+  reportPack?(caseId: string): Promise<BridgeResult<ReportPackV2>>
+  scanScreen?(): Promise<BridgeResult<ScreenFinding>>
+  checkClipboardText?(): Promise<BridgeResult<ScreenFinding>>
+  getHealth?(): Promise<BridgeResult<HealthInfo>>
+  onSignal?(callback: (signal: SatyaSignal) => void): () => void
+  setScopes?(scopes: Scopes): Promise<BridgeResult<Scopes>>
 }

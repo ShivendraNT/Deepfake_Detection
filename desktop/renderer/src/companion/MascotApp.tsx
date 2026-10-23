@@ -1,61 +1,46 @@
 /**
  * MascotApp — the mascot window (`?view=companion`).
  *
- * Satya is drawn at 96 px in a 280×280 transparent window. The window is click-through except
- * while the pointer is over Satya or an open petal. One pure reducer owns his mood; this shell
- * only wires gestures, the menu and the bridge.
+ * Satya lives in a 280×280 transparent window that is click-through except over him or an open
+ * petal. The pure reducer (satyaMachine) owns his state; this shell wires gestures, the radial
+ * menu, quips and the living sprite. Pet him by rubbing the pointer over him; drop a file on him
+ * to have it checked; click for the menu; double-click for the Notebook.
  */
 
-import { useRef, useState, type DragEvent, type ReactNode } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import type { MotionValue } from 'framer-motion'
+import { useRef, useState, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
-import type { MascotMood, Pose } from '../../../shared/contracts'
-import { api, isMockBridge, toggleScreenGuard } from '../shared/api'
-import Mascot from './Mascot'
+import type { Pose } from '../../../shared/contracts'
+import type { SatyaPose } from '../satya/engine'
+import SatyaSprite, { type SatyaHandle } from '../satya/SatyaSprite'
+import { api, isMockBridge } from '../shared/api'
 import BubbleCardView from './bubble/BubbleCardView'
-import RadialMenu, { menuEdgeFromWindow, type MenuAction, type MenuEdge } from './RadialMenu'
+import RadialMenu, { menuEdgeFromWindow, type MenuEdge } from './RadialMenu'
+import type { SatyaState } from './satyaMachine'
 import { useDrag } from './useDrag'
 import { useHitArea } from './useHitArea'
 import { useSatya } from './useSatya'
 
-export interface MascotAppProps {
-  companion?: ReactNode
+/** Contract pose + context → the richer set of poses the sprite can act out. */
+export function spritePose(state: Pick<SatyaState, 'pose' | 'card' | 'lastBand' | 'userMode'>): SatyaPose {
+  const pose: Pose = state.pose
+  if (state.userMode === 'OFF') return 'off'
+  if (pose === 'alert') {
+    if (state.card?.kind === 'oob_wait') return 'verify'
+    if (state.lastBand === 'HOLD' || (state.card?.kind === 'alert' && state.card.band === 'HOLD')) return 'hold'
+    return 'alert'
+  }
+  return pose
 }
 
-const MOOD: Record<Pose, MascotMood> = {
-  sleep: 'sleepy',
-  idle: 'attentive',
-  listen: 'attentive',
-  think: 'focused',
-  alert: 'calm_alert',
-  relief: 'attentive',
-  write: 'writing',
-  catch: 'attentive',
-  wave: 'attentive',
-  off: 'off',
-}
-
-interface CompatMascotProps {
-  pose: Pose
-  mood: MascotMood
-  audioLevel: number
-  look: { dx: number; dy: number; near: boolean }
-  dragging: boolean
-  dragVelocity: MotionValue<{ x: number; y: number }>
-  size: number
-  reducedMotion?: boolean
-}
-
-// F06 owns Mascot.tsx. The cast lets this shell pass the finale props while the older F06 preview
-// component still reads `mood`; a landed F06 simply ignores the extra prop.
-const SatyaFigure = Mascot as unknown as (props: CompatMascotProps) => JSX.Element
-
-export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
-  const satya = useSatya()
+export default function MascotApp(): JSX.Element {
+  const sprite = useRef<SatyaHandle | null>(null)
+  const satya = useSatya({ onEmote: (emote) => sprite.current?.play(emote) })
+  const reduced = useReducedMotion() ?? false
   const [menuOpen, setMenuOpen] = useState(false)
   const [menuEdge, setMenuEdge] = useState<MenuEdge>('none')
   const fileInput = useRef<HTMLInputElement | null>(null)
+  const rub = useRef({ lastX: 0, dir: 0, flips: 0, at: 0 })
 
   const drag = useDrag({
     onClick: () => {
@@ -63,6 +48,7 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
         setMenuOpen(false)
         return
       }
+      sprite.current?.play('boop')
       setMenuEdge(menuEdgeFromWindow())
       setMenuOpen(true)
     },
@@ -73,17 +59,27 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
   })
 
   const hit = useHitArea(menuOpen || drag.dragging)
+  const velocity = drag.velocity.get()
 
-  function handleMenu(action: MenuAction): void {
-    if (action === 'check') {
-      fileInput.current?.click()
-      return
+  /** Rubbing back and forth over Satya pets him (hearts, giggles). */
+  function handleHoverMove(event: ReactPointerEvent<HTMLElement>): void {
+    if (drag.dragging || event.buttons !== 0) return
+    const r = rub.current
+    const dx = event.clientX - r.lastX
+    r.lastX = event.clientX
+    if (Math.abs(dx) < 2) return
+    const dir = Math.sign(dx)
+    const now = performance.now()
+    if (now - r.at > 600) r.flips = 0
+    if (dir !== r.dir) {
+      r.flips += 1
+      r.dir = dir
+      r.at = now
     }
-    if (action === 'guard') {
-      toggleScreenGuard()
-      return
+    if (r.flips >= 3) {
+      sprite.current?.pet()
+      satya.onPet()
     }
-    satya.onMenu(action)
   }
 
   function handleDragOver(event: DragEvent<HTMLElement>): void {
@@ -103,6 +99,8 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
     if (file) satya.onFileDrop(file)
   }
 
+  const pose = spritePose(satya.state)
+
   return (
     <div className="relative h-full w-full select-none overflow-visible bg-transparent">
       <input
@@ -117,68 +115,76 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
         }}
       />
 
-      {companion ?? (
-        <div className="absolute left-1/2 top-1/2 h-[132px] w-[132px] -translate-x-1/2 -translate-y-1/2">
-          <div
-            className="h-full w-full cursor-grab touch-none active:cursor-grabbing"
-            role="button"
-            tabIndex={0}
-            aria-label="Satya. Click for the menu, double-click for the Notebook, or drop a file."
-            {...drag.handlers}
-            onPointerEnter={hit.onPointerEnter}
-            onPointerLeave={hit.onPointerLeave}
-            onDragEnter={handleDragOver}
-            onDragOver={handleDragOver}
-            onDragLeave={handleDragLeave}
-            onDrop={handleDrop}
-            onKeyDown={(event) => {
-              if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault()
-                setMenuEdge(menuEdgeFromWindow())
-                setMenuOpen((open) => !open)
-              }
-            }}
-          >
-            <motion.div
-              className="grid h-full w-full place-items-center drop-shadow-[0_4px_10px_rgba(20,16,40,0.25)]"
-              style={{ rotate: drag.tilt }}
-              animate={{ scaleY: drag.dragging ? 0.96 : drag.pressed ? 0.94 : 1 }}
-              transition={{ type: 'spring', stiffness: 420, damping: 24 }}
-            >
-              <SatyaFigure
-                pose={satya.state.pose}
-                mood={MOOD[satya.state.pose]}
-                audioLevel={0}
-                look={satya.look}
-                dragging={drag.dragging}
-                dragVelocity={drag.velocity}
-                size={128}
-              />
-            </motion.div>
-          </div>
+      <div className="absolute left-1/2 top-[56%] h-[150px] w-[150px] -translate-x-1/2 -translate-y-1/2">
+        <div
+          className="grid h-full w-full cursor-grab touch-none place-items-center active:cursor-grabbing"
+          role="button"
+          tabIndex={0}
+          aria-label="Satya. Click for the menu, double-click for the Notebook, or drop a file on him."
+          {...drag.handlers}
+          onPointerEnter={hit.onPointerEnter}
+          onPointerLeave={hit.onPointerLeave}
+          onPointerMove={(event) => {
+            drag.handlers.onPointerMove(event)
+            handleHoverMove(event)
+          }}
+          onDragEnter={handleDragOver}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onKeyDown={(event) => {
+            if (event.key === 'Enter' || event.key === ' ') {
+              event.preventDefault()
+              setMenuEdge(menuEdgeFromWindow())
+              setMenuOpen((open) => !open)
+            }
+          }}
+        >
+          <SatyaSprite
+            ref={sprite}
+            pose={pose}
+            size={128}
+            level={satya.level}
+            look={satya.look}
+            talking={Boolean(satya.quip) && !satya.state.callId}
+            dragging={drag.dragging}
+            dragVelocity={velocity}
+            reducedMotion={reduced}
+          />
         </div>
-      )}
+      </div>
 
       <RadialMenu
         open={menuOpen}
         edge={menuEdge}
         userMode={satya.state.userMode}
-        onAction={handleMenu}
+        inCall={Boolean(satya.state.callId)}
+        onAction={(action) => {
+          if (action === 'check') {
+            fileInput.current?.click()
+            return
+          }
+          satya.onMenu(action)
+        }}
         onClose={() => setMenuOpen(false)}
         onPointerEnter={hit.onPointerEnter}
         onPointerLeave={hit.onPointerLeave}
       />
 
       <AnimatePresence>
-        {satya.notice ? (
+        {satya.quip && !menuOpen ? (
           <motion.div
-            key="notice"
-            initial={{ opacity: 0, y: 4 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0 }}
-            className="pointer-events-none absolute left-1/2 top-1.5 z-40 w-[260px] -translate-x-1/2 rounded-[10px] bg-[rgba(28,24,40,0.94)] px-3 py-2 text-center text-[12px] leading-snug text-[#EDE8F5]"
+            key={satya.quip.id}
+            initial={{ opacity: 0, y: 8, scale: 0.8 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -4, scale: 0.9 }}
+            transition={{ type: 'spring', stiffness: 520, damping: 26 }}
+            className="pointer-events-none absolute left-1/2 top-2 z-40 max-w-[250px] -translate-x-1/2"
           >
-            {satya.notice}
+            <div className="relative rounded-2xl border border-black/10 bg-white px-3 py-1.5 text-center text-[12.5px] font-semibold leading-snug text-[#1B2F38] shadow-[0_6px_18px_rgba(10,30,45,0.25)]">
+              {satya.quip.text}
+              <span className="absolute -bottom-[6px] left-1/2 h-3 w-3 -translate-x-1/2 rotate-45 border-b border-r border-black/10 bg-white" />
+            </div>
           </motion.div>
         ) : null}
       </AnimatePresence>
@@ -196,8 +202,9 @@ export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
             <BubbleCardView
               card={satya.state.card}
               tail="right"
+              lang={satya.lang}
               onAction={(actionId) => api.cardAction(satya.state.card!.id, actionId)}
-              onClose={() => api.hideCard()}
+              onClose={() => api.cardAction(satya.state.card!.id, 'dismiss')}
             />
           </motion.div>
         ) : null}

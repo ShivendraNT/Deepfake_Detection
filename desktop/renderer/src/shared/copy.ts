@@ -20,6 +20,219 @@ interface CopyEntry {
 }
 
 export const COPY_TABLE: Record<string, CopyEntry> = {
+  // ---- Finale: consent scopes, live captions, alerts with quotes, Screen Guard, notices ----
+  'consent.body.v2': {
+    en: "I'll keep watch for payment tricks. I ask before I listen to any call, and nothing is saved unless you say so.",
+    hinglish: 'Main payment wale dhokhon par nazar rakhunga. Kisi bhi call ko sunne se pehle poochhunga, aur aapke kahe bina kuch save nahi hoga.',
+    hi: 'मैं पेमेंट से जुड़े धोखों पर नज़र रखूँगा। किसी भी कॉल को सुनने से पहले पूछूँगा, और आपकी इजाज़त के बिना कुछ भी सेव नहीं होगा।',
+  },
+  'consent.scope.meetings': {
+    en: 'Notice when a meeting starts (window names only)',
+    hinglish: 'Meeting shuru hone par pehchaan-na (sirf window ka naam)',
+    hi: 'मीटिंग शुरू होने पर पहचानना (सिर्फ़ विंडो का नाम)',
+  },
+  'consent.scope.listen_yes': {
+    en: 'Listen to a call only after you say yes',
+    hinglish: 'Call tabhi sunna jab aap haan kahein',
+    hi: 'कॉल तभी सुनना जब आप हाँ कहें',
+  },
+  'consent.scope.screen': {
+    en: 'Glance at on-screen text for payment tricks (on this laptop)',
+    hinglish: 'Screen ke text mein payment dhokhe dekhna (isi laptop par)',
+    hi: 'स्क्रीन के टेक्स्ट में पेमेंट धोखे देखना (इसी लैपटॉप पर)',
+  },
+  'consent.scope.files_v2': {
+    en: 'Check files you hand me',
+    hinglish: 'Aapki di hui files check karna',
+    hi: 'आपकी दी हुई फ़ाइलें जाँचना',
+  },
+  'consent.never': {
+    en: 'Never: your microphone, recordings, or sending anything off this laptop.',
+    hinglish: 'Kabhi nahi: aapka mic, recording, ya laptop se bahar kuch bhejna.',
+    hi: 'कभी नहीं: आपका माइक, रिकॉर्डिंग, या लैपटॉप से बाहर कुछ भेजना।',
+  },
+  'call.title.app': {
+    en: "You're in a {app} call.",
+    hinglish: 'Aap {app} call par hain.',
+    hi: 'आप {app} कॉल पर हैं।',
+  },
+  'live.listening_to': {
+    en: 'Listening to {app}',
+    hinglish: '{app} sun raha hoon',
+    hi: '{app} सुन रहा हूँ',
+  },
+  'live.the_call': { en: 'the call', hinglish: 'call', hi: 'कॉल' },
+  'live.demo': {
+    en: 'DEMO REPLAY — NOT LIVE CAPTURE',
+    hinglish: 'DEMO REPLAY — NOT LIVE CAPTURE',
+    hi: 'DEMO REPLAY — NOT LIVE CAPTURE',
+  },
+  'live.waiting': {
+    en: 'Waiting for the other person to speak…',
+    hinglish: 'Saamne wale ke bolne ka intezaar…',
+    hi: 'सामने वाले के बोलने का इंतज़ार…',
+  },
+  'live.band.PASS': {
+    en: 'Nothing risky asked so far',
+    hinglish: 'Abhi tak kuch risky nahi maanga',
+    hi: 'अभी तक कुछ जोखिम भरा नहीं माँगा गया',
+  },
+  'live.band.VERIFY': {
+    en: 'Verify before you pay',
+    hinglish: 'Paise bhejne se pehle verify karo',
+    hi: 'पैसे भेजने से पहले पुष्टि करें',
+  },
+  'live.band.HOLD': {
+    en: "Hold — don't pay on this call",
+    hinglish: 'Ruko — is call par payment mat karo',
+    hi: 'रुकिए — इस कॉल पर पेमेंट न करें',
+  },
+  'live.note': {
+    en: 'Captions stay on this laptop and vanish when the call ends.',
+    hinglish: 'Captions isi laptop par rehte hain aur call khatam hote hi mit jaate hain.',
+    hi: 'कैप्शन इसी लैपटॉप पर रहते हैं और कॉल ख़त्म होते ही मिट जाते हैं।',
+  },
+  'action.stop_listening': { en: 'Stop listening', hinglish: 'Sunna band karo', hi: 'सुनना बंद करें' },
+  'cue.RUSH': { en: 'Rushing you', hinglish: 'Jaldi karwa rahe hain', hi: 'जल्दबाज़ी करवा रहे हैं' },
+  'cue.AUTHORITY': { en: 'Claims to be the boss', hinglish: 'Boss hone ka daava', hi: 'बॉस होने का दावा' },
+  'cue.UNREACHABLE': { en: "Says they can't talk", hinglish: 'Kehte hain baat nahi kar sakte', hi: 'कहते हैं बात नहीं कर सकते' },
+  'cue.AMOUNT': { en: 'Money amount', hinglish: 'Rakam', hi: 'रक़म' },
+  'cue.note': {
+    en: 'Grey hints are context only. They never change the decision.',
+    hinglish: 'Grey hints sirf context hain. Inse faisla nahi badalta.',
+    hi: 'ग्रे संकेत सिर्फ़ संदर्भ हैं। इनसे फ़ैसला नहीं बदलता।',
+  },
+  'alert.said': { en: 'What they said', hinglish: 'Unhone kya kaha', hi: 'उन्होंने क्या कहा' },
+  'alert.body.v2': {
+    en: "That doesn't prove who is speaking — so check the payment with {approver} on their own phone.",
+    hinglish: 'Isse pakka nahi hota ki bol kaun raha hai — isliye payment {approver} se unke apne phone par confirm karo.',
+    hi: 'इससे पक्का नहीं होता कि बोल कौन रहा है — इसलिए पेमेंट {approver} से उनके अपने फ़ोन पर पक्का करें।',
+  },
+  'action.liveness': { en: 'Video check tips', hinglish: 'Video check tips', hi: 'वीडियो जाँच के सुझाव' },
+  'liveness.title': {
+    en: 'Is the face real? Try a quick check',
+    hinglish: 'Chehra asli hai? Ek chhota check karo',
+    hi: 'क्या चेहरा असली है? एक छोटी जाँच करें',
+  },
+  'liveness.body': {
+    en: 'Live face-swaps often glitch when people move. Politely ask them to:',
+    hinglish: 'Live face-swap hilne-dulne par aksar gadbad karte hain. Unse vinamrata se kaho:',
+    hi: 'लाइव फ़ेस-स्वैप हिलने-डुलने पर अक्सर गड़बड़ाते हैं। उनसे विनम्रता से कहें:',
+  },
+  'liveness.1': {
+    en: 'Turn their head fully to one side',
+    hinglish: 'Sir poori tarah ek taraf ghumaayein',
+    hi: 'सिर पूरी तरह एक तरफ़ घुमाएँ',
+  },
+  'liveness.2': {
+    en: 'Wave a hand slowly in front of their face',
+    hinglish: 'Chehre ke saamne dheere se haath hilaayein',
+    hi: 'चेहरे के सामने धीरे से हाथ हिलाएँ',
+  },
+  'liveness.3': {
+    en: "Hold up today's date written on paper",
+    hinglish: 'Kaagaz par aaj ki date likh kar dikhaayein',
+    hi: 'काग़ज़ पर आज की तारीख़ लिखकर दिखाएँ',
+  },
+  'liveness.note': {
+    en: "A pass doesn't prove who they are. Verifying the payment does.",
+    hinglish: 'Pass hone se pehchaan pakki nahi hoti. Payment verify karna zaroori hai.',
+    hi: 'पास होने से पहचान पक्की नहीं होती। पेमेंट की पुष्टि ही पक्की करती है।',
+  },
+  'screen.title': {
+    en: 'I noticed something on your screen',
+    hinglish: 'Aapki screen par kuch dikha',
+    hi: 'आपकी स्क्रीन पर कुछ दिखा',
+  },
+  'screen.title.clipboard': {
+    en: 'About what you copied',
+    hinglish: 'Jo aapne copy kiya',
+    hi: 'जो आपने कॉपी किया',
+  },
+  'screen.clear': {
+    en: 'Looks OK — I found no payment tricks.',
+    hinglish: 'Theek lag raha hai — koi payment dhokha nahi mila.',
+    hi: 'ठीक लग रहा है — कोई पेमेंट धोखा नहीं मिला।',
+  },
+  'screen.unknown_account': {
+    en: '{vendor} is named next to an account that is not in your vendor master ({accounts}).',
+    hinglish: '{vendor} ke saath ek aisa account dikh raha hai jo vendor master mein nahi hai ({accounts}).',
+    hi: '{vendor} के साथ ऐसा खाता दिख रहा है जो वेंडर मास्टर में नहीं है ({accounts})।',
+  },
+  'screen.asks': { en: 'It asks for', hinglish: 'Isme maanga gaya', hi: 'इसमें माँगा गया' },
+  'screen.note': {
+    en: 'I read this on this laptop and kept nothing. Checking it properly saves it as evidence.',
+    hinglish: 'Maine ise isi laptop par padha aur kuch nahi rakha. Theek se check karne par yeh evidence ban jayega.',
+    hi: 'मैंने इसे इसी लैपटॉप पर पढ़ा और कुछ नहीं रखा। ठीक से जाँचने पर यह सबूत के रूप में सेव होगा।',
+  },
+  'action.check_this': { en: 'Check it properly', hinglish: 'Theek se check karo', hi: 'ठीक से जाँचें' },
+  'action.listen_now': { en: 'Listen to a call now', hinglish: 'Abhi call suno', hi: 'अभी कॉल सुनें' },
+  'action.open_settings': { en: 'Open setup checklist', hinglish: 'Setup checklist kholo', hi: 'सेटअप चेकलिस्ट खोलें' },
+  'action.ok': { en: 'OK', hinglish: 'Theek hai', hi: 'ठीक है' },
+  'notice.asr_missing.title': {
+    en: "My ears aren't installed yet",
+    hinglish: 'Mere kaan abhi install nahi hue',
+    hi: 'मेरे कान अभी इंस्टॉल नहीं हुए',
+  },
+  'notice.asr_missing.body': {
+    en: "I can't turn speech into words on this laptop. Run `make asr` in the Satyapan folder, then restart the engine.",
+    hinglish: 'Main is laptop par awaaz ko shabdon mein nahi badal pa raha. Satyapan folder mein `make asr` chalaayein, phir engine restart karein.',
+    hi: 'मैं इस लैपटॉप पर आवाज़ को शब्दों में नहीं बदल पा रहा। Satyapan फ़ोल्डर में `make asr` चलाएँ, फिर इंजन दोबारा शुरू करें।',
+  },
+  'notice.capture_error.title': {
+    en: "I couldn't hear the call",
+    hinglish: 'Main call sun nahi paaya',
+    hi: 'मैं कॉल सुन नहीं पाया',
+  },
+  'notice.capture_error.body': {
+    en: '{reason}. I stopped listening. Check the Screen & System Audio Recording permission for Satya.',
+    hinglish: '{reason}. Maine sunna band kar diya. Satya ke liye Screen & System Audio Recording permission check karein.',
+    hi: '{reason}। मैंने सुनना बंद कर दिया। Satya के लिए Screen & System Audio Recording अनुमति जाँचें।',
+  },
+  'notice.backend.title': {
+    en: "I can't reach my brain",
+    hinglish: 'Mera dimaag (engine) nahi mil raha',
+    hi: 'मेरा दिमाग़ (इंजन) नहीं मिल रहा',
+  },
+  'notice.backend.body': {
+    en: 'Start the local engine with `make run`, then wake me again.',
+    hinglish: '`make run` se local engine chalaayein, phir mujhe jagaayein.',
+    hi: '`make run` से लोकल इंजन चलाएँ, फिर मुझे जगाएँ।',
+  },
+  'notice.call_ended.title': {
+    en: 'The call ended, so I stopped listening.',
+    hinglish: 'Call khatam ho gayi, isliye maine sunna band kar diya.',
+    hi: 'कॉल ख़त्म हो गई, इसलिए मैंने सुनना बंद कर दिया।',
+  },
+  'notice.listening_stopped.title': {
+    en: 'I stopped listening.',
+    hinglish: 'Maine sunna band kar diya.',
+    hi: 'मैंने सुनना बंद कर दिया।',
+  },
+  'notice.call_ended.body': {
+    en: 'Captions were dropped. The chips and the decision are kept in your Notebook.',
+    hinglish: 'Captions mita diye gaye. Chips aur faisla Notebook mein hain.',
+    hi: 'कैप्शन मिटा दिए गए। चिप्स और फ़ैसला आपकी नोटबुक में हैं।',
+  },
+  'notice.voice_note.title': {
+    en: "I didn't judge the voice itself",
+    hinglish: 'Maine awaaz ko khud nahi parkha',
+    hi: 'मैंने आवाज़ को ख़ुद नहीं परखा',
+  },
+  'quip.hello': { en: 'Hi! I’m Satya.', hinglish: 'Namaste! Main Satya.', hi: 'नमस्ते! मैं सत्य हूँ।' },
+  'quip.watching': { en: 'On watch!', hinglish: 'Nazar rakh raha hoon!', hi: 'नज़र रख रहा हूँ!' },
+  'quip.sleep': { en: 'Zzz… wake me anytime.', hinglish: 'Zzz… jab chaaho jaga lena.', hi: 'Zzz… जब चाहें जगा लें।' },
+  'quip.listening': { en: "I'm listening.", hinglish: 'Sun raha hoon.', hi: 'सुन रहा हूँ।' },
+  'quip.hmm': { en: 'Hmm… {chip}?', hinglish: 'Hmm… {chip}?', hi: 'हम्म… {chip}?' },
+  'quip.pause': { en: "Wait! Don't pay yet.", hinglish: 'Ruko! Abhi paise mat bhejo.', hi: 'रुकिए! अभी पैसे न भेजें।' },
+  'quip.safe': { en: 'Phew, all good!', hinglish: 'Phew, sab theek!', hi: 'चलो, सब ठीक!' },
+  'quip.gulp': { en: 'Let me look…', hinglish: 'Dekhta hoon…', hi: 'देखता हूँ…' },
+  'quip.writing': { en: 'Writing your report…', hinglish: 'Report likh raha hoon…', hi: 'रिपोर्ट लिख रहा हूँ…' },
+  'quip.pet': { en: 'Hehe, that tickles!', hinglish: 'Hehe, gudgudi hoti hai!', hi: 'हीही, गुदगुदी होती है!' },
+  'quip.drop': { en: 'Drop it on me!', hinglish: 'Mujh par daal do!', hi: 'मुझ पर छोड़ दीजिए!' },
+  'quip.meeting': { en: '{app}? Want me to listen?', hinglish: '{app}? Sunun kya?', hi: '{app}? क्या मैं सुनूँ?' },
+  'quip.screen': { en: 'Look at this…', hinglish: 'Yeh dekho…', hi: 'यह देखिए…' },
+  'quip.bye': { en: 'Bye! Find me in the menu bar.', hinglish: 'Bye! Menu bar mein milunga.', hi: 'अलविदा! मेन्यू बार में मिलूँगा।' },
   // Consent Card
   'consent.title': {
     en: 'Can I keep watch?',
@@ -646,14 +859,13 @@ export function translateSectionTitle(title: string, lang: Lang = 'en'): string 
 
 /** Translates toast messages whether passed as a key or as raw English copy */
 export function translateToast(textOrKey: string, lang: Lang = 'en'): string {
-  if (lang === 'en') return textOrKey
-
   const trimmed = textOrKey.trim()
 
-  // 1. Direct key match
+  // 1. Direct key match (in every language, English included)
   if (COPY_TABLE[trimmed]) {
     return t(trimmed, lang)
   }
+  if (lang === 'en') return textOrKey
 
   // 2. Stopped listening with reason
   if (trimmed.toLowerCase().startsWith('i stopped listening:')) {
@@ -692,6 +904,15 @@ export function translateToast(textOrKey: string, lang: Lang = 'en'): string {
  * - Unknown key falls back to formatted readable label, NEVER the raw key name.
  * - Interpolates `{placeholder}` with provided `vars`.
  */
+/** Like `t`, but returns free text unchanged when it is not a copy key. */
+export function tx(textOrKey: string, lang: Lang = 'en', vars?: CopyVars): string {
+  if (COPY_TABLE[textOrKey]) return t(textOrKey, lang, vars)
+  if (!vars) return textOrKey
+  return textOrKey.replace(/\{(\w+)\}/g, (_, name: string) =>
+    vars[name] !== undefined ? String(vars[name]) : `{${name}}`,
+  )
+}
+
 export function t(key: string, lang: Lang = 'en', vars?: CopyVars): string {
   const entry = COPY_TABLE[key]
   let template: string

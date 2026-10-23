@@ -1,12 +1,14 @@
 /**
- * F10 loopback audio pipeline (ported from `extension/offscreen.js`).
+ * Loopback audio pipeline (F10, finale: utterance segmentation).
  *
- * Graph: MediaStream → 16 kHz AudioContext → PCM worklet → windower → ONNX score → backend.
- * The same worklet frames are accumulated into 10-second mono 16-bit WAV chunks. A silent
- * zero-gain sink keeps the graph pulled without re-routing the call audio to the speakers.
+ * Graph: MediaStream → 16 kHz AudioContext → PCM worklet → (a) utterance segmenter → WAV →
+ * `/live/{call_id}/chunk`, and (b) 5 s windower → ONNX voice score → `/live/{call_id}/voice`
+ * (only when the voice model files are installed). A silent zero-gain sink keeps the graph
+ * pulled without re-routing the call audio to the speakers.
  *
- * All network calls go to the local backend only (`127.0.0.1:8000`), exactly like the
- * extension's `/live/{call_id}/chunk` and `/live/{call_id}/voice` calls.
+ * Utterances are cut at the other person's pauses (see segmenter.ts), so a caption and its
+ * chips arrive about a second after they finish a sentence instead of up to 13 s later.
+ * All network calls go to the local backend only (`127.0.0.1:8000`).
  */
 
 import workletUrl from './lib/pcm_worklet.js?url'
@@ -15,16 +17,26 @@ import { createWindower, speechSeconds, type AudioWindow } from './lib/audio_win
 import { loadScorer, score } from './lib/onnx_scorer.js'
 import { THRESHOLDS } from './lib/thresholds.js'
 import { classifyWindows } from './lib/voice_rules.js'
+import { UtteranceSegmenter, type Utterance } from './segmenter'
 import { encodeWav } from './wav'
 
 export const API_BASE = 'http://127.0.0.1:8000'
 
 const SAMPLE_RATE = 16000
 const WINDOW_SECONDS = 5
-const CHUNK_SECONDS = 10
-const CHUNK_SAMPLES = SAMPLE_RATE * CHUNK_SECONDS
 const LEVEL_INTERVAL_MS = 50 // 20 Hz
-const REQUEST_TIMEOUT_MS = 15_000
+const REQUEST_TIMEOUT_MS = 30_000
+
+export interface PipelineHooks {
+  onLevel?: (rms: number) => void
+  onFrame?: () => void
+  /** The other person started (true) or stopped (false) speaking. */
+  onSpeech?: (active: boolean) => void
+  /** An utterance was sent to the speech engine (for a "transcribing…" hint). */
+  onUtterance?: (info: { index: number; tStart: number; tEnd: number }) => void
+  /** The backend no longer knows this call (stopped elsewhere): stop capturing. */
+  onCallGone?: () => void
+}
 
 interface VoiceWindowPayload {
   call_id: string
@@ -51,9 +63,8 @@ let speechTotal = 0
 let windowQueue: Promise<void> = Promise.resolve()
 
 let chunkQueue: Promise<void> = Promise.resolve()
-let chunkIndex = 0
-let chunkParts: Float32Array[] = []
-let chunkLength = 0
+let segmenter: UtteranceSegmenter | null = null
+let hooks: PipelineHooks = {}
 
 let scorerPromise: Promise<boolean> | null = null
 let scorerWarningSent = false
@@ -113,17 +124,22 @@ function floatToPcm16(frames: Float32Array): Int16Array {
   return pcm
 }
 
-async function postChunk(callId: string, index: number, blob: Blob): Promise<void> {
+class CallGoneError extends Error {}
+
+async function postChunk(callId: string, utterance: Utterance, blob: Blob): Promise<void> {
   const form = new FormData()
-  form.append('chunk_index', String(index))
-  form.append('audio', blob, `chunk-${index}.wav`)
-  const url = `${API_BASE}/live/${encodeURIComponent(callId)}/chunk?chunk_index=${index}`
+  form.append('chunk_index', String(utterance.index))
+  form.append('t_start_s', utterance.tStart.toFixed(2))
+  form.append('t_end_s', utterance.tEnd.toFixed(2))
+  form.append('audio', blob, `utterance-${utterance.index}.wav`)
+  const url = `${API_BASE}/live/${encodeURIComponent(callId)}/chunk`
   const response = await fetch(url, {
     method: 'POST',
     body: form,
     signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
   })
-  if (!response.ok) throw new Error(`chunk ${index}: HTTP ${response.status}`)
+  if (response.status === 404) throw new CallGoneError(`call ${callId} is no longer active`)
+  if (!response.ok) throw new Error(`utterance ${utterance.index}: HTTP ${response.status}`)
 }
 
 async function postVoice(callId: string, windows: VoiceWindowPayload[]): Promise<void> {
@@ -171,46 +187,19 @@ function enqueueWindow(win: AudioWindow, callId: string): void {
     .catch((error: unknown) => console.warn('[capture] voice window failed', error))
 }
 
-function snapshotChunk(): Float32Array {
-  const merged = new Float32Array(chunkLength)
-  let offset = 0
-  for (const part of chunkParts) {
-    merged.set(part, offset)
-    offset += part.length
-  }
-  return merged
-}
-
-function enqueueWav(callId: string, samples: Float32Array, label: string): void {
-  const index = chunkIndex
-  chunkIndex += 1
-  const blob = encodeWav(floatToPcm16(samples), SAMPLE_RATE)
+/** Encode one utterance and post it, strictly in order (the engine runs one at a time). */
+function enqueueUtterance(callId: string, utterance: Utterance): void {
+  const blob = encodeWav(floatToPcm16(utterance.samples), SAMPLE_RATE)
+  hooks.onUtterance?.({ index: utterance.index, tStart: utterance.tStart, tEnd: utterance.tEnd })
   chunkQueue = chunkQueue
-    .then(() => postChunk(callId, index, blob))
-    .catch((error: unknown) => console.warn(`[capture] ${label} ${index} failed`, error))
-}
-
-/** Accumulate worklet frames and emit one complete 10 s WAV at a time, in order. */
-function appendChunkFrames(frames: Float32Array, callId: string): void {
-  chunkParts.push(frames)
-  chunkLength += frames.length
-
-  while (chunkLength >= CHUNK_SAMPLES) {
-    const merged = snapshotChunk()
-    const complete = merged.slice(0, CHUNK_SAMPLES)
-    const remainder = merged.slice(CHUNK_SAMPLES)
-    chunkParts = remainder.length > 0 ? [remainder] : []
-    chunkLength = remainder.length
-    enqueueWav(callId, complete, 'chunk')
-  }
-}
-
-function flushPartialChunk(callId: string): void {
-  if (chunkLength === 0) return
-  const partial = snapshotChunk()
-  chunkParts = []
-  chunkLength = 0
-  enqueueWav(callId, partial, 'final chunk')
+    .then(() => postChunk(callId, utterance, blob))
+    .catch((error: unknown) => {
+      if (error instanceof CallGoneError) {
+        if (activeCallId === callId) hooks.onCallGone?.()
+        return
+      }
+      console.warn(`[capture] utterance ${utterance.index} failed`, error)
+    })
 }
 
 function startLevelMeter(analyser: AnalyserNode, onLevel?: (rms: number) => void): void {
@@ -234,20 +223,26 @@ function startLevelMeter(analyser: AnalyserNode, onLevel?: (rms: number) => void
 export async function startPipeline(
   stream: MediaStream,
   callId: string,
-  onLevel?: (rms: number) => void,
-  onFrame?: () => void,
+  callbacks: PipelineHooks = {},
 ): Promise<void> {
   await stopPipeline()
 
   const myRun = ++runId
   activeCallId = callId
+  hooks = callbacks
   scores = []
   speechTotal = 0
   windowQueue = Promise.resolve()
   chunkQueue = Promise.resolve()
-  chunkIndex = 0
-  chunkParts = []
-  chunkLength = 0
+  segmenter = new UtteranceSegmenter(
+    (utterance) => {
+      if (myRun === runId && activeCallId === callId) enqueueUtterance(callId, utterance)
+    },
+    {},
+    (active) => {
+      if (myRun === runId) hooks.onSpeech?.(active)
+    },
+  )
 
   const ctx = new AudioContext({ sampleRate: SAMPLE_RATE })
   context = ctx
@@ -281,9 +276,9 @@ export async function startPipeline(
       if (myRun !== runId || activeCallId !== callId) return
       const frames = event.data
       if (!(frames instanceof Float32Array) || frames.length === 0) return
-      onFrame?.()
+      hooks.onFrame?.()
 
-      appendChunkFrames(frames, callId)
+      segmenter?.push(frames)
       const windows = windower?.push(frames) ?? []
       for (const win of windows) enqueueWindow(win, callId)
     }
@@ -294,7 +289,7 @@ export async function startPipeline(
     pcmWorklet.connect(sink)
     sink.connect(ctx.destination)
 
-    startLevelMeter(analyser, onLevel)
+    startLevelMeter(analyser, hooks.onLevel)
     void ensureScorer()
   } catch (error) {
     if (myRun === runId) await stopPipeline()
@@ -302,8 +297,12 @@ export async function startPipeline(
   }
 }
 
-/** Stop the graph, release the context and send any remaining partial 10 s chunk. */
+/** Stop the graph, release the context and send the utterance in progress, if any. */
 export async function stopPipeline(): Promise<void> {
+  // The last sentence before "stop" still gets transcribed (flush while the run is current).
+  const finalSegmenter = segmenter
+  segmenter = null
+  finalSegmenter?.flush()
   runId += 1
   const callId = activeCallId
   activeCallId = null
@@ -351,7 +350,6 @@ export async function stopPipeline(): Promise<void> {
   windower = null
   context = null
 
-  if (callId) flushPartialChunk(callId)
   await chunkQueue.catch(() => undefined)
 
   if (ctx && ctx.state !== 'closed') {
@@ -364,8 +362,6 @@ export async function stopPipeline(): Promise<void> {
 
   scores = []
   speechTotal = 0
-  chunkParts = []
-  chunkLength = 0
-  chunkIndex = 0
+  hooks = {}
   windowQueue = Promise.resolve()
 }

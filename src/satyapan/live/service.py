@@ -7,10 +7,12 @@ from __future__ import annotations
 
 import asyncio
 import threading
+import time
 from dataclasses import dataclass, field
 
 from satyapan.adapters.base import Transcriber
-from satyapan.asks.extractor import DETECTOR_NAME, ask_signals, extract_asks
+from satyapan.asks.extractor import DETECTOR_NAME, ask_signals, normalise
+from satyapan.asks.phrasebook import extract_cues, extract_live_asks
 from satyapan.context import strip_context
 from satyapan.contracts.case import Case
 from satyapan.contracts.common import utcnow
@@ -20,7 +22,9 @@ from satyapan.contracts.live import (
     AskEvent,
     BandEvent,
     LiveEvent,
+    StatusEvent,
     TranscriptEvent,
+    TranscriptSpan,
     VoiceEvent,
     VoiceWindowResult,
 )
@@ -45,6 +49,7 @@ class LiveSession:
     asks: list[AskSpan] = field(default_factory=list)
     voice_windows: list[VoiceWindowResult] = field(default_factory=list)
     last_band: Band = Band.PASS
+    language: str | None = None  # speech language hint ("en", "hi"; None/"auto" = detect)
     # Routes run handle_chunk/handle_voice in worker threads; one call's updates never interleave.
     lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
@@ -120,34 +125,71 @@ class LiveService:
         return session
 
     def handle_chunk(
-        self, call_id: str, chunk_index: int, audio: bytes, mime: str
+        self,
+        call_id: str,
+        chunk_index: int,
+        audio: bytes,
+        mime: str,
+        t_start_s: float | None = None,
+        t_end_s: float | None = None,
     ) -> list[LiveEvent]:
-        """transcribe -> TranscriptEvent; extract_asks -> one AskEvent per NEW ask type;
-        update case.signals with ask_signals; re-decide; if band changed -> BandEvent with
-        reason codes and SUGGESTED_LINES[EN]. Publish every event on the bus and return them."""
+        """transcribe -> TranscriptEvent (with ask/cue highlight spans); live asks -> one
+        AskEvent per NEW ask type; update case.signals with ask_signals; re-decide; if the band
+        changed -> BandEvent with reason codes and SUGGESTED_LINES[EN]. Publish and return.
+
+        Chunks are utterances cut at pauses by the capture window (finale), or fixed 10 s
+        chunks from older clients (then t_start_s defaults to chunk_index * 10 s). A missing
+        speech engine is reported as a StatusEvent, never hidden behind an empty transcript."""
         session = self.sessions[call_id]
         with session.lock:
-            return self._handle_chunk(session, chunk_index, audio, mime)
+            return self._handle_chunk(session, chunk_index, audio, mime, t_start_s, t_end_s)
 
     def _handle_chunk(
-        self, session: LiveSession, chunk_index: int, audio: bytes, mime: str
+        self,
+        session: LiveSession,
+        chunk_index: int,
+        audio: bytes,
+        mime: str,
+        t_start_s: float | None = None,
+        t_end_s: float | None = None,
     ) -> list[LiveEvent]:
         call_id = session.call_id
-        res = self.transcriber.transcribe(audio, mime)
-        session.transcript.append(res.text)
+        start_s = t_start_s if t_start_s is not None else chunk_index * CHUNK_SECONDS
+        t0 = time.perf_counter()
+        try:
+            hint = session.language if session.language not in (None, "auto") else None
+            res = self.transcriber.transcribe(audio, mime, hint)
+        except ValueError as exc:
+            status = StatusEvent(call_id=call_id, message=str(exc), code="decode_failed")
+            return self._publish(call_id, [status])
+        except RuntimeError as exc:
+            status = StatusEvent(call_id=call_id, message=str(exc), code="asr_unavailable")
+            return self._publish(call_id, [status])
+        latency_ms = round((time.perf_counter() - t0) * 1000, 1)
+        text = normalise(res.text)
+        if not text:
+            return []
+        session.transcript.append(text)
+
+        # ADR-021: drop spoken warnings ("never share your OTP") before ask extraction.
+        ask_text = strip_context(text).cleaned if self.context_filter else text
+        spans = extract_live_asks(ask_text)
+
         events: list[LiveEvent] = [
             TranscriptEvent(
                 call_id=call_id,
                 chunk_index=chunk_index,
-                t_start_s=chunk_index * CHUNK_SECONDS,
-                text=res.text,
+                t_start_s=start_s,
+                t_end_s=t_end_s,
+                text=text,
                 language=res.language,
+                spans=_highlights(text, spans),
+                latency_ms=latency_ms,
             )
         ]
 
         seen = {s.ask_type for s in session.asks}
-        ask_text = strip_context(res.text).cleaned if self.context_filter else res.text
-        for span in extract_asks(ask_text):
+        for span in spans:
             if span.ask_type not in seen:
                 seen.add(span.ask_type)
                 events.append(
@@ -157,6 +199,7 @@ class LiveService:
                         ask_type=span.ask_type,
                         reason_code=ASK_TO_REASON[span.ask_type],
                         span_text=span.text,
+                        t_s=start_s,
                     )
                 )
             session.asks.append(span)
@@ -229,3 +272,40 @@ class LiveService:
         for e in events:
             self.bus.publish(call_id, e)
         return events
+
+
+def _highlights(text: str, asks: list[AskSpan]) -> list[TranscriptSpan]:
+    """Map ask spans (found on the context-filtered text) and cues back onto `text`.
+
+    Offsets are searched case-insensitively in the display text; a span whose words were
+    removed by the context filter is simply not highlighted (it did not become a signal)."""
+    lower = text.lower()
+    out: list[TranscriptSpan] = []
+    taken: list[tuple[int, int]] = []
+
+    def place(needle: str) -> tuple[int, int] | None:
+        start = 0
+        key = needle.lower()
+        while key:
+            i = lower.find(key, start)
+            if i < 0:
+                return None
+            j = i + len(key)
+            if all(j <= a or i >= b for a, b in taken):
+                return i, j
+            start = i + 1
+        return None
+
+    for span in asks:
+        where = place(span.text)
+        if where:
+            taken.append(where)
+            out.append(
+                TranscriptSpan(kind="ask", code=span.ask_type.value, start=where[0], end=where[1])
+            )
+    for cue in extract_cues(text):
+        if all(cue.end <= a or cue.start >= b for a, b in taken):
+            taken.append((cue.start, cue.end))
+            out.append(TranscriptSpan(kind="cue", code=cue.code, start=cue.start, end=cue.end))
+    out.sort(key=lambda s: s.start)
+    return out

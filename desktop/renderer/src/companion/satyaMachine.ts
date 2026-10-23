@@ -8,14 +8,20 @@
 
 import type {
   AskChip,
+  AskQuote,
   Band,
   BubbleCard,
+  CaptionLine,
   CardAction,
   CompanionEvent,
   CompanionMode,
   CompanionPayload,
+  HealthInfo,
+  MeetingInfo,
   NextAction,
   Pose,
+  SatyaSignal,
+  ScreenFinding,
   UserMode,
 } from '../../../shared/contracts'
 
@@ -30,12 +36,30 @@ export interface SatyaState {
   chips: AskChip[]
   lastBand: Band | null
   dismissed: boolean
+  // Finale: live captions (memory only), exact quotes, meeting notice, engine health.
+  lines: CaptionLine[]
+  quotes: AskQuote[]
+  meeting: MeetingInfo | null
+  speaking: boolean
+  transcribing: boolean
+  approver: string | null
+  callStartedAt: string | null
+  callDemo: boolean
+  callStatus: string | null
+  health: HealthInfo | null
 }
 
 export type SatyaAction =
   | { type: 'EVENT'; event: CompanionEvent }
   | { type: 'SET_MODE'; mode: UserMode; card?: BubbleCard | null }
-  | { type: 'CALL_HINT'; hintId: string; source: Extract<BubbleCard, { kind: 'call_ask' }>['source'] }
+  | {
+      type: 'CALL_HINT'
+      hintId: string
+      source: Extract<BubbleCard, { kind: 'call_ask' }>['source']
+      app?: string | null
+    }
+  | { type: 'SIGNAL'; signal: SatyaSignal; id?: string }
+  | { type: 'SHOW_CARD'; card: BubbleCard }
   | { type: 'FILE_HOVER'; active: boolean }
   | { type: 'FILE_DROP'; fileId: string; name: string; kind: FileKind }
   | { type: 'CARD_ACTION'; cardId: string; actionId: string }
@@ -50,6 +74,28 @@ export const initialSatyaState: SatyaState = {
   chips: [],
   lastBand: null,
   dismissed: false,
+  lines: [],
+  quotes: [],
+  meeting: null,
+  speaking: false,
+  transcribing: false,
+  approver: null,
+  callStartedAt: null,
+  callDemo: false,
+  callStatus: null,
+  health: null,
+}
+
+const MAX_LINES = 8
+
+const CALL_RESET = {
+  callId: null,
+  lines: [] as CaptionLine[],
+  speaking: false,
+  transcribing: false,
+  callStartedAt: null,
+  callDemo: false,
+  callStatus: null,
 }
 
 const CHECK_ACTIONS: CardAction[] = [
@@ -129,18 +175,93 @@ function toastCard(event: CompanionEvent, textKey: string, tone: 'neutral' | 'go
   return { kind: 'toast', id: `toast_${event.event_id}`, text_key: textKey, tone }
 }
 
-function liveCard(event: CompanionEvent, callId: string | null): BubbleCard {
+function liveCard(event: CompanionEvent, callId: string | null, state?: SatyaState): BubbleCard {
   return {
     kind: 'live',
     id: `live_${callId ?? event.event_id}`,
-    chips: event.payload.chips ?? [],
+    chips: event.payload.chips ?? state?.chips ?? [],
     coverage: event.payload.coverage ?? 'incomplete',
     seal: event.payload.seal ?? 'unavailable',
     elapsed_s: 0,
+    lines: state?.lines ?? [],
+    band: state?.lastBand ?? null,
+    status: state?.callStatus ?? null,
+    transcribing: state?.transcribing ?? false,
+    demo: state?.callDemo ?? false,
+    started_at: state?.callStartedAt ?? event.occurred_at,
   }
 }
 
-function alertCard(event: CompanionEvent, band: Band, chips: AskChip[]): BubbleCard {
+/** Rebuild the live card from state (after a caption, or when an alert is dismissed). */
+function restoreLive(state: SatyaState): BubbleCard | null {
+  if (!state.callId) return null
+  const current = state.card?.kind === 'live' ? state.card : null
+  return {
+    kind: 'live',
+    id: current?.id ?? `live_${state.callId}`,
+    chips: state.chips,
+    coverage: current?.coverage ?? 'usable',
+    seal: current?.seal ?? 'not_verified',
+    elapsed_s: current?.elapsed_s ?? 0,
+    lines: state.lines,
+    band: state.lastBand,
+    status: state.callStatus,
+    transcribing: state.transcribing,
+    demo: state.callDemo,
+    started_at: state.callStartedAt,
+  }
+}
+
+function mergeQuotes(current: AskQuote[], incoming: AskQuote[] | undefined): AskQuote[] {
+  if (!incoming || incoming.length === 0) return current
+  const byCode = new Map(current.map((q) => [q.code, q]))
+  for (const quote of incoming) if (!byCode.has(quote.code)) byCode.set(quote.code, quote)
+  return [...byCode.values()]
+}
+
+const CARD_PRIORITY: Record<BubbleCard['kind'], number> = {
+  consent: 5,
+  alert: 5,
+  oob_wait: 5,
+  oob_result: 5,
+  scribe: 4,
+  file_ask: 4,
+  result: 4,
+  screen: 3,
+  liveness: 3,
+  call_ask: 2,
+  notice: 2,
+  live: 1,
+  toast: 0,
+}
+
+function screenCard(finding: ScreenFinding, source: 'screen' | 'clipboard', id: string): BubbleCard {
+  return {
+    kind: 'screen',
+    id: `screen_${id}`,
+    source,
+    finding,
+    actions: finding.suspicious
+      ? [
+          { id: 'check_this', variant: 'primary' },
+          { id: 'dismiss', variant: 'ghost' },
+        ]
+      : [{ id: 'dismiss', variant: 'ghost' }],
+  }
+}
+
+function alertCard(
+  event: CompanionEvent,
+  band: Band,
+  chips: AskChip[],
+  extra: { quotes?: AskQuote[]; approver?: string | null; context?: 'call' | 'file' | 'screen' } = {},
+): BubbleCard {
+  const actions = actionsFrom(event.payload.next_actions)
+  // During a call, the third action is the video liveness tips instead of the Notebook.
+  const callActions =
+    extra.context === 'call'
+      ? actions.map((action) => (action.id === 'open_notebook' ? { ...action, id: 'liveness' } : action))
+      : actions
   return {
     kind: 'alert',
     id: `alert_${event.event_id}`,
@@ -148,7 +269,10 @@ function alertCard(event: CompanionEvent, band: Band, chips: AskChip[]): BubbleC
     headline: event.payload.headline,
     reasons: event.payload.reason_codes,
     chips,
-    actions: actionsFrom(event.payload.next_actions),
+    actions: callActions,
+    quotes: extra.quotes ?? event.payload.quotes ?? [],
+    approver: extra.approver ?? null,
+    context: extra.context,
   }
 }
 
@@ -274,18 +398,27 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
 
     case 'call.started': {
       const callId = payload.call_id ?? state.callId
-      return {
+      const next: SatyaState = {
         ...state,
         pose: state.pose === 'alert' ? 'alert' : 'listen',
         callId,
         caseId: payload.case_id ?? state.caseId,
         chips: mergeChips([], payload.chips ?? []),
+        quotes: [],
+        lines: [],
+        callStatus: null,
+        transcribing: false,
+        callStartedAt: event.occurred_at,
+        callDemo: payload.demo === true && payload.source === 'demo_replay',
+        lastBand: payload.band ?? null,
+        dismissed: false,
+      }
+      return {
+        ...next,
         card:
           state.card?.kind === 'alert' || state.card?.kind === 'oob_wait'
             ? state.card
-            : liveCard(event, callId),
-        lastBand: payload.band ?? state.lastBand,
-        dismissed: false,
+            : liveCard(event, callId, next),
       }
     }
 
@@ -296,7 +429,7 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
         state.card?.kind === 'oob_result'
       return {
         ...state,
-        callId: null,
+        ...CALL_RESET,
         card: state.card?.kind === 'live' ? null : state.card,
         pose: keepAlert ? 'alert' : state.pose === 'listen' ? 'idle' : state.pose,
         lastBand: payload.band ?? state.lastBand,
@@ -305,9 +438,10 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
 
     case 'live.chips': {
       const chips = mergeChips(state.chips, payload.chips ?? [])
+      const quotes = mergeQuotes(state.quotes, payload.quotes)
       const card = state.card
-      if (card?.kind === 'alert' || card?.kind === 'oob_wait' || card?.kind === 'oob_result') {
-        return { ...state, chips, lastBand: payload.band ?? state.lastBand }
+      if (card && card.kind !== 'live' && card.kind !== 'toast' && card.kind !== 'call_ask') {
+        return { ...state, chips, quotes, lastBand: payload.band ?? state.lastBand }
       }
       const nextCard: BubbleCard =
         card?.kind === 'live'
@@ -317,10 +451,11 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
               coverage: payload.coverage ?? card.coverage,
               seal: payload.seal ?? card.seal,
             }
-          : liveCard(event, state.callId)
+          : liveCard(event, state.callId, { ...state, chips })
       return {
         ...state,
         chips,
+        quotes,
         card: nextCard,
         pose: state.pose === 'write' ? 'write' : 'listen',
         callId: payload.call_id ?? state.callId,
@@ -354,16 +489,29 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
           dismissed: false,
         }
       }
+      const quotes = mergeQuotes(state.quotes, payload.quotes)
       return {
         ...state,
         pose: 'alert',
-        card: alertCard(event, band, payload.chips ?? state.chips),
+        card: alertCard(event, band, payload.chips ?? state.chips, {
+          quotes,
+          approver: payload.approver_name ?? state.approver,
+          context: payload.call_id || state.callId ? 'call' : undefined,
+        }),
         chips: payload.chips ?? state.chips,
+        quotes,
+        approver: payload.approver_name ?? state.approver,
         caseId: payload.case_id ?? state.caseId,
         callId: payload.call_id ?? state.callId,
         lastBand: band,
         dismissed: false,
       }
+    }
+
+    case 'call.status': {
+      const status = payload.status_code ?? 'status'
+      const next = { ...state, callStatus: status === 'asr_unavailable' ? status : state.callStatus }
+      return state.card?.kind === 'live' ? { ...next, card: restoreLive(next) } : next
     }
 
     case 'analysis.started':
@@ -442,7 +590,10 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
         card =
           checkedBand === 'PASS'
             ? resultCard(event, checkedBand)
-            : alertCard(event, checkedBand, payload.chips ?? state.chips)
+            : alertCard(event, checkedBand, payload.chips ?? state.chips, {
+              approver: payload.approver_name ?? state.approver,
+              context: 'file',
+            })
       } else if (state.card?.kind === 'scribe' && payload.report) {
         card = { ...state.card, sections: scribeCard(event, true).sections }
       }
@@ -467,14 +618,78 @@ function reduceEvent(state: SatyaState, event: CompanionEvent): SatyaState {
     case 'error':
       return {
         ...state,
+        ...CALL_RESET,
         userMode: 'SLEEPING',
         pose: 'sleep',
         card: toastCard(event, 'toast.no_backend', 'warn'),
-        callId: null,
         chips: [],
         dismissed: false,
       }
 
+    default:
+      return state
+  }
+}
+
+function reduceSignal(state: SatyaState, signal: SatyaSignal, id: string): SatyaState {
+  switch (signal.kind) {
+    case 'health':
+      return { ...state, health: signal.health }
+    case 'meeting': {
+      if (state.userMode !== 'WATCHING') return { ...state, meeting: signal.meeting }
+      return { ...state, meeting: signal.meeting }
+    }
+    case 'speech':
+      return state.callId ? { ...state, speaking: signal.active } : state
+    case 'transcribing': {
+      if (!state.callId) return state
+      const next = { ...state, transcribing: true }
+      return state.card?.kind === 'live' ? { ...next, card: restoreLive(next) } : next
+    }
+    case 'caption': {
+      if (!state.callId || signal.call_id !== state.callId) return state
+      const lines = [...state.lines, signal.line].slice(-MAX_LINES)
+      const next = { ...state, lines, transcribing: false }
+      return state.card?.kind === 'live' ? { ...next, card: restoreLive(next) } : next
+    }
+    case 'capture': {
+      if (signal.state === 'error') {
+        // Fail closed: any capture error puts Satya to sleep and says why.
+        return {
+          ...state,
+          ...CALL_RESET,
+          userMode: 'SLEEPING',
+          pose: 'sleep',
+          chips: [],
+          card: {
+            kind: 'notice',
+            id: `notice_capture_${id}`,
+            tone: 'warn',
+            title: 'notice.capture_error.title',
+            body: `notice.capture_error.body|reason=${encodeURIComponent(signal.reason ?? 'Capture failed')}`,
+            actions: [{ id: 'dismiss', variant: 'ghost' }],
+          },
+          dismissed: false,
+        }
+      }
+      return state
+    }
+    case 'text_check': {
+      if (state.userMode !== 'WATCHING') return state
+      if (!signal.finding.suspicious && !signal.on_demand) return state
+      const card = screenCard(signal.finding, signal.source, id)
+      const current = state.card ? CARD_PRIORITY[state.card.kind] : -1
+      if (!signal.on_demand && current > CARD_PRIORITY.screen) return state
+      return {
+        ...state,
+        card,
+        pose: signal.finding.suspicious ? 'alert' : state.callId ? 'listen' : 'relief',
+        dismissed: false,
+      }
+    }
+    case 'level':
+    case 'hotkey':
+      return state
     default:
       return state
   }
@@ -492,14 +707,22 @@ export function satyaReducer(state: SatyaState, action: SatyaAction): SatyaState
       }
       return {
         ...state,
+        ...CALL_RESET,
         userMode: action.mode,
         pose: poseForMode(action.mode),
         card: action.card ?? null,
-        callId: null,
         chips: [],
+        quotes: [],
+        meeting: action.mode === 'WATCHING' ? state.meeting : null,
         dismissed: false,
       }
     }
+
+    case 'SHOW_CARD':
+      return { ...state, card: action.card, dismissed: false }
+
+    case 'SIGNAL':
+      return reduceSignal(state, action.signal, action.id ?? 'local')
 
     case 'CALL_HINT': {
       if (state.userMode !== 'WATCHING') return state
@@ -514,6 +737,7 @@ export function satyaReducer(state: SatyaState, action: SatyaAction): SatyaState
           id: `call_ask_${action.hintId}`,
           source: action.source,
           actions: LISTEN_ACTIONS,
+          ...(action.app ? { app: action.app } : {}),
         },
         dismissed: false,
       }
@@ -553,7 +777,7 @@ export function satyaReducer(state: SatyaState, action: SatyaAction): SatyaState
       if (DISMISS_ACTIONS.has(action.actionId)) {
         return {
           ...state,
-          card: null,
+          card: restoreLive(state),
           dismissed: true,
           pose: state.callId ? 'listen' : 'idle',
         }
@@ -566,7 +790,7 @@ export function satyaReducer(state: SatyaState, action: SatyaAction): SatyaState
           pose: state.userMode === 'WATCHING' ? (state.callId ? 'listen' : 'idle') : state.pose,
         }
       }
-      if (action.actionId === 'start_watching') {
+      if (action.actionId === 'start_watching' || action.actionId.startsWith('start_watching:')) {
         return { ...state, card: null, pose: 'idle', dismissed: false }
       }
       if (action.actionId === 'listen_call') {

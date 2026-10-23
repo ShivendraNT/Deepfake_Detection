@@ -1,7 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 import Companion from './companion/Companion'
-import Gallery from './companion/Gallery'
+import Gallery from './satya/SatyaGallery'
 import MascotApp from './companion/MascotApp'
 import BubbleApp from './companion/bubble/BubbleApp'
 import CaptureApp from './capture/CaptureApp'

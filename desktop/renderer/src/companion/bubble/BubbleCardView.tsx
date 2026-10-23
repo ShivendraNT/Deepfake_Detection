@@ -15,9 +15,12 @@ import CallAskCard from './cards/CallAskCard'
 import ConsentCard from './cards/ConsentCard'
 import FileAskCard from './cards/FileAskCard'
 import LiveCard from './cards/LiveCard'
+import LivenessCard from './cards/LivenessCard'
+import NoticeCard from './cards/NoticeCard'
 import OobResultCard from './cards/OobResultCard'
 import OobWaitCard from './cards/OobWaitCard'
 import ResultCard from './cards/ResultCard'
+import ScreenCard from './cards/ScreenCard'
 import ScribeCard from './cards/ScribeCard'
 import ToastCard from './cards/ToastCard'
 
@@ -48,7 +51,7 @@ export default function BubbleCardView({
     case 'result':
       return <ResultCard card={card} tail={tail} lang={lang} onAction={onAction} onClose={onClose} />
     case 'live':
-      return <LiveCard card={card} tail={tail} lang={lang} onClose={onClose} />
+      return <LiveCard card={card} tail={tail} lang={lang} onAction={onAction} />
     case 'alert':
       return <AlertCard card={card} tail={tail} lang={lang} onAction={onAction} onClose={onClose} />
     case 'oob_wait':
@@ -57,5 +60,11 @@ export default function BubbleCardView({
       return <OobResultCard card={card} tail={tail} lang={lang} onAction={onAction} onClose={onClose} />
     case 'scribe':
       return <ScribeCard card={card} tail={tail} lang={lang} onAction={onAction} onClose={onClose} />
+    case 'screen':
+      return <ScreenCard card={card} tail={tail} lang={lang} onAction={onAction} onClose={onClose} />
+    case 'notice':
+      return <NoticeCard card={card} tail={tail} lang={lang} onAction={onAction} onClose={onClose} />
+    case 'liveness':
+      return <LivenessCard card={card} tail={tail} lang={lang} onAction={onAction} onClose={onClose} />
   }
 }

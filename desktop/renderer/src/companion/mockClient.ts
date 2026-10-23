@@ -397,6 +397,14 @@ export class MockCompanionClient implements CompanionApiClient {
     return REFUSAL
   }
 
+  /** Finale mock bridge: emit a scripted envelope (always labelled demo). */
+  emitEvent(
+    type: CompanionEventType,
+    payload: Partial<CompanionPayload> & Pick<CompanionPayload, 'state' | 'headline'>,
+  ): CompanionEvent {
+    return this.emit(type, payload)
+  }
+
   private result(type: string, events: CompanionEvent[]): CommandResult {
     return {
       request_id: `req_mock_${type}_${this.sequence}`,

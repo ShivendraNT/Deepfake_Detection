@@ -146,41 +146,44 @@ export default function BubbleApp(): JSX.Element {
     return off
   }, [])
 
+  // Language comes from the user's preference (Notebook → Settings); `?lang=` for visual QA.
+  useEffect(() => {
+    if (new URLSearchParams(window.location.search).get('lang')) return
+    void api
+      .getPrefs()
+      .then((prefs) => {
+        if (prefs.lang) setLang(prefs.lang)
+      })
+      .catch(() => undefined)
+  }, [card?.id])
+
+  // Close / Esc go through the mascot's reducer, so it knows the card is gone.
+  const dismiss = (): void => {
+    if (card) api.cardAction(card.id, 'dismiss')
+  }
+
   useEffect(() => {
     const onKey = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') api.hideBubble()
+      if (event.key === 'Escape' && card) api.cardAction(card.id, 'dismiss')
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [card])
 
+  // The window is exactly as tall as the card (+ the 8 px padding and room for the shadow).
   useEffect(() => {
     const node = hostRef.current
     if (!node) return
     const observer = new ResizeObserver((entries) => {
       const height = Math.ceil(entries[0]?.contentRect.height ?? 0)
-      if (height > 0) api.resizeBubble(height)
+      if (height > 0) api.resizeBubble(height + 28)
     })
     observer.observe(node)
     return () => observer.disconnect()
   }, [card])
 
   return (
-    <div className="flex min-h-screen w-full flex-col items-center justify-start p-2 overflow-hidden bg-transparent">
-      {/* Optional Tiny Dev Language Picker for Visual QA */}
-      <div className="mb-1 flex w-full justify-end pr-1 opacity-40 transition-opacity hover:opacity-100 focus-within:opacity-100">
-        <select
-          value={lang}
-          onChange={(event) => setLang(event.target.value as Lang)}
-          aria-label="Language"
-          className="cursor-pointer rounded-md border border-black/10 bg-[#FFFCF7]/85 px-1.5 py-0.5 font-mono text-[10px] text-slate-600 outline-none dark:border-white/15 dark:bg-[#1C1828]/85 dark:text-[#A8A0B8]"
-        >
-          <option value="en">en</option>
-          <option value="hinglish">hinglish</option>
-          <option value="hi">hi</option>
-        </select>
-      </div>
-
+    <div className="flex min-h-screen w-full flex-col items-center justify-start overflow-hidden bg-transparent p-2">
       <div ref={hostRef} className="flex w-full justify-center">
         <AnimatePresence mode="wait">
           {card ? (
@@ -201,7 +204,7 @@ export default function BubbleApp(): JSX.Element {
                 tail={tail}
                 lang={lang}
                 onAction={(actionId) => api.cardAction(card.id, actionId)}
-                onClose={() => api.hideBubble()}
+                onClose={dismiss}
               />
             </motion.div>
           ) : null}

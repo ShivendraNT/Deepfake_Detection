@@ -7,18 +7,31 @@
 
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { BookOpen, Eye, FileSearch, LogOut, Moon, Power, ShieldCheck } from 'lucide-react'
+import { BookOpen, Eye, FileSearch, FileText, Headphones, LogOut, Moon, PhoneOff, Power, ScanSearch } from 'lucide-react'
 
 import type { UserMode } from '../../../shared/contracts'
 import { api } from '../shared/api'
 
 export type MenuEdge = 'none' | 'left' | 'right' | 'top' | 'bottom'
-export type MenuAction = 'watch' | 'sleep' | 'check' | 'notebook' | 'off' | 'guard' | 'quit'
+export type MenuAction =
+  | 'watch'
+  | 'sleep'
+  | 'check'
+  | 'notebook'
+  | 'off'
+  | 'guard'
+  | 'quit'
+  | 'listen'
+  | 'stop_listening'
+  | 'scan'
+  | 'report'
 
 export interface RadialMenuProps {
   open: boolean
   edge?: MenuEdge
   userMode?: UserMode
+  /** A call is being listened to: the listen petal becomes "Stop listening". */
+  inCall?: boolean
   onAction: (action: MenuAction) => void
   onClose: () => void
   onPointerEnter?: () => void
@@ -91,6 +104,7 @@ export default function RadialMenu({
   open,
   edge = 'none',
   userMode,
+  inCall = false,
   onAction,
   onClose,
   onPointerEnter,
@@ -127,7 +141,7 @@ export default function RadialMenu({
   const petals: PetalItem[] = useMemo(() => {
     if (effectiveMode === 'OFF') {
       return [
-        { action: 'watch', label: 'Turn On', Icon: Power },
+        { action: 'watch', label: 'Turn on', Icon: Power },
         { action: 'notebook', label: 'Notebook', Icon: BookOpen },
         { action: 'quit', label: 'Quit Satya', Icon: LogOut },
       ]
@@ -135,25 +149,24 @@ export default function RadialMenu({
 
     if (effectiveMode === 'WATCHING') {
       return [
-        { action: 'sleep', label: 'Sleep', Icon: Moon },
-        { action: 'check', label: 'Check File', Icon: FileSearch },
+        inCall
+          ? { action: 'stop_listening', label: 'Stop listening', Icon: PhoneOff }
+          : { action: 'listen', label: 'Listen to a call', Icon: Headphones },
+        { action: 'check', label: 'Check a file', Icon: FileSearch },
+        { action: 'scan', label: 'Scan my screen', Icon: ScanSearch },
+        { action: 'report', label: 'Money left? Report', Icon: FileText },
         { action: 'notebook', label: 'Notebook', Icon: BookOpen },
-        { action: 'guard', label: 'Screen Guard', Icon: ShieldCheck },
-        { action: 'off', label: 'Turn Off', Icon: Power },
-        { action: 'quit', label: 'Quit Satya', Icon: LogOut },
+        { action: 'sleep', label: 'Sleep', Icon: Moon },
       ]
     }
 
-    // Default: 'SLEEPING' mode
+    // Sleeping: keep it simple.
     return [
-      { action: 'watch', label: 'Wake Satya', Icon: Eye },
-      { action: 'check', label: 'Check File', Icon: FileSearch },
+      { action: 'watch', label: 'Wake up', Icon: Eye },
       { action: 'notebook', label: 'Notebook', Icon: BookOpen },
-      { action: 'guard', label: 'Screen Guard', Icon: ShieldCheck },
-      { action: 'off', label: 'Turn Off', Icon: Power },
-      { action: 'quit', label: 'Quit Satya', Icon: LogOut },
+      { action: 'off', label: 'Turn off', Icon: Power },
     ]
-  }, [effectiveMode])
+  }, [effectiveMode, inCall])
 
   const angles = useMemo(() => anglesForEdge(edge, petals.length), [edge, petals.length])
   const tooltip = useMemo(() => {

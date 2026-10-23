@@ -37,6 +37,9 @@ class PipelineContext:
     # ADR-021: strip footers / quoted bank notifications / protective warnings before the
     # (frozen) ask extractor. False reproduces the pre-ADR-021 pipeline for before/after runs.
     context_filter: bool = True
+    # ADR-030: product surfaces (files handed to Satya) add the live phrasebook on top of the
+    # frozen lexicon. Research runs keep the default (False) so measured numbers reproduce.
+    live_phrasebook: bool = False
 
 
 def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> DetectorOutput:
@@ -54,7 +57,15 @@ def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> D
                 {"kind": r.kind, "rule": r.rule, "text": r.text[:200]} for r in res.removed
             ],
         }
-    out.signals += ask_signals(extract_asks(text), ev_id)
+    if ctx.live_phrasebook:
+        from satyapan.asks.phrasebook import PHRASEBOOK_VERSION, extract_live_asks
+
+        spans = extract_live_asks(text)
+        out.artifacts["phrasebook"] = PHRASEBOOK_VERSION
+    else:
+        spans = extract_asks(text)
+    out.artifacts["asks"] = [{"ask_type": s.ask_type.value, "text": s.text[:200]} for s in spans]
+    out.signals += ask_signals(spans, ev_id)
     return out
 
 
@@ -116,11 +127,34 @@ def _pdf(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detecto
 def _voice(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
     from satyapan.voice.upload import analyze_voice_upload
 
+    if ctx.scorer is None and ctx.transcriber is not None:
+        return _voice_transcript_only(data, ev, ctx)
     if ctx.scorer is None or ctx.transcriber is None:
         raise NotImplementedError("voice scorer/transcriber not configured (T17)")
     return analyze_voice_upload(
         data, ev.media_type, ev.id, ctx.scorer, ctx.transcriber, ctx.thresholds
     )
+
+
+def _voice_transcript_only(data: bytes, ev: Evidence, ctx: PipelineContext) -> DetectorOutput:
+    """No voice-deepfake model on this laptop: still check WHAT was asked in the voice note.
+
+    The voice itself is not judged (no voice signal, label "not_analysed"). Missing a model is
+    an abstention, not a finding, so it adds no grey reason; the floor still applies."""
+    assert ctx.transcriber is not None
+    result = ctx.transcriber.transcribe(data, ev.media_type)
+    out = DetectorOutput(
+        detector="voice_transcript",
+        version="0.1.0",
+        evidence_id=ev.id,
+        artifacts={
+            "transcript": result.text,
+            "language": result.language,
+            "voice_label": "not_analysed",
+            "engine": result.engine,
+        },
+    )
+    return _asks(result.text, ev.id, ctx, out)
 
 
 def _text(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:

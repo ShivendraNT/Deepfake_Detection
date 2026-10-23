@@ -24,7 +24,7 @@ export default function CallAskCard({
 
   return (
     <CardShell
-      title={t('call.title', lang)}
+      title={card.app ? t('call.title.app', lang, { app: card.app }) : t('call.title', lang)}
       accentColor={color.watch}
       tail={tail}
       actions={card.actions}

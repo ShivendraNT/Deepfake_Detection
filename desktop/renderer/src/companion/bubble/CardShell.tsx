@@ -12,11 +12,10 @@
  * - Reports rendered height via ResizeObserver to `api.resizeBubble(h)`.
  */
 
-import { useEffect, useRef, type ReactNode } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { motion } from 'framer-motion'
 
 import type { CardAction } from '../../../../shared/contracts'
-import { api } from '../../shared/api'
 import { motion as motionTokens } from '../../shared/tokens'
 
 export interface CardShellProps {
@@ -28,6 +27,10 @@ export interface CardShellProps {
   onAction?: (actionId: string) => void
   resolveActionLabel?: (actionId: string) => string
   children?: ReactNode
+  /** Small element at the right of the title (timer, label). */
+  badge?: ReactNode
+  /** "row" puts up to three compact buttons side by side (passive cards). */
+  actionsLayout?: 'stack' | 'row'
 }
 
 export default function CardShell({
@@ -39,27 +42,10 @@ export default function CardShell({
   onAction,
   resolveActionLabel = (id) => id.replace(/_/g, ' '),
   children,
+  badge,
+  actionsLayout = 'stack',
 }: CardShellProps): JSX.Element {
   const containerRef = useRef<HTMLDivElement | null>(null)
-
-  // Report height dynamically to main process window resizer
-  useEffect(() => {
-    const node = containerRef.current
-    if (!node || typeof ResizeObserver === 'undefined') return
-    const observer = new ResizeObserver((entries) => {
-      const entry = entries[0]
-      const borderBox = entry?.borderBoxSize
-      const blockSize = Array.isArray(borderBox)
-        ? borderBox[0]?.blockSize
-        : (borderBox as unknown as ResizeObserverSize | undefined)?.blockSize
-      const height = Math.ceil(blockSize ?? entry?.contentRect.height ?? 0)
-      if (height > 0) {
-        api.resizeBubble(height + 16) // small padding buffer for drop shadow
-      }
-    })
-    observer.observe(node)
-    return () => observer.disconnect()
-  }, [])
 
   // Limit to max 3 actions per MASCOT_SPEC §7
   const displayActions = actions.slice(0, 3)
@@ -103,6 +89,7 @@ export default function CardShell({
           </h2>
         </div>
 
+        {badge ? <div className="mt-0.5 flex-shrink-0">{badge}</div> : null}
         {onClose && (
           <button
             type="button"
@@ -125,7 +112,27 @@ export default function CardShell({
       )}
 
       {/* Stacked Actions (Max 3, Primary first, 36px tall, 10px radius) */}
-      {displayActions.length > 0 && (
+      {displayActions.length > 0 && actionsLayout === 'row' && (
+        <footer className="mt-3 flex gap-2">
+          {displayActions.map((action) => (
+            <button
+              key={action.id}
+              type="button"
+              onClick={() => onAction?.(action.id)}
+              style={action.variant === 'primary' ? { backgroundColor: accentColor } : undefined}
+              className={
+                action.variant === 'primary'
+                  ? 'flex h-8 flex-1 items-center justify-center rounded-[10px] px-2 text-[12.5px] font-semibold text-white active:scale-[0.98]'
+                  : 'flex h-8 flex-1 items-center justify-center rounded-[10px] border border-slate-300 px-2 text-[12.5px] font-medium text-[#2A2238] hover:bg-black/5 active:scale-[0.98] dark:border-white/20 dark:text-[#EDE8F5] dark:hover:bg-white/5'
+              }
+            >
+              {resolveActionLabel(action.id)}
+            </button>
+          ))}
+        </footer>
+      )}
+
+      {displayActions.length > 0 && actionsLayout === 'stack' && (
         <footer className="mt-4 flex flex-col gap-2">
           {displayActions.map((action) => {
             const label = resolveActionLabel(action.id)

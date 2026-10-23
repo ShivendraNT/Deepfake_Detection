@@ -35,6 +35,20 @@ class VoiceEvent(Model):
     score: float | None = None  # stripped for maker role
 
 
+class TranscriptSpan(Model):
+    """A highlight inside `TranscriptEvent.text` (character offsets, end exclusive).
+
+    kind "ask": an A1-A7 ask that became a deterministic signal (the policy decides its effect).
+    kind "cue": an informational context cue (RUSH, AUTHORITY, UNREACHABLE, AMOUNT) that is
+    shown to the user and NEVER changes a band.
+    """
+
+    kind: Literal["ask", "cue"]
+    code: str
+    start: int = Field(ge=0)
+    end: int = Field(ge=0)
+
+
 class TranscriptEvent(Model):
     type: Literal["transcript"] = "transcript"
     call_id: str
@@ -42,6 +56,10 @@ class TranscriptEvent(Model):
     t_start_s: float
     text: str
     language: str = "unknown"
+    # Finale additions (all optional so recorded streams stay valid).
+    t_end_s: float | None = None
+    spans: list[TranscriptSpan] = Field(default_factory=list)
+    latency_ms: float | None = None  # speech engine time for this utterance
 
 
 class AskEvent(Model):
@@ -51,6 +69,7 @@ class AskEvent(Model):
     ask_type: AskType
     reason_code: ReasonCode
     span_text: str
+    t_s: float | None = None  # seconds into the call where the ask was heard
 
 
 class BandEvent(Model):
@@ -67,6 +86,8 @@ class StatusEvent(Model):
     type: Literal["status"] = "status"
     call_id: str
     message: str
+    # Finale: machine-readable status, e.g. "asr_unavailable", "decode_failed".
+    code: str | None = None
 
 
 LiveEvent = Annotated[

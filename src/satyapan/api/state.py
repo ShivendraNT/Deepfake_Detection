@@ -28,6 +28,7 @@ class AppState:
     _store: Any = None  # T09: BlobStore
     _seal: Any = None  # C14 Satyapan Seal: SealServices (needs the `seal` extra)
     _companion: Any = None  # T25: CompanionService
+    _transcriber: Any = None  # finale: the shared local speech engine (see transcriber())
     transcriber_override: Transcriber | None = None  # tests inject FakeTranscriber here
 
     @classmethod
@@ -80,22 +81,36 @@ class AppState:
             self._seal = SealServices.build()
         return self._seal
 
+    def transcriber(self) -> Any:
+        """The one speech engine for live calls and voice notes.
+
+        Tests inject `transcriber_override`. Otherwise a local Whisper engine (mlx-whisper on
+        Apple Silicon, faster-whisper elsewhere), or an UnavailableTranscriber that explains
+        what to install. Never a silent fake: a deaf Satya must say so.
+        """
+        if self.transcriber_override is not None:
+            return self.transcriber_override
+        if self._transcriber is None:
+            from satyapan.adapters.transcribe_local import build_transcriber
+
+            self._transcriber = build_transcriber()
+        return self._transcriber
+
+    def asr_status(self) -> dict[str, Any]:
+        """Readiness of the speech engine, for /companion/health and the Notebook."""
+        engine = self.transcriber()
+        status = getattr(engine, "status", None)
+        if status is None:
+            return {"engine": "override", "model": "", "ready": True, "error": None}
+        result: dict[str, Any] = status.as_dict()
+        return result
+
     def live(self) -> Any:
         if self._live is None:
             from satyapan.live.service import LiveService
 
-            transcriber = self.transcriber_override
-            if transcriber is None:
-                try:
-                    from satyapan.adapters.transcribe_whisper import WhisperTranscriber
-
-                    transcriber = WhisperTranscriber()
-                except Exception:
-                    from satyapan.adapters.base import FakeTranscriber
-
-                    transcriber = FakeTranscriber(texts=[""])
             self._live = LiveService(
-                master=self.master, transcriber=transcriber, thresholds=self.thresholds
+                master=self.master, transcriber=self.transcriber(), thresholds=self.thresholds
             )
         return self._live
 

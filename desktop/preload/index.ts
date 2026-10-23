@@ -19,11 +19,16 @@ import type {
   DraftArtifact,
   EvidenceResult,
   Prefs,
+  SatyaSignal,
+  Scopes,
   SessionResult,
   TrayRequest,
   UserMode,
   WorkspaceSnapshot,
 } from '../shared/contracts'
+
+/** Channels the hidden capture window may send on. Nothing else crosses from it. */
+const CAPTURE_CHANNELS = new Set(['capture:status', 'capture:level', 'capture:speech', 'capture:utterance'])
 
 function subscribe<T>(channel: string, callback: (payload: T) => void): () => void {
   const listener = (_event: IpcRendererEvent, payload: T) => callback(payload)
@@ -32,9 +37,11 @@ function subscribe<T>(channel: string, callback: (payload: T) => void): () => vo
 }
 
 const api: CompanionBridge & {
-  toggleScreenGuard: () => void
   onWorkspaceNavigate: (callback: (tab: string) => void) => () => void
   workspaceReady: () => void
+  submitLastScreenText: () => Promise<BridgeResult<EvidenceResult>>
+  sendCapture: (channel: string, payload?: unknown) => void
+  onCaptureCommand: (callback: (command: unknown) => void) => () => void
 } = {
   getConfig: () => ipcRenderer.invoke('companion:get-config') as Promise<AppConfig>,
   getState: () =>
@@ -98,14 +105,29 @@ const api: CompanionBridge & {
   cardAction: (cardId: string, actionId: string) =>
     ipcRenderer.send('companion:card-click', cardId, actionId),
   resizeBubble: (height: number) => ipcRenderer.send('companion:resize-bubble', height),
-  setUserMode: (mode: UserMode) =>
-    ipcRenderer.invoke('companion:set-user-mode', mode) as Promise<BridgeResult<CompanionState>>,
+  setUserMode: (mode: UserMode, scopes?: Scopes) =>
+    ipcRenderer.invoke('companion:set-user-mode', mode, scopes) as Promise<BridgeResult<CompanionState>>,
   getPrefs: () => ipcRenderer.invoke('companion:get-prefs') as Promise<Prefs>,
   setPrefs: (patch: Partial<Prefs>) =>
     ipcRenderer.invoke('companion:set-prefs', patch) as Promise<Prefs>,
   openExternal: (url: string) =>
     ipcRenderer.invoke('companion:open-external', url) as Promise<void>,
-  toggleScreenGuard: () => ipcRenderer.send('companion:toggle-screen-guard'),
+  // ---- Finale: calls, OOB, reports, screen/clipboard checks, readiness, local signals ----
+  startCall: (source) => ipcRenderer.invoke('companion:start-call', source ?? 'loopback'),
+  stopCall: () => ipcRenderer.invoke('companion:stop-call'),
+  requestOob: (caseId: string) => ipcRenderer.invoke('companion:request-oob', caseId),
+  reportPack: (caseId: string) => ipcRenderer.invoke('companion:report-pack', caseId),
+  scanScreen: () => ipcRenderer.invoke('companion:scan-screen'),
+  checkClipboardText: () => ipcRenderer.invoke('companion:check-clipboard-text'),
+  submitLastScreenText: () =>
+    ipcRenderer.invoke('companion:submit-last-screen-text') as Promise<BridgeResult<EvidenceResult>>,
+  getHealth: () => ipcRenderer.invoke('companion:get-health'),
+  setScopes: (scopes: Scopes) => ipcRenderer.invoke('companion:set-scopes', scopes),
+  onSignal: (callback) => subscribe<SatyaSignal>('satya:signal', callback),
+  sendCapture: (channel: string, payload?: unknown) => {
+    if (CAPTURE_CHANNELS.has(channel)) ipcRenderer.send(channel, payload)
+  },
+  onCaptureCommand: (callback) => subscribe<unknown>('capture:command', callback),
   onWorkspaceNavigate: (callback) => subscribe<string>('companion:navigate-workspace', callback),
   workspaceReady: () => ipcRenderer.send('companion:workspace-ready'),
 }

@@ -1,10 +1,17 @@
 /**
- * Electron main process for Satya (F02).
+ * Electron main process for Satya.
  *
- * Four decoupled windows: mascot (280×280, click-through), bubble (one card), Notebook,
- * hidden capture. Starts in Sleeping: no capture, no session, no backend subscription until the
- * user says yes on a visible consent card. Hiding or quitting always stops the consented session
- * first (`POST /companion/session/stop`); if the backend is down we still fail closed locally.
+ * Main owns the operating-system side: four windows (mascot, bubble, Notebook, hidden capture),
+ * the tray, hotkeys, the meeting notice (window names), on-device screen reading, and the capture
+ * handshake. It turns OS facts into local *signals* for the renderers. The mascot's pure reducer
+ * decides every card and pose; the backend's policy engine decides every band.
+ *
+ * Privacy rules this file enforces:
+ *  - Satya launches asleep. Nothing is read or heard before a visible consent card is accepted.
+ *  - Watching only notices (window names; on-screen text if that scope is on). Listening to a call
+ *    needs a separate yes for that call, and stops when the call window closes.
+ *  - The microphone is never opened. Call audio is the system output (the other person).
+ *  - Sleep / Off / Quit / ⌘⇧. stop everything first. Any capture error fails closed.
  */
 
 import { join } from 'node:path'
@@ -12,55 +19,48 @@ import { join } from 'node:path'
 import { app, BrowserWindow, clipboard, globalShortcut, ipcMain, Menu, screen, shell } from 'electron'
 
 if (process.platform === 'win32') {
-  // Prevent DirectX DXGI Duplicator timeouts on hybrid GPU/Windows displays
+  // Avoid DirectX DXGI duplicator timeouts on hybrid-GPU Windows laptops.
   app.commandLine.appendSwitch('disable-features', 'DxgiDuplicatorController')
 }
-
 if (process.platform === 'darwin') {
-  // Electron 33 hides Chromium's macOS system-audio loopback behind these features.
-  // Without them `audio: 'loopback'` is Windows-only; with them macOS 13+ can capture
-  // system audio through ScreenCaptureKit with no virtual audio driver.
+  // Chromium's macOS system-audio loopback for screen share (ScreenCaptureKit, macOS 13+).
   app.commandLine.appendSwitch(
     'enable-features',
     'MacLoopbackAudioForScreenShare,MacSckSystemAudioLoopbackOverride',
   )
 }
 
-// Prevent unhandled EIO / EPIPE socket errors on stdio from crashing the process or showing dialogs
 for (const stream of [process.stdout, process.stderr]) {
-  stream?.on('error', (err: NodeJS.ErrnoException) => {
-    if (err?.code === 'EPIPE' || err?.code === 'EIO') return
-  })
+  stream?.on('error', () => undefined)
 }
-
 process.on('uncaughtException', (err: NodeJS.ErrnoException) => {
-  if (
-    err?.code === 'EPIPE' ||
-    err?.code === 'EIO' ||
-    err?.message?.includes('write EIO') ||
-    err?.message?.includes('write EPIPE')
-  ) {
-    return
-  }
+  if (err?.code === 'EPIPE' || err?.code === 'EIO') return
   console.error('Uncaught Exception:', err)
 })
 
 import type {
   BridgeResult,
   BubbleCard,
+  CallStarted,
+  CaptureSourceKind,
   CompanionEvent,
   CompanionState,
+  EvidenceResult,
+  MeetingInfo,
   Prefs,
-  TrayRequest,
+  SatyaSignal,
+  ScreenFinding,
+  Scopes,
   UserMode,
 } from '../shared/contracts'
-import { MODE_LABELS } from '../shared/contracts'
-import { BackendClient } from './backend'
-import { registerCapture } from './capture'
-import { inspectClipboard, registerIpc } from './ipc'
+import { DEFAULT_SCOPES, USER_MODE_LABELS } from '../shared/contracts'
+import { BackendClient, type LiveBusEvent } from './backend'
+import { registerCapture, sendCaptureCommand, type CaptureStatus } from './capture'
+import { registerIpc } from './ipc'
+import { MeetingWatcher } from './meetings'
 import { placeBubble, snapToEdges, type Rect } from './placement'
 import { readPrefs, writePrefs } from './prefs'
-import { scanScreen } from './screen'
+import { captureScreenText } from './screen'
 import { createTray } from './tray'
 import {
   BUBBLE_MAX_HEIGHT,
@@ -79,6 +79,10 @@ import {
 const backend = new BackendClient()
 const preloadPath = join(__dirname, '../preload/index.js')
 
+const SCREEN_GUARD_MS = 7000
+const SCREEN_ALERT_COOLDOWN_MS = 5 * 60_000
+const SCREEN_TEXT_TTL_MS = 10 * 60_000
+
 let mascotWindow: BrowserWindow | null = null
 let bubbleWindow: BrowserWindow | null = null
 let workspaceWindow: BrowserWindow | null = null
@@ -87,68 +91,95 @@ let tray: ReturnType<typeof createTray> | null = null
 let cursorTimer: ReturnType<typeof setInterval> | null = null
 
 let quitting = false
-let lastStatus = 'Sleeping'
 let userMode: UserMode = 'SLEEPING'
-let activeCallId: string | null = null
-let callStartedAt: string | null = null
 let prefs: Prefs = {}
+let scopes: Scopes = { ...DEFAULT_SCOPES }
+let consentedThisRun = false
+let statusLine = 'Sleeping'
+
+let activeCall: (CallStarted & { source: CaptureSourceKind }) | null = null
+let stopLiveStream: (() => void) | null = null
+
 let lastCard: BubbleCard | null = null
 let lastTail: 'left' | 'right' = 'left'
 let bubbleHeight = BUBBLE_MIN_HEIGHT
 let workspaceReady = false
 let pendingWorkspaceTab: string | null = null
 
+let screenGuardTimer: ReturnType<typeof setInterval> | null = null
+let screenGuardBusy = false
+let lastScreenText: { text: string; at: number } | null = null
+const screenAlertUntil = new Map<string, number>()
+
+const meetingWatcher = new MeetingWatcher(onMeeting)
+
 function errorOf(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
-function pinMascotWindow(): void {
-  if (!mascotWindow || mascotWindow.isDestroyed()) return
-  try {
-    mascotWindow.setAlwaysOnTop(true, 'screen-saver', 1)
-    mascotWindow.setVisibleOnAllWorkspaces(true, {
-      visibleOnFullScreen: true,
-      skipTransformProcessType: true,
-    })
-  } catch {
-    // Window teardown can race with native Space/activation notifications.
-  }
+// ---------------------------------------------------------------------------------------------
+// Broadcasting to the renderer windows
+// ---------------------------------------------------------------------------------------------
+function windows(): BrowserWindow[] {
+  return [mascotWindow, bubbleWindow, workspaceWindow].filter(
+    (win): win is BrowserWindow =>
+      win !== null && !win.isDestroyed() && !win.webContents.isDestroyed() && !win.webContents.isLoading(),
+  )
 }
 
-function send(channel: string, payload: unknown): void {
-  for (const win of [mascotWindow, bubbleWindow, workspaceWindow, captureWindow]) {
-    if (
-      win &&
-      !win.isDestroyed() &&
-      !win.webContents.isDestroyed() &&
-      !win.webContents.isLoading()
-    ) {
-      try {
-        win.webContents.send(channel, payload)
-      } catch {}
+function broadcast(channel: string, payload: unknown, only?: BrowserWindow[]): void {
+  for (const win of only ?? windows()) {
+    try {
+      win.webContents.send(channel, payload)
+    } catch {
+      // window going away
     }
   }
 }
 
-/** Re-send `call.started` if the hidden capture renderer subscribed a little late. */
-function sendToCapture(event: CompanionEvent): void {
-  const win = captureWindow
-  if (
-    !win ||
-    win.isDestroyed() ||
-    win.webContents.isDestroyed() ||
-    win.webContents.isLoading()
-  ) {
+/** Local, OS-side facts for the renderers. Never sent to the backend. */
+function signal(value: SatyaSignal): void {
+  if (value.kind === 'level' || value.kind === 'speech') {
+    // 20 Hz loudness only matters to the mascot (nodding) and the live card.
+    broadcast('satya:signal', value, windows().filter((w) => w !== workspaceWindow))
     return
   }
-  try {
-    win.webContents.send('companion:event', event)
-  } catch {}
+  broadcast('satya:signal', value)
 }
 
 function refreshTray(): void {
   const refreshable = tray as (ReturnType<typeof createTray> & { refreshMenu?: () => void }) | null
   refreshable?.refreshMenu?.()
+}
+
+function setStatus(text: string): void {
+  statusLine = text
+  refreshTray()
+}
+
+// ---------------------------------------------------------------------------------------------
+// Mascot + bubble windows
+// ---------------------------------------------------------------------------------------------
+function pinMascotWindow(): void {
+  if (!mascotWindow || mascotWindow.isDestroyed()) return
+  try {
+    mascotWindow.setAlwaysOnTop(true, 'screen-saver', 1)
+    mascotWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
+  } catch {
+    // races with Space changes are harmless
+  }
+}
+
+/**
+ * Hide Satya's windows from screenshots and screen sharing (on by default): a fraudster watching
+ * your shared screen never sees the warning, and Screen Guard never reads Satya's own cards.
+ * Turn it off in the tray to record a backup video of the demo.
+ */
+function applyContentProtection(): void {
+  const hide = prefs.hide_from_capture !== false
+  for (const win of [mascotWindow, bubbleWindow, workspaceWindow]) {
+    if (win && !win.isDestroyed()) win.setContentProtection(hide)
+  }
 }
 
 function showCompanionWindow(): void {
@@ -157,12 +188,10 @@ function showCompanionWindow(): void {
   startCursorFeed()
 }
 
-// ---------------------------------------------------------------------------------------------
-// Bubble placement
-// ---------------------------------------------------------------------------------------------
 function ensureBubble(): BrowserWindow {
   if (bubbleWindow && !bubbleWindow.isDestroyed()) return bubbleWindow
   bubbleWindow = createBubbleWindow(preloadPath)
+  bubbleWindow.setContentProtection(prefs.hide_from_capture !== false)
   bubbleWindow.on('closed', () => {
     bubbleWindow = null
   })
@@ -170,16 +199,11 @@ function ensureBubble(): BrowserWindow {
 }
 
 function placeBubbleWindow(): 'left' | 'right' {
-  if (!mascotWindow || !bubbleWindow || mascotWindow.isDestroyed()) return lastTail
+  if (!mascotWindow || !bubbleWindow || mascotWindow.isDestroyed() || bubbleWindow.isDestroyed()) return lastTail
   const bounds = mascotWindow.getBounds() as Rect
   const area = workAreaFor(mascotWindow) as Rect
   const placement = placeBubble(bounds, area, { width: BUBBLE_WIDTH, height: bubbleHeight })
-  bubbleWindow.setBounds({
-    x: placement.x,
-    y: placement.y,
-    width: BUBBLE_WIDTH,
-    height: bubbleHeight,
-  })
+  bubbleWindow.setBounds({ x: placement.x, y: placement.y, width: BUBBLE_WIDTH, height: bubbleHeight })
   lastTail = placement.tail
   return placement.tail
 }
@@ -187,36 +211,34 @@ function placeBubbleWindow(): 'left' | 'right' {
 function deliverCard(win: BrowserWindow, card: BubbleCard | null, tail: 'left' | 'right'): void {
   const payload = { card, tail }
   if (win.isDestroyed() || win.webContents.isDestroyed()) return
-  if (win.webContents.isLoading()) {
-    win.webContents.once('did-finish-load', () => {
-      if (!win.isDestroyed() && !win.webContents.isDestroyed()) {
-        try {
-          win.webContents.send('companion:card', payload)
-        } catch {}
-      }
-    })
-    return
+  const send = (): void => {
+    if (win.isDestroyed() || win.webContents.isDestroyed()) return
+    try {
+      win.webContents.send('companion:card', payload)
+    } catch {
+      // ignore
+    }
   }
-  try {
-    win.webContents.send('companion:card', payload)
-  } catch {}
+  if (win.webContents.isLoading()) win.webContents.once('did-finish-load', send)
+  else send()
 }
 
 function showCard(card: BubbleCard): void {
+  const sameCard = lastCard?.id === card.id
   lastCard = card
   const win = ensureBubble()
   win.setAlwaysOnTop(true, 'screen-saver', 1)
   win.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true, skipTransformProcessType: true })
   const tail = placeBubbleWindow()
   deliverCard(win, card, tail)
-  // Passive cards must never steal focus from the call (Meet/Teams keeps focus).
-  if (card.kind === 'live' || card.kind === 'toast') win.showInactive()
+  if (sameCard && win.isVisible()) return
+  // Passive cards never steal focus from the call window (Meet/Zoom keeps the keyboard).
+  if (card.kind === 'live' || card.kind === 'toast' || card.kind === 'screen') win.showInactive()
   else win.show()
 }
 
 function hideCard(cardId?: string): void {
   if (cardId && lastCard?.id !== cardId) return
-  if (lastCard?.id.startsWith('screen-alert-')) snoozeScreenAlert()
   lastCard = null
   if (!bubbleWindow || bubbleWindow.isDestroyed()) return
   deliverCard(bubbleWindow, null, lastTail)
@@ -231,19 +253,12 @@ function resizeBubble(height: number): void {
 }
 
 function relayCardAction(cardId: string, actionId: string): void {
-  if (actionId === 'dismiss') {
-    hideCard(cardId)
-    return
-  }
-  if (actionId === 'open_workspace') {
-    hideCard(cardId)
-    openWorkspace()
-    return
-  }
   if (!mascotWindow || mascotWindow.isDestroyed() || mascotWindow.webContents.isDestroyed()) return
   try {
     mascotWindow.webContents.send('companion:card-action', { card_id: cardId, action_id: actionId })
-  } catch {}
+  } catch {
+    // ignore
+  }
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -261,13 +276,11 @@ function setClickThrough(through: boolean): void {
 function applyMouseHitTest(point = screen.getCursorScreenPoint()): void {
   if (!mascotWindow || mascotWindow.isDestroyed() || isDragging) return
   const bounds = mascotWindow.getBounds()
-  const distance = Math.hypot(
-    point.x - (bounds.x + bounds.width / 2),
-    point.y - (bounds.y + bounds.height / 2),
-  )
-  const shouldIgnore = manualClickThrough !== false && distance > 96
+  const cx = bounds.x + bounds.width / 2
+  const cy = bounds.y + bounds.height * 0.56
+  const distance = Math.hypot(point.x - cx, point.y - cy)
+  const shouldIgnore = manualClickThrough !== false && distance > 78
   if (shouldIgnore === mouseIgnored) return
-
   mouseIgnored = shouldIgnore
   if (shouldIgnore) mascotWindow.setIgnoreMouseEvents(true, { forward: true })
   else mascotWindow.setIgnoreMouseEvents(false)
@@ -282,9 +295,7 @@ function dragBy(dx: number, dy: number): void {
   }
   const bounds = mascotWindow.getBounds()
   mascotWindow.setPosition(Math.round(bounds.x + dx), Math.round(bounds.y + dy))
-  if (lastCard && bubbleWindow && !bubbleWindow.isDestroyed() && bubbleWindow.isVisible()) {
-    placeBubbleWindow()
-  }
+  if (lastCard && bubbleWindow && !bubbleWindow.isDestroyed() && bubbleWindow.isVisible()) placeBubbleWindow()
 }
 
 function dragEnd(): void {
@@ -292,12 +303,7 @@ function dragEnd(): void {
   manualClickThrough = null
   if (!mascotWindow || mascotWindow.isDestroyed()) return
   const snapped = snapToEdges(mascotWindow.getBounds() as Rect, workAreaFor(mascotWindow) as Rect)
-  mascotWindow.setBounds({
-    x: snapped.x,
-    y: snapped.y,
-    width: snapped.width,
-    height: snapped.height,
-  })
+  mascotWindow.setBounds({ x: snapped.x, y: snapped.y, width: snapped.width, height: snapped.height })
   prefs = writePrefs({ position: { x: snapped.x, y: snapped.y } })
   placeBubbleWindow()
   applyMouseHitTest()
@@ -311,267 +317,296 @@ function stopCursorFeed(): void {
 /** 30 Hz while Satya is visible; the renderer only needs dx/dy and a near flag. */
 function startCursorFeed(): void {
   stopCursorFeed()
-  if (
-    !mascotWindow ||
-    mascotWindow.isDestroyed() ||
-    !mascotWindow.isVisible() ||
-    mascotWindow.webContents.isDestroyed() ||
-    mascotWindow.webContents.isLoading()
-  ) {
-    return
-  }
-  applyMouseHitTest()
   cursorTimer = setInterval(() => {
-    if (
-      !mascotWindow ||
-      mascotWindow.isDestroyed() ||
-      !mascotWindow.isVisible() ||
-      mascotWindow.webContents.isDestroyed() ||
-      mascotWindow.webContents.isLoading()
-    ) {
+    const win = mascotWindow
+    if (!win || win.isDestroyed() || !win.isVisible() || win.webContents.isDestroyed() || win.webContents.isLoading()) {
       return
     }
     const point = screen.getCursorScreenPoint()
-    const bounds = mascotWindow.getBounds()
+    const bounds = win.getBounds()
     const dx = point.x - (bounds.x + bounds.width / 2)
-    const dy = point.y - (bounds.y + bounds.height / 2)
-    const dist = Math.hypot(dx, dy)
-
-    // Satya is centered; 96 px radius covers his 176 px body with margin. The renderer may
-    // temporarily force hit testing while a petal is hovered; otherwise empty pixels pass through.
+    const dy = point.y - (bounds.y + bounds.height * 0.56)
     try {
       applyMouseHitTest(point)
-    } catch {}
-
+    } catch {
+      // ignore
+    }
     try {
-      mascotWindow.webContents.send('companion:cursor', {
-        dx,
-        dy,
-        near: dist < 500,
-      })
-    } catch {}
+      win.webContents.send('companion:cursor', { dx, dy, near: Math.hypot(dx, dy) < 500 })
+    } catch {
+      // ignore
+    }
   }, 33)
 }
 
 // ---------------------------------------------------------------------------------------------
-// Modes, capture and lifecycle
+// Capture window (hidden): created on the first call
 // ---------------------------------------------------------------------------------------------
-async function ensureCapture(): Promise<void> {
-  if (!captureWindow || captureWindow.isDestroyed()) {
-    const win = createCaptureWindow(preloadPath)
-    captureWindow = win
-    win.on('closed', () => {
-      if (captureWindow === win) captureWindow = null
+async function ensureCapture(): Promise<BrowserWindow> {
+  if (captureWindow && !captureWindow.isDestroyed()) return captureWindow
+  const win = createCaptureWindow(preloadPath)
+  captureWindow = win
+  win.on('closed', () => {
+    if (captureWindow === win) captureWindow = null
+  })
+  registerCapture(win, {
+    onStatus: onCaptureStatus,
+    onLevel: (value) => signal({ kind: 'level', value }),
+    onSpeech: (active) => signal({ kind: 'speech', active }),
+    onUtterance: (index) => signal({ kind: 'transcribing', index }),
+  })
+  if (win.webContents.isLoading()) {
+    await new Promise<void>((resolve) => {
+      const timer = setTimeout(resolve, 6000)
+      win.webContents.once('did-finish-load', () => {
+        clearTimeout(timer)
+        resolve()
+      })
     })
-    registerCapture({ window: win, backend })
   }
+  return win
+}
 
-  const win = captureWindow
-  if (!win || win.isDestroyed() || !win.webContents.isLoading()) return
+function onCaptureStatus(status: CaptureStatus): void {
+  signal({ kind: 'capture', ...status })
+  if (status.state === 'capturing') {
+    setStatus(activeCall?.source === 'replay' ? 'Listening · DEMO REPLAY' : 'Listening to the call')
+  } else if (status.state === 'stopped') {
+    if (activeCall) void stopCall()
+  } else if (status.state === 'error') {
+    // Fail closed: stop the call and go to sleep. The mascot shows why.
+    void (async () => {
+      await stopCall()
+      await setUserMode('SLEEPING')
+    })()
+  }
+}
 
-  // The capture renderer subscribes to `call.started`; wait for its first load so the
-  // event that starts the audio pipeline cannot be missed.
-  await new Promise<void>((resolve) => {
-    let settled = false
-    let timer: ReturnType<typeof setTimeout> | null = null
-    const finish = (): void => {
-      if (settled) return
-      settled = true
-      if (timer) clearTimeout(timer)
-      win.webContents.removeListener('did-finish-load', finish)
-      win.webContents.removeListener('did-fail-load', finish)
-      win.removeListener('closed', finish)
-      resolve()
-    }
-    timer = setTimeout(finish, 5000)
-    win.webContents.once('did-finish-load', finish)
-    win.webContents.once('did-fail-load', finish)
-    win.once('closed', finish)
+// ---------------------------------------------------------------------------------------------
+// Calls
+// ---------------------------------------------------------------------------------------------
+function onLiveEvent(event: LiveBusEvent): void {
+  if (!activeCall || event.type !== 'transcript') return
+  const e = event as Extract<LiveBusEvent, { type: 'transcript' }> & {
+    chunk_index: number
+    t_start_s: number
+    text: string
+  }
+  if (e.call_id !== activeCall.call_id || !e.text) return
+  signal({
+    kind: 'caption',
+    call_id: e.call_id,
+    line: {
+      id: `${e.call_id}_${e.chunk_index}`,
+      text: e.text,
+      t_start_s: e.t_start_s,
+      t_end_s: typeof e.t_end_s === 'number' ? e.t_end_s : null,
+      spans: Array.isArray(e.spans) ? e.spans : [],
+      latency_ms: typeof e.latency_ms === 'number' ? e.latency_ms : null,
+    },
   })
 }
 
-async function setUserMode(mode: UserMode): Promise<BridgeResult<CompanionState>> {
+function replayUrl(): string {
+  return `${backend.baseUrl}/companion/replay/cfo_call_en.wav`
+}
+
+async function startCall(source: CaptureSourceKind): Promise<BridgeResult<CallStarted>> {
+  if (userMode !== 'WATCHING') return { ok: false, error: 'Wake me up first, then I can listen.' }
+  if (activeCall) return { ok: true, data: { call_id: activeCall.call_id, case_id: activeCall.case_id } }
   try {
-    userMode = mode
-    if (mode === 'WATCHING') {
-      const result = await backend.startSession('user_selected_loopback', 'Watching Google Meet & Screen')
-      lastStatus = 'Watching'
-      showCompanionWindow()
-      await ensureCapture()
+    const state = await backend.getState()
+    if (!state.consent_id) return { ok: false, error: 'Start watching first (consent is needed).' }
+    const kind = source === 'replay' ? 'replay' : 'loopback'
+    const language = prefs.call_language ?? 'en'
+    const started = await backend.startCall(state.consent_id, kind, language === 'auto' ? undefined : language)
+    activeCall = { call_id: started.call_id, case_id: started.case_id, source: kind }
+    stopLiveStream?.()
+    stopLiveStream = backend.streamLive(started.call_id, onLiveEvent)
+    const win = await ensureCapture()
+    sendCaptureCommand(win, {
+      action: 'start',
+      call_id: started.call_id,
+      source: kind,
+      replay_url: kind === 'replay' ? replayUrl() : undefined,
+    })
+    setStatus('Starting to listen…')
+    return { ok: true, data: { call_id: started.call_id, case_id: started.case_id } }
+  } catch (error) {
+    activeCall = null
+    return { ok: false, error: errorOf(error) }
+  }
+}
 
-      // Auto-activate ambient Screen Guard if not already running
-      if (!screenGuardActive) {
-        toggleScreenGuard()
-      }
+async function stopCall(): Promise<BridgeResult<null>> {
+  const call = activeCall
+  activeCall = null
+  sendCaptureCommand(captureWindow, { action: 'stop' })
+  stopLiveStream?.()
+  stopLiveStream = null
+  signal({ kind: 'level', value: 0 })
+  if (!call) return { ok: true, data: null }
+  try {
+    await backend.stopCall(call.call_id)
+  } catch {
+    // The backend may already have dropped it; capture is stopped locally either way.
+  }
+  setStatus(userMode === 'WATCHING' ? 'Watching' : USER_MODE_LABELS[userMode])
+  return { ok: true, data: null }
+}
 
-      // Start live call tracking on the backend
-      try {
-        const callResult = await backend.startCall(
-          result.state.consent_id ?? `consent_${Date.now()}`,
-          'user_selected_loopback',
-        )
-        activeCallId = callResult.call_id
-      } catch {
-        activeCallId = `call_meet_${Date.now()}`
-      }
-      callStartedAt = new Date().toISOString()
+function onMeeting(meeting: MeetingInfo | null): void {
+  signal({ kind: 'meeting', meeting })
+  // The call window closed while we were listening: stop at once.
+  if (!meeting && activeCall?.source === 'loopback') void stopCall()
+}
 
-      // Broadcast call.started event to sync all windows immediately
-      const startEvent: CompanionEvent = {
-        version: '1',
-        event_id: `evt_start_${Date.now()}`,
-        type: 'call.started',
-        session_id: result.state.session_id,
-        occurred_at: callStartedAt,
-        payload: {
-          state: 'ACTIVE',
-          mascot_mood: 'attentive',
-          headline: 'Watching Google Meet & Screen Guard active',
-          explanation:
-            'Satya is monitoring system audio and on-screen text for urgency language, fake bank accounts, and unauthorized approval bypasses.',
-          band: null,
-          reason_codes: [],
-          info_codes: [],
-          evidence_ids: [],
-          next_actions: [],
-          monitoring: true,
-          source: 'user_selected_loopback',
-          mode_label: 'Watching Google Meet & Screen',
-          demo: false,
-          call_id: activeCallId ?? undefined,
-          coverage: 'usable',
-          seal: 'verified',
-          user_mode: 'WATCHING',
-        },
-      }
-      handleEvent(startEvent)
+// ---------------------------------------------------------------------------------------------
+// Screen Guard + clipboard (on-device OCR; text checked by the local engine, never stored)
+// ---------------------------------------------------------------------------------------------
+function findingSignature(finding: ScreenFinding): string {
+  return [
+    ...finding.asks.map((a) => a.code),
+    ...finding.unknown_accounts_masked,
+    ...finding.vendors,
+  ].join('|')
+}
 
-      const startedCallId = activeCallId
-      for (const delay of [300, 1200]) {
-        setTimeout(() => {
-          if (startedCallId && activeCallId === startedCallId) sendToCapture(startEvent)
-        }, delay)
-      }
-
-      refreshTray()
-      const mergedState: CompanionState = {
-        ...result.state,
-        mode: 'ACTIVE',
-        monitoring: true,
-        mode_label: 'Watching Google Meet & Screen',
-        source_label: 'Watching Google Meet & Screen',
-      }
-      return { ok: true, data: mergedState }
+async function runScreenCheck(onDemand: boolean): Promise<BridgeResult<ScreenFinding>> {
+  if (screenGuardBusy) return { ok: false, error: 'already reading the screen' }
+  screenGuardBusy = true
+  try {
+    const text = await captureScreenText()
+    lastScreenText = { text, at: Date.now() }
+    const finding = await backend.textCheck(text, meetingWatcher.meeting?.app ?? null, 'screen')
+    const signature = findingSignature(finding)
+    if (!onDemand) {
+      if (!finding.suspicious) return { ok: true, data: finding }
+      if ((screenAlertUntil.get(signature) ?? 0) > Date.now()) return { ok: true, data: finding }
+      screenAlertUntil.set(signature, Date.now() + SCREEN_ALERT_COOLDOWN_MS)
     }
+    signal({ kind: 'text_check', source: 'screen', finding, on_demand: onDemand })
+    return { ok: true, data: finding }
+  } catch (error) {
+    return { ok: false, error: errorOf(error) }
+  } finally {
+    screenGuardBusy = false
+  }
+}
 
-    // Stop active call if any
-    if (activeCallId) {
-      try {
-        await backend.stopCall(activeCallId)
-      } catch {}
-      const stopEvent: CompanionEvent = {
-        version: '1',
-        event_id: `evt_stop_${Date.now()}`,
-        type: 'call.stopped',
-        session_id: null,
-        occurred_at: new Date().toISOString(),
-        payload: {
-          state: 'SLEEP',
-          mascot_mood: 'sleepy',
-          headline: 'Satya is asleep.',
-          explanation: 'Live call monitoring stopped.',
-          band: null,
-          reason_codes: [],
-          info_codes: [],
-          evidence_ids: [],
-          next_actions: [],
-          monitoring: false,
-          source: null,
-          mode_label: null,
-          demo: false,
-          user_mode: mode,
-        },
-      }
-      handleEvent(stopEvent)
-      activeCallId = null
-      callStartedAt = null
-    }
+function startScreenGuard(): void {
+  if (screenGuardTimer) return
+  screenGuardTimer = setInterval(() => {
+    if (userMode === 'WATCHING' && scopes.screen && mascotWindow?.isVisible()) void runScreenCheck(false)
+  }, SCREEN_GUARD_MS)
+}
 
-    if (screenGuardActive) {
-      toggleScreenGuard()
-    }
+function stopScreenGuard(): void {
+  if (screenGuardTimer) clearInterval(screenGuardTimer)
+  screenGuardTimer = null
+  lastScreenText = null
+  screenAlertUntil.clear()
+}
 
-    await backend.stopSession()
-    if (mode === 'OFF') {
-      lastStatus = 'Off'
-      stopCursorFeed()
-      hideWindow(mascotWindow)
-      hideCard()
-    } else {
-      lastStatus = 'Sleeping'
-    }
-    refreshTray()
-
-    let baseState: CompanionState | null = null
-    try {
-      baseState = await backend.getState()
-    } catch {}
-    const sleepState: CompanionState = {
-      version: '1',
-      mode: 'SLEEP',
-      hidden: false,
-      monitoring: false,
-      session_id: null,
-      consent_id: null,
-      source: null,
-      source_label: null,
-      started_at: null,
-      updated_at: new Date().toISOString(),
-      expires_at: null,
-      demo: false,
-      mode_label: null,
-      last_event_id: null,
-      policy_authority: 'satyapan.policy',
-      raw_scores_visible: false,
-      manual_only: true,
-      ...(baseState ?? {}),
-    }
-    return { ok: true, data: sleepState }
+/** Read the clipboard only on this request and check it. */
+async function checkClipboardText(): Promise<BridgeResult<ScreenFinding>> {
+  if (userMode !== 'WATCHING') return { ok: false, error: 'Wake me up first.' }
+  const text = clipboard.readText()
+  if (!text.trim()) return { ok: false, error: 'The clipboard is empty.' }
+  try {
+    lastScreenText = { text, at: Date.now() }
+    const finding = await backend.textCheck(text, null, 'clipboard')
+    signal({ kind: 'text_check', source: 'clipboard', finding, on_demand: true })
+    return { ok: true, data: finding }
   } catch (error) {
     return { ok: false, error: errorOf(error) }
   }
 }
 
-function toggleSleep(): void {
-  void setUserMode(userMode === 'WATCHING' ? 'SLEEPING' : 'WATCHING')
+/** "Check it properly": hand the last screen/clipboard text to the policy engine as evidence. */
+async function submitLastScreenText(): Promise<BridgeResult<EvidenceResult>> {
+  if (!lastScreenText || Date.now() - lastScreenText.at > SCREEN_TEXT_TTL_MS) {
+    return { ok: false, error: 'That text is gone (I keep it for 10 minutes at most).' }
+  }
+  const text = lastScreenText.text
+  lastScreenText = null
+  try {
+    return { ok: true, data: await backend.submitEvidence(text.slice(0, 20_000)) }
+  } catch (error) {
+    return { ok: false, error: errorOf(error) }
+  }
+}
+
+// ---------------------------------------------------------------------------------------------
+// Modes
+// ---------------------------------------------------------------------------------------------
+function startWatchers(): void {
+  if (scopes.meetings) meetingWatcher.start()
+  else meetingWatcher.stop()
+  if (scopes.screen) startScreenGuard()
+  else stopScreenGuard()
+}
+
+function stopWatchers(): void {
+  meetingWatcher.stop()
+  stopScreenGuard()
+}
+
+async function setUserMode(mode: UserMode, nextScopes?: Scopes): Promise<BridgeResult<CompanionState>> {
+  try {
+    if (mode === 'WATCHING') {
+      if (nextScopes) {
+        scopes = { ...DEFAULT_SCOPES, ...nextScopes }
+        prefs = writePrefs({ scopes })
+      }
+      let state = await backend.getState().catch(() => null)
+      if (!state?.session_id) {
+        const started = await backend.startSession('user_selected_loopback', 'Watching (consented)')
+        state = started.state
+      }
+      userMode = 'WATCHING'
+      consentedThisRun = true
+      showCompanionWindow()
+      startWatchers()
+      setStatus('Watching')
+      void backend.healthInfo().then((health) => signal({ kind: 'health', health }))
+      return { ok: true, data: state }
+    }
+
+    // Sleeping / Off: stop everything first, then tell the backend.
+    await stopCall()
+    stopWatchers()
+    userMode = mode
+    try {
+      await backend.stopSession()
+    } catch {
+      // Backend down: the local session is already off.
+    }
+    if (mode === 'OFF') {
+      setTimeout(() => {
+        if (userMode !== 'OFF') return
+        stopCursorFeed()
+        hideCard()
+        hideWindow(mascotWindow)
+      }, 1500)
+    }
+    setStatus(USER_MODE_LABELS[mode])
+    const state = await backend.getState().catch(() => null)
+    if (state) return { ok: true, data: state }
+    return { ok: false, error: 'The engine is offline, so I went to sleep locally.' }
+  } catch (error) {
+    return { ok: false, error: errorOf(error) }
+  }
 }
 
 function emergencyStop(): void {
-  send('companion:hotkey', 'stop')
+  signal({ kind: 'hotkey', action: 'stop' })
   void setUserMode('SLEEPING')
 }
 
-function toggleVisible(): void {
-  if (mascotWindow?.isVisible()) {
-    void hideCompanion()
-    return
-  }
-  showCompanionWindow()
-}
-
-async function stopSafely(): Promise<void> {
-  try {
-    // Fails closed on hide/quit: posts to POST /companion/session/stop.
-    await backend.stopSession()
-    lastStatus = 'Sleeping'
-  } catch {
-    // The backend may be down; the local session is already off from the renderer's view.
-  }
-  refreshTray()
-}
-
+/** Hide and Quit fail closed: stop the call, then `POST /companion/session/stop`. */
 async function hideCompanion(): Promise<void> {
-  await stopSafely()
+  await setUserMode('SLEEPING')
   stopCursorFeed()
   hideCard()
   hideWindow(mascotWindow)
@@ -581,12 +616,14 @@ async function quit(): Promise<void> {
   if (quitting) return
   quitting = true
   markAppQuitting()
-  try {
-    await Promise.race([
-      stopSafely(),
-      new Promise((resolve) => setTimeout(resolve, 500)),
-    ])
-  } catch {}
+  await Promise.race([
+    (async () => {
+      await stopCall()
+      stopWatchers()
+      await backend.stopSession().catch(() => undefined)
+    })(),
+    new Promise((resolve) => setTimeout(resolve, 800)),
+  ])
   stopCursorFeed()
   backend.disconnect()
   for (const win of [mascotWindow, bubbleWindow, workspaceWindow, captureWindow]) {
@@ -594,36 +631,34 @@ async function quit(): Promise<void> {
       win.removeAllListeners('close')
       try {
         win.destroy()
-      } catch {}
+      } catch {
+        // ignore
+      }
     }
   }
   app.exit(0)
 }
 
+// ---------------------------------------------------------------------------------------------
+// Notebook
+// ---------------------------------------------------------------------------------------------
 function sendWorkspaceNavigation(): void {
-  if (
-    !pendingWorkspaceTab ||
-    !workspaceReady ||
-    !workspaceWindow ||
-    workspaceWindow.isDestroyed() ||
-    workspaceWindow.webContents.isDestroyed()
-  ) {
-    return
-  }
+  if (!pendingWorkspaceTab || !workspaceReady || !workspaceWindow || workspaceWindow.isDestroyed()) return
   try {
     workspaceWindow.webContents.send('companion:navigate-workspace', pendingWorkspaceTab)
     pendingWorkspaceTab = null
-  } catch {}
+  } catch {
+    // ignore
+  }
 }
 
 function openWorkspace(tab?: string): void {
   pendingWorkspaceTab = tab ?? null
-  if (process.platform === 'darwin') {
-    app.dock?.show()
-  }
+  if (process.platform === 'darwin') app.dock?.show()
   if (!workspaceWindow || workspaceWindow.isDestroyed()) {
     workspaceReady = false
     const win = createWorkspaceWindow(preloadPath)
+    win.setContentProtection(prefs.hide_from_capture !== false)
     workspaceWindow = win
     win.on('closed', () => {
       if (workspaceWindow === win) workspaceWindow = null
@@ -635,198 +670,75 @@ function openWorkspace(tab?: string): void {
     })
     return
   }
-
   if (workspaceWindow.isMinimized()) workspaceWindow.restore()
   workspaceWindow.show()
   workspaceWindow.focus()
   sendWorkspaceNavigation()
 }
 
-function checkClipboard(): void {
+// ---------------------------------------------------------------------------------------------
+// Hotkeys
+// ---------------------------------------------------------------------------------------------
+function wakeOrSleep(): void {
+  if (userMode === 'WATCHING') {
+    signal({ kind: 'hotkey', action: 'stop' })
+    void setUserMode('SLEEPING')
+    return
+  }
   showCompanionWindow()
-  const text = clipboard.readText()
-  const check = inspectClipboard(text)
-  send('companion:tray-request', { kind: 'clipboard', check } satisfies TrayRequest)
-
-  if (check.suspicious) {
-    showCard({
-      id: `clip-${Date.now()}`,
-      kind: 'alert',
-      band: 'HOLD',
-      headline: `Suspicious: ${check.matches.join(' and ')}`,
-      reasons: check.matches,
-      chips: [],
-      actions: [{ id: 'dismiss', variant: 'ghost' }],
-    })
-  } else if (text.trim().length > 0) {
-    showCard({
-      id: `clip-${Date.now()}`,
-      kind: 'result',
-      band: 'PASS',
-      headline: 'Clipboard looks OK',
-      reasons: ['No urgent payment tricks found in copied text'],
-      actions: [{ id: 'dismiss', variant: 'ghost' }],
-    })
-  } else {
-    showCard({
-      id: `clip-${Date.now()}`,
-      kind: 'toast',
-      text_key: 'clipboard_empty',
-      tone: 'neutral',
-    })
-  }
-}
-
-const SCREEN_ALERT_COOLDOWN_MS = 5 * 60_000
-
-let screenGuardInterval: ReturnType<typeof setInterval> | null = null
-let screenGuardActive = false
-let screenAlertSignature = ''
-let screenAlertCooldownUntil = 0
-
-/** Closing an alert pauses the same finding for 5 minutes. */
-function snoozeScreenAlert(): void {
-  if (!screenAlertSignature) return
-  screenAlertCooldownUntil = Date.now() + SCREEN_ALERT_COOLDOWN_MS
-}
-
-async function checkScreen(onDemand = true): Promise<void> {
-  showCompanionWindow()
-  if (onDemand) {
-    showCard({
-      id: `screen-scan-${Date.now()}`,
-      kind: 'toast',
-      text_key: 'scanning_screen',
-      tone: 'neutral',
-    })
-  }
-
-  const scan = await scanScreen()
-  if (scan.suspicious) {
-    const signature =
-      scan.matches.length > 0 ? [...scan.matches].sort().join('|') : scan.headline
-    const now = Date.now()
-    if (!onDemand && signature === screenAlertSignature && now < screenAlertCooldownUntil) {
-      return
-    }
-    screenAlertSignature = signature
-    screenAlertCooldownUntil = now + SCREEN_ALERT_COOLDOWN_MS
-
-    showCard({
-      id: `screen-alert-${Date.now()}`,
-      kind: 'alert',
-      band: 'HOLD',
-      headline: scan.headline,
-      reasons: scan.matches,
-      chips: [],
-      actions: [
-        { id: 'open_workspace', variant: 'primary' },
-        { id: 'dismiss', variant: 'ghost' },
-      ],
-    })
-  } else {
-    // The screen is clear: forget the old finding so it can alert again if it returns.
-    screenAlertSignature = ''
-    screenAlertCooldownUntil = 0
-    if (onDemand) {
-      showCard({
-        id: `screen-ok-${Date.now()}`,
-        kind: 'result',
-        band: 'PASS',
-        headline: 'Screen looks OK',
-        reasons: [
-          'No urgent payment tricks, remote scam tools, or credential requests found on screen.',
-        ],
-        actions: [{ id: 'dismiss', variant: 'ghost' }],
-      })
-    }
-  }
-}
-
-function toggleScreenGuard(): void {
-  screenGuardActive = !screenGuardActive
-  screenAlertSignature = ''
-  screenAlertCooldownUntil = 0
-  if (screenGuardActive) {
-    if (userMode !== 'WATCHING') {
-      void setUserMode('WATCHING')
-    }
-    if (screenGuardInterval) clearInterval(screenGuardInterval)
-    screenGuardInterval = setInterval(() => {
-      if (mascotWindow?.isVisible()) {
-        void checkScreen(false)
-      }
-    }, 8000)
-    showCard({
-      id: `guard-toast-${Date.now()}`,
-      kind: 'toast',
-      text_key: 'screen_guard_active',
-      tone: 'good',
-    })
-    void checkScreen(false)
-  } else {
-    if (screenGuardInterval) clearInterval(screenGuardInterval)
-    screenGuardInterval = null
-    showCard({
-      id: `guard-toast-${Date.now()}`,
-      kind: 'toast',
-      text_key: 'screen_guard_paused',
-      tone: 'neutral',
-    })
-  }
-  refreshTray()
-}
-
-function replayScenario(scenario: string): void {
-  showCompanionWindow()
-  send('companion:tray-request', { kind: 'demo', scenario } satisfies TrayRequest)
-}
-
-function statusLabel(): string {
-  return lastStatus
+  if (consentedThisRun) void setUserMode('WATCHING', scopes).then(() => signal({ kind: 'hotkey', action: 'wake' }))
+  else signal({ kind: 'hotkey', action: 'wake' })
 }
 
 function registerShortcuts(): void {
-  // Wake / sleep.
-  globalShortcut.register('CommandOrControl+Shift+S', toggleSleep)
-  // Emergency brake: stop listening from any state.
-  const stopped = globalShortcut.register('CommandOrControl+Shift+.', emergencyStop)
-  if (!stopped) globalShortcut.register('CommandOrControl+Shift+Period', emergencyStop)
-  // Notebook.
-  globalShortcut.register('CommandOrControl+Shift+N', () => openWorkspace())
-  // Clipboard is read only on this press.
-  globalShortcut.register('CommandOrControl+Shift+V', checkClipboard)
-  // Scan Screen for fraud on demand.
-  globalShortcut.register('CommandOrControl+Shift+K', () => void checkScreen(true))
-  // Toggle ambient Screen Guard.
-  globalShortcut.register('CommandOrControl+Shift+G', toggleScreenGuard)
+  const bind = (accelerator: string, run: () => void): void => {
+    try {
+      globalShortcut.register(accelerator, run)
+    } catch {
+      // taken by another app: the menu and tray still work
+    }
+  }
+  bind('CommandOrControl+Shift+S', wakeOrSleep)
+  // Emergency brake: stop listening and reading, from any state.
+  bind('CommandOrControl+Shift+.', emergencyStop)
+  bind('CommandOrControl+Shift+N', () => openWorkspace())
+  bind('CommandOrControl+Shift+L', () => {
+    showCompanionWindow()
+    signal({ kind: 'hotkey', action: 'listen' })
+  })
+  bind('CommandOrControl+Shift+K', () => {
+    showCompanionWindow()
+    signal({ kind: 'hotkey', action: 'scan' })
+  })
+  bind('CommandOrControl+Shift+V', () => {
+    showCompanionWindow()
+    void checkClipboardText().then((result) => {
+      if (!result.ok) signal({ kind: 'hotkey', action: 'clipboard' })
+    })
+  })
+  // Presenter fallback: play the labelled demo recording through the real pipeline.
+  bind('CommandOrControl+Shift+D', () => {
+    showCompanionWindow()
+    signal({ kind: 'hotkey', action: 'replay' })
+  })
 }
 
 function handleEvent(event: CompanionEvent): void {
-  if (event.payload.band) {
-    lastStatus = `${MODE_LABELS[event.payload.state]} · ${event.payload.band}`
-  } else {
-    lastStatus = MODE_LABELS[event.payload.state]
-  }
-  send('companion:event', event)
-  refreshTray()
+  if (event.type === 'alert.raised' && event.payload.band) setStatus(`Alert · ${event.payload.band}`)
+  broadcast('companion:event', event)
 }
 
+// ---------------------------------------------------------------------------------------------
+// App lifecycle
+// ---------------------------------------------------------------------------------------------
 const hasLock = app.requestSingleInstanceLock()
 if (!hasLock) {
-  console.warn(
-    '\n[Satya] Another instance of Satyapan is already running in the background.\n' +
-    'The secondary instance has signaled the primary instance to display and is exiting.\n' +
-    'To restart cleanly, stop any background instances with: killall Electron || pkill -f electron\n'
-  )
+  console.warn('[Satya] Another instance is already running; showing it instead.')
   app.quit()
 } else {
   app.on('second-instance', () => {
     showCompanionWindow()
-    if (mascotWindow && !mascotWindow.isDestroyed()) {
-      mascotWindow.show()
-      mascotWindow.focus()
-    }
+    mascotWindow?.show()
   })
 
   void app.whenReady().then(() => {
@@ -835,22 +747,18 @@ if (!hasLock) {
       workspaceReady = true
       sendWorkspaceNavigation()
     })
-    if (process.platform === 'darwin') {
-      app.dock?.hide()
-    }
+    if (process.platform === 'darwin') app.dock?.hide()
     app.setAppUserModelId('in.example.satyapan.companion')
     prefs = readPrefs()
+    scopes = { ...DEFAULT_SCOPES, ...(prefs.scopes ?? {}) }
 
     mascotWindow = createMascotWindow({
       preloadPath,
       prefs,
       onCompanionHidden: () => {
         stopCursorFeed()
-        void stopSafely()
+        void setUserMode('SLEEPING')
       },
-    })
-    mascotWindow.webContents.on('console-message', (_event, level, message, line, sourceId) => {
-      console.log(`[Renderer ${level}] ${message} (${sourceId}:${line})`)
     })
     mascotWindow.on('closed', () => {
       mascotWindow = null
@@ -863,41 +771,29 @@ if (!hasLock) {
     screen.on('display-removed', pinMascotWindow)
     screen.on('display-metrics-changed', pinMascotWindow)
     pinMascotWindow()
+
     mascotWindow.webContents.on('context-menu', (_event, params) => {
+      const watching = userMode === 'WATCHING'
       const menu = Menu.buildFromTemplate([
-        { label: `Satya · ${statusLabel()}`, enabled: false },
+        { label: `Satya · ${statusLine}`, enabled: false },
         { type: 'separator' },
-        {
-          label: userMode === 'WATCHING' ? 'Sleep' : 'Watch',
-          click: () => void setUserMode(userMode === 'WATCHING' ? 'SLEEPING' : 'WATCHING'),
-        },
-        {
-          label: 'Open Notebook',
-          click: () => openWorkspace(),
-        },
-        {
-          label: 'Scan Screen for Fraud (Cmd+Shift+K)',
-          click: () => void checkScreen(true),
-        },
-        {
-          label: screenGuardActive
-            ? 'Screen Guard: Watching (Click to Pause)'
-            : 'Screen Guard: Paused (Click to Watch)',
-          click: toggleScreenGuard,
-        },
-        {
-          label: 'Check Clipboard (Cmd+Shift+V)',
-          click: checkClipboard,
-        },
+        watching
+          ? { label: 'Sleep (⌘⇧.)', click: () => void setUserMode('SLEEPING') }
+          : { label: 'Wake up', click: wakeOrSleep },
+        ...(watching
+          ? [
+              activeCall
+                ? { label: 'Stop listening', click: () => void stopCall() }
+                : { label: 'Listen to a call now', click: () => signal({ kind: 'hotkey', action: 'listen' }) },
+              { label: 'Scan my screen now', click: () => signal({ kind: 'hotkey', action: 'scan' }) },
+              { label: 'Check what I copied', click: () => void checkClipboardText() },
+              { label: 'Play the demo call (replay)', click: () => signal({ kind: 'hotkey', action: 'replay' }) },
+            ]
+          : []),
+        { label: 'Open Notebook', click: () => openWorkspace() },
         { type: 'separator' },
-        {
-          label: 'Off',
-          click: () => void setUserMode('OFF'),
-        },
-        {
-          label: 'Quit Satya',
-          click: () => void quit(),
-        },
+        { label: 'Turn off', click: () => void setUserMode('OFF') },
+        { label: 'Quit Satya', click: () => void quit() },
       ])
       menu.popup({ window: mascotWindow ?? undefined, x: params.x, y: params.y })
     })
@@ -906,6 +802,7 @@ if (!hasLock) {
     bubbleWindow.on('closed', () => {
       bubbleWindow = null
     })
+    applyContentProtection()
 
     registerIpc({
       backend,
@@ -914,7 +811,6 @@ if (!hasLock) {
       hideCompanion,
       quit,
       setClickThrough,
-      toggleScreenGuard,
       dragBy,
       dragEnd,
       showCard,
@@ -923,14 +819,23 @@ if (!hasLock) {
       resizeBubble,
       setUserMode,
       getUserMode: () => userMode,
-      isScreenGuardActive: () => screenGuardActive,
-      getActiveCallId: () => activeCallId,
+      getActiveCallId: () => activeCall?.call_id ?? null,
+      startCall,
+      stopCall,
+      scanScreen: () => runScreenCheck(true),
+      checkClipboardText,
+      submitLastScreenText,
+      setScopes: async (next) => {
+        scopes = { ...DEFAULT_SCOPES, ...next }
+        prefs = writePrefs({ scopes })
+        if (userMode === 'WATCHING') startWatchers()
+        return { ok: true, data: scopes }
+      },
       getPrefs: () => prefs,
       setPrefs: (patch) => {
         prefs = writePrefs(patch)
-        if (patch.position && mascotWindow) {
-          mascotWindow.setPosition(patch.position.x, patch.position.y)
-        }
+        if (patch.position && mascotWindow) mascotWindow.setPosition(patch.position.x, patch.position.y)
+        if (patch.hide_from_capture !== undefined) applyContentProtection()
         return prefs
       },
       openExternal: async (url) => {
@@ -940,28 +845,41 @@ if (!hasLock) {
 
     tray = createTray({
       showCompanion: showCompanionWindow,
-      hideCompanion: () => {
-        void hideCompanion()
-      },
+      hideCompanion: () => void hideCompanion(),
       openWorkspace: () => openWorkspace(),
-      quit: () => {
-        void quit()
-      },
-      sendRequest: (request) => {
-        showCompanionWindow()
-        send('companion:tray-request', request)
-      },
-      checkClipboard,
-      scanScreen: () => void checkScreen(true),
-      toggleScreenGuard,
-      isScreenGuardActive: () => screenGuardActive,
-      statusLabel,
+      quit: () => void quit(),
+      statusLabel: () => statusLine,
       getMode: () => userMode,
       setMode: (mode) => {
-        void setUserMode(mode)
+        if (mode === 'WATCHING') wakeOrSleep()
+        else void setUserMode(mode)
       },
-      toggleVisible,
+      toggleVisible: () => {
+        if (mascotWindow?.isVisible()) void hideCompanion()
+        else showCompanionWindow()
+      },
       isVisible: () => Boolean(mascotWindow?.isVisible()),
+      inCall: () => activeCall !== null,
+      listenNow: () => {
+        showCompanionWindow()
+        signal({ kind: 'hotkey', action: 'listen' })
+      },
+      stopListening: () => void stopCall(),
+      playDemoCall: () => {
+        showCompanionWindow()
+        signal({ kind: 'hotkey', action: 'replay' })
+      },
+      scanScreen: () => {
+        showCompanionWindow()
+        signal({ kind: 'hotkey', action: 'scan' })
+      },
+      checkClipboard: () => void checkClipboardText(),
+      hideFromCapture: () => prefs.hide_from_capture !== false,
+      toggleHideFromCapture: () => {
+        prefs = writePrefs({ hide_from_capture: prefs.hide_from_capture === false })
+        applyContentProtection()
+        refreshTray()
+      },
     })
 
     registerShortcuts()
@@ -969,11 +887,9 @@ if (!hasLock) {
     void backend.connect({
       onEvent: handleEvent,
       onConnection: (status) => {
-        send('companion:connection', status)
-        if (!status.connected && status.error) {
-          lastStatus = 'Backend offline — replay only'
-        }
-        refreshTray()
+        broadcast('companion:connection', status)
+        if (!status.connected) setStatus('Engine offline — run `make run`')
+        else if (statusLine.startsWith('Engine offline')) setStatus(USER_MODE_LABELS[userMode])
       },
       onTrayRequest: () => undefined,
       onHotkey: () => undefined,

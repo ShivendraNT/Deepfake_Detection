@@ -82,6 +82,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/adapters/ollama_llm.py` | local LLM (Ollama) | T15 | todo |
 | `src/satyapan/adapters/transcribe_aws.py` | AWS Transcribe | T17 | todo |
 | `src/satyapan/adapters/transcribe_whisper.py` | C7 local | T11 | todo |
+| `src/satyapan/adapters/transcribe_local.py` | C7 local speech engine: mlx-whisper (Apple Silicon) or faster-whisper (any OS), warm-up, hallucination guard | finale | done |
 | `src/satyapan/email/parser.py` | C3 | T03 | todo |
 | `src/satyapan/email/domains.py` | C3 | T04 | todo |
 | `src/satyapan/email/signals.py` | C3 | T04 | todo |
@@ -90,6 +91,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/document/checker.py` | C4 | T08 | todo |
 | `src/satyapan/asks/lexicon.py` | C5 | T05 | todo |
 | `src/satyapan/asks/extractor.py` | C5 | T05 | todo |
+| `src/satyapan/asks/phrasebook.py` | C5 live phrasebook (product-only patterns on top of the frozen lexicon) + informational cues (ADR-030) | finale | done |
 | `src/satyapan/voice/rules.py` | C6 rules | T07/T11/T17 shared | done |
 | `src/satyapan/voice/audio_io.py` | C6 | T17 | todo |
 | `src/satyapan/voice/detector.py` | C6 | T17 | todo |
