@@ -46,9 +46,9 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F03 | Backend glue (calls, files, oob, event fan-in) | Shivendra | P0 | done |
 | F04 | X1 cross-channel signal | Shivendra | P1 | done — X1 cross-channel signal (30-min window, A1/A6/A7 + new/changed beneficiary -> VERIFY, A4/A5 urgency -> HOLD; raise-only; EN/HI templates; 16 tests green) |
 | F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | todo |
-| F06 | Mascot component (10 poses) + gallery | Saarika | P0 | todo |
-| F07 | Mascot window: radial menu, drag, brain reducer | Saarika | P0 | todo |
-| F08 | Bubble cards + copy EN/Hinglish/हिन्दी | Saarika | P0 | todo |
+| F06 | Mascot component (10 poses) + gallery | Saarika | P0 | done — 10 SVG poses, breathe/blink/twitch loops, audio rings, gallery view |
+| F07 | Mascot window: radial menu, drag, brain reducer | Saarika | P0 | done — satyaMachine pure reducer, radial menu, drag physics, 26 vitest tests green |
+| F08 | Bubble cards + copy EN/Hinglish/हिन्दी | Saarika | P0 | done — 10 modular bubble cards, CardShell, trilingual copy.ts engine, 8 vitest tests green |
 | F09 | Deck + story | Saarika + Shivendra | P0 | todo |
 | F10 | Capture window (loopback spike first) | Kartikey | P0/P1 | done — loopback capture window, PCM worklet, VAD, ONNX scorer, WAV chunking, 9 vitest tests green |
 | F11 | Report pack v2 (5 sections) | Kartikey | P0 | done — `build_report_pack_v2` builds 5 MANUAL_ONLY drafts; 12/12 tests green |
