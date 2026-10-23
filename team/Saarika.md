@@ -106,6 +106,8 @@ You may edit ONLY the files listed under F07. The reducer must be pure (no api c
 Do step <N> only. Then run: cd desktop && npm run typecheck && npx vitest run. Show the output.
 ```
 
+NEEDS-CONTRACT: F02/F03 must expose `startCall`, `stopCall`, `submitFile(name, mime, bytes, caseId?)` and `requestOob(caseId)` on `CompanionBridge`. The current bridge has none, and `/companion/commands` does not support them. F07 codes against optional methods; the demo path shows a calm notice until the bridge lands.
+
 ---
 
 ## F08 — Bubble cards + copy (P0 · H10 → H24)

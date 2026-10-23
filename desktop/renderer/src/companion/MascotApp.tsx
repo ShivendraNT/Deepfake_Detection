@@ -1,116 +1,192 @@
 /**
- * MascotApp — the mascot window (`?view=companion`). F07 (Saarika) replaces this shell with
- * the radial menu and drag hooks. Until then it hosts the existing Companion shell so nothing
- * that T25 checks regresses. In browser mock mode, cards from `api.showCard` render inline in a
- * `<div>` instead of a second window.
+ * MascotApp — the mascot window (`?view=companion`).
+ *
+ * Satya is drawn at 96 px in a 280×280 transparent window. The window is click-through except
+ * while the pointer is over Satya or an open petal. One pure reducer owns his mood; this shell
+ * only wires gestures, the menu and the bridge.
  */
 
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useRef, useState, type DragEvent, type ReactNode } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 
-import type { BubbleCard } from '../../../shared/contracts'
+import type { MascotMood, Pose } from '../../../shared/contracts'
 import { api, isMockBridge } from '../shared/api'
 import Mascot from './Mascot'
 import BubbleCardView from './bubble/BubbleCardView'
+import RadialMenu, { menuEdgeFromWindow, type MenuAction, type MenuEdge } from './RadialMenu'
+import { useDrag } from './useDrag'
+import { useHitArea } from './useHitArea'
+import { useSatya } from './useSatya'
 
 export interface MascotAppProps {
   companion?: ReactNode
 }
 
+const MOOD: Record<Pose, MascotMood> = {
+  sleep: 'sleepy',
+  idle: 'attentive',
+  listen: 'attentive',
+  think: 'focused',
+  alert: 'calm_alert',
+  relief: 'attentive',
+  write: 'writing',
+  catch: 'attentive',
+  wave: 'attentive',
+  off: 'off',
+}
+
+interface CompatMascotProps {
+  pose: Pose
+  mood: MascotMood
+  audioLevel: number
+  look: { dx: number; dy: number; near: boolean }
+  size: number
+  reducedMotion?: boolean
+}
+
+// F06 owns Mascot.tsx. The cast lets this shell pass the finale props while the older F06 preview
+// component still reads `mood`; a landed F06 simply ignores the extra prop.
+const SatyaFigure = Mascot as unknown as (props: CompatMascotProps) => JSX.Element
+
 export default function MascotApp({ companion }: MascotAppProps): JSX.Element {
-  const [card, setCard] = useState<BubbleCard | null>(null)
-  const [tail, setTail] = useState<'left' | 'right'>('left')
+  const satya = useSatya()
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [menuEdge, setMenuEdge] = useState<MenuEdge>('none')
+  const fileInput = useRef<HTMLInputElement | null>(null)
 
-  const isDown = useRef(false)
-  const hasDragged = useRef(false)
-  const downPos = useRef({ x: 0, y: 0 })
-  const lastScreenPos = useRef({ x: 0, y: 0 })
+  const drag = useDrag({
+    onClick: () => {
+      if (menuOpen) {
+        setMenuOpen(false)
+        return
+      }
+      setMenuEdge(menuEdgeFromWindow())
+      setMenuOpen(true)
+    },
+    onDoubleClick: () => {
+      setMenuOpen(false)
+      void api.openWorkspace('now')
+    },
+  })
 
-  useEffect(() => {
-    if (!isMockBridge) return
-    return api.onCard((next, side) => {
-      setCard(next)
-      setTail(side)
-    })
-  }, [])
+  const hit = useHitArea(menuOpen || drag.dragging)
 
-  const handlePointerDown = (e: React.PointerEvent) => {
-    if (e.button !== 0) return
-    isDown.current = true
-    hasDragged.current = false
-    downPos.current = { x: e.screenX, y: e.screenY }
-    lastScreenPos.current = { x: e.screenX, y: e.screenY }
-    api.setClickThrough(false)
-    try {
-      ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
-    } catch {}
+  function handleMenu(action: MenuAction): void {
+    if (action === 'check') {
+      fileInput.current?.click()
+      return
+    }
+    satya.onMenu(action)
   }
 
-  const handlePointerMove = (e: React.PointerEvent) => {
-    if (!isDown.current) return
-    const totalDist = Math.hypot(e.screenX - downPos.current.x, e.screenY - downPos.current.y)
-    if (!hasDragged.current && totalDist > 4) {
-      hasDragged.current = true
-    }
-    if (hasDragged.current) {
-      const dx = e.screenX - lastScreenPos.current.x
-      const dy = e.screenY - lastScreenPos.current.y
-      lastScreenPos.current = { x: e.screenX, y: e.screenY }
-      api.dragBy(dx, dy)
-    }
+  function handleDragOver(event: DragEvent<HTMLElement>): void {
+    event.preventDefault()
+    satya.onFileHover(true)
   }
 
-  const handlePointerUp = (e: React.PointerEvent) => {
-    if (!isDown.current) return
-    isDown.current = false
-    try {
-      ;(e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId)
-    } catch {}
-
-    if (hasDragged.current) {
-      api.dragEnd()
-      hasDragged.current = false
-    }
+  function handleDragLeave(event: DragEvent<HTMLElement>): void {
+    if (event.currentTarget.contains(event.relatedTarget as Node | null)) return
+    satya.onFileHover(false)
   }
 
-  const handleDoubleClick = () => {
-    void api.openWorkspace()
+  function handleDrop(event: DragEvent<HTMLElement>): void {
+    event.preventDefault()
+    satya.onFileHover(false)
+    const file = event.dataTransfer.files?.[0]
+    if (file) satya.onFileDrop(file)
   }
 
   return (
-    <div className="relative h-full w-full select-none">
+    <div className="relative h-full w-full select-none overflow-visible bg-transparent">
+      <input
+        ref={fileInput}
+        type="file"
+        className="hidden"
+        accept=".eml,.msg,.pdf,.txt,.md,.csv,.wav,.m4a,.mp3,.ogg,.opus,.aac,.flac,image/*"
+        onChange={(event) => {
+          const file = event.target.files?.[0]
+          if (file) satya.onFileDrop(file)
+          event.target.value = ''
+        }}
+      />
+
       {companion ?? (
-        <div className="grid h-full w-full place-items-center">
+        <div className="absolute left-1/2 top-1/2 h-[132px] w-[132px] -translate-x-1/2 -translate-y-1/2">
           <div
-            className="flex h-[176px] w-[176px] cursor-grab items-center justify-center active:cursor-grabbing"
-            onPointerDown={handlePointerDown}
-            onPointerMove={handlePointerMove}
-            onPointerUp={handlePointerUp}
-            onPointerCancel={handlePointerUp}
-            onDoubleClick={handleDoubleClick}
-            onPointerEnter={() => api.setClickThrough(false)}
-            onPointerLeave={() => {
-              if (!isDown.current) api.setClickThrough(true)
+            className="h-full w-full cursor-grab touch-none active:cursor-grabbing"
+            role="button"
+            tabIndex={0}
+            aria-label="Satya. Click for the menu, double-click for the Notebook, or drop a file."
+            {...drag.handlers}
+            onPointerEnter={hit.onPointerEnter}
+            onPointerLeave={hit.onPointerLeave}
+            onDragEnter={handleDragOver}
+            onDragOver={handleDragOver}
+            onDragLeave={handleDragLeave}
+            onDrop={handleDrop}
+            onKeyDown={(event) => {
+              if (event.key === 'Enter' || event.key === ' ') {
+                event.preventDefault()
+                setMenuEdge(menuEdgeFromWindow())
+                setMenuOpen((open) => !open)
+              }
             }}
           >
-            <Mascot mood="attentive" size={176} />
+            <motion.div
+              className="grid h-full w-full place-items-center drop-shadow-[0_4px_10px_rgba(20,16,40,0.25)]"
+              style={{ rotate: drag.tilt }}
+              animate={{ scaleY: drag.dragging ? 0.96 : drag.pressed ? 0.94 : 1 }}
+              transition={{ type: 'spring', stiffness: 420, damping: 24 }}
+            >
+              <SatyaFigure
+                pose={satya.state.pose}
+                mood={MOOD[satya.state.pose]}
+                audioLevel={0}
+                look={satya.look}
+                size={128}
+              />
+            </motion.div>
           </div>
         </div>
       )}
-      <AnimatePresence mode="wait">
-        {isMockBridge && card ? (
+
+      <RadialMenu
+        open={menuOpen}
+        edge={menuEdge}
+        onAction={handleMenu}
+        onClose={() => setMenuOpen(false)}
+        onPointerEnter={hit.onPointerEnter}
+        onPointerLeave={hit.onPointerLeave}
+      />
+
+      <AnimatePresence>
+        {satya.notice ? (
           <motion.div
-            key={card.id}
+            key="notice"
+            initial={{ opacity: 0, y: 4 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0 }}
+            className="pointer-events-none absolute left-1/2 top-1.5 z-40 w-[260px] -translate-x-1/2 rounded-[10px] bg-[rgba(28,24,40,0.94)] px-3 py-2 text-center text-[12px] leading-snug text-[#EDE8F5]"
+          >
+            {satya.notice}
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+
+      <AnimatePresence mode="wait">
+        {isMockBridge && satya.state.card ? (
+          <motion.div
+            key={satya.state.card.id}
             initial={{ opacity: 0, scale: 0.88, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 6 }}
             transition={{ type: 'spring', stiffness: 420, damping: 24, mass: 0.8 }}
-            className="absolute bottom-2 right-2 z-20"
+            className="absolute bottom-1 right-1 z-20 w-[280px]"
           >
             <BubbleCardView
-              card={card}
-              tail={tail}
-              onAction={(actionId) => api.cardAction(card.id, actionId)}
+              card={satya.state.card}
+              tail="right"
+              onAction={(actionId) => api.cardAction(satya.state.card!.id, actionId)}
             />
           </motion.div>
         ) : null}

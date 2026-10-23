@@ -159,7 +159,7 @@ export default function Stage(): JSX.Element {
 
       <div className="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-[240px_360px_1fr]">
         <section className="flex flex-col items-center rounded-2xl border border-black/10 bg-white/60 p-4" aria-label="Mascot">
-          <Mascot mood={MOOD[pose]} size={168} />
+          <Mascot pose={pose} mood={MOOD[pose]} size={168} />
           <span className="mt-2 font-mono text-xs text-slate-500">pose: {pose}</span>
         </section>
 
