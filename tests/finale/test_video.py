@@ -430,3 +430,14 @@ def test_stream_audio_fills_gaps_with_silence_and_stays_bounded() -> None:
         stream.add_audio(one, 3.0 + k)
     assert len(stream._audio) <= int((F.WINDOW_S + F.HOP_S + 2) * 16000)
     stream.close()
+
+
+def test_a_patch_leaving_the_frame_does_not_break_the_window() -> None:
+    recs = []
+    for i in range(90):
+        patches = {k: (170.0, 120.0, 100.0) for k in R.PATCHES}
+        if i % 7 == 0:
+            patches["cheek_r"] = (float("nan"),) * 3  # face at the frame edge
+        recs.append(FrameRecord(t=i / FS, found=True, face_w=150, luma=120, patches=patches))
+    feats = F.window_features(recs)
+    assert math.isfinite(feats["light_chroma_gap"])
