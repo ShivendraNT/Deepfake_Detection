@@ -112,8 +112,9 @@ DFDC is unseen by all of them. Not evaluated: the VideoMAE "deepfake" checkpoint
 self-reported AUC 0.84 in-distribution).
 
 **Matched protocol.** Every model, and our SBI CNN, sees the same stored crops: K = 4 evenly
-spaced 224 px crops per 9.2 s clip (two per analysis window, which is what a ViT-L can afford
-live on a laptop CPU); a video's score is the mean fake-logit; same videos, identity clusters,
+spaced 224 px crops per 9.2 s clip (one about every 2.25–3 s, which is what a ViT-L can
+afford live on a laptop CPU; the overlapping 6 s windows hold about 3 each — wording corrected
+on 24 Oct, the rule is unchanged); a video's score is the mean fake-logit; same videos, identity clusters,
 bootstrap and conditions as §5; τ = 1 % FPR on the val reals of the same condition. All models
 are scored on `orig`; the call conditions are scored for every model whose `orig` val AUC is
 ≥ 0.70.
@@ -124,8 +125,10 @@ reference model to 1e-3 (today: GenD only; int8 quantisation was rejected becaus
 correlated only r = 0.92 with fp32). GenD replaces the SBI CNN **only if** its FF++ val AUC under
 `call360` exceeds the SBI CNN's by more than one bootstrap SE of the paired difference (the
 cheaper model wins ties). If it does, the product pipeline is re-fitted with GenD logits exactly
-as in §5 (1-D fusion on `fusion_train`, τ on val reals, two crops per window) and the frozen
-benchmark runs once. Both rows are reported whatever happens; test sets never select anything.
+as in §5 (τ on val reals; the product samples one crop every 2.25 s for it and scores each crop
+once) and the frozen benchmark runs once. GenD trained on the FF++ train split, so
+`fusion_train` cannot fit anything for it: its fusion is the identity on the mean crop logit,
+which gives the same alerts as any monotone 1-D fit at thresholds set on val reals. Both rows are reported whatever happens; test sets never select anything.
 
 ## 6. Results
 
