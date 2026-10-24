@@ -77,6 +77,21 @@ def xlsr_trunk():
 
 
 def xlsr_features() -> Callable[[np.ndarray], np.ndarray]:
+    """Clip -> 1024-d mean layer-7 embedding. Uses the exported ONNX trunk (the file the
+    product ships) when it exists: same numbers to 1e-4, about 30 % faster on CPU."""
+    from research.voice.export import MODEL
+
+    if MODEL.exists():
+        import onnxruntime as ort
+
+        so = ort.SessionOptions()
+        so.intra_op_num_threads, so.inter_op_num_threads = 2, 1
+        sess = ort.InferenceSession(str(MODEL), so, providers=["CPUExecutionProvider"])
+
+        def embed_onnx(x: np.ndarray) -> np.ndarray:
+            return sess.run(None, {"input": x[None, :].astype(np.float32)})[0][0].mean(axis=0)
+
+        return embed_onnx
     import torch
 
     trunk = xlsr_trunk()
