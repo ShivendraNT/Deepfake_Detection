@@ -42,7 +42,7 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | ID | Task | Owner | P | Status |
 |---|---|---|---|---|
 | F01 | Contracts freeze + mock bridge + stage view | Shivendra | P0 | done |
-| F02 | Window manager (mascot / bubble / notebook / capture, tray, hotkeys) | Shivendra | P0 | done |
+| F02 | Window manager (mascot / bubble / notebook / capture, tray, hotkeys) | Shivendra | P0 | done — "Check it properly" keeps the finding's text until its card closes, one submit per click, and closes the card after the check |
 | F03 | Backend glue (calls, files, oob, event fan-in) | Shivendra | P0 | done |
 | F04 | X1 cross-channel signal | Shivendra | P1 | done — X1 cross-channel signal (30-min window, A1/A6/A7 + new/changed beneficiary -> VERIFY, A4/A5 urgency -> HOLD; raise-only; EN/HI templates; 16 tests green) |
 | F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | in-progress — consumer path end to end: /check page (any file), money-sent drafts, personal live alert; `satya scan` + `research.kit`; judges' guide `docs/JUDGES.md` |

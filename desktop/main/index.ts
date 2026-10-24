@@ -115,6 +115,7 @@ let pendingWorkspaceTab: string | null = null
 let screenGuardTimer: ReturnType<typeof setInterval> | null = null
 let screenGuardBusy = false
 let lastScreenText: { text: string; at: number } | null = null
+let screenSubmitInFlight = false
 const screenAlertUntil = new Map<string, number>()
 
 const meetingWatcher = new MeetingWatcher(onMeeting)
@@ -245,6 +246,8 @@ function showCard(card: BubbleCard): void {
 
 function hideCard(cardId?: string): void {
   if (cardId && lastCard?.id !== cardId) return
+  // A hidden finding cannot be checked any more, so its text leaves memory at once.
+  if (lastCard?.kind === 'screen') lastScreenText = null
   lastCard = null
   if (!bubbleWindow || bubbleWindow.isDestroyed()) return
   deliverCard(bubbleWindow, null, lastTail)
@@ -529,7 +532,6 @@ async function runScreenCheck(onDemand: boolean): Promise<BridgeResult<ScreenFin
   screenGuardBusy = true
   try {
     const text = await captureScreenText()
-    lastScreenText = { text, at: Date.now() }
     const finding = await backend.textCheck(text, meetingWatcher.meeting?.app ?? null, 'screen')
     const signature = findingSignature(finding)
     if (!onDemand) {
@@ -537,6 +539,9 @@ async function runScreenCheck(onDemand: boolean): Promise<BridgeResult<ScreenFin
       if ((screenAlertUntil.get(signature) ?? 0) > Date.now()) return { ok: true, data: finding }
       screenAlertUntil.set(signature, Date.now() + SCREEN_ALERT_COOLDOWN_MS)
     }
+    // Remember exactly the words this card is about, at the moment the card is signalled.
+    // A later clean scan therefore never replaces the text behind a visible finding.
+    lastScreenText = { text, at: Date.now() }
     signal({ kind: 'text_check', source: 'screen', finding, on_demand: onDemand })
     return { ok: true, data: finding }
   } catch (error) {
@@ -556,7 +561,6 @@ function startScreenGuard(): void {
 function stopScreenGuard(): void {
   if (screenGuardTimer) clearInterval(screenGuardTimer)
   screenGuardTimer = null
-  lastScreenText = null
   screenAlertUntil.clear()
 }
 
@@ -566,8 +570,8 @@ async function checkClipboardText(): Promise<BridgeResult<ScreenFinding>> {
   const text = clipboard.readText()
   if (!text.trim()) return { ok: false, error: 'The clipboard is empty.' }
   try {
-    lastScreenText = { text, at: Date.now() }
     const finding = await backend.textCheck(text, null, 'clipboard')
+    lastScreenText = { text, at: Date.now() }
     signal({ kind: 'text_check', source: 'clipboard', finding, on_demand: true })
     return { ok: true, data: finding }
   } catch (error) {
@@ -577,15 +581,25 @@ async function checkClipboardText(): Promise<BridgeResult<ScreenFinding>> {
 
 /** "Check it properly": hand the last screen/clipboard text to the policy engine as evidence. */
 async function submitLastScreenText(): Promise<BridgeResult<EvidenceResult>> {
-  if (!lastScreenText || Date.now() - lastScreenText.at > SCREEN_TEXT_TTL_MS) {
-    return { ok: false, error: 'That text is gone (I keep it for 10 minutes at most).' }
+  if (screenSubmitInFlight) return { ok: false, error: 'I am already checking that.' }
+  const current = lastScreenText
+  // A card that is still on screen stays actionable however long the user keeps it up;
+  // the TTL is a backstop for text whose card is no longer showing.
+  const cardStillUp = lastCard?.kind === 'screen'
+  if (!current || (!cardStillUp && Date.now() - current.at > SCREEN_TEXT_TTL_MS)) {
+    return { ok: false, error: 'That text is no longer with me. Run “Scan my screen” again and I will check it.' }
   }
-  const text = lastScreenText.text
-  lastScreenText = null
+  screenSubmitInFlight = true
   try {
-    return { ok: true, data: await backend.submitEvidence(text.slice(0, 20_000)) }
+    const data = await backend.submitEvidence(current.text.slice(0, 20_000))
+    // Drop the text only after the engine accepted it, so a failed attempt can be retried
+    // from the same card instead of leaving a dead button behind.
+    if (lastScreenText?.text === current.text) lastScreenText = null
+    return { ok: true, data }
   } catch (error) {
     return { ok: false, error: errorOf(error) }
+  } finally {
+    screenSubmitInFlight = false
   }
 }
 
@@ -602,6 +616,8 @@ function startWatchers(): void {
 function stopWatchers(): void {
   meetingWatcher.stop()
   stopScreenGuard()
+  // Sleeping / Off / Quit drops the imported text; it never outlives the session.
+  lastScreenText = null
 }
 
 async function setUserMode(mode: UserMode, nextScopes?: Scopes): Promise<BridgeResult<CompanionState>> {

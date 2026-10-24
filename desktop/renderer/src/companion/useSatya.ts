@@ -10,9 +10,11 @@ import { useCallback, useEffect, useReducer, useRef, useState } from 'react'
 
 import {
   DEFAULT_SCOPES,
+  type BridgeResult,
   type BubbleCard,
   type CaptureSourceKind,
   type CompanionEvent,
+  type EvidenceResult,
   type SatyaSignal,
   type Scopes,
 } from '../../../shared/contracts'
@@ -107,6 +109,7 @@ export function useSatya(options: SatyaOptions = {}): SatyaController {
   const seenEvents = useRef(new Set<string>())
   const shownCard = useRef<string | null>(null)
   const pendingFile = useRef<File | null>(null)
+  const submittingEvidence = useRef(false)
   const ignoredMeetings = useRef(new Map<string, number>())
   const actionRef = useRef<(actionId: string, cardId: string) => void>(() => undefined)
   const onMenuRef = useRef<(action: MenuAction) => void>(() => undefined)
@@ -275,16 +278,44 @@ export function useSatya(options: SatyaOptions = {}): SatyaController {
     }
   }, [notify])
 
-  const submitScreenText = useCallback(async () => {
-    const submit = (api as { submitLastScreenText?: () => Promise<{ ok: boolean; error?: string }> })
-      .submitLastScreenText
-    if (!submit) {
-      notify('Open the Notebook to paste the text as evidence.')
-      return
-    }
-    const result = await submit()
-    if (!result.ok) notify(result.error ?? 'Could not check the screen text.')
-  }, [notify])
+  const submitScreenText = useCallback(
+    async (cardId: string) => {
+      const submit = (
+        api as {
+          submitLastScreenText?: () => Promise<BridgeResult<EvidenceResult>>
+        }
+      ).submitLastScreenText
+      if (!submit) {
+        notify('Open the Notebook to paste the text as evidence.')
+        return
+      }
+      // One click = one submission. Without this, a double click consumed the text with the
+      // first call and reported the second one as "gone".
+      if (submittingEvidence.current) return
+      submittingEvidence.current = true
+      try {
+        const result = await submit()
+        if (!result.ok) {
+          notify(result.error ?? 'Could not check the screen text.')
+          return
+        }
+        for (const event of result.data.events ?? []) {
+          if (seenEvents.current.has(event.event_id)) continue
+          seenEvents.current.add(event.event_id)
+          dispatch({ type: 'EVENT', event })
+        }
+        // The text is evidence now; close the finding so its button cannot be clicked again.
+        api.hideCard(cardId)
+        dispatch({ type: 'CARD_ACTION', cardId, actionId: 'dismiss' })
+        notify('Checked properly. I saved it as evidence; the policy engine still decides the band.')
+      } catch (error) {
+        notify(errorText(error, 'Could not check the screen text.'))
+      } finally {
+        submittingEvidence.current = false
+      }
+    },
+    [notify],
+  )
 
   const prepareReport = useCallback(async () => {
     const caseId = stateRef.current.caseId
@@ -374,7 +405,7 @@ export function useSatya(options: SatyaOptions = {}): SatyaController {
           return
         case 'check_this':
           emote('gulp')
-          await submitScreenText()
+          await submitScreenText(cardId)
           return
         case 'verify':
         case 'verify_with_approver':
