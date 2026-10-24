@@ -231,6 +231,7 @@ This page, [`README.md`](../README.md), and the live script in
 | Paraphrase the ask (LLM rewrites) | the ask lexicon catches about 1 in 3 paraphrased asks (recall 0.33); the text model covers part of the rest | train on paraphrased scams; T20 is pre-registered |
 | A scam from a source we never trained on | AUC 0.69–0.995 by dataset (leave-one-dataset-out) | add Indian bank and telecom samples in a pilot |
 | A new face-swap method | FaceShifter (unseen) flagged 32 % vs 85 % for the 4 seen methods | add newer generators when a licensed test set exists; liveness prompt on the alert (turn your head, hand over the face) |
+| A fully AI-generated portrait (GAN / diffusion), no swap | **not measured**: our face model learned swaps (FF++); the one generated-image model we tried (CommunityForensics) failed on swaps (AUC 0.65), and no licensed generated-face set was in our test | add a generated-image detector through the same protocol; until then the asks and the call-back carry it |
 | Small face / low bitrate | at 360p, 82 % of DFDC faces are too small: "couldn't check — pin the caller" | ask for a larger view; never guess |
 | Real footage of the person + a cloned voice | the face check is blind by design; lip-sync is weak (0.62–0.67 AUC) | the voice check and the asks carry this case |
 | Send the cloned voice through WhatsApp / VoIP compression | Opus 16 kbps barely moves the voice check (In-the-Wild AUC 0.921 → 0.909) | keep testing new codecs (AMR-NB needs sox) |
