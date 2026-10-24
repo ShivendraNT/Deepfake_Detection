@@ -1,0 +1,32 @@
+{
+ "rule": "replace ours only if val AUC (opus16) gain > 1 bootstrap SE",
+ "candidates": {
+  "gustking_xlsr": {
+   "value": 0.1573,
+   "low": 0.0264,
+   "high": 0.2442,
+   "se": 0.0543,
+   "n_boot": 2000
+  }
+ },
+ "decision": "gustking_xlsr",
+ "model": "gustking_xlsr",
+ "thresholds_logit": {
+  "tau_hi": 2.2328591346740723,
+  "tau_lo": 1.2244606018066406
+ },
+ "per_condition": {
+  "clean": {
+   "tau_hi": 2.0608339309692383,
+   "tau_lo": -0.31609392166137695
+  },
+  "opus16": {
+   "tau_hi": 2.1903295516967773,
+   "tau_lo": 0.24596402049064636
+  },
+  "gsm": {
+   "tau_hi": 2.2328591346740723,
+   "tau_lo": 1.2244606018066406
+  }
+ }
+}
