@@ -94,6 +94,23 @@ not raise anything.
 a teammate who signed `docs/consent/`. Satya's live flag does not depend on recognising the fake
 voice: it flags what the caller *asks for* against the payment. That is the point of the demo.
 
+### 3b. Consumer variant (Stage 2 "live user journey"): a "digital arrest" call
+
+Start the engine with `SATYAPAN_PROFILE=personal make live` (no company approver: the alert
+speaks to a person). Laptop B calls laptop A on any app and says, in English or Hinglish:
+
+> This is CBI. Your Aadhaar is linked to money laundering. You are under digital arrest.
+> Don't tell anyone. Transfer fifty thousand rupees to the RBI safe account and read me the OTP.
+
+| # | What the judges see |
+|---|---|
+| 1 | Captions; chips for the new / "safe" account, secrecy, OTP |
+| 2 | Alert: **"Stop: don't pay or share any code on this call"**, the exact words quoted, and why: real police, banks and officials never ask for money, a code or secrecy on a call |
+| 3 | Actions: *Copy a safe reply, then hang up* · *Money sent? Call 1930* (opens the dialler) · *Prepare my report* (opens `/check#money`: UTR → 1930 script, bank message, portal fields) |
+| 4 | Same script as a screenshot, a voice note or a video on `http://127.0.0.1:8000/check` (or a phone on the same Wi-Fi) → the same answer; a genuine bank OTP SMS → PASS |
+
+Checked in code: `tests/finale/test_companion_finale.py::test_a_personal_call_gets_consumer_actions_not_an_approver`.
+
 ## 4. Fallbacks, in order
 
 1. **Satya hears nothing** (no captions after two sentences): check volume and the macOS
@@ -126,8 +143,9 @@ voice: it flags what the caller *asks for* against the payment. That is the poin
 - **Real, live:** system-audio capture of the call, on-device Whisper (no audio leaves the
   laptop), utterance cutting at pauses, ask and cue detection, the policy band, the OOB question
   on the approver's own phone, the report pack drafts, Screen Guard OCR on this laptop.
-- **Not in this demo:** the voice-clone detector's model files are not in the repo (licence), so
-  that row stays "optional". The band never depended on it.
+- **Voice clone:** the voice model is built locally with `make voice` (licensed, selected by the
+  benchmark in `docs/VOICE_DEEPFAKE.md`); without it the answer says "voice clone: not checked
+  here". The band never depended on it.
 - **Never:** no microphone capture; no transcript stored (captions live in memory for the call and
   never cross the companion bus); no auto-reporting (there is no public 1930/NCRP API; a human
   submits every draft); no band set anywhere but `satyapan.policy`, and evidence can only raise it.
