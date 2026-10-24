@@ -500,6 +500,7 @@
             <ul id="why" class="why-list"></ul>
             <p id="checked" class="meta"></p>
             <p id="notChecked" class="meta"></p>
+            <p id="proof" class="meta"></p>
             <details id="readBox" class="read"><summary data-i18n="read">What Satya read / heard</summary><p id="read"></p></details>
 
             <div class="action-grid">
@@ -588,6 +589,7 @@
             empty: "Paste a message or add a file first.",
             read: "What Satya read / heard",
             checkedP: "Checked: ",
+            proof: function (sec, host) { return "Checked on " + host + " in " + sec + " s. Nothing was uploaded elsewhere or stored."; },
             notCheckedP: "Could not check here: ",
             b1: "Runs on this device", b2: "Nothing is stored", b3: "Never blocks: you decide",
             fp: {
@@ -621,6 +623,7 @@
             empty: "पहले संदेश पेस्ट करें या फ़ाइल जोड़ें।",
             read: "सत्य ने क्या पढ़ा / सुना",
             checkedP: "जाँचा गया: ",
+            proof: function (sec, host) { return host + " पर " + sec + " सेकंड में जाँचा गया। कुछ भी कहीं और भेजा या सेव नहीं किया गया।"; },
             notCheckedP: "यहाँ जाँच नहीं हो सकी: ",
             b1: "इसी डिवाइस पर", b2: "कुछ भी सेव नहीं होता", b3: "कभी रोकता नहीं: फ़ैसला आपका",
             fp: {
@@ -691,6 +694,8 @@
           });
           $("checked").textContent = (result.checked && result.checked.length) ? t("checkedP") + result.checked.join(", ") : "";
           $("notChecked").textContent = (result.not_checked && result.not_checked.length) ? t("notCheckedP") + result.not_checked.join(", ") : "";
+          var host = location.hostname && location.hostname !== "localhost" ? location.hostname : "127.0.0.1";
+          $("proof").textContent = typeof result.seconds === "number" ? TEXT[lang].proof(result.seconds.toFixed(1), host) : "";
           $("readBox").style.display = result.heard_or_read ? "block" : "none";
           $("read").textContent = result.heard_or_read || "";
           $("fpBox").innerHTML = (TEXT[lang].fp || {})[result.band] || "";
