@@ -16,13 +16,15 @@ heartbeat pushes through the face." Verify the ideas, check feasibility, do bett
 | Idea | Verdict | Why (literature + our measurements) | What we built |
 |---|---|---|---|
 | Screen capture during a call, after permission | **Feasible, shipped** | Electron `getDisplayMedia` already gives Satya the screen + system audio. We keep the video track only after a yes for *this* call, sample ~15 frames/s, downscale to ≤1280 px, keep frames in RAM for one 6 s window. The practical limit is **face size**: in a 3×3 Meet grid a face is ~80–120 px, so we gate at 64 px and tell the user to pin/enlarge the caller. | `desktop/renderer/src/capture/videoFrames.ts`, `POST /live/{call_id}/video` |
-| CNN on blurring / sharpness of the face edge | **Feasible, our strongest cue — if trained the right way** | A CNN trained on a fixed list of deepfake methods learns those methods and collapses on new ones (FF++→Celeb-DF AUC for Xception is about 0.65 in the literature). The principled version of exactly this idea is *Face X-ray* (Li et al., CVPR 2020) and *Self-Blended Images* (Shiohara & Yamasaki, CVPR 2022): synthesise the blending boundary — colour mismatch, sharpness mismatch (blur or over-sharpen), soft deformed mask — from **real** faces, so the CNN can only learn the boundary itself. | EfficientNet-B0 trained on FF++ **real** videos only (`research/video/sbi.py`, `train_sbi.py`); no deepfake is ever read in training or model selection |
-| Lighting and reflection inconsistencies | **Partly feasible** | Corneal highlights (Hu, Li & Lyu, ICASSP 2021) were shown on 1024 px GAN portraits; on a call the iris is 5–10 px wide, so highlights are usually unmeasurable (we report how often). Region colour/shading consistency between the swapped inner face and the untouched forehead is cheap and explainable but weak alone; the SBI CNN already sees most of it. | `lighting.py`: cheek-vs-forehead chroma gap, left/right shading direction gap, frame-to-frame flicker, specular-highlight gap |
-| Heartbeat colour (rPPG) | **Weak in calls; kept as one feature, measured honestly** | FakeCatcher (Ciftci et al., TPAMI 2020) and DeepFakesON-Phys (Hernandez-Ortega et al., 2021) separate older deepfakes in high-quality video. But the pulse is ~0.1–0.5 % of skin intensity and call codecs at 0.3–1.5 Mbit/s remove much of it (McDuff et al., 2017), and modern swaps inherit the *driver's* pulse ("High-quality deepfakes have a heart!", Seibold et al., 2025). So "no pulse = fake" is not safe; spatial pulse *coherence* is the more robust form. | `rppg.py`: POS (Wang et al., 2017) per patch; SNR, cross-patch coherence, heart-rate agreement |
-| Lip-sync | **Feasible for one attack, blind to another** | Catches *real footage + someone else's or a cloned voice* (the common "CEO video" cheapfake) and poorly synced talking heads. It cannot catch a live face swap where the attacker speaks (the lips match by construction) or lip-sync generators trained against a sync expert (Wav2Lip). FF++ has no audio and DFDC fakes keep the real voice, so we built a controlled mismatch test. | `lipsync.py`: mouth opening vs. speech envelope, best correlation within ±0.4 s; `research/video/lipsync_eval.py` |
+| CNN on blurring / sharpness of the face edge | **Feasible and the strongest cue — measured: our CPU-trained version is beaten by a published one, which now ships** | A CNN trained on a fixed list of deepfake methods learns those methods and collapses on new ones (FF++→Celeb-DF AUC for Xception is about 0.65 in the literature). The principled version of exactly this idea is *Face X-ray* (Li et al., CVPR 2020) and *Self-Blended Images* (Shiohara & Yamasaki, CVPR 2022): synthesise the blending boundary — colour mismatch, sharpness mismatch (blur or over-sharpen), soft deformed mask — from **real** faces, so the CNN can only learn the boundary itself. **Measured** (§6): our SBI EfficientNet-B0 (CPU, 224 px) reaches video AUC 0.79 on FF++ test and 0.63 on DFDC. GenD (CLIP ViT-L/14 with only its LayerNorms tuned on FF++, WACV 2026, MIT) beat it on the pre-registered val comparison by +0.18 AUC on call-quality video, so GenD is Satya's face CNN and ours is the automatic fallback. | GenD exported to ONNX (`research/video/export_gend.py`); our SBI CNN (`sbi.py`, `train_sbi.py`, real videos only) as fallback and reference |
+| Lighting and reflection inconsistencies | **Partly feasible** | Corneal highlights (Hu, Li & Lyu, ICASSP 2021) were shown on 1024 px GAN portraits; on a call the iris is 5–10 px wide, so highlights are usually unmeasurable (we report how often). Region colour/shading consistency between the swapped inner face and the untouched forehead is cheap and explainable but weak alone. **Measured**: 0.57 AUC alone on FF++ test (0.79 on Deepfakes, ≈ 0.5 on the others); the pre-registered 1-SE rule did not add it to the CNN. | `lighting.py`: cheek-vs-forehead chroma gap, left/right shading direction gap, frame-to-frame flicker, specular-highlight gap |
+| Heartbeat colour (rPPG) | **Weak in calls; kept as one feature, measured honestly** | FakeCatcher (Ciftci et al., TPAMI 2020) and DeepFakesON-Phys (Hernandez-Ortega et al., 2021) separate older deepfakes in high-quality video. But the pulse is ~0.1–0.5 % of skin intensity and call codecs at 0.3–1.5 Mbit/s remove much of it (McDuff et al., 2017), and modern swaps inherit the *driver's* pulse ("High-quality deepfakes have a heart!", Seibold et al., 2025). So "no pulse = fake" is not safe; spatial pulse *coherence* is the more robust form. **Measured**: 0.45–0.58 AUC on FF++ c23 (chance): YouTube-grade compression has already removed it, before any call codec. Not used by the shipped fusion. | `rppg.py`: POS (Wang et al., 2017) per patch; SNR, cross-patch coherence, heart-rate agreement |
+| Lip-sync | **Feasible for one attack, blind to another** | Catches *real footage + someone else's or a cloned voice* (the common "CEO video" cheapfake) and poorly synced talking heads. It cannot catch a live face swap where the attacker speaks (the lips match by construction) or lip-sync generators trained against a sync expert (Wav2Lip). FF++ has no audio and DFDC fakes keep the real voice, so we built a controlled mismatch test. **Measured** (zero parameters, DFDC reals): swapped voice 0.62 [0.59, 0.66], TTS voice-over 0.66 [0.63, 0.70], 1 s delay 0.67 [0.63, 0.71] AUC — a weak but real signal for the "real face + cloned voice" scam. | `lipsync.py`: mouth opening vs. speech envelope, best correlation within ±0.4 s; `research/video/lipsync_eval.py` |
 
 **What we added beyond the brief.**
-1. *Train on real faces only* (SBI) — the defensible route to "works on methods we never saw".
+1. *Measure before trusting*: our own CNN trained on real faces only (SBI) **and** five
+   off-the-shelf detectors from Hugging Face went through one protocol; a rule fixed in advance
+   picked the one that ships (GenD), on validation data only (§5b, `results/video_selection.json`).
 2. *Fusion with abstention*: four cues → one calibrated score per 6 s window; no usable face →
    the window abstains instead of guessing.
 3. *Raise-only policy integration*: two consecutive windows above a threshold fitted at **1 %
@@ -58,10 +60,10 @@ capture window (Electron, after a yes)                     local engine (127.0.0
           on a face-centred crop that follows the face (small grid/1080p faces stay trackable)
                                                             ▼
                          FrameRecord: 5 skin patches, iris highlights, mouth opening,
-                         face size/brightness, a 224 px face crop every 0.75 s
+                         face size/brightness, a 224 px face crop every 2.25 s
                                                             ▼
                   window 6 s / hop 3 s ─ coverage gate (face ≥ 64 px, ≥ 70 % frames, light)
-                    blend CNN (ONNX) · pulse (POS) · lighting · lip-sync (if call audio)
+          face CNN: GenD ONNX (SBI CNN fallback) · pulse · lighting · lip-sync (if audio)
                                                             ▼
                      fusion (logistic, config/video_fusion.json) → score in [0, 1]
                                                             ▼
@@ -169,7 +171,12 @@ face-centred crop) and re-ran every extraction, so the numbers describe the ship
 | Linux x64 / arm64 | `npm run dist:linux` (AppImage + deb) | yes | needs `libegl1 libgles2` (mesa); Screen Guard OCR needs `tesseract-ocr`; Wayland asks via the portal |
 
 Backend on any of them: `uv run python scripts/satya.py video` (or `make video`) installs the
-face check and verifies the model hashes in `config/video_models.json`.
+face check and verifies the model hashes in `config/video_models.json`. GenD is one 1.2 GB fp32
+ONNX file that ONNX Runtime runs on every CPU above (x64 AVX2 / arm64 NEON, no GPU); it is
+built once with `python -m research.video.export_gend` (or fetched from a team release via
+`SATYAPAN_GEND_MODEL_URL`). Satya scores one face crop every 2.25 s with it, each crop once,
+so a call costs roughly one ViT-L forward pass per 2 s of call. A laptop without the file
+falls back to our 16 MB SBI CNN and its own thresholds automatically (health shows which).
 
 ## 10. Reproduce
 
