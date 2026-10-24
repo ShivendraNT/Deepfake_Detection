@@ -31,6 +31,13 @@
    "build": "uv sync --extra video-research && python -m research.video.export_gend, then copy $SATYAPAN_VIDEO_DATA/models/gend_clip_l14.onnx here (1.2 GB; checks it matches PyTorch)",
    "optional": "without it the face check runs the blend CNN with config/video_*__blend.json",
    "selected": "results/video_selection.json (pre-registered rule, val only)"
+  },
+  "en_PP-OCRv3_rec_infer.onnx": {
+   "dir": "ocr",
+   "url": "https://huggingface.co/SWHL/RapidOCR/resolve/1cfba2e90fc938db55889873735088de210cc173/PP-OCRv3/en_PP-OCRv3_rec_infer.onnx",
+   "sha256": "ef7abd8bd3629ae57ea2c28b425c1bd258a871b93fd2fe7c433946ade9b5d9ea",
+   "license": "Apache-2.0 (PaddleOCR en_PP-OCRv3 recogniser, ONNX by RapidOCR): reads English text in screenshots with its spaces",
+   "optional": "without it OCR uses RapidOCR's bundled model (may merge English words)"
   }
  }
 }

@@ -119,6 +119,30 @@
       "ml"
     ]
   },
+  "IMAGE_FACE_NO_SIGNS": {
+    "group": "media",
+    "target": "NONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
+  "IMAGE_FACE_INCONCLUSIVE": {
+    "group": "media",
+    "target": "NONE",
+    "strength": "weak",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
+  "IMAGE_FACE_LIKELY_SYNTHETIC": {
+    "group": "media",
+    "target": "PLUS_ONE",
+    "strength": "strong",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
   "ASK_NEW_ACCOUNT": {
     "group": "ask",
     "target": "VERIFY",

@@ -114,6 +114,8 @@ async def upload_evidence(
         transcriber=state.transcriber_override,
         text_model=state.text_model(),
         scorer=state.voice_scorer(),
+        image=state.image_checker() if channel == Channel.IMAGE else None,
+        video=state.video() if channel == Channel.VIDEO else None,
     )
     out = analyze_evidence(data, ev, case, ctx)
     case = recompute(merge_output(case, ev, out), state.master)

@@ -120,6 +120,7 @@ class Channel(StrEnum):
     CALL_RECORDING = "call_recording"
     LIVE_CALL = "live_call"
     VIDEO = "video"  # a recorded video handed to Satya (call recording, forwarded clip)
+    IMAGE = "image"  # a photo or screenshot handed to Satya (face check + text in the image)
     WHATSAPP_TEXT = "whatsapp_text"
     MANUAL = "manual"
 
@@ -228,6 +229,10 @@ class ReasonCode(StrEnum):
     VIDEO_NO_SIGNS = "VIDEO_NO_SIGNS"
     VIDEO_INCONCLUSIVE = "VIDEO_INCONCLUSIVE"  # also: no usable face (camera off, too small)
     VIDEO_LIKELY_SYNTHETIC = "VIDEO_LIKELY_SYNTHETIC"
+    # Still image (photo / profile picture): the same face CNN on one face crop
+    IMAGE_FACE_NO_SIGNS = "IMAGE_FACE_NO_SIGNS"
+    IMAGE_FACE_INCONCLUSIVE = "IMAGE_FACE_INCONCLUSIVE"  # also: no usable face in the image
+    IMAGE_FACE_LIKELY_SYNTHETIC = "IMAGE_FACE_LIKELY_SYNTHETIC"
     # Asks (C5)
     ASK_NEW_ACCOUNT = "ASK_NEW_ACCOUNT"
     ASK_CREDENTIAL = "ASK_CREDENTIAL"

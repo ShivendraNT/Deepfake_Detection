@@ -37,6 +37,9 @@ class AppState:
     _voice_scorer: Any = None  # voice-clone model, or False when its files are missing
     _voice_error: str | None = None
     voice_scorer_override: Any = None  # tests inject a fake WindowScorer here
+    _image: Any = None  # ImageFaceChecker, or False when the face model is unavailable
+    _image_error: str | None = None
+    image_override: Any = None  # tests inject a fake checker here
 
     @classmethod
     def build(cls, settings: Settings) -> AppState:
@@ -142,6 +145,20 @@ class AppState:
                 self._voice_scorer = False
                 self._voice_error = str(exc)[:300]
         return self._voice_scorer or None
+
+    def image_checker(self) -> Any:
+        """Face check for photos (same face CNN as the video check, one crop), or None."""
+        if self.image_override is not None:
+            return self.image_override
+        if self._image is None:
+            try:
+                from satyapan.imagecheck.face import ImageFaceChecker
+
+                self._image = ImageFaceChecker.load()
+            except Exception as exc:  # noqa: BLE001 - VideoUnavailable or a broken install
+                self._image = False
+                self._image_error = str(exc)[:300]
+        return self._image or None
 
     def voice_status(self) -> dict[str, Any]:
         scorer = self.voice_scorer()

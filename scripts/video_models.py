@@ -58,7 +58,7 @@ def main() -> int:
             meta["url"] = os.environ[meta["url_env"]]
     ok = True
     for name, meta in files.items():
-        dest = model_dir() / name
+        dest = (model_dir().parent / meta["dir"] / name) if meta.get("dir") else model_dir() / name
         if not dest.exists() and meta.get("url") and not args.verify:
             print(f"downloading {name} ...")
             download(meta["url"], dest)

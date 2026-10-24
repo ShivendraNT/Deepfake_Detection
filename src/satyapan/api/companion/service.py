@@ -114,6 +114,7 @@ _TEXT_SUFFIXES = {".txt", ".md", ".csv", ".json", ".log"}
 _EMAIL_SUFFIXES = {".eml", ".msg", ".mbox"}
 _VOICE_SUFFIXES = {".wav", ".m4a", ".ogg", ".opus", ".mp3", ".webm"}
 _VIDEO_SUFFIXES = {".mp4", ".mov", ".m4v", ".mkv", ".avi"}
+_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tif", ".tiff"}
 
 
 class CompanionError(ValueError):
@@ -826,6 +827,7 @@ class CompanionService:
                 video=state.video() if channel == Channel.VIDEO else None,
                 text_model=state.text_model(),
                 scorer=state.voice_scorer(),
+                image=state.image_checker() if channel == Channel.IMAGE else None,
             )
             out = analyze_evidence(data, ev, case, ctx)
             case = recompute(merge_output(case, ev, out), state.master)
@@ -1614,6 +1616,8 @@ def _channel_for(filename: str | None, media_type: str) -> Channel:
         return Channel.PDF
     if suffix in _VIDEO_SUFFIXES or media_type.startswith("video/"):
         return Channel.VIDEO
+    if suffix in _IMAGE_SUFFIXES or media_type.startswith("image/"):
+        return Channel.IMAGE
     if suffix in _VOICE_SUFFIXES or media_type.startswith("audio/"):
         return Channel.VOICE_NOTE
     if suffix in _TEXT_SUFFIXES or media_type.startswith("text/"):

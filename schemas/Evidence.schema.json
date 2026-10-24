@@ -32,6 +32,7 @@
         "call_recording",
         "live_call",
         "video",
+        "image",
         "whatsapp_text",
         "manual"
       ],

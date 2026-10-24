@@ -171,6 +171,7 @@
         "call_recording",
         "live_call",
         "video",
+        "image",
         "whatsapp_text",
         "manual"
       ],
@@ -845,6 +846,9 @@
         "VIDEO_NO_SIGNS",
         "VIDEO_INCONCLUSIVE",
         "VIDEO_LIKELY_SYNTHETIC",
+        "IMAGE_FACE_NO_SIGNS",
+        "IMAGE_FACE_INCONCLUSIVE",
+        "IMAGE_FACE_LIKELY_SYNTHETIC",
         "ASK_NEW_ACCOUNT",
         "ASK_CREDENTIAL",
         "ASK_REMOTE_ACCESS",

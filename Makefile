@@ -36,7 +36,7 @@ asr:
 # The face check for video calls (docs/VIDEO_DEEPFAKE.md). Windows without make:
 #   uv run python scripts/satya.py video
 video:
-	uv sync --inexact --extra video
+	uv sync --inexact --extra video --extra ocr
 	$(RUN) python scripts/video_models.py
 
 video-models:
