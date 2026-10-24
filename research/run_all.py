@@ -26,6 +26,7 @@ STAGES: dict[str, list[tuple[str, list[str]]]] = {
         ("text-data", ["research.text.data"]),  # download (sha256-pinned), dedup, splits
         ("text-bench", ["research.text.bench"]),  # CV -> frozen thresholds -> test once
         ("text-neardup", ["research.text.neardup"]),  # near-copy audit of the test splits
+        ("text-embed-baseline", ["research.text.embed_baseline"]),  # multilingual-e5 + LR
     ],
     "video": [
         ("video-data", [V + "data", "ffpp", "dfdc"]),
@@ -43,14 +44,23 @@ STAGES: dict[str, list[tuple[str, list[str]]]] = {
         ("video-tables-call720", [V + "tables", "--condition", "call720"]),
         ("video-tables-call360", [V + "tables", "--condition", "call360"]),
         # Train/val only: fusion CV, cue-set choice (1-SE rule), thresholds.
-        ("video-fit-fusion", [V + "fit_fusion"]),
+        ("video-fit-fusion", [V + "fit_fusion"]),  # our SBI CNN -> config/*__blend.json
         # Off-the-shelf Hugging Face detectors on the same crops (rule fixed in advance).
         ("video-external-orig", [V + "hf_baselines", "--score", "--conditions", "orig"]),
         ("video-external-calls", [V + "hf_baselines", "--score", "--gated",
                                   "--conditions", "call720", "call360"]),
-        ("video-external-report", [V + "hf_baselines", "--report"]),
-        # The single frozen test run, then the zero-parameter lip-sync test and the manifest.
-        ("video-benchmark", [V + "run_benchmark"]),
+        ("video-external-report", [V + "hf_baselines", "--report"]),  # + the val-only selection
+        # The selected detector (GenD, results/video_selection.json) in the product's CNN slot.
+        ("video-export-gend", [V + "export_gend"]),
+        ("video-tables-gend-orig", [V + "tables", "--cnn", "gend_clip_l14", "--condition", "orig"]),
+        ("video-tables-gend-call720", [V + "tables", "--cnn", "gend_clip_l14",
+                                       "--condition", "call720"]),
+        ("video-tables-gend-call360", [V + "tables", "--cnn", "gend_clip_l14",
+                                       "--condition", "call360"]),
+        ("video-fit-gend", [V + "fit_fusion", "--cnn", "gend_clip_l14"]),
+        # The frozen test runs (shipped GenD config and the SBI fallback), lip-sync, manifest.
+        ("video-benchmark", [V + "run_benchmark", "--cnn", "gend_clip_l14"]),
+        ("video-benchmark-blend", [V + "run_benchmark", "--cnn", "blend"]),
         ("video-lipsync", [V + "lipsync_eval"]),
         ("video-manifest", [V + "manifest"]),
     ],

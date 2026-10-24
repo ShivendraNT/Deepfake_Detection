@@ -1,0 +1,26 @@
+{
+ "features": [
+  "blend"
+ ],
+ "median": [
+  -1.1200486818949382
+ ],
+ "mean": [
+  0.0
+ ],
+ "scale": [
+  1.0
+ ],
+ "coef": [
+  1.0
+ ],
+ "missing_coef": [
+  0.0
+ ],
+ "intercept": 0.0,
+ "version": "fusion-identity@gend_clip_l14:4349cd59",
+ "cnn": {
+  "file": "gend_clip_l14.onnx",
+  "crop_every_s": 2.25
+ }
+}

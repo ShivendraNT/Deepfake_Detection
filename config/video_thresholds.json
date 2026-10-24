@@ -1,0 +1,26 @@
+{
+ "tau_hi": 0.980077,
+ "tau_lo": 0.945486,
+ "model_version": "gend_clip_l14:4349cd590835+fusion:486d4ceaa482",
+ "calibrated": false,
+ "calibration_set": "FF++ c23 val reals (139 videos), usable 6 s windows per channel condition {'orig': 276, 'call720': 276, 'call360': 229}; max over conditions; NOT webcam calls",
+ "cue_flag_logit": 0.75,
+ "fpr_targets": {
+  "tau_hi": 0.01,
+  "tau_lo": 0.05
+ },
+ "per_condition": {
+  "orig": {
+   "tau_hi": 0.969683,
+   "tau_lo": 0.915701
+  },
+  "call720": {
+   "tau_hi": 0.977257,
+   "tau_lo": 0.851616
+  },
+  "call360": {
+   "tau_hi": 0.980077,
+   "tau_lo": 0.945486
+  }
+ }
+}
