@@ -14,13 +14,13 @@ N_BOOT = 2000
 
 
 def eer(y: Sequence[int], s: Sequence[float]) -> float:
+    """min over thresholds t in the scores of max(FPR(s >= t), FNR(s < t)); O(n log n)."""
     y_arr, s_arr = np.asarray(y), np.asarray(s, float)
-    best = 1.0
-    for t in np.unique(s_arr):
-        fpr = float(np.mean(s_arr[y_arr == 0] >= t))
-        fnr = float(np.mean(s_arr[y_arr == 1] < t))
-        best = min(best, max(fpr, fnr))
-    return best
+    neg, pos = np.sort(s_arr[y_arr == 0]), np.sort(s_arr[y_arr == 1])
+    t = np.unique(s_arr)
+    fpr = (len(neg) - np.searchsorted(neg, t, "left")) / max(1, len(neg))
+    fnr = np.searchsorted(pos, t, "left") / max(1, len(pos))
+    return float(min(1.0, np.max(np.c_[fpr, fnr], axis=1).min())) if len(t) else 1.0
 
 
 def tpr_at(y: Sequence[int], s: Sequence[float], t: float) -> float:
