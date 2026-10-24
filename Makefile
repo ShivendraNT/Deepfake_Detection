@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: help sync asr video video-models doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
+.PHONY: scan help sync asr video video-models doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -81,6 +81,10 @@ demo-data:
 	$(RUN) python scripts/make_demo_data.py
 	$(RUN) python scripts/export_schemas.py
 	$(RUN) python scripts/decision_relevance.py
+
+# Judges' kit / any files: one verdict per file, offline, nothing kept. make scan F=kit/
+scan:
+	$(RUN) python -m satyapan.check_cli $(F)
 
 schemas:
 	$(RUN) python scripts/export_schemas.py

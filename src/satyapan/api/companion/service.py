@@ -18,7 +18,6 @@ import uuid
 from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from pathlib import Path
 from typing import TYPE_CHECKING
 
 from satyapan.api.companion.bus import CompanionBus
@@ -110,11 +109,6 @@ _ALERT_ACTIONS = [
 ]
 # A live chunk is 10 s (T11). AskEvent carries the chunk index, not the span time.
 LIVE_CHUNK_SECONDS = 10.0
-_TEXT_SUFFIXES = {".txt", ".md", ".csv", ".json", ".log"}
-_EMAIL_SUFFIXES = {".eml", ".msg", ".mbox"}
-_VOICE_SUFFIXES = {".wav", ".m4a", ".ogg", ".opus", ".mp3", ".webm"}
-_VIDEO_SUFFIXES = {".mp4", ".mov", ".m4v", ".mkv", ".avi"}
-_IMAGE_SUFFIXES = {".png", ".jpg", ".jpeg", ".webp", ".bmp", ".gif", ".tif", ".tiff"}
 
 
 class CompanionError(ValueError):
@@ -1609,19 +1603,9 @@ def _format_inr(amount: int) -> str:
 
 
 def _channel_for(filename: str | None, media_type: str) -> Channel:
-    suffix = Path(filename or "").suffix.lower()
-    if suffix in _EMAIL_SUFFIXES or media_type == "message/rfc822":
-        return Channel.EMAIL
-    if suffix == ".pdf" or media_type == "application/pdf":
-        return Channel.PDF
-    if suffix in _VIDEO_SUFFIXES or media_type.startswith("video/"):
-        return Channel.VIDEO
-    if suffix in _IMAGE_SUFFIXES or media_type.startswith("image/"):
-        return Channel.IMAGE
-    if suffix in _VOICE_SUFFIXES or media_type.startswith("audio/"):
-        return Channel.VOICE_NOTE
-    if suffix in _TEXT_SUFFIXES or media_type.startswith("text/"):
-        return Channel.MANUAL
+    from satyapan.filetypes import channel_for
+
+    return channel_for(filename, media_type)
     return Channel.MANUAL
 
 

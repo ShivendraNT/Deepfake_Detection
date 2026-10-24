@@ -119,6 +119,14 @@
       "ml"
     ]
   },
+  "VIDEO_SUSPICIOUS": {
+    "group": "media",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
   "IMAGE_FACE_NO_SIGNS": {
     "group": "media",
     "target": "NONE",
@@ -139,6 +147,14 @@
     "group": "media",
     "target": "PLUS_ONE",
     "strength": "strong",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
+  "IMAGE_FACE_SUSPICIOUS": {
+    "group": "media",
+    "target": "VERIFY",
+    "strength": "weak",
     "allowed_sources": [
       "ml"
     ]

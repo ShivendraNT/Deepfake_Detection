@@ -112,6 +112,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/video/` | C15 video deepfake check: face tracking, blend CNN, pulse, lighting, lip-sync, fusion, rule (docs/VIDEO_DEEPFAKE.md) | finale (lead) | done (prototype) |
 | `src/satyapan/textrisk/` | scam-text classifier: de-obfuscation, hashed TF-IDF + logistic regression trained on open datasets; STYLE evidence capped at VERIFY (docs/TEXT_BENCHMARK.md) | finale (lead) | done (prototype) |
 | `src/satyapan/imagecheck/` | photos and screenshots: face check (same face CNN as video, one crop; `config/image_face_thresholds.json`) + text in the image (RapidOCR) through the ask and scam-text checks | finale (lead) | done (prototype) |
+| `src/satyapan/quickcheck.py`, `src/satyapan/check_cli.py`, `src/satyapan/filetypes.py` | one file or message in, plain verdict out (all detectors, policy band, nothing kept): the consumer Scam Check page and `satya scan` for any kit of files | finale (lead) | done |
 | `src/satyapan/pipeline.py` | evidence → detectors → decision | T01 | done |
 | `src/satyapan/context/boilerplate.py` | C5 pre-filter: footers, quoted bank notifications, protective warnings (ADR-021) | lead | done |
 | `src/satyapan/repository.py` | in-memory case store | T01 | done |

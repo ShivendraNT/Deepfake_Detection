@@ -126,10 +126,12 @@ export type SignalGroup =
   | "cross_channel";
 // Video check (docs/VIDEO_DEEPFAKE.md, media group, ML): only LIKELY_SYNTHETIC raises (+1 band);
 // NO_SIGNS / INCONCLUSIVE are info only and never lower a band.
-export type VideoReasonCode = "VIDEO_NO_SIGNS" | "VIDEO_INCONCLUSIVE" | "VIDEO_LIKELY_SYNTHETIC";
+export type VideoReasonCode =
+  | "VIDEO_NO_SIGNS" | "VIDEO_INCONCLUSIVE" | "VIDEO_SUSPICIOUS" | "VIDEO_LIKELY_SYNTHETIC";
 // Still-image face check (same face CNN, one crop): only LIKELY_SYNTHETIC raises (+1 band).
 export type ImageReasonCode =
-  | "IMAGE_FACE_NO_SIGNS" | "IMAGE_FACE_INCONCLUSIVE" | "IMAGE_FACE_LIKELY_SYNTHETIC";
+  | "IMAGE_FACE_NO_SIGNS" | "IMAGE_FACE_INCONCLUSIVE" | "IMAGE_FACE_SUSPICIOUS"
+  | "IMAGE_FACE_LIKELY_SYNTHETIC";
 // Scam-text model (docs/TEXT_BENCHMARK.md): style group, ML, capped at VERIFY.
 export type TextReasonCode = "TEXT_SCAM_LIKELY";
 // Provenance reason codes: VOICE_SEALED is info only (never lowers a band, never clears).

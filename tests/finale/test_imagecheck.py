@@ -23,6 +23,7 @@ from satyapan.imagecheck.face import (
 IMAGE_CODES = (
     ReasonCode.IMAGE_FACE_NO_SIGNS,
     ReasonCode.IMAGE_FACE_INCONCLUSIVE,
+    ReasonCode.IMAGE_FACE_SUSPICIOUS,
     ReasonCode.IMAGE_FACE_LIKELY_SYNTHETIC,
 )
 
@@ -80,13 +81,14 @@ def test_image_codes_are_ml_media_and_only_likely_raises() -> None:
     assert SIGNAL_TABLE[ReasonCode.IMAGE_FACE_LIKELY_SYNTHETIC].target.value == "PLUS_ONE"
     assert SIGNAL_TABLE[ReasonCode.IMAGE_FACE_NO_SIGNS].target.value == "NONE"
     assert SIGNAL_TABLE[ReasonCode.IMAGE_FACE_INCONCLUSIVE].target.value == "NONE"
+    assert SIGNAL_TABLE[ReasonCode.IMAGE_FACE_SUSPICIOUS].target.value == "VERIFY"
 
 
 @pytest.mark.parametrize(
     ("logit", "face", "code", "problem"),
     [
         (5.0, 120.0, ReasonCode.IMAGE_FACE_LIKELY_SYNTHETIC, None),
-        (3.5, 120.0, ReasonCode.IMAGE_FACE_INCONCLUSIVE, None),
+        (3.5, 120.0, ReasonCode.IMAGE_FACE_SUSPICIOUS, None),
         (-2.0, 120.0, ReasonCode.IMAGE_FACE_NO_SIGNS, None),
         (9.0, 30.0, ReasonCode.IMAGE_FACE_INCONCLUSIVE, "face_too_small"),
         (9.0, None, ReasonCode.IMAGE_FACE_INCONCLUSIVE, "no_face"),
@@ -162,3 +164,15 @@ def test_verdict_type_is_frozen() -> None:
     v = ImageFaceVerdict(ReasonCode.IMAGE_FACE_NO_SIGNS, -1.0, 100.0, None)
     with pytest.raises(AttributeError):
         v.logit = 1.0  # type: ignore[misc]
+
+
+def test_captions_in_a_photo_of_a_person_are_not_judged_as_messages(master, monkeypatch) -> None:
+    from satyapan.textrisk.model import MODEL_PATH, TextRiskModel
+
+    if not MODEL_PATH.exists():
+        pytest.skip("text model not trained")
+    ticker = "BREAKING NEWS LIVE nine people die in a traffic accident in the city centre tonight"
+    out = _run_image(master, monkeypatch, _checker(-3.0), ticker)
+    assert out.artifacts["text_model"].startswith("skipped")
+    assert ReasonCode.TEXT_SCAM_LIKELY not in {s.code for s in out.signals}
+    assert TextRiskModel  # the model exists; it was deliberately not applied

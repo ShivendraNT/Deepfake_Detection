@@ -106,7 +106,7 @@ class ImageFaceChecker:
         if logit >= self.thresholds.tau_hi:
             code = ReasonCode.IMAGE_FACE_LIKELY_SYNTHETIC
         elif logit >= self.thresholds.tau_lo:
-            code = ReasonCode.IMAGE_FACE_INCONCLUSIVE
+            code = ReasonCode.IMAGE_FACE_SUSPICIOUS
         else:
             code = ReasonCode.IMAGE_FACE_NO_SIGNS
         return ImageFaceVerdict(code, logit, face_px, None)
