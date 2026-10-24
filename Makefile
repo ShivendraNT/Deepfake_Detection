@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video voice video-models doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
+.PHONY: scan help sync asr video voice video-models doctor demo-audio live live-personal check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -84,6 +84,10 @@ run:
 # approver's phone on the same hotspot can open http://<laptop-ip>:8000/oob.
 live:
 	SATYAPAN_ASR_WARMUP=1 $(RUN) uvicorn --app-dir src satyapan.api.app:app --host 0.0.0.0 --port 8000
+
+# The consumer journey: alerts speak to a person on their own call (docs/JUDGES.md §9).
+live-personal:
+	SATYAPAN_PROFILE=personal SATYAPAN_ASR_WARMUP=1 $(RUN) uvicorn --app-dir src satyapan.api.app:app --host 0.0.0.0 --port 8000
 
 demo-data:
 	$(RUN) python scripts/make_demo_data.py

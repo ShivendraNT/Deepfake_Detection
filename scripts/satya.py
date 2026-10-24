@@ -107,7 +107,7 @@ def check() -> None:
     print("satya check: ALL GREEN")
 
 
-def serve(live: bool) -> None:
+def serve(live: bool, profile: str | None = None) -> None:
     args = [
         "uvicorn",
         "--app-dir",
@@ -120,7 +120,10 @@ def serve(live: bool) -> None:
     ]
     if not live:
         args.append("--reload")
-    py(*args, env={"SATYAPAN_ASR_WARMUP": "1"} if live else None)
+    env = {"SATYAPAN_ASR_WARMUP": "1"} if live else {}
+    if profile:
+        env["SATYAPAN_PROFILE"] = profile
+    py(*args, env=env or None)
 
 
 def desktop() -> None:
@@ -148,6 +151,10 @@ TASKS: dict[str, tuple[str, Callable[[], None]]] = {
     "schemas": ("regenerate JSON schemas", lambda: py("python", "scripts/export_schemas.py")),
     "run": ("API with auto-reload on http://127.0.0.1:8000", lambda: serve(False)),
     "live": ("API for a live demo (no reload, speech engine warmed up)", lambda: serve(True)),
+    "live-personal": (
+        "the same, alerts for a person on their own call (1930, call back, no approver)",
+        lambda: serve(True, "personal"),
+    ),
     "desktop": ("the Electron app (installs node modules on first run)", desktop),
     "scan": ("scan FILES/FOLDERS: verdict for each file, offline, nothing kept", lambda: None),
 }
