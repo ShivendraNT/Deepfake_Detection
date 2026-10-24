@@ -25,7 +25,7 @@ from satyapan.asks.extractor import extract_asks, normalise
 from satyapan.contracts.enums import AskType
 from satyapan.contracts.evidence import AskSpan
 
-PHRASEBOOK_VERSION = "live-1.0.0"
+PHRASEBOOK_VERSION = "live-1.1.0"
 
 _A = r"(?:a|an|the|this|that|my|our|your)\s+"
 
@@ -50,6 +50,30 @@ EXTRA_ASKS: list[tuple[str, AskType, str]] = [
         r"\b(?:holding|suspense|nodal|clearing|settlement)\s+account\b",
     ),
     (
+        "A1.live.add_payee",
+        AskType.A1,
+        r"\badd\s+(?:a\s+)?(?:new\s+)?payee\b",
+    ),
+    (
+        "A1.live.account_mentioned",
+        AskType.A1,
+        r"\b(?:transfer|send|wire|pay|move|remit)\b[^.?!]{0,60}?\b(?:to|into|in)\s+"
+        r"(?:the\s+|that\s+|this\s+|an?\s+)?account\s+"
+        r"(?:mentioned|given|shared|sent|below|in\s+(?:my|this|the)\s+"
+        r"(?:next\s+|previous\s+)?(?:message|chat|sms|text))\b",
+    ),
+    (
+        "A1.live.escrow",
+        AskType.A1,
+        r"\b(?:transfer|send|wire|pay|move|remit|park|deposit)\b[^.?!]{0,60}?\b"
+        r"(?:escrow|neutral|client|lawyer'?s?|seller'?s?\s+agent)\s+account\b",
+    ),
+    (
+        "A1.hi.seedha_account",
+        AskType.A1,
+        r"\b(?:seedha|directly)\s+(?:is|us|in)\s+account\s+(?:mein|me|mai)\b",
+    ),
+    (
         "A1.hi.naye_account_mein",
         AskType.A1,
         r"\b(?:naye|nayi|naya|dusre|doosre|alag)\s+(?:bank\s+)?(?:account|khate|khaate)\s+"
@@ -72,6 +96,34 @@ EXTRA_ASKS: list[tuple[str, AskType, str]] = [
         AskType.A2,
         r"\b(?:netbanking|net\s+banking|internet\s+banking|banking)\s+(?:login|password|credentials)\b",
     ),
+    (
+        "A2.live.digits_from_sms",
+        AskType.A2,
+        r"\b(?:read|tell|give|send|share|forward|whatsapp)\b[^.?!]{0,50}?\b"
+        r"(?:digits?|numbers?|code)\b[^.?!]{0,50}?\b(?:sms|phone|message|card)\b",
+    ),
+    (
+        "A2.live.number_that_came",
+        AskType.A2,
+        r"\b(?:number|digits?|code)\b[^.?!]{0,30}?\b(?:came|received|aaya|aayi|aaye)\b"
+        r"[^.?!]{0,30}?\b(?:sms|phone|message)\b",
+    ),
+    (
+        "A2.live.card_back",
+        AskType.A2,
+        r"\bcard\s+(?:ke\s+)?(?:peeche|piche|back)\b[^.?!]{0,30}\b"
+        r"(?:number|digits|3|three|cvv)\b",
+    ),
+    (
+        "A2.hi.pin_kya",
+        AskType.A2,
+        r"\b(?:pin|password)\s+(?:kya|bata|bol|share|de)\b",
+    ),
+    (
+        "A2.hi.code_padho",
+        AskType.A2,
+        r"\b(?:code|कोड)\b[^.?!]{0,30}\b(?:padh|padhke|padh\s*kar|sunao|batao|bata\s*do)\b",
+    ),
     # A3 remote access / screen sharing
     (
         "A3.live.install_app",
@@ -81,6 +133,38 @@ EXTRA_ASKS: list[tuple[str, AskType, str]] = [
     ),
     ("A3.live.share_screen", AskType.A3, r"\bshare\s+(?:your|the)\s+(?:screen|desktop)\b"),
     ("A3.live.remote_session", AskType.A3, r"\b(?:remote|support)\s+(?:session|access|control)\b"),
+    (
+        "A3.live.desktop_access",
+        AskType.A3,
+        r"\b(?:give|grant|allow|get|take)\b[^.?!]{0,30}?\baccess\b[^.?!]{0,20}?\b"
+        r"(?:desktop|computer|laptop|screen|system)\b",
+    ),
+    (
+        "A3.live.install_apk",
+        AskType.A3,
+        r"\b(?:install|download)\b[^.?!]{0,30}\b(?:apk|attachment|remote\s+support\s+app)\b",
+    ),
+    (
+        "A3.live.start_screen_sharing",
+        AskType.A3,
+        r"\b(?:start|open|enable|turn\s+on|accept)\b[^.?!]{0,20}?\bscreen\s*sharing\b",
+    ),
+    (
+        "A3.hi.laptop_control",
+        AskType.A3,
+        r"\b(?:laptop|computer|system)\s+(?:ka|par|pe)\s+(?:control|access)\b",
+    ),
+    (
+        "A3.hi.screen_sharing_on",
+        AskType.A3,
+        r"\bscreen\s*sharing\s+(?:on|chalu|start)\b",
+    ),
+    (
+        "A3.hi.support_app",
+        AskType.A3,
+        r"\b(?:support|remote)\s+(?:app|software)\b[^.?!]{0,20}\b"
+        r"(?:install|download|karo|kar\s*lo)\b",
+    ),
     # A4 secrecy / isolation
     (
         "A4.live.nobody_knows",

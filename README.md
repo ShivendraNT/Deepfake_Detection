@@ -88,7 +88,9 @@ CV, frozen thresholds, synthetic-data generators); `python -m research.run_all -
 | `docs/VIDEO_DEEPFAKE.md` | video deepfake check: idea-by-idea verdict, protocol, benchmark |
 | `docs/TEXT_BENCHMARK.md` | scam-text classifier: open datasets, protocol, results |
 | `docs/BENCHMARKS.md` | the test kit: every benchmark, how to reproduce it, what it may claim |
-| `docs/finale/` | finale plan, mascot spec, **live demo runbook** (`LIVE_DEMO.md`) |
+| `docs/finale/` | finale plan, mascot spec, **live demo runbook** (`LIVE_DEMO.md`), `DELIVERED.md`, `SAFEGUARDS.md`, `DRY_RUNS.md`, `SLIDES.md` |
+| `docs/JUDGE_KIT.md` | how to score the shipped stack in five minutes, with failure cases |
+| `docs/ENGINEERING_DEEP_DIVE.md` | the judge walkthrough of the policy, signals, X1 and response path |
 | `docs/DEMO_SCRIPT.md` | the Round-1 demo (superseded by `docs/finale/PLAN.md` §7) |
 | `team/` | each person's finale cards |
 | `desktop/` | Electron app: Satya the companion |
@@ -140,6 +142,18 @@ cd desktop && npm run build && npm run preview
 
 The step-by-step live demo (two laptops, a phone hotspot, permissions, script, fallbacks):
 **`docs/finale/LIVE_DEMO.md`**.
+
+### Score it yourself
+
+```bash
+make judge                 # measured scoreboard + a check on any judge-supplied email/PDF/text
+make dry-run               # the whole story in-process: consent -> call -> alert -> OOB -> report
+```
+
+`docs/JUDGE_KIT.md` explains the protocol, the numbers, the named failure cases and the limits.
+`docs/ENGINEERING_DEEP_DIVE.md` is the code walkthrough; `docs/finale/DELIVERED.md` is the
+honest delivery-vs-plan table; `docs/finale/SAFEGUARDS.md` maps every safeguard to the running
+code and its test.
 
 ## What is built
 

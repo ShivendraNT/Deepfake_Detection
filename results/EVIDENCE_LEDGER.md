@@ -1,7 +1,7 @@
 # Evidence ledger
 
 Every number that may appear in the Round 1 PDF must have a row here. If it is not here, or its
-status is not **measured** or **external, cited**, it does not go on a slide. Last update: 24 Oct 2026 (finale: text §10, face check §11, voice §12 when measured).
+status is not **measured** or **external, cited**, it does not go on a slide. Last update: 24 Oct 2026 (finale: text §10, face check §11, voice §12, mixed kit §13, product config + judge kit §14).
 
 **Status values.** *measured*: produced by the listed script on the listed data at the listed
 commit; re-run the command to reproduce. *external, cited*: someone else's published number;
@@ -101,6 +101,8 @@ defences are structural (LLM never sets the band, template fallback).
 |---|---|---|---|---|
 | Automated tests | 511 passed, 138 skipped (unfinished tasks) | `make check` | `7f28b4e` | superseded |
 | Automated tests (incl. Seal tests) | **561 passed**, 138 skipped (unfinished tasks) | `make check` | `2afaf2a` | measured |
+| Automated tests (24 Oct finale) | **814 passed, 20 skipped** (unfinished T18–T23 + video fusion) | `make check` | current | measured |
+| Desktop tests (24 Oct finale) | **84 passed** | `cd desktop && npx vitest run` | current | measured |
 | Safety invariants property-tested (monotone, raise-only, LLM cap, floor isolation, OOB/grey, single weak signal) | 7 invariant files, hypothesis 200 examples each | `tests/invariants/` | `7f28b4e` | measured |
 
 ## 5. Illustrative (label as simulation, not detection)
@@ -264,3 +266,40 @@ media outside the repo). Same answer as the consumer page (quick check + claim r
 | Genuine files passed | 86 / 88 | 40 texts, 20 photos, 20 voices, 8 videos | two genuine voice notes got VERIFY (voice unusual; words read like a scam) |
 | Fakes and scams flagged | 68 / 96 | 40 / 20 / 20 / 16 | texts 38, voices 15, videos 7, photos 8 |
 | Time for 184 files, 4-core CPU | ≈ 7.5 min | — | first file includes model loading |
+---
+
+## 14. Finale: shipped product configuration + judge kit (24 Oct 2026)
+
+The Round-1 rows above stay frozen. The finale ships a **product** configuration: the ADR-021
+context filter plus the live phrasebook (`live-1.1.0`). It is measured on the SAME pre-registered
+test split (`sha256(id)` parity). The phrasebook was extended once from **dev-split** misses only,
+then the test split was re-scored once; both product rows are shown so the change is auditable.
+The **research claim remains the frozen lexicon** (section 1). Data and commands are the same as
+section 1/2 unless noted.
+
+| Claim | Value | n | 95% CI | Data / command | Status |
+|---|---|---|---|---|---|
+| Product ask precision, test | 61.2% | 67 flagged asks | [49.2, 72.0] | `python -m research.heldout.run_eval` → `results/asks_heldout_eval.json` | measured |
+| Product ask recall, test | 39.4% | 104 gold asks | [30.6, 49.0] | same | measured |
+| Product attack texts with >= 1 ask, test | 48.9% | 92 | [39.0, 59.0] | same | measured |
+| Product benign false-ask rate, test | 12.1% | 157 | [7.9, 18.1] | same | measured |
+| Product `live-1.0.0` (before the dev-only extension), test | P 61.5% (40/65), R 38.5% (40/104), attack-any 46.7% (43/92), benign FA 12.1% (19/157) | as above | — | first score, kept for audit | measured, superseded |
+| Product alert budget: routine payments at HOLD, test | **3.5%** | 200 | [1.7, 7.0] | `python -m research.alert_budget.run_alert_budget` → `results/alert_budget.json` | measured |
+| Product alert budget: routine >= VERIFY, test | 23.5% | 200 | [18.2, 29.8] | same | measured |
+| Product alert budget: attacks >= VERIFY, test | **78.6%** | 98 | [69.5, 85.5] | same | measured |
+| Product alert budget: attacks at HOLD, test | 16.3% | 98 | [10.3, 24.9] | same | measured |
+| Product attack catch by scenario, test (>= VERIFY): payee change / large new payee / split / small new payee / no-payment credential | 100% (17/17) / 100% (37/37) / 100% (6/6) / 52.9% (9/17) / 38.1% (8/21) | 98 | see json | same | measured; **named failures** are the last two |
+| E-mail signal fixtures exact match | 10/10 | 10 | n/a | `python scripts/judge_kit.py` | measured (functional) |
+| Invoice fields + metadata + signals exact match | 6/6 | 6 | n/a | same | measured (functional) |
+| Demo scenarios: full band matches expected | 12/12 | 12 | n/a | `python scripts/decision_relevance.py`; `data/demo/expected_decisions.json` | illustrative |
+| Detectors change the rules-only outcome | 8/12 | 12 | n/a | same | illustrative |
+| Judge kit scoreboard runtime | 0.3 s | — | — | `python scripts/judge_kit.py` | measured |
+| Automated end-to-end dry run | **3/3 PASS**, 94–132 ms per run | 3 runs | n/a | `python scripts/dry_run.py` → `results/dry_runs.json`, `docs/finale/DRY_RUNS.md` | measured (in-process; **not** stage latency) |
+| Desktop tests | **84/84** | 84 | n/a | `cd desktop && npx vitest run` | measured |
+| Desktop typecheck | green | — | — | `npm run typecheck` | measured |
+
+**How to quote this honestly.** Say “on a pre-registered synthetic held-out split, the shipped
+product finds at least one ask in 48.9% of attack texts with a 12.1% false-ask rate on benign AP
+texts; through the real policy, 3.5% of routine payments reach HOLD and 78.6% of attacks reach at
+least VERIFY.” Do **not** say “98% accurate” or quote the frozen-lexicon precision as the product
+precision. The test split is synthetic and the failures are named in `docs/JUDGE_KIT.md`.

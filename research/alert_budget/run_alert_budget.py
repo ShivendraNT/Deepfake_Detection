@@ -60,6 +60,9 @@ VARIANTS: dict[str, dict[str, Any]] = {
     },
     "policy_only": {"context": False, "cfg": {}},
     "after": {"context": True, "cfg": {}},
+    # The shipped product surface: context filter + live phrasebook (ADR-024). Reported as a
+    # separate configuration; the research claim above stays on the frozen lexicon.
+    "product": {"context": True, "cfg": {}, "live": True},
 }
 
 
@@ -69,7 +72,11 @@ def _fields(cls: type) -> set[str]:
 
 def available(name: str) -> bool:
     """Pre-fix code has none of the new knobs: then only 'before' (= its defaults) can run."""
-    return name == "before" or "ask_corroboration" in _fields(PolicyConfig)
+    if name == "before":
+        return True
+    if name == "product":
+        return "live_phrasebook" in _fields(PipelineContext)
+    return "ask_corroboration" in _fields(PolicyConfig)
 
 
 def _master_for(sc: SynthCase, base: MasterData) -> MasterData:
@@ -90,6 +97,8 @@ def run_case(sc: SynthCase, master: MasterData, variant: dict[str, Any]) -> Case
     ctx_kwargs: dict[str, Any] = {}
     if "context_filter" in _fields(PipelineContext):
         ctx_kwargs["context_filter"] = variant["context"]
+    if variant.get("live") and "live_phrasebook" in _fields(PipelineContext):
+        ctx_kwargs["live_phrasebook"] = True
     m = _master_for(sc, master)
     ctx = PipelineContext(
         master=m,

@@ -178,8 +178,11 @@ timing, and Google Meet's own processing is untested until the two-laptop test.
 **Decision:** live calls are transcribed on the laptop (`adapters/transcribe_local.py`:
 mlx-whisper on Apple Silicon, faster-whisper int8 elsewhere; `make asr`), one utterance at a time
 (the capture window cuts at pauses, ~0.5 s, instead of fixed 10 s chunks). Spoken asks go through
-the frozen lexicon v1.0 **plus** `asks/phrasebook.py` (`live-1.0.0`): spoken variants the written
-lexicon misses ("don't involve Rajesh", "read me the code", "I'll sign later", Hinglish). The
+the frozen lexicon v1.0 **plus** `asks/phrasebook.py` (`live-1.1.0`): spoken variants the written
+lexicon misses ("don't involve Rajesh", "read me the code", "I'll sign later", Hinglish; v1.1 adds
+"add a new payee", "the account mentioned in my message", "give me access to your desktop",
+"screen sharing on karo" — added only after inspecting miss cases on the **dev** split, then
+re-scored once on test; both numbers are in `results/asks_heldout_eval.json`). The
 phrasebook is product-only: research scripts keep calling `extract_asks` and never see it, so the
 frozen research lexicon and its numbers are unchanged. The ADR-021 context filter runs first.
 Context **cues** (RUSH, AUTHORITY, UNREACHABLE, AMOUNT) are highlighted for the user but are never a

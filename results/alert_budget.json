@@ -1,7 +1,7 @@
 {
  "what": "Alert budget through the real pipeline (synthetic cases)",
- "date": "2026-10-08",
- "git_commit": "7f28b4e",
+ "date": "2026-10-24",
+ "git_commit": "1a79267+dirty",
  "code_state": "post-fix",
  "command": "uv run python -m research.alert_budget.run_alert_budget",
  "data": {
@@ -127,9 +127,12 @@
      },
      "cases_with_reason_code": {
       "ASK_SECRECY": 29,
+      "CROSS_CHANNEL_SEQUENCE": 27,
       "ASK_NEW_ACCOUNT": 20,
       "ASK_CREDENTIAL": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+      "CROSS_CHANNEL_URGENT_BYPASS": 6,
+      "MULTI_GROUP_STRONG": 6,
       "ASK_BYPASS": 3,
       "ASK_PAYEE_CHANGE": 3,
       "ASK_REMOTE_ACCESS": 2
@@ -137,6 +140,8 @@
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 28,
       "ASK_CREDENTIAL": 12,
+      "CROSS_CHANNEL_URGENT_BYPASS": 6,
+      "MULTI_GROUP_STRONG": 6,
       "ASK_NEW_ACCOUNT": 3,
       "ASK_BYPASS": 3,
       "ASK_REMOTE_ACCESS": 2,
@@ -195,11 +200,16 @@
       "cases_with_reason_code": {
        "ASK_SECRECY": 9,
        "ASK_NEW_ACCOUNT": 7,
+       "CROSS_CHANNEL_SEQUENCE": 6,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_PAYEE_CHANGE": 3,
        "ASK_BYPASS": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 9,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1,
        "ASK_BYPASS": 1
@@ -254,9 +264,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "CROSS_CHANNEL_SEQUENCE": 9,
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
@@ -361,11 +376,16 @@
       "cases_with_reason_code": {
        "ASK_SECRECY": 17,
        "ASK_NEW_ACCOUNT": 13,
-       "ASK_BYPASS": 2
+       "CROSS_CHANNEL_SEQUENCE": 12,
+       "ASK_BYPASS": 2,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 17,
        "ASK_BYPASS": 2,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_NEW_ACCOUNT": 1
       }
      },
@@ -538,16 +558,21 @@
      },
      "cases_with_reason_code": {
       "ASK_SECRECY": 11,
+      "CROSS_CHANNEL_SEQUENCE": 9,
       "ASK_NEW_ACCOUNT": 8,
       "ASK_CREDENTIAL": 6,
       "ASK_REMOTE_ACCESS": 2,
       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_PAYEE_CHANGE": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 11,
       "ASK_CREDENTIAL": 6,
       "ASK_REMOTE_ACCESS": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_NEW_ACCOUNT": 1
      }
     },
@@ -601,6 +626,7 @@
       },
       "cases_with_reason_code": {
        "ASK_SECRECY": 3,
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1
       },
@@ -656,6 +682,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       },
       "hold_cases_with_reason_code": {}
@@ -759,10 +786,15 @@
       },
       "cases_with_reason_code": {
        "ASK_SECRECY": 8,
-       "ASK_NEW_ACCOUNT": 6
+       "ASK_NEW_ACCOUNT": 6,
+       "CROSS_CHANNEL_SEQUENCE": 5,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 8,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_NEW_ACCOUNT": 1
       }
      },
@@ -938,15 +970,20 @@
      },
      "cases_with_reason_code": {
       "ASK_SECRECY": 18,
+      "CROSS_CHANNEL_SEQUENCE": 18,
       "ASK_NEW_ACCOUNT": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
       "ASK_CREDENTIAL": 6,
+      "CROSS_CHANNEL_URGENT_BYPASS": 5,
+      "MULTI_GROUP_STRONG": 5,
       "ASK_BYPASS": 3,
       "ASK_PAYEE_CHANGE": 2
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 17,
       "ASK_CREDENTIAL": 6,
+      "CROSS_CHANNEL_URGENT_BYPASS": 5,
+      "MULTI_GROUP_STRONG": 5,
       "ASK_BYPASS": 3,
       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
       "ASK_NEW_ACCOUNT": 2,
@@ -1004,11 +1041,16 @@
       "cases_with_reason_code": {
        "ASK_SECRECY": 6,
        "ASK_NEW_ACCOUNT": 5,
+       "CROSS_CHANNEL_SEQUENCE": 4,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_PAYEE_CHANGE": 2,
        "ASK_BYPASS": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 6,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1,
        "ASK_BYPASS": 1
@@ -1063,9 +1105,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "CROSS_CHANNEL_SEQUENCE": 7,
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
@@ -1169,6 +1216,7 @@
       },
       "cases_with_reason_code": {
        "ASK_SECRECY": 9,
+       "CROSS_CHANNEL_SEQUENCE": 7,
        "ASK_NEW_ACCOUNT": 7,
        "ASK_BYPASS": 2
       },
@@ -1349,19 +1397,24 @@
       ]
      },
      "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 32,
       "ASK_NEW_ACCOUNT": 20,
       "ASK_CREDENTIAL": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
       "ASK_SECRECY": 9,
       "ASK_BYPASS": 3,
       "ASK_PAYEE_CHANGE": 3,
-      "ASK_REMOTE_ACCESS": 2
+      "ASK_REMOTE_ACCESS": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_CREDENTIAL": 12,
       "ASK_SECRECY": 9,
       "ASK_BYPASS": 3,
       "ASK_REMOTE_ACCESS": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
      }
     },
@@ -1414,6 +1467,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 9,
        "ASK_NEW_ACCOUNT": 7,
        "ASK_PAYEE_CHANGE": 3,
        "ASK_BYPASS": 1
@@ -1471,9 +1525,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "CROSS_CHANNEL_SEQUENCE": 10,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1,
        "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
@@ -1576,6 +1635,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 13,
        "ASK_NEW_ACCOUNT": 13,
        "ASK_SECRECY": 8,
        "ASK_BYPASS": 2
@@ -1751,6 +1811,7 @@
       ]
      },
      "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 10,
       "ASK_NEW_ACCOUNT": 8,
       "ASK_CREDENTIAL": 6,
       "ASK_REMOTE_ACCESS": 2,
@@ -1813,6 +1874,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1
       },
@@ -1866,6 +1928,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       },
       "hold_cases_with_reason_code": {}
@@ -1968,6 +2031,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 6,
        "ASK_NEW_ACCOUNT": 6,
        "ASK_SECRECY": 2
       },
@@ -2146,17 +2210,22 @@
       ]
      },
      "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 22,
       "ASK_NEW_ACCOUNT": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
       "ASK_SECRECY": 7,
       "ASK_CREDENTIAL": 6,
       "ASK_BYPASS": 3,
-      "ASK_PAYEE_CHANGE": 2
+      "ASK_PAYEE_CHANGE": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 7,
       "ASK_CREDENTIAL": 6,
       "ASK_BYPASS": 3,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
      }
     },
@@ -2209,6 +2278,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 7,
        "ASK_NEW_ACCOUNT": 5,
        "ASK_PAYEE_CHANGE": 2,
        "ASK_BYPASS": 1
@@ -2266,9 +2336,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "CROSS_CHANNEL_SEQUENCE": 8,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1,
        "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
@@ -2371,6 +2446,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 7,
        "ASK_NEW_ACCOUNT": 7,
        "ASK_SECRECY": 6,
        "ASK_BYPASS": 2
@@ -2551,15 +2627,20 @@
      },
      "cases_with_reason_code": {
       "ASK_SECRECY": 29,
+      "CROSS_CHANNEL_SEQUENCE": 27,
       "ASK_NEW_ACCOUNT": 20,
       "ASK_CREDENTIAL": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+      "CROSS_CHANNEL_URGENT_BYPASS": 6,
+      "MULTI_GROUP_STRONG": 6,
       "ASK_BYPASS": 3,
       "ASK_PAYEE_CHANGE": 3,
       "ASK_REMOTE_ACCESS": 2
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 28,
+      "CROSS_CHANNEL_URGENT_BYPASS": 6,
+      "MULTI_GROUP_STRONG": 6,
       "ASK_CREDENTIAL": 5,
       "ASK_NEW_ACCOUNT": 3,
       "ASK_BYPASS": 3,
@@ -2619,11 +2700,16 @@
       "cases_with_reason_code": {
        "ASK_SECRECY": 9,
        "ASK_NEW_ACCOUNT": 7,
+       "CROSS_CHANNEL_SEQUENCE": 6,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_PAYEE_CHANGE": 3,
        "ASK_BYPASS": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 9,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1,
        "ASK_BYPASS": 1
@@ -2678,9 +2764,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "CROSS_CHANNEL_SEQUENCE": 9,
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
@@ -2785,11 +2876,16 @@
       "cases_with_reason_code": {
        "ASK_SECRECY": 17,
        "ASK_NEW_ACCOUNT": 13,
-       "ASK_BYPASS": 2
+       "CROSS_CHANNEL_SEQUENCE": 12,
+       "ASK_BYPASS": 2,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 17,
        "ASK_BYPASS": 2,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_NEW_ACCOUNT": 1
       }
      },
@@ -2962,15 +3058,20 @@
      },
      "cases_with_reason_code": {
       "ASK_SECRECY": 11,
+      "CROSS_CHANNEL_SEQUENCE": 9,
       "ASK_NEW_ACCOUNT": 8,
       "ASK_CREDENTIAL": 6,
       "ASK_REMOTE_ACCESS": 2,
       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_PAYEE_CHANGE": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 11,
       "ASK_CREDENTIAL": 3,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_NEW_ACCOUNT": 1,
       "ASK_REMOTE_ACCESS": 1
      }
@@ -3025,6 +3126,7 @@
       },
       "cases_with_reason_code": {
        "ASK_SECRECY": 3,
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1
       },
@@ -3080,6 +3182,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       },
       "hold_cases_with_reason_code": {}
@@ -3183,10 +3286,15 @@
       },
       "cases_with_reason_code": {
        "ASK_SECRECY": 8,
-       "ASK_NEW_ACCOUNT": 6
+       "ASK_NEW_ACCOUNT": 6,
+       "CROSS_CHANNEL_SEQUENCE": 5,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 8,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_NEW_ACCOUNT": 1
       }
      },
@@ -3361,14 +3469,19 @@
      },
      "cases_with_reason_code": {
       "ASK_SECRECY": 18,
+      "CROSS_CHANNEL_SEQUENCE": 18,
       "ASK_NEW_ACCOUNT": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
       "ASK_CREDENTIAL": 6,
+      "CROSS_CHANNEL_URGENT_BYPASS": 5,
+      "MULTI_GROUP_STRONG": 5,
       "ASK_BYPASS": 3,
       "ASK_PAYEE_CHANGE": 2
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 17,
+      "CROSS_CHANNEL_URGENT_BYPASS": 5,
+      "MULTI_GROUP_STRONG": 5,
       "ASK_BYPASS": 3,
       "ASK_CREDENTIAL": 2,
       "ASK_UNUSUAL_PAYMENT_METHOD": 2,
@@ -3427,11 +3540,16 @@
       "cases_with_reason_code": {
        "ASK_SECRECY": 6,
        "ASK_NEW_ACCOUNT": 5,
+       "CROSS_CHANNEL_SEQUENCE": 4,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_PAYEE_CHANGE": 2,
        "ASK_BYPASS": 1
       },
       "hold_cases_with_reason_code": {
        "ASK_SECRECY": 6,
+       "CROSS_CHANNEL_URGENT_BYPASS": 3,
+       "MULTI_GROUP_STRONG": 3,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1,
        "ASK_BYPASS": 1
@@ -3486,9 +3604,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "CROSS_CHANNEL_SEQUENCE": 7,
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
        "ASK_SECRECY": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       }
@@ -3592,6 +3715,7 @@
       },
       "cases_with_reason_code": {
        "ASK_SECRECY": 9,
+       "CROSS_CHANNEL_SEQUENCE": 7,
        "ASK_NEW_ACCOUNT": 7,
        "ASK_BYPASS": 2
       },
@@ -3771,19 +3895,24 @@
       ]
      },
      "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 32,
       "ASK_NEW_ACCOUNT": 20,
       "ASK_CREDENTIAL": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
       "ASK_SECRECY": 9,
       "ASK_BYPASS": 3,
       "ASK_PAYEE_CHANGE": 3,
-      "ASK_REMOTE_ACCESS": 2
+      "ASK_REMOTE_ACCESS": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 9,
       "ASK_CREDENTIAL": 5,
       "ASK_BYPASS": 3,
       "ASK_REMOTE_ACCESS": 1,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
      }
     },
@@ -3836,6 +3965,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 9,
        "ASK_NEW_ACCOUNT": 7,
        "ASK_PAYEE_CHANGE": 3,
        "ASK_BYPASS": 1
@@ -3893,9 +4023,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "CROSS_CHANNEL_SEQUENCE": 10,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1,
        "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
@@ -3998,6 +4133,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 13,
        "ASK_NEW_ACCOUNT": 13,
        "ASK_SECRECY": 8,
        "ASK_BYPASS": 2
@@ -4173,6 +4309,7 @@
       ]
      },
      "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 10,
       "ASK_NEW_ACCOUNT": 8,
       "ASK_CREDENTIAL": 6,
       "ASK_REMOTE_ACCESS": 2,
@@ -4235,6 +4372,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_NEW_ACCOUNT": 2,
        "ASK_PAYEE_CHANGE": 1
       },
@@ -4288,6 +4426,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
        "ASK_UNUSUAL_PAYMENT_METHOD": 2
       },
       "hold_cases_with_reason_code": {}
@@ -4390,6 +4529,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 6,
        "ASK_NEW_ACCOUNT": 6,
        "ASK_SECRECY": 2
       },
@@ -4567,17 +4707,22 @@
       ]
      },
      "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 22,
       "ASK_NEW_ACCOUNT": 12,
       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
       "ASK_SECRECY": 7,
       "ASK_CREDENTIAL": 6,
       "ASK_BYPASS": 3,
-      "ASK_PAYEE_CHANGE": 2
+      "ASK_PAYEE_CHANGE": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1
      },
      "hold_cases_with_reason_code": {
       "ASK_SECRECY": 7,
       "ASK_BYPASS": 3,
       "ASK_CREDENTIAL": 2,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
       "ASK_UNUSUAL_PAYMENT_METHOD": 1
      }
     },
@@ -4630,6 +4775,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 7,
        "ASK_NEW_ACCOUNT": 5,
        "ASK_PAYEE_CHANGE": 2,
        "ASK_BYPASS": 1
@@ -4687,9 +4833,14 @@
       },
       "cases_with_reason_code": {
        "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "CROSS_CHANNEL_SEQUENCE": 8,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1
       },
       "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
        "ASK_SECRECY": 1,
        "ASK_UNUSUAL_PAYMENT_METHOD": 1
       }
@@ -4792,6 +4943,7 @@
        ]
       },
       "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 7,
        "ASK_NEW_ACCOUNT": 7,
        "ASK_SECRECY": 6,
        "ASK_BYPASS": 2
@@ -4853,6 +5005,1262 @@
       },
       "hold_cases_with_reason_code": {
        "ASK_CREDENTIAL": 2
+      }
+     }
+    }
+   }
+  },
+  "product": {
+   "all": {
+    "routine": {
+     "n": 400,
+     "ge_verify": {
+      "k": 75,
+      "n": 400,
+      "value": 0.1875,
+      "ci95": [
+       0.1523,
+       0.2287
+      ]
+     },
+     "verify_exactly": {
+      "k": 65,
+      "n": 400,
+      "value": 0.1625,
+      "ci95": [
+       0.1296,
+       0.2018
+      ]
+     },
+     "hold": {
+      "k": 10,
+      "n": 400,
+      "value": 0.025,
+      "ci95": [
+       0.0136,
+       0.0454
+      ]
+     },
+     "above_floor": {
+      "k": 75,
+      "n": 400,
+      "value": 0.1875,
+      "ci95": [
+       0.1523,
+       0.2287
+      ]
+     },
+     "checker_queue": {
+      "k": 10,
+      "n": 400,
+      "value": 0.025,
+      "ci95": [
+       0.0136,
+       0.0454
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 38,
+      "ASK_NEW_ACCOUNT": 31,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 8,
+      "ASK_SECRECY": 5,
+      "ASK_PAYEE_CHANGE": 2,
+      "ASK_REMOTE_ACCESS": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 9,
+      "ASK_NEW_ACCOUNT": 6,
+      "ASK_SECRECY": 3,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack": {
+     "n": 184,
+     "ge_verify": {
+      "k": 152,
+      "n": 184,
+      "value": 0.8261,
+      "ci95": [
+       0.7648,
+       0.874
+      ]
+     },
+     "verify_exactly": {
+      "k": 124,
+      "n": 184,
+      "value": 0.6739,
+      "ci95": [
+       0.6032,
+       0.7375
+      ]
+     },
+     "hold": {
+      "k": 28,
+      "n": 184,
+      "value": 0.1522,
+      "ci95": [
+       0.1074,
+       0.2111
+      ]
+     },
+     "above_floor": {
+      "k": 57,
+      "n": 184,
+      "value": 0.3098,
+      "ci95": [
+       0.2474,
+       0.3799
+      ]
+     },
+     "checker_queue": {
+      "k": 28,
+      "n": 184,
+      "value": 0.1522,
+      "ci95": [
+       0.1074,
+       0.2111
+      ]
+     },
+     "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 38,
+      "ASK_NEW_ACCOUNT": 27,
+      "ASK_CREDENTIAL": 17,
+      "ASK_REMOTE_ACCESS": 12,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+      "ASK_SECRECY": 10,
+      "ASK_BYPASS": 9,
+      "ASK_PAYEE_CHANGE": 5,
+      "CROSS_CHANNEL_URGENT_BYPASS": 3,
+      "MULTI_GROUP_STRONG": 3
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 10,
+      "ASK_BYPASS": 9,
+      "ASK_CREDENTIAL": 6,
+      "ASK_REMOTE_ACCESS": 4,
+      "CROSS_CHANNEL_URGENT_BYPASS": 3,
+      "MULTI_GROUP_STRONG": 3,
+      "ASK_NEW_ACCOUNT": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 26,
+      "ge_verify": {
+       "k": 26,
+       "n": 26,
+       "value": 1.0,
+       "ci95": [
+        0.8713,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 25,
+       "n": 26,
+       "value": 0.9615,
+       "ci95": [
+        0.8111,
+        0.9932
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "above_floor": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 26,
+       "value": 0.0385,
+       "ci95": [
+        0.0068,
+        0.1889
+       ]
+      },
+      "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 10,
+       "ASK_NEW_ACCOUNT": 7,
+       "ASK_PAYEE_CHANGE": 5,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 23,
+      "ge_verify": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "verify_exactly": {
+       "k": 10,
+       "n": 23,
+       "value": 0.4348,
+       "ci95": [
+        0.2563,
+        0.6319
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 23,
+       "value": 0.0435,
+       "ci95": [
+        0.0077,
+        0.2099
+       ]
+      },
+      "above_floor": {
+       "k": 11,
+       "n": 23,
+       "value": 0.4783,
+       "ci95": [
+        0.2924,
+        0.6704
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 23,
+       "value": 0.0435,
+       "ci95": [
+        0.0077,
+        0.2099
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 11,
+       "CROSS_CHANNEL_SEQUENCE": 10,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
+       "ASK_SECRECY": 1,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1
+      }
+     },
+     "N1_split_payments": {
+      "n": 12,
+      "ge_verify": {
+       "k": 12,
+       "n": 12,
+       "value": 1.0,
+       "ci95": [
+        0.7575,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 12,
+       "n": 12,
+       "value": 1.0,
+       "ci95": [
+        0.7575,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 12,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2425
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 75,
+      "ge_verify": {
+       "k": 75,
+       "n": 75,
+       "value": 1.0,
+       "ci95": [
+        0.9513,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 58,
+       "n": 75,
+       "value": 0.7733,
+       "ci95": [
+        0.6666,
+        0.8534
+       ]
+      },
+      "hold": {
+       "k": 17,
+       "n": 75,
+       "value": 0.2267,
+       "ci95": [
+        0.1466,
+        0.3334
+       ]
+      },
+      "above_floor": {
+       "k": 17,
+       "n": 75,
+       "value": 0.2267,
+       "ci95": [
+        0.1466,
+        0.3334
+       ]
+      },
+      "checker_queue": {
+       "k": 17,
+       "n": 75,
+       "value": 0.2267,
+       "ci95": [
+        0.1466,
+        0.3334
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 20,
+       "CROSS_CHANNEL_SEQUENCE": 18,
+       "ASK_SECRECY": 9,
+       "ASK_BYPASS": 8,
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 9,
+       "ASK_BYPASS": 8,
+       "CROSS_CHANNEL_URGENT_BYPASS": 2,
+       "MULTI_GROUP_STRONG": 2,
+       "ASK_NEW_ACCOUNT": 2
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 48,
+      "ge_verify": {
+       "k": 28,
+       "n": 48,
+       "value": 0.5833,
+       "ci95": [
+        0.4428,
+        0.7115
+       ]
+      },
+      "verify_exactly": {
+       "k": 19,
+       "n": 48,
+       "value": 0.3958,
+       "ci95": [
+        0.2702,
+        0.5369
+       ]
+      },
+      "hold": {
+       "k": 9,
+       "n": 48,
+       "value": 0.1875,
+       "ci95": [
+        0.1019,
+        0.3194
+       ]
+      },
+      "above_floor": {
+       "k": 28,
+       "n": 48,
+       "value": 0.5833,
+       "ci95": [
+        0.4428,
+        0.7115
+       ]
+      },
+      "checker_queue": {
+       "k": 9,
+       "n": 48,
+       "value": 0.1875,
+       "ci95": [
+        0.1019,
+        0.3194
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 17,
+       "ASK_REMOTE_ACCESS": 12
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 6,
+       "ASK_REMOTE_ACCESS": 4
+      }
+     }
+    }
+   },
+   "dev": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 28,
+      "n": 200,
+      "value": 0.14,
+      "ci95": [
+       0.0987,
+       0.1949
+      ]
+     },
+     "verify_exactly": {
+      "k": 25,
+      "n": 200,
+      "value": 0.125,
+      "ci95": [
+       0.0861,
+       0.178
+      ]
+     },
+     "hold": {
+      "k": 3,
+      "n": 200,
+      "value": 0.015,
+      "ci95": [
+       0.0051,
+       0.0432
+      ]
+     },
+     "above_floor": {
+      "k": 28,
+      "n": 200,
+      "value": 0.14,
+      "ci95": [
+       0.0987,
+       0.1949
+      ]
+     },
+     "checker_queue": {
+      "k": 3,
+      "n": 200,
+      "value": 0.015,
+      "ci95": [
+       0.0051,
+       0.0432
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_NEW_ACCOUNT": 18,
+      "ASK_CREDENTIAL": 11,
+      "ASK_SECRECY": 1,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 3,
+      "ASK_NEW_ACCOUNT": 2,
+      "ASK_SECRECY": 1
+     }
+    },
+    "attack": {
+     "n": 86,
+     "ge_verify": {
+      "k": 75,
+      "n": 86,
+      "value": 0.8721,
+      "ci95": [
+       0.7853,
+       0.9271
+      ]
+     },
+     "verify_exactly": {
+      "k": 63,
+      "n": 86,
+      "value": 0.7326,
+      "ci95": [
+       0.6305,
+       0.8147
+      ]
+     },
+     "hold": {
+      "k": 12,
+      "n": 86,
+      "value": 0.1395,
+      "ci95": [
+       0.0817,
+       0.2282
+      ]
+     },
+     "above_floor": {
+      "k": 28,
+      "n": 86,
+      "value": 0.3256,
+      "ci95": [
+       0.2359,
+       0.4302
+      ]
+     },
+     "checker_queue": {
+      "k": 12,
+      "n": 86,
+      "value": 0.1395,
+      "ci95": [
+       0.0817,
+       0.2282
+      ]
+     },
+     "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 14,
+      "ASK_NEW_ACCOUNT": 13,
+      "ASK_REMOTE_ACCESS": 11,
+      "ASK_CREDENTIAL": 10,
+      "ASK_SECRECY": 3,
+      "ASK_BYPASS": 3,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 2,
+      "ASK_PAYEE_CHANGE": 1,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_REMOTE_ACCESS": 4,
+      "ASK_CREDENTIAL": 3,
+      "ASK_SECRECY": 3,
+      "ASK_BYPASS": 3,
+      "CROSS_CHANNEL_URGENT_BYPASS": 1,
+      "MULTI_GROUP_STRONG": 1,
+      "ASK_NEW_ACCOUNT": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 9,
+      "ge_verify": {
+       "k": 9,
+       "n": 9,
+       "value": 1.0,
+       "ci95": [
+        0.7009,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 9,
+       "n": 9,
+       "value": 1.0,
+       "ci95": [
+        0.7009,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 9,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.2991
+       ]
+      },
+      "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
+       "ASK_NEW_ACCOUNT": 2,
+       "ASK_PAYEE_CHANGE": 1
+      },
+      "hold_cases_with_reason_code": {}
+     },
+     "N1_small_new_payee": {
+      "n": 6,
+      "ge_verify": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "verify_exactly": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 2,
+       "n": 6,
+       "value": 0.3333,
+       "ci95": [
+        0.0968,
+        0.7
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 2,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 2
+      },
+      "hold_cases_with_reason_code": {}
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 38,
+      "ge_verify": {
+       "k": 38,
+       "n": 38,
+       "value": 1.0,
+       "ci95": [
+        0.9082,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 32,
+       "n": 38,
+       "value": 0.8421,
+       "ci95": [
+        0.6958,
+        0.9256
+       ]
+      },
+      "hold": {
+       "k": 6,
+       "n": 38,
+       "value": 0.1579,
+       "ci95": [
+        0.0744,
+        0.3042
+       ]
+      },
+      "above_floor": {
+       "k": 6,
+       "n": 38,
+       "value": 0.1579,
+       "ci95": [
+        0.0744,
+        0.3042
+       ]
+      },
+      "checker_queue": {
+       "k": 6,
+       "n": 38,
+       "value": 0.1579,
+       "ci95": [
+        0.0744,
+        0.3042
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 11,
+       "CROSS_CHANNEL_SEQUENCE": 10,
+       "ASK_SECRECY": 3,
+       "ASK_BYPASS": 3,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 3,
+       "ASK_BYPASS": 3,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
+       "ASK_NEW_ACCOUNT": 1
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 27,
+      "ge_verify": {
+       "k": 20,
+       "n": 27,
+       "value": 0.7407,
+       "ci95": [
+        0.5532,
+        0.8683
+       ]
+      },
+      "verify_exactly": {
+       "k": 14,
+       "n": 27,
+       "value": 0.5185,
+       "ci95": [
+        0.3399,
+        0.6926
+       ]
+      },
+      "hold": {
+       "k": 6,
+       "n": 27,
+       "value": 0.2222,
+       "ci95": [
+        0.1061,
+        0.4076
+       ]
+      },
+      "above_floor": {
+       "k": 20,
+       "n": 27,
+       "value": 0.7407,
+       "ci95": [
+        0.5532,
+        0.8683
+       ]
+      },
+      "checker_queue": {
+       "k": 6,
+       "n": 27,
+       "value": 0.2222,
+       "ci95": [
+        0.1061,
+        0.4076
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_REMOTE_ACCESS": 11,
+       "ASK_CREDENTIAL": 10
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_REMOTE_ACCESS": 4,
+       "ASK_CREDENTIAL": 3
+      }
+     }
+    }
+   },
+   "test": {
+    "routine": {
+     "n": 200,
+     "ge_verify": {
+      "k": 47,
+      "n": 200,
+      "value": 0.235,
+      "ci95": [
+       0.1816,
+       0.2984
+      ]
+     },
+     "verify_exactly": {
+      "k": 40,
+      "n": 200,
+      "value": 0.2,
+      "ci95": [
+       0.1505,
+       0.2609
+      ]
+     },
+     "hold": {
+      "k": 7,
+      "n": 200,
+      "value": 0.035,
+      "ci95": [
+       0.0171,
+       0.0705
+      ]
+     },
+     "above_floor": {
+      "k": 47,
+      "n": 200,
+      "value": 0.235,
+      "ci95": [
+       0.1816,
+       0.2984
+      ]
+     },
+     "checker_queue": {
+      "k": 7,
+      "n": 200,
+      "value": 0.035,
+      "ci95": [
+       0.0171,
+       0.0705
+      ]
+     },
+     "cases_with_reason_code": {
+      "ASK_CREDENTIAL": 27,
+      "ASK_NEW_ACCOUNT": 13,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 8,
+      "ASK_SECRECY": 4,
+      "ASK_REMOTE_ACCESS": 1,
+      "ASK_PAYEE_CHANGE": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_CREDENTIAL": 6,
+      "ASK_NEW_ACCOUNT": 4,
+      "ASK_SECRECY": 2,
+      "ASK_PAYEE_CHANGE": 1,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1
+     }
+    },
+    "attack": {
+     "n": 98,
+     "ge_verify": {
+      "k": 77,
+      "n": 98,
+      "value": 0.7857,
+      "ci95": [
+       0.6945,
+       0.8554
+      ]
+     },
+     "verify_exactly": {
+      "k": 61,
+      "n": 98,
+      "value": 0.6224,
+      "ci95": [
+       0.5236,
+       0.7121
+      ]
+     },
+     "hold": {
+      "k": 16,
+      "n": 98,
+      "value": 0.1633,
+      "ci95": [
+       0.1031,
+       0.2489
+      ]
+     },
+     "above_floor": {
+      "k": 29,
+      "n": 98,
+      "value": 0.2959,
+      "ci95": [
+       0.2146,
+       0.3926
+      ]
+     },
+     "checker_queue": {
+      "k": 16,
+      "n": 98,
+      "value": 0.1633,
+      "ci95": [
+       0.1031,
+       0.2489
+      ]
+     },
+     "cases_with_reason_code": {
+      "CROSS_CHANNEL_SEQUENCE": 24,
+      "ASK_NEW_ACCOUNT": 14,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+      "ASK_CREDENTIAL": 7,
+      "ASK_SECRECY": 7,
+      "ASK_BYPASS": 6,
+      "ASK_PAYEE_CHANGE": 4,
+      "CROSS_CHANNEL_URGENT_BYPASS": 2,
+      "MULTI_GROUP_STRONG": 2,
+      "ASK_REMOTE_ACCESS": 1
+     },
+     "hold_cases_with_reason_code": {
+      "ASK_SECRECY": 7,
+      "ASK_BYPASS": 6,
+      "ASK_CREDENTIAL": 3,
+      "CROSS_CHANNEL_URGENT_BYPASS": 2,
+      "MULTI_GROUP_STRONG": 2,
+      "ASK_UNUSUAL_PAYMENT_METHOD": 1,
+      "ASK_NEW_ACCOUNT": 1
+     }
+    },
+    "attack_by_scenario": {
+     "C1_payee_change": {
+      "n": 17,
+      "ge_verify": {
+       "k": 17,
+       "n": 17,
+       "value": 1.0,
+       "ci95": [
+        0.8157,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 16,
+       "n": 17,
+       "value": 0.9412,
+       "ci95": [
+        0.7302,
+        0.9895
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "above_floor": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "cases_with_reason_code": {
+       "CROSS_CHANNEL_SEQUENCE": 8,
+       "ASK_NEW_ACCOUNT": 5,
+       "ASK_PAYEE_CHANGE": 4,
+       "ASK_BYPASS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_BYPASS": 1
+      }
+     },
+     "N1_small_new_payee": {
+      "n": 17,
+      "ge_verify": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "verify_exactly": {
+       "k": 8,
+       "n": 17,
+       "value": 0.4706,
+       "ci95": [
+        0.2617,
+        0.6904
+       ]
+      },
+      "hold": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "above_floor": {
+       "k": 9,
+       "n": 17,
+       "value": 0.5294,
+       "ci95": [
+        0.3096,
+        0.7383
+       ]
+      },
+      "checker_queue": {
+       "k": 1,
+       "n": 17,
+       "value": 0.0588,
+       "ci95": [
+        0.0105,
+        0.2698
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_UNUSUAL_PAYMENT_METHOD": 9,
+       "CROSS_CHANNEL_SEQUENCE": 8,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
+       "ASK_SECRECY": 1
+      },
+      "hold_cases_with_reason_code": {
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
+       "ASK_SECRECY": 1,
+       "ASK_UNUSUAL_PAYMENT_METHOD": 1
+      }
+     },
+     "N1_split_payments": {
+      "n": 6,
+      "ge_verify": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 6,
+       "n": 6,
+       "value": 1.0,
+       "ci95": [
+        0.6097,
+        1.0
+       ]
+      },
+      "hold": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "above_floor": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "checker_queue": {
+       "k": 0,
+       "n": 6,
+       "value": 0.0,
+       "ci95": [
+        0.0,
+        0.3903
+       ]
+      },
+      "cases_with_reason_code": {},
+      "hold_cases_with_reason_code": {}
+     },
+     "N2_new_payee_large": {
+      "n": 37,
+      "ge_verify": {
+       "k": 37,
+       "n": 37,
+       "value": 1.0,
+       "ci95": [
+        0.9059,
+        1.0
+       ]
+      },
+      "verify_exactly": {
+       "k": 26,
+       "n": 37,
+       "value": 0.7027,
+       "ci95": [
+        0.5422,
+        0.8251
+       ]
+      },
+      "hold": {
+       "k": 11,
+       "n": 37,
+       "value": 0.2973,
+       "ci95": [
+        0.1749,
+        0.4578
+       ]
+      },
+      "above_floor": {
+       "k": 11,
+       "n": 37,
+       "value": 0.2973,
+       "ci95": [
+        0.1749,
+        0.4578
+       ]
+      },
+      "checker_queue": {
+       "k": 11,
+       "n": 37,
+       "value": 0.2973,
+       "ci95": [
+        0.1749,
+        0.4578
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_NEW_ACCOUNT": 9,
+       "CROSS_CHANNEL_SEQUENCE": 8,
+       "ASK_SECRECY": 6,
+       "ASK_BYPASS": 5,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_SECRECY": 6,
+       "ASK_BYPASS": 5,
+       "CROSS_CHANNEL_URGENT_BYPASS": 1,
+       "MULTI_GROUP_STRONG": 1,
+       "ASK_NEW_ACCOUNT": 1
+      }
+     },
+     "no_payment_credential_or_remote": {
+      "n": 21,
+      "ge_verify": {
+       "k": 8,
+       "n": 21,
+       "value": 0.381,
+       "ci95": [
+        0.2075,
+        0.5912
+       ]
+      },
+      "verify_exactly": {
+       "k": 5,
+       "n": 21,
+       "value": 0.2381,
+       "ci95": [
+        0.1063,
+        0.4509
+       ]
+      },
+      "hold": {
+       "k": 3,
+       "n": 21,
+       "value": 0.1429,
+       "ci95": [
+        0.0498,
+        0.3464
+       ]
+      },
+      "above_floor": {
+       "k": 8,
+       "n": 21,
+       "value": 0.381,
+       "ci95": [
+        0.2075,
+        0.5912
+       ]
+      },
+      "checker_queue": {
+       "k": 3,
+       "n": 21,
+       "value": 0.1429,
+       "ci95": [
+        0.0498,
+        0.3464
+       ]
+      },
+      "cases_with_reason_code": {
+       "ASK_CREDENTIAL": 7,
+       "ASK_REMOTE_ACCESS": 1
+      },
+      "hold_cases_with_reason_code": {
+       "ASK_CREDENTIAL": 3
       }
      }
     }

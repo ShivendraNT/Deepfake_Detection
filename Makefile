@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video voice video-models doctor demo-audio live live-personal check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
+.PHONY: scan help sync asr video voice video-models doctor demo-audio live live-personal check lint fmt typecheck test task run demo-data schemas status judge dry-run console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -25,6 +25,8 @@ help:
 	@echo "make live          start the API for a live demo (no auto-reload, model warmed up)"
 	@echo "make demo-data     regenerate data/demo fixtures + schemas and validate them"
 	@echo "make status        print the task board from docs/STATUS.md"
+	@echo "make judge         score the detector stack + check a judge's own input"
+	@echo "make dry-run       automated end-to-end rehearsal (real app, fake speech)"
 
 sync:
 	uv sync --inexact
@@ -103,6 +105,12 @@ schemas:
 
 status:
 	@sed -n '/^| ID/,/^$$/p' docs/STATUS.md
+
+judge:
+	$(RUN) python scripts/judge_kit.py
+
+dry-run:
+	$(RUN) python scripts/dry_run.py
 
 console-test:
 	cd console && npm install && npm test

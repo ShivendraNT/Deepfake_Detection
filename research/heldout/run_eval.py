@@ -40,8 +40,12 @@ ASK_TYPES = ["A1", "A2", "A3", "A4", "A5", "A6", "A7"]
 LANGS = ["en", "hi-Latn", "hi-Deva"]
 
 
-def predict(text: str, pre: Callable[[str], str]) -> set[str]:
-    return {s.ask_type.value for s in extract_asks(pre(text))}
+def predict(
+    text: str,
+    pre: Callable[[str], str],
+    extractor: Callable[[str], list] = extract_asks,
+) -> set[str]:
+    return {s.ask_type.value for s in extractor(pre(text))}
 
 
 def _identity(text: str) -> str:
@@ -54,8 +58,13 @@ def _context(text: str) -> str:
     return strip_context(text).cleaned
 
 
-def evaluate(rows: list[dict[str, Any]], benign: list[dict[str, Any]], pre: Callable[[str], str]):
-    pred = {r["id"]: predict(r["text"], pre) for r in [*rows, *benign]}
+def evaluate(
+    rows: list[dict[str, Any]],
+    benign: list[dict[str, Any]],
+    pre: Callable[[str], str],
+    extractor: Callable[[str], list] = extract_asks,
+):
+    pred = {r["id"]: predict(r["text"], pre, extractor) for r in [*rows, *benign]}
     every = [*rows, *benign]
 
     def pr(subset_asks: list[dict[str, Any]], subset_all: list[dict[str, Any]], a: str | None):
@@ -106,11 +115,18 @@ def evaluate(rows: list[dict[str, Any]], benign: list[dict[str, Any]], pre: Call
 def main() -> None:
     asks = load_jsonl(ASKS_PATH)
     benign = load_jsonl(BENIGN_PATH)
-    variants: dict[str, Callable[[str], str]] = {"frozen": _identity}
+    variants: dict[str, tuple[Callable[[str], str], Callable[[str], list]]] = {
+        "frozen": (_identity, extract_asks)
+    }
     try:
         import satyapan.context.boilerplate  # noqa: F401
 
-        variants["context"] = _context
+        variants["context"] = (_context, extract_asks)
+        from satyapan.asks.phrasebook import extract_live_asks
+
+        # The shipped product surface (context filter + live phrasebook). Reported separately:
+        # the research claim remains the frozen lexicon measured above.
+        variants["product"] = (_context, extract_live_asks)
     except ImportError:
         pass
 
@@ -130,12 +146,12 @@ def main() -> None:
         "variants": {},
     }
     examples: dict[str, Any] = {}
-    for name, pre in variants.items():
+    for name, (pre, extractor) in variants.items():
         report["variants"][name] = {}
         for split in ("all", "dev", "test"):
             a = [r for r in asks if split == "all" or split_of(r["id"]) == split]
             b = [r for r in benign if split == "all" or split_of(r["id"]) == split]
-            res, pred = evaluate(a, b, pre)
+            res, pred = evaluate(a, b, pre, extractor)
             report["variants"][name][split] = res
             if split == "dev":  # examples only from DEV (never browse test rows while tuning)
                 examples[name] = {

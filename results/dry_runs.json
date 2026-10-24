@@ -1,0 +1,206 @@
+{
+ "what": "Automated end-to-end dry run (real app, fake speech, fake data)",
+ "date": "2026-10-24",
+ "git_commit": "1a79267+dirty",
+ "platform": "Darwin arm64",
+ "python": "3.13.5",
+ "runs": [
+  {
+   "label": "run 1",
+   "ok": true,
+   "total_ms": 166.5,
+   "steps": [
+    {
+     "step": "1. health + safeguards",
+     "ok": true,
+     "ms": 120.4
+    },
+    {
+     "step": "2. consent + session",
+     "ok": true,
+     "ms": 3.3
+    },
+    {
+     "step": "3. call starts",
+     "ok": true,
+     "ms": 2.6
+    },
+    {
+     "step": "4. live chunk -> chips",
+     "ok": true,
+     "ms": 9.1
+    },
+    {
+     "step": "5. OOB on the live case",
+     "ok": true,
+     "ms": 5.0
+    },
+    {
+     "step": "6. approver phone page",
+     "ok": true,
+     "ms": 3.4
+    },
+    {
+     "step": "7. approver says not me",
+     "ok": true,
+     "ms": 5.9
+    },
+    {
+     "step": "8. demo case for the golden hour",
+     "ok": true,
+     "ms": 3.7
+    },
+    {
+     "step": "9. report pack (MANUAL_ONLY)",
+     "ok": true,
+     "ms": 2.8
+    },
+    {
+     "step": "10. expert policy trace",
+     "ok": true,
+     "ms": 2.3
+    },
+    {
+     "step": "11. sleep / stop session",
+     "ok": true,
+     "ms": 2.3
+    }
+   ],
+   "band": "HOLD",
+   "oob": "DENIED",
+   "report_sections": 5
+  },
+  {
+   "label": "run 2",
+   "ok": true,
+   "total_ms": 111.6,
+   "steps": [
+    {
+     "step": "1. health + safeguards",
+     "ok": true,
+     "ms": 86.3
+    },
+    {
+     "step": "2. consent + session",
+     "ok": true,
+     "ms": 3.0
+    },
+    {
+     "step": "3. call starts",
+     "ok": true,
+     "ms": 2.4
+    },
+    {
+     "step": "4. live chunk -> chips",
+     "ok": true,
+     "ms": 2.8
+    },
+    {
+     "step": "5. OOB on the live case",
+     "ok": true,
+     "ms": 2.0
+    },
+    {
+     "step": "6. approver phone page",
+     "ok": true,
+     "ms": 1.5
+    },
+    {
+     "step": "7. approver says not me",
+     "ok": true,
+     "ms": 2.1
+    },
+    {
+     "step": "8. demo case for the golden hour",
+     "ok": true,
+     "ms": 2.4
+    },
+    {
+     "step": "9. report pack (MANUAL_ONLY)",
+     "ok": true,
+     "ms": 2.3
+    },
+    {
+     "step": "10. expert policy trace",
+     "ok": true,
+     "ms": 1.8
+    },
+    {
+     "step": "11. sleep / stop session",
+     "ok": true,
+     "ms": 1.6
+    }
+   ],
+   "band": "HOLD",
+   "oob": "DENIED",
+   "report_sections": 5
+  },
+  {
+   "label": "run 3",
+   "ok": true,
+   "total_ms": 100.3,
+   "steps": [
+    {
+     "step": "1. health + safeguards",
+     "ok": true,
+     "ms": 73.2
+    },
+    {
+     "step": "2. consent + session",
+     "ok": true,
+     "ms": 2.6
+    },
+    {
+     "step": "3. call starts",
+     "ok": true,
+     "ms": 2.3
+    },
+    {
+     "step": "4. live chunk -> chips",
+     "ok": true,
+     "ms": 2.8
+    },
+    {
+     "step": "5. OOB on the live case",
+     "ok": true,
+     "ms": 2.4
+    },
+    {
+     "step": "6. approver phone page",
+     "ok": true,
+     "ms": 2.4
+    },
+    {
+     "step": "7. approver says not me",
+     "ok": true,
+     "ms": 2.3
+    },
+    {
+     "step": "8. demo case for the golden hour",
+     "ok": true,
+     "ms": 2.5
+    },
+    {
+     "step": "9. report pack (MANUAL_ONLY)",
+     "ok": true,
+     "ms": 2.1
+    },
+    {
+     "step": "10. expert policy trace",
+     "ok": true,
+     "ms": 2.1
+    },
+    {
+     "step": "11. sleep / stop session",
+     "ok": true,
+     "ms": 2.8
+    }
+   ],
+   "band": "HOLD",
+   "oob": "DENIED",
+   "report_sections": 5
+  }
+ ],
+ "passed": 3,
+ "failed": 0
+}

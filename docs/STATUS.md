@@ -45,17 +45,17 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F02 | Window manager (mascot / bubble / notebook / capture, tray, hotkeys) | Shivendra | P0 | done — "Check it properly" keeps the finding's text until its card closes, one submit per click, and closes the card after the check |
 | F03 | Backend glue (calls, files, oob, event fan-in) | Shivendra | P0 | done |
 | F04 | X1 cross-channel signal | Shivendra | P1 | done — X1 cross-channel signal (30-min window, A1/A6/A7 + new/changed beneficiary -> VERIFY, A4/A5 urgency -> HOLD; raise-only; EN/HI templates; 16 tests green) |
-| F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | in-progress — consumer path end to end: /check page (any file), money-sent drafts, personal live alert; `satya scan` + `research.kit`; judges' guide `docs/JUDGES.md` |
+| F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | in-progress — consumer path end to end (/check, any file, personal live alert, satya scan, research.kit, docs/JUDGES.md); automated story 3/3 green (docs/finale/DRY_RUNS.md); judge kit (docs/JUDGE_KIT.md); backup recording pending |
 | F06 | Mascot component (10 poses) + gallery | Saarika | P0 | done — blue-blob 3D pose renders, cross-faded pose changes, subtle breathe/sway/hop loops, aura ring, gallery view; duplicate SVG shield/paw overlays removed |
 | F07 | Mascot window: radial menu, drag, brain reducer | Saarika | P0 | done — satyaMachine pure reducer, radial menu, drag physics, 26 vitest tests green |
 | F08 | Bubble cards + copy EN/Hinglish/हिन्दी | Saarika | P0 | done — 10 modular bubble cards, CardShell, trilingual copy.ts engine, 8 vitest tests green |
-| F09 | Deck + story | Saarika + Shivendra | P0 | todo |
+| F09 | Deck + story | Saarika + Shivendra | P0 | partial — story, 3-minute script, fallbacks, Q&A crib and six slides of final copy done (LIVE_DEMO.md, PLAN.md §7/§9, SLIDES.md); deck file refresh pending |
 | F10 | Capture window (loopback spike first) | Kartikey | P0/P1 | done — loopback capture window, PCM worklet, VAD, ONNX scorer, WAV chunking, 9 vitest tests green |
 | F11 | Report pack v2 (5 sections) | Kartikey | P0 | done — `build_report_pack_v2` builds 5 MANUAL_ONLY drafts; 12/12 tests green |
 | F12 | Demo media (consented clips, replay, email) | Kartikey | P0 | done — demo media generator (synthetic WAVs, fake accounts/IFSC, manifest.json), 4 finale tests green |
-| F13 | Gmail "Ask Satya" button | Kartikey | P2 | todo |
+| F13 | Gmail "Ask Satya" button | Kartikey | P2 | cut — deferred after CP3; the extension already captures Meet tabs and the file-drop path covers “hand Satya an email” |
 | F14 | Notebook shell + tabs | Saksham | P0 | done — 1120x720 Notebook shell, sidebar, 7 tabs, anti-slop tokens, 18 desktop tests green |
-| F15 | Reports tab: Scribe + Report Copilot | Saksham | P0 | todo |
+| F15 | Reports tab: Scribe + Report Copilot | Saksham | P0 | done — golden-hour timer, typed Scribe over backend text, 5 sections, copy/open, MANUAL_ONLY banner, case picker |
 | F16 | Approver phone page (OOB) + QR | Saksham | P0 | done — mobile-first 3-button OOB screen, oob.html, live QR code in Settings; tests green |
 
 ## Notes log

@@ -147,6 +147,14 @@ TASKS: dict[str, tuple[str, Callable[[], None]]] = {
     ),
     "check": ("lint + format check + typecheck + tests", check),
     "test": ("all tests", lambda: py("pytest")),
+    "judge": (
+        "score the detector stack and check a judge's own input",
+        lambda: py("python", "scripts/judge_kit.py"),
+    ),
+    "dry-run": (
+        "automated end-to-end rehearsal (real app, fake speech)",
+        lambda: py("python", "scripts/dry_run.py"),
+    ),
     "fmt": ("auto-format", lambda: (py("ruff", "format", "."), py("ruff", "check", "--fix", "."))),
     "schemas": ("regenerate JSON schemas", lambda: py("python", "scripts/export_schemas.py")),
     "run": ("API with auto-reload on http://127.0.0.1:8000", lambda: serve(False)),
