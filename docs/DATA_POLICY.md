@@ -32,8 +32,12 @@ real ever goes into a free AI model.**
 | ICFD-31k | defensive research only; no scam-script generation; no commercial deployment without written permission | train/evaluate research detectors; report metrics | release paraphrase text; ship an ICFD-trained model in the product; generate scripts without emailing the authors first |
 | HF Indian_Cyber_Scam_PhoneCall_Hinglish_Dataset | Apache-2.0 | external test | mix into one AUROC with ICFD |
 | HF scam_ham_india_14_languages | MIT | transfer check | — |
-| Pascu et al. browser-plugin ONNX models | **no license file** | use locally, cite, email authors on Day 1 | commit or redistribute the `.onnx` files |
-| In-the-Wild, HAV-DF, IndieFake | check each license before download | evaluation | redistribution of audio |
+| Pascu et al. browser-plugin ONNX models | **no license file** | cite the recipe (we re-trained it on licensed data instead) | use, commit or redistribute the `.onnx` files |
+| In-the-Wild (Müller et al. 2022; HF `SpeechAntiSpoofingBenchmarks/InTheWild`, pinned) | CC-BY-SA-4.0 (audio), Apache-2.0 packaging | voice benchmark val (30 % of speakers) and test (the rest); sha256 in `results/voice_eval_manifest.json` | commit or redistribute audio; train on it |
+| ASVspoof 2019 LA (train: `Bisher/ASVspoof_2019_LA`; eval: `SpeechAntiSpoofingBenchmarks/ASVspoof2019_LA`, pinned) | ODC-By | train our voice head (train); test (eval, 13 attacks) | redistribute audio without attribution |
+| `Gustking/wav2vec2-large-xlsr-deepfake-audio-classification`, `facebook/wav2vec2-xls-r-300m` | Apache-2.0 | evaluate; export to ONNX; ship with the Apache notice (`make voice` builds it locally) | — |
+| `garystafford/...`, `MattyB95/AST-ASVspoof5-...` (Apache-2.0 / BSD-3), `MelodyMachine/Deepfake-audio-detection-V2` (Apache-2.0, undocumented training data) | as listed | evaluate as candidates (`docs/VOICE_DEEPFAKE.md` §3) | ship the undocumented-data model |
+| HAV-DF, IndieFake | check each license before download | evaluation | redistribution of audio |
 | FaceForensics++ c23 (Rossler et al. 2019; official splits from github.com/ondyari/FaceForensics) | FF++ terms: non-commercial research; files read from the public HF mirror `gonnerthetooner/FaceForensics` (copy of Kaggle `xdxd003/ff-c23`) | train the blend CNN on **real** videos only; fit the fusion on train; thresholds on val; evaluate on test | commit any frame/crop/video; redistribute the trained `blend_b0.onnx` outside the team; use it commercially without retraining on licensed data |
 | DFDC train parts 0-2 (Dolhansky et al. 2020; paid, consenting actors) | DFDC terms: research; HF mirror `gonnerthetooner/DFDC-extracted-full` | cross-dataset **test only** (never trained or tuned on) | redistribute videos or audio |
 | Piper TTS `en_US-ryan-medium` | public synthetic voice (MIT/CC per rhasspy/piper-voices) | the "real face + synthetic voice" lip-sync test | — |
