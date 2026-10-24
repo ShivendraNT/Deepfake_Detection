@@ -300,9 +300,20 @@ def main() -> None:
                 conds = CONDITIONS
             else:
                 conds = TEST_CONDITIONS
+            long_enough = None
+            if shipped and split != "val":  # the product judges >= 3 s of speech (T17)
+                from satyapan.voice.audio_io import estimate_speech_seconds
+                from satyapan.voice.rules import MIN_SPEECH_SECONDS
+
+                long_enough = np.array(
+                    [estimate_speech_seconds(a) >= MIN_SPEECH_SECONDS for a in sp.audio]
+                )
             for cond in conds:
                 s = scores(name, split, cond, head, idx)
                 r[f"{split}/{cond}"] = block(sp, s, tau if shipped else None)
+                if long_enough is not None and long_enough.any():
+                    keep = np.flatnonzero(long_enough)
+                    r[f"{split}/{cond} (>= 3 s speech)"] = block(subset(sp, keep), s[keep], tau)
                 if split == "test_asv" and cond == "clean":
                     per_attack = {}
                     for a in sorted(set(sp.attacks.tolist()) - {"-"}):
