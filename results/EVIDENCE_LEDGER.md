@@ -228,6 +228,7 @@ Data: FF++ c23 (official identity-disjoint splits), DFDC parts 0–2 (never used
 | Our SBI CNN (fallback), FF++ test / DFDC AUC | 0.786 / 0.633 | same videos | [0.760, 0.812] / [0.584, 0.682] | |
 | Generic Hugging Face "deepfake" classifiers, FF++ test AUC | 0.52–0.65 | same crops | see `video_external.md` | popular ≠ tested |
 | Photo check (one face crop), FF++ test / DFDC AUC | 0.923 / 0.747 | 3,360 / 2,688 crops | [0.909, 0.936] / [0.714, 0.779] | real crops over τ_hi: 0.4 % / 0.0 % |
+| Photo check after a WhatsApp-style re-encode (JPEG q60), paired | AUC 0.913 → 0.872 (Δ −0.042 [−0.078, −0.008]); fakes flagged 49 % → 35 %; reals 0 % → 0 % | 100 real + 100 fake FF++ test frames | see md | `results/photo_whatsapp.md` |
 | GenD latency | ≈ 1.3 s per crop, 2 CPU threads, other jobs running | benchmark logs | — | product: 1 crop per 2.25 s of call |
 
 ## 12. Voice-clone check (`VOICE_*`, ML evidence; SUSPICIOUS → VERIFY, two windows over τ_hi → +1 band)
