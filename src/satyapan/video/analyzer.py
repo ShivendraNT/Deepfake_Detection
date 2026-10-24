@@ -20,7 +20,7 @@ from typing import Any
 
 import numpy as np
 
-from satyapan.video.cnn import BlendScorer
+from satyapan.video.cnn import BlendScorer, CnnSpec
 from satyapan.video.features import (
     CROP_EVERY_S,
     CUES,
@@ -31,7 +31,7 @@ from satyapan.video.features import (
     window_features,
 )
 from satyapan.video.fusion import FusionModel
-from satyapan.video.landmarks import FaceTracker, VideoUnavailable
+from satyapan.video.landmarks import FaceTracker, VideoUnavailable, model_dir
 from satyapan.video.observe import FrameRecord, observe
 from satyapan.video.rules import VideoThresholds, VideoVerdict, classify_windows, load_thresholds
 
@@ -54,11 +54,13 @@ class VideoAnalyzer:
         thresholds: VideoThresholds,
         scorer: BlendScorer | None,
         tracker_factory: Callable[[], Any] = FaceTracker,
+        crop_every_s: float = CROP_EVERY_S,
     ) -> None:
         self.fusion = fusion
         self.thresholds = thresholds
         self.scorer = scorer
         self.tracker_factory = tracker_factory
+        self.crop_every_s = crop_every_s
         self._lock = threading.Lock()  # ONNX sessions are shared by all streams
 
     @classmethod
@@ -71,7 +73,9 @@ class VideoAnalyzer:
         except FileNotFoundError as exc:
             raise VideoUnavailable(f"video config missing: {exc}") from exc
         FaceTracker().close()  # fail early if mediapipe or the face model is missing
-        return cls(fusion, thr, BlendScorer())
+        spec = CnnSpec.from_config(fusion.cnn)
+        return cls(fusion, thr, BlendScorer(model_dir() / spec.file), FaceTracker,
+                   spec.crop_every_s)  # fmt: skip
 
     def new_stream(self) -> VideoStream:
         return VideoStream(self)
@@ -83,13 +87,19 @@ class VideoAnalyzer:
         audio: np.ndarray | None = None,
         sr: int = 16000,
         audio_t0: float = 0.0,
+        cache: dict[float, float] | None = None,
     ) -> WindowResult:
+        """cache: crop logits by frame time, shared by overlapping windows of one stream, so
+        every crop is scored once."""
         cov = coverage(records)
-        crops = np.array([r.crop for r in records if r.found and r.crop is not None])
-        logits: list[float] = []
-        if self.scorer is not None and len(crops):
+        cache = {} if cache is None else cache
+        with_crop = [r for r in records if r.found and r.crop is not None]
+        todo = [r for r in with_crop if r.t not in cache]
+        if self.scorer is not None and todo:
             with self._lock:
-                logits = [float(x) for x in self.scorer.logits(crops)]
+                fresh = self.scorer.logits(np.array([r.crop for r in todo]))
+            cache.update({r.t: float(x) for r, x in zip(todo, fresh, strict=True)})
+        logits = [cache[r.t] for r in with_crop if r.t in cache]
         feats = window_features(records, audio, sr, audio_t0, logits)
         t0 = records[0].t if records else 0.0
         t1 = records[-1].t if records else 0.0
@@ -141,6 +151,7 @@ class VideoStream:
         self._audio_t0 = 0.0
         self._sr = 16000
         self._last_t = -1.0
+        self._logits: dict[float, float] = {}  # crop logits of frames still in a window
 
     def add_audio(self, pcm: np.ndarray, t0: float, sr: int = 16000) -> None:
         """Call audio (mono float32) starting at t0 on the frame clock (for lip-sync)."""
@@ -178,7 +189,7 @@ class VideoStream:
                 rgb, t, obs.pts if obs else None, obs.jaw_open if obs else 0.0, want_crop=want
             )
             if want:
-                self._next_crop = t + CROP_EVERY_S
+                self._next_crop = t + self.analyzer.crop_every_s
             self._records.append(rec)
             while t >= self._next_window + WINDOW_S:
                 out.append(self._emit(self._next_window, self._next_window + WINDOW_S))
@@ -186,11 +197,14 @@ class VideoStream:
 
     def _emit(self, start: float, end: float) -> WindowResult:
         win = [r for r in self._records if start <= r.t < end]
-        result = self.analyzer.score_window(self._index, win, self._audio, self._sr, self._audio_t0)
+        result = self.analyzer.score_window(
+            self._index, win, self._audio, self._sr, self._audio_t0, self._logits
+        )
         self._index += 1
         self._next_window = start + HOP_S
-        # Forget what no future window needs (frames, crops).
+        # Forget what no future window needs (frames, crops, their logits).
         self._records = [r for r in self._records if r.t >= self._next_window]
+        self._logits = {t: v for t, v in self._logits.items() if t >= self._next_window}
         return result
 
     def flush(self) -> list[WindowResult]:
