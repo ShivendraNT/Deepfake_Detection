@@ -94,4 +94,29 @@ ASVspoof train) but generalises worse to real-world deepfakes than a model fine-
 ASVspoof 2019. That is the out-of-domain gap Pascu et al. describe, and the reason the rule
 compares on In-the-Wild, not on ASVspoof.
 
-Test results (gustking, seeded test subsets per amendment 2): `results/voice_benchmark.md`.
+**Test** (gustking, frozen thresholds τ_hi / τ_lo = logit 2.233 / 1.224, i.e. P(synthetic)
+0.903 / 0.773; seeded test subsets per amendment 2; full table `results/voice_benchmark.md`):
+
+| Set / channel | n bonafide / spoof | AUC [95 % CI] | EER | fakes flagged (≥ τ_lo: VERIFY) | genuine flagged (≥ τ_lo) | fakes ≥ τ_hi | genuine ≥ τ_hi |
+|---|---|---|---|---|---|---|---|
+| In-the-Wild, clean | 669 / 331 | 0.921 [0.868, 0.957] | 0.160 | 53.5 % | 1.6 % | 26.0 % | 0.1 % |
+| In-the-Wild, Opus 16 kbps | 669 / 331 | 0.909 [0.857, 0.948] | 0.169 | 58.3 % | 1.8 % | 34.4 % | 0.1 % |
+| In-the-Wild, clean, ≥ 3 s speech | 160 / 155 | 0.952 [0.910, 0.980] | 0.110 | 63.9 % | 0.6 % | 34.8 % | 0.0 % |
+| In-the-Wild, Opus, ≥ 3 s speech | 160 / 155 | 0.947 [0.903, 0.978] | 0.119 | 66.5 % | 0.6 % | 45.8 % | 0.0 % |
+| ASVspoof 2019 eval, clean | 300 / 390 | 0.999 [0.997, 1.000] | 0.003 | 86.2 % | 0.3 % | 62.8 % | 0.0 % |
+
+What this means for a person:
+- A cloned voice note with at least 3 s of speech gets "call back first" about two times in
+  three.
+- A genuine one is flagged about 1 time in 170 (0.6 %, n = 160 genuine voices, CI up to 3.5 %).
+- Two windows in a row over τ_hi (a longer note or a call) gives LIKELY_SYNTHETIC.
+- Opus compression (WhatsApp, VoIP) does not hurt: AUC changes by ≤ 0.012.
+
+Named limits:
+1. **ASVspoof eval is probably not unseen for this model.** Its card says "ASVspoof 2019"
+   without naming the split. Treat 0.999 as an upper bound; In-the-Wild is the honest number.
+2. **Short clips.** 61 % of In-the-Wild clips have under 3 s of speech. The product calls those
+   "too short to judge", so the ≥ 3 s rows are the product's operating range.
+3. **Not our calls.** The thresholds come from public recordings, not consented calls through
+   Meet (`calibrated: false`).
+4. **GSM** was used to set the thresholds (val) but not tested (amendment 2).

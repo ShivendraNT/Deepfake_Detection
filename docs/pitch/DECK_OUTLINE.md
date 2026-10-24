@@ -36,8 +36,10 @@ Every number below has a row in `results/EVIDENCE_LEDGER.md` (n, interval, scrip
 - **Video face:** FF++ AUC 0.946, DFDC (never seen) 0.778. 0 of 563 real videos called
   synthetic; 74.7 % / 24.8 % of fakes flagged for a call-back (ledger §11).
 - **Photo face:** AUC 0.923 / 0.747 (ledger §11).
-- **Voice clone:** see `results/voice_benchmark.md` (ledger §12). The licensed model was
-  chosen on validation by a rule fixed in advance.
+- **Voice clone:** real-world deepfakes (In-the-Wild, unseen speakers): AUC 0.92 (0.95 with
+  ≥ 3 s of speech). 64–67 % of fakes are flagged for a call-back vs 0.6 % of genuine voices
+  (n=160 genuine, ledger §12). The licensed model was chosen on validation by a rule fixed in
+  advance; our own lost that comparison.
 - **Named misses:**
   - unseen face-swap methods (FaceShifter flagged 32 %);
   - small faces at 360p ("couldn't check");

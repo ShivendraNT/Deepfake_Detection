@@ -68,7 +68,7 @@ missing on a laptop, the answer says "could not check …"; it never turns that 
 | Same, under an obfuscation attack (homoglyphs, leet, zero-width, spacing) | 96.2 % (40.1 % without our de-obfuscation layer) | — | LLM paraphrases are not in this test |
 | Face in a video (FF++ c23 test; DFDC never seen) | 74.7 % / 24.8 % of fakes flagged for a call-back | **0 of 563** real videos called synthetic; 1.2 % flagged for a call-back | unseen method (FaceShifter): 32 %; small faces at 360p: "couldn't check" |
 | Face in a photo | AUC 0.923 (FF++) / 0.747 (DFDC) | 0.4 % / 0.0 % of real crops over τ_hi | expression-only edits (NeuralTextures) |
-| Voice clone (In-the-Wild, ASVspoof 2019 eval; clean, Opus, GSM) | measuring tonight (`results/voice_benchmark.md`) | — | — |
+| Voice clone (In-the-Wild: real-world deepfakes, speakers never seen) | AUC 0.921 clean / 0.909 Opus; with ≥ 3 s of speech 64–67 % of fakes flagged for a call-back | 0.6 % of genuine voices (≥ 3 s speech); 0.0–0.1 % over the strict threshold | under 3 s of speech: "too short to judge"; our own re-trained model lost the pre-registered comparison (0.79 vs 0.95 val AUC), so the licensed off-the-shelf one ships |
 
 Generic "deepfake" image classifiers from Hugging Face scored 0.52–0.65 AUC on the same face
 crops. That is why every model went through one protocol before it could ship
