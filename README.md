@@ -164,8 +164,18 @@ code and its test.
 
 ## What is built
 
-Everything on the Satya path runs and is tested (`make check`: 860+ Python tests; desktop: typecheck +
-vitest). Status per task: `docs/STATUS.md`; plan vs built vs cut: `docs/JUDGES.md` §5.
+Everything on the Satya path runs and is tested (`make check`: 860+ Python tests; desktop: typecheck + vitest). Status per task: `docs/STATUS.md`; plan vs built vs cut: `docs/JUDGES.md` §5.
+
+**Round 1:** contracts, fixtures, mock API, the policy engine + property tests, the vault hash
+chain, the voice window rules (Python + JS), the LLM prompt isolation, the evidence pipeline, the
+ask extractor, the email/invoice/voice-note checkers, OOB, the UTR-first report pack, and Seal.
+
+**Finale:** the Satya desktop companion (four windows, consent/modes, bubble cards, Notebook),
+the companion API + SSE, the live call path (system audio, local Whisper, labelled replay),
+**X1 cross-channel**, Screen Guard/clipboard, file drop, the OOB phone page, report pack v2, the
+raise-only video check (model-dependent; abstains if absent), the judge kit, the automated
+dry-run harness and cross-platform CI. The exact status of every card and every deliberate cut is
+in `docs/finale/DELIVERED.md`.
 
 ## License
 
