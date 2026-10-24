@@ -584,6 +584,7 @@
             file: "Or add a screenshot, voice note, photo or video",
             check: "Check it",
             checking: "Checking the words, the voice and the face…",
+            checkingMedia: "Checking on this device… a video or voice note takes about as long as it plays.",
             empty: "Paste a message or add a file first.",
             read: "What Satya read / heard",
             checkedP: "Checked: ",
@@ -616,6 +617,7 @@
             file: "या स्क्रीनशॉट, वॉइस नोट, फ़ोटो या वीडियो जोड़ें",
             check: "जाँच करें",
             checking: "शब्द, आवाज़ और चेहरा जाँचे जा रहे हैं…",
+            checkingMedia: "इसी डिवाइस पर जाँच हो रही है… वीडियो या वॉइस नोट में लगभग उतना ही समय लगता है जितना वह चलता है।",
             empty: "पहले संदेश पेस्ट करें या फ़ाइल जोड़ें।",
             read: "सत्य ने क्या पढ़ा / सुना",
             checkedP: "जाँचा गया: ",
@@ -700,7 +702,7 @@
           var file = $("file").files && $("file").files[0];
           var status = $("status");
           if (!text && !file) { status.textContent = t("empty"); return; }
-          status.textContent = t("checking");
+          status.textContent = file && /^(video|audio)\//.test(file.type) ? t("checkingMedia") : t("checking");
           $("checkBtn").disabled = true;
           var langCode = lang === "hi" ? "hi" : "en";
           var urls = ENDPOINTS;
