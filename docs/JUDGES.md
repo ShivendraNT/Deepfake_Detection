@@ -51,7 +51,12 @@ into a 1930 call script (UTR on line 1), a message for the bank and the cybercri
 
 **On your kit:** `make scan F=kit/`. One line per file: band, channel, seconds, the reasons, and
 what this laptop could not check. Files named `fake…`/`scam…` or `real…`/`genuine…` are graded
-automatically, with a summary of fakes flagged and genuine files passed.
+automatically, with a per-channel table of fakes flagged and genuine files passed.
+
+**On a kit we built the same way from the open test sets:** `python -m research.run_all kit`
+writes 184 files and runs the whole product on them: 80 texts, 40 photos, 40 voice clips and 24
+videos, seeded, with a sha256 manifest. The result is `results/kit_scan.md`. When a model is
+missing on a laptop, the answer says "could not check …"; it never turns that into an alarm.
 
 **On open data** (held-out test sets, thresholds frozen on validation first, scored once,
 95 % intervals; full index and reproduction: [`BENCHMARKS.md`](BENCHMARKS.md)):
