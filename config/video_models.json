@@ -1,6 +1,11 @@
 {
  "_note": "Model files for the video check (docs/VIDEO_DEEPFAKE.md). They live in models/video/ and are never committed (*.onnx is git-ignored). `python scripts/video_models.py` downloads what has a URL and verifies every sha256; a file whose hash does not match is refused.",
  "files": {
+  "face_detection_yunet_2023mar.onnx": {
+   "url": "https://huggingface.co/opencv/face_detection_yunet/resolve/main/face_detection_yunet_2023mar.onnx",
+   "sha256": "8f2383e4dd3cfbb4553ea8718107fc0423210dc964f9f4280604804ed2552fa4",
+   "license": "MIT (YuNet, Shiqi Yu / OpenCV Zoo): finds small faces the landmarker's own detector misses"
+  },
   "face_landmarker.task": {
    "url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
    "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
