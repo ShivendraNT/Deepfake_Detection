@@ -1,5 +1,6 @@
 """Citizen Scam Check (T24 + finale): coarse output only; rate-limited in production.
 
+GET  /check  (= /scam-check.html)                               the consumer page itself
 POST /scam-check        {"text": ..., "lang": "en"|"hi"}       pasted message
 POST /scam-check/file   multipart: file=@..., lang=en|hi        screenshot, voice note, photo,
                                                                 video, e-mail or PDF
@@ -11,9 +12,11 @@ All run on this device and keep nothing (no vault, no case store). Nothing is ev
 from __future__ import annotations
 
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from typing import Any, Literal
 
 from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi.responses import FileResponse
 from pydantic import BaseModel, Field
 
 from satyapan.api.auth import get_state
@@ -22,7 +25,16 @@ from satyapan.contracts.enums import Lang
 from satyapan.contracts.report import TransactionFacts
 
 router = APIRouter()
+PAGE = Path(__file__).resolve().parents[3] / "console" / "public" / "scam-check.html"
 IST = timezone(timedelta(hours=5, minutes=30))  # no DST; no tzdata needed on Windows
+
+
+@router.get("/check", include_in_schema=False)
+@router.get("/scam-check.html", include_in_schema=False)
+def scam_check_page() -> FileResponse:
+    """The consumer page, served by the same local engine (a phone on the same Wi-Fi can open
+    http://<laptop-ip>:8000/check when the engine runs with `make live`)."""
+    return FileResponse(PAGE, media_type="text/html")
 
 
 class ScamCheckIn(BaseModel):

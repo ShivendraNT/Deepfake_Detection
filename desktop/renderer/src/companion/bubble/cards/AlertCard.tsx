@@ -96,7 +96,7 @@ export default function AlertCard({ card, lang = 'en', tail = 'left', onAction, 
       ) : null}
 
       <p className="mb-0 mt-2.5 text-[13px] leading-[1.45] text-slate-600 dark:text-[#A8A0B8]">
-        {t('alert.body.v2', lang, { approver })}
+        {card.approver ? t('alert.body.v2', lang, { approver }) : t('alert.body.personal', lang)}
       </p>
 
       {reasons.length > 0 ? (

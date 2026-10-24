@@ -387,6 +387,7 @@ export function createMockBridge(): CompanionBridge {
     openExternal: async (url: string) => {
       const allowed =
         url === 'tel:1930' ||
+        url === 'http://127.0.0.1:8000/check#money' ||
         url.startsWith('mailto:') ||
         url.startsWith('https://cybercrime.gov.in')
       if (!allowed) throw new Error('link is not on the allow-list')
