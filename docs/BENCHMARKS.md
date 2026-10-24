@@ -93,10 +93,10 @@ kit`, 184 files, `results/kit_scan.md`):
 | Channel | Fakes / scams flagged | Genuine passed |
 |---|---|---|
 | Texts | 38 / 40 | 40 / 40 |
-| Voice notes | 15 / 20 | 19 / 20 |
+| Voice notes | 15 / 20 | 18 / 20 |
 | Videos | 7 / 16 | 8 / 8 |
 | Photos | 8 / 20 | 20 / 20 |
-| **All** | **68 / 96** | **87 / 88** |
+| **All** | **68 / 96** | **86 / 88** |
 
 Video numbers: `docs/VIDEO_DEEPFAKE.md` §6/§8. Text: `docs/TEXT_BENCHMARK.md`. Any kit of files:
 `uv run python scripts/satya.py scan KIT/` prints the band, why, and what could not be checked

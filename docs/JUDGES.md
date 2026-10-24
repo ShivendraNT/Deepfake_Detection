@@ -62,16 +62,23 @@ videos, seeded, with a sha256 manifest (`results/kit_manifest.json`). The result
 | Channel | Fakes / scams flagged | Genuine passed |
 |---|---|---|
 | Texts | 38 / 40 | 40 / 40 |
-| Voice notes (≥ 3 s of speech) | 15 / 20 | 19 / 20 |
+| Voice notes (≥ 3 s of speech) | 15 / 20 | 18 / 20 |
 | Videos | 7 / 16 | 8 / 8 |
 | Photos | 8 / 20 | 20 / 20 |
-| **All** | **68 / 96** | **87 / 88** |
+| **All** | **68 / 96** | **86 / 88** |
 
 Satya is built to keep false alarms rare, and accepts misses to do so. Of the 28 misses:
 - 21 are faces (12 photos, 9 videos, 2 of those videos with no usable face), mostly unseen
   or expression-only methods (FaceShifter, NeuralTextures), which the benchmarks name;
 - 5 are cloned voices scored under τ_lo;
 - 2 are scam texts with no ask and no scam wording.
+
+The 2 genuine files flagged are voice notes:
+- one voice the model found unusual;
+- one speech whose words read like a scam to the text model, which a voice note's transcript
+  now goes through, as a message's text does.
+
+Both get VERIFY ("call back first"), never HOLD.
 
 When a model is missing on a laptop, the answer says "could not check …"; it never turns that
 into an alarm.
