@@ -8,9 +8,14 @@
   },
   "blend_b0.onnx": {
    "url": "",
-   "sha256": "",
+   "sha256": "bc8d3d46a9129c81176c48fe8739ad18a22407207d83329d908ad050db96c4c0",
    "license": "Trained by Team Satyapan on FaceForensics++ c23 REAL videos only (self-blended pseudo-fakes); FF++ terms apply: research and demo use, not for redistribution.",
-   "build": "python -m research.video.sbi_prep && python -m research.video.train_sbi  (CPU, about 2 h)"
+   "build": "python -m research.video.sbi_prep && python -m research.video.train_sbi  (CPU, about 2 h)",
+   "trained": {
+    "best_epoch": 9,
+    "val_sbi_auc": 0.9855,
+    "seed": 20261024
+   }
   }
  }
 }
