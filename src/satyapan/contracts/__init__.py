@@ -87,6 +87,7 @@ from satyapan.contracts.parsed import (
     PdfMeta,
 )
 from satyapan.contracts.report import (
+    CitizenReportDraft,
     EmailDraft,
     EvidenceIndexItem,
     NcrpField,
@@ -140,6 +141,7 @@ __all__ = [
     "ChainVerification",
     "Channel",
     "CitizenFileResult",
+    "CitizenReportDraft",
     "CitizenResult",
     "ClearanceMethod",
     "ClearanceRequirement",

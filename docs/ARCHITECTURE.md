@@ -107,6 +107,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/workflows/watchlist.py` | C10 (R4) | T13 | todo |
 | `src/satyapan/report/pack.py` | C12 | T16 | todo |
 | `src/satyapan/report/pack_v2.py` | C12 golden-hour report copilot (5 drafts) | F11 | done |
+| `src/satyapan/report/citizen.py` | citizen golden-hour drafts after money left: UTR-first 1930 script, bank message, portal fields, steps (MANUAL_ONLY) | finale (lead) | done |
 | `src/satyapan/citizen/rules.py` | impossible-claim rules for the citizen page (OTP, digital arrest, KYC, …) | T24 | done |
 | `src/satyapan/citizen/check.py` | citizen Scam Check of any file or message: quick check + the T24 rules, higher band wins (raise-only), plain why, what was and was not checked | finale (lead) | done |
 | `src/satyapan/seal/` | C14 Satyapan Seal: Voice Seal + Intent Seal (docs/SEAL.md) | SEAL (lead) | done (R1 prototype) |
@@ -300,6 +301,7 @@ Endpoints whose task is not done return **HTTP 501** `{"detail":"not implemented
 | `POST /live/{call_id}/voice` (JSON list of `VoiceWindowResult`) | T11 | on-device voice scores |
 | `GET /live/{call_id}/events` | T11 | server-sent events (`LiveEvent`) |
 | `POST /scam-check` | T24 | citizen page: band + action only |
+| `POST /scam-check/money-sent` | finale | citizen page: golden-hour drafts from the UTR the person types; nothing sent or kept |
 | `POST /scam-check/file` | finale | citizen page, any file (screenshot, voice note, photo, video, PDF): band + action + why + checked / not checked; nothing kept |
 | `GET /vendors`, `GET /employees` | T01 | master data for the console |
 
