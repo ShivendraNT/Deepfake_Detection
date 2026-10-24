@@ -170,8 +170,8 @@ This page, [`README.md`](../README.md), and the live script in
 
 ## 9. Live user journey (25): attack → alert → action → review/report, varied by the jury
 
-**Base run, "digital arrest" on a video call.** Start the engine with
-`SATYAPAN_PROFILE=personal make live` and the desktop app (`npm run dev`).
+**Base run, "digital arrest" on a video call.** Start the engine with `make live-personal`
+(Windows: `uv run python scripts/satya.py live-personal`) and the desktop app (`npm run dev`).
 
 1. **Attack.** A juror calls the laptop (WhatsApp, Meet, any app) and says, in English or
    Hinglish: *"This is CBI. Your Aadhaar is linked to money laundering. You are under digital

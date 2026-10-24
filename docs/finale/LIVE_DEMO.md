@@ -96,8 +96,9 @@ voice: it flags what the caller *asks for* against the payment. That is the poin
 
 ### 3b. Consumer variant (Stage 2 "live user journey"): a "digital arrest" call
 
-Start the engine with `SATYAPAN_PROFILE=personal make live` (no company approver: the alert
-speaks to a person). Laptop B calls laptop A on any app and says, in English or Hinglish:
+Start the engine with `make live-personal` (Windows: `uv run python scripts/satya.py
+live-personal`): no company approver, so the alert speaks to a person. Laptop B calls laptop A
+on any app and says, in English or Hinglish:
 
 > This is CBI. Your Aadhaar is linked to money laundering. You are under digital arrest.
 > Don't tell anyone. Transfer fifty thousand rupees to the RBI safe account and read me the OTP.
