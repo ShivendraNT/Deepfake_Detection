@@ -26,10 +26,36 @@ export interface TrayDependencies {
   toggleHideFromCapture: () => void
 }
 
-export function createTray(deps: TrayDependencies): Tray {
+/**
+ * The tray icon is a black macOS template image. Windows and Linux do not recolour templates,
+ * and black vanishes on a dark taskbar, so there we paint the glyph in Satya's teal (readable
+ * on light and dark bars). Alpha is kept, so the shape is unchanged.
+ */
+export function tintForTaskbar(bitmap: Buffer, rgb: [number, number, number] = [45, 212, 191]): Buffer {
+  const out = Buffer.from(bitmap)
+  for (let i = 0; i + 3 < out.length; i += 4) {
+    if (out[i + 3] === 0) continue
+    // Electron bitmaps are BGRA.
+    out[i] = rgb[2]
+    out[i + 1] = rgb[1]
+    out[i + 2] = rgb[0]
+  }
+  return out
+}
+
+function trayImage(): Electron.NativeImage {
   const image = nativeImage.createFromPath(join(__dirname, '../../resources/trayTemplate.png'))
-  if (process.platform === 'darwin') image.setTemplateImage(true)
-  const tray = new Tray(image)
+  if (process.platform === 'darwin') {
+    image.setTemplateImage(true)
+    return image
+  }
+  const size = image.getSize()
+  if (image.isEmpty() || size.width === 0) return image
+  return nativeImage.createFromBitmap(tintForTaskbar(image.toBitmap()), size)
+}
+
+export function createTray(deps: TrayDependencies): Tray {
+  const tray = new Tray(trayImage())
 
   const refresh = (): void => {
     const mode = deps.getMode()

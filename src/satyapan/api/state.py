@@ -30,6 +30,9 @@ class AppState:
     _companion: Any = None  # T25: CompanionService
     _transcriber: Any = None  # finale: the shared local speech engine (see transcriber())
     transcriber_override: Transcriber | None = None  # tests inject FakeTranscriber here
+    _video: Any = None  # finale: VideoAnalyzer, or False when unavailable on this machine
+    _video_error: str | None = None
+    video_override: Any = None  # tests inject a fake analyzer here
 
     @classmethod
     def build(cls, settings: Settings) -> AppState:
@@ -105,12 +108,42 @@ class AppState:
         result: dict[str, Any] = status.as_dict()
         return result
 
+    def video(self) -> Any:
+        """The video deepfake check (docs/VIDEO_DEEPFAKE.md), or None when this laptop lacks
+        the `video` extra or the model files. Never a silent fake: video_status() says why."""
+        if self.video_override is not None:
+            return self.video_override
+        if self._video is None:
+            try:
+                from satyapan.video.analyzer import VideoAnalyzer
+
+                self._video = VideoAnalyzer.load()
+            except Exception as exc:  # noqa: BLE001 - VideoUnavailable or a broken install
+                self._video = False
+                self._video_error = str(exc)[:300]
+        return self._video or None
+
+    def video_status(self) -> dict[str, Any]:
+        analyzer = self.video()
+        if analyzer is None:
+            return {"ready": False, "error": self._video_error, "model": None}
+        thr = getattr(analyzer, "thresholds", None)
+        return {
+            "ready": True,
+            "error": None,
+            "model": getattr(thr, "model_version", "fake"),
+            "calibrated": bool(getattr(thr, "calibrated", False)),
+        }
+
     def live(self) -> Any:
         if self._live is None:
             from satyapan.live.service import LiveService
 
             self._live = LiveService(
-                master=self.master, transcriber=self.transcriber(), thresholds=self.thresholds
+                master=self.master,
+                transcriber=self.transcriber(),
+                thresholds=self.thresholds,
+                video_factory=self.video,
             )
         return self._live
 

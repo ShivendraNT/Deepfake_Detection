@@ -11,7 +11,7 @@ from typing import Annotated, Literal
 from pydantic import Field, TypeAdapter
 
 from satyapan.contracts.common import Model
-from satyapan.contracts.enums import AskType, Band, ReasonCode, VoiceLabel
+from satyapan.contracts.enums import AskType, Band, ReasonCode, VideoLabel, VoiceLabel
 
 
 class VoiceWindowResult(Model):
@@ -32,6 +32,25 @@ class VoiceEvent(Model):
     window_index: int
     label: VoiceLabel
     consecutive_over_hi: int = 0
+    score: float | None = None  # stripped for maker role
+
+
+class VideoEvent(Model):
+    """Video deepfake check for the other person's face (docs/VIDEO_DEEPFAKE.md).
+
+    `cues` names which checks looked unusual in the latest window ("blend", "pulse", "light",
+    "lipsync"); `coverage` says whether the face was usable; `problem` says why not
+    ("no_face", "face_too_small", "bad_lighting", "too_short"). Never a raw score for makers.
+    """
+
+    type: Literal["video"] = "video"
+    call_id: str
+    window_index: int
+    label: VideoLabel
+    consecutive_over_hi: int = 0
+    cues: list[str] = Field(default_factory=list)
+    coverage: Literal["usable", "degraded", "incomplete"] = "usable"
+    problem: str | None = None
     score: float | None = None  # stripped for maker role
 
 
@@ -91,7 +110,7 @@ class StatusEvent(Model):
 
 
 LiveEvent = Annotated[
-    VoiceEvent | TranscriptEvent | AskEvent | BandEvent | StatusEvent,
+    VoiceEvent | VideoEvent | TranscriptEvent | AskEvent | BandEvent | StatusEvent,
     Field(discriminator="type"),
 ]
 LIVE_EVENT_ADAPTER: TypeAdapter[LiveEvent] = TypeAdapter(LiveEvent)

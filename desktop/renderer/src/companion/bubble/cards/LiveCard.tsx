@@ -6,7 +6,7 @@
 
 import { useEffect, useState } from 'react'
 
-import type { Band, BubbleCard, CueCode } from '../../../../../shared/contracts'
+import type { Band, BubbleCard, CueCode, FaceCheck } from '../../../../../shared/contracts'
 import { t, type Lang } from '../../../shared/copy'
 import { color } from '../../../shared/tokens'
 import Caption from '../Caption'
@@ -24,6 +24,36 @@ const BAND_ACCENT: Record<Band, string> = {
   PASS: color.watch,
   VERIFY: color.verify,
   HOLD: color.hold,
+}
+
+const FACE_TONE: Record<FaceCheck['label'], string> = {
+  checking: color.watch,
+  no_signs: color.watch,
+  inconclusive: color.verify,
+  likely_synthetic: color.hold,
+  unavailable: '#94a3b8',
+}
+
+/** One line about the caller's face: a label (never a score), why it can't judge, which cues. */
+function FaceLine({ face, lang }: { face: FaceCheck; lang: Lang }): JSX.Element {
+  const tone = FACE_TONE[face.label]
+  const text =
+    face.problem && face.label !== 'likely_synthetic' ? t(`face.problem.${face.problem}`, lang) : t(`face.${face.label}`, lang)
+  return (
+    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-[12px]" data-testid="face-line">
+      <span className="font-semibold" style={{ color: tone }}>
+        {t('face.title', lang)}:
+      </span>
+      <span className="text-[#2A2238] dark:text-[#EDE8F5]">{text}</span>
+      {face.label !== 'no_signs'
+        ? face.cues.map((cue) => (
+            <span key={cue} className="rounded-full px-2 py-0.5 text-[11px]" style={{ backgroundColor: `${tone}22` }}>
+              {t(`face.cue.${cue}`, lang)}
+            </span>
+          ))
+        : null}
+    </div>
+  )
 }
 
 function formatElapsed(seconds: number): string {
@@ -135,6 +165,8 @@ export default function LiveCard({ card, lang = 'en', tail = 'left', onAction, o
           ))}
         </div>
       ) : null}
+
+      {card.face ? <FaceLine face={card.face} lang={lang} /> : null}
 
       <p className="mb-0 mt-2 text-[11.5px] text-slate-500 dark:text-[#A8A0B8]">
         {card.coverage === 'degraded' || card.coverage === 'incomplete' ? t('coverage.degraded', lang) : t('live.note', lang)}

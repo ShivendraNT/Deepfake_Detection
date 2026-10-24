@@ -1,0 +1,16 @@
+{
+ "_note": "Model files for the video check (docs/VIDEO_DEEPFAKE.md). They live in models/video/ and are never committed (*.onnx is git-ignored). `python scripts/video_models.py` downloads what has a URL and verifies every sha256; a file whose hash does not match is refused.",
+ "files": {
+  "face_landmarker.task": {
+   "url": "https://storage.googleapis.com/mediapipe-models/face_landmarker/face_landmarker/float16/1/face_landmarker.task",
+   "sha256": "64184e229b263107bc2b804c6625db1341ff2bb731874b0bcc2fe6544e0bc9ff",
+   "license": "Apache-2.0 (Google MediaPipe Face Landmarker, 478 points + blendshapes)"
+  },
+  "blend_b0.onnx": {
+   "url": "",
+   "sha256": "",
+   "license": "Trained by Team Satyapan on FaceForensics++ c23 REAL videos only (self-blended pseudo-fakes); FF++ terms apply: research and demo use, not for redistribution.",
+   "build": "python -m research.video.sbi_prep && python -m research.video.train_sbi  (CPU, about 2 h)"
+  }
+ }
+}

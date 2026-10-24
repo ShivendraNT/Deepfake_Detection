@@ -91,6 +91,8 @@ describe('satyaMachine — start and modes', () => {
       callDemo: false,
       callStatus: null,
       health: null,
+      // Finale video check: nothing is looked at before a yes for a call.
+      face: null,
     })
   })
 
@@ -587,5 +589,35 @@ describe('satyaMachine — finale: captions, quotes, meetings, screen findings',
     expect(state.userMode).toBe('SLEEPING')
     expect(state.callId).toBeNull()
     expect(state.card).toMatchObject({ kind: 'notice', title: 'notice.backend.title' })
+  })
+})
+
+describe('satyaMachine — face check (video)', () => {
+  it('shows the face label on the live card and never a score', () => {
+    let state = satyaReducer(watching(), {
+      type: 'EVENT',
+      event: event('call.started', { state: 'ACTIVE', headline: 'Listening', call_id: 'call_v', coverage: 'usable' }),
+    })
+    state = satyaReducer(state, {
+      type: 'SIGNAL',
+      signal: { kind: 'face', call_id: 'call_v', face: { label: 'likely_synthetic', problem: null, cues: ['blend'], windows: 2 } },
+    })
+    expect(state.face?.label).toBe('likely_synthetic')
+    if (state.card?.kind === 'live') {
+      expect(state.card.face?.cues).toEqual(['blend'])
+      expect(JSON.stringify(state.card)).not.toMatch(/score/)
+    }
+  })
+
+  it('ignores a face signal for another call', () => {
+    let state = satyaReducer(watching(), {
+      type: 'EVENT',
+      event: event('call.started', { state: 'ACTIVE', headline: 'Listening', call_id: 'call_a' }),
+    })
+    state = satyaReducer(state, {
+      type: 'SIGNAL',
+      signal: { kind: 'face', call_id: 'call_b', face: { label: 'likely_synthetic', problem: null, cues: [], windows: 2 } },
+    })
+    expect(state.face).toBeNull()
   })
 })

@@ -140,6 +140,9 @@
         "VOICE_NO_SIGNS",
         "VOICE_INCONCLUSIVE",
         "VOICE_LIKELY_SYNTHETIC",
+        "VIDEO_NO_SIGNS",
+        "VIDEO_INCONCLUSIVE",
+        "VIDEO_LIKELY_SYNTHETIC",
         "ASK_NEW_ACCOUNT",
         "ASK_CREDENTIAL",
         "ASK_REMOTE_ACCESS",
@@ -306,6 +309,92 @@
       "title": "TranscriptSpan",
       "type": "object"
     },
+    "VideoEvent": {
+      "additionalProperties": false,
+      "description": "Video deepfake check for the other person's face (docs/VIDEO_DEEPFAKE.md).\n\n`cues` names which checks looked unusual in the latest window (\"blend\", \"pulse\", \"light\",\n\"lipsync\"); `coverage` says whether the face was usable; `problem` says why not\n(\"no_face\", \"face_too_small\", \"bad_lighting\", \"too_short\"). Never a raw score for makers.",
+      "properties": {
+        "type": {
+          "const": "video",
+          "default": "video",
+          "title": "Type",
+          "type": "string"
+        },
+        "call_id": {
+          "title": "Call Id",
+          "type": "string"
+        },
+        "window_index": {
+          "title": "Window Index",
+          "type": "integer"
+        },
+        "label": {
+          "$ref": "#/$defs/VideoLabel"
+        },
+        "consecutive_over_hi": {
+          "default": 0,
+          "title": "Consecutive Over Hi",
+          "type": "integer"
+        },
+        "cues": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Cues",
+          "type": "array"
+        },
+        "coverage": {
+          "default": "usable",
+          "enum": [
+            "usable",
+            "degraded",
+            "incomplete"
+          ],
+          "title": "Coverage",
+          "type": "string"
+        },
+        "problem": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Problem"
+        },
+        "score": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Score"
+        }
+      },
+      "required": [
+        "call_id",
+        "window_index",
+        "label"
+      ],
+      "title": "VideoEvent",
+      "type": "object"
+    },
+    "VideoLabel": {
+      "description": "Video deepfake check result (docs/VIDEO_DEEPFAKE.md). Mirrors VoiceLabel.",
+      "enum": [
+        "likely_synthetic",
+        "inconclusive",
+        "no_signs"
+      ],
+      "title": "VideoLabel",
+      "type": "string"
+    },
     "VoiceEvent": {
       "additionalProperties": false,
       "properties": {
@@ -368,6 +457,7 @@
       "band": "#/$defs/BandEvent",
       "status": "#/$defs/StatusEvent",
       "transcript": "#/$defs/TranscriptEvent",
+      "video": "#/$defs/VideoEvent",
       "voice": "#/$defs/VoiceEvent"
     },
     "propertyName": "type"
@@ -375,6 +465,9 @@
   "oneOf": [
     {
       "$ref": "#/$defs/VoiceEvent"
+    },
+    {
+      "$ref": "#/$defs/VideoEvent"
     },
     {
       "$ref": "#/$defs/TranscriptEvent"

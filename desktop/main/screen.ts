@@ -3,6 +3,8 @@
  *
  * macOS: native `screencapture` + Apple Vision OCR.
  * Windows: PowerShell screen capture + Windows.Media.Ocr (both on-device).
+ * Linux: Electron screen capture (X11, or the Wayland portal) + the `tesseract` CLI if installed
+ *        (`sudo apt install tesseract-ocr`); without it Screen Guard says so instead of guessing.
  * Strictly offline, on-device only. Inspects on-screen content for:
  * 1. Urgency / secrecy language & approval bypass attempts
  * 2. New bank accounts, changed IFSCs, or suspicious wire requests
@@ -12,6 +14,8 @@
 
 import { execFile } from 'node:child_process'
 import { existsSync, unlinkSync, writeFileSync } from 'node:fs'
+
+import { desktopCapturer, screen } from 'electron'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { promisify } from 'node:util'
@@ -300,6 +304,43 @@ async function ocrMac(): Promise<string> {
   }
 }
 
+/** Primary screen as PNG via Electron (any OS); used where there is no native capture tool. */
+async function capturePrimaryPng(path: string): Promise<void> {
+  const display = screen.getPrimaryDisplay()
+  const scale = display.scaleFactor || 1
+  const [source] = await desktopCapturer.getSources({
+    types: ['screen'],
+    thumbnailSize: {
+      width: Math.round(display.size.width * scale),
+      height: Math.round(display.size.height * scale),
+    },
+  })
+  if (!source || source.thumbnail.isEmpty()) throw new Error('screen capture returned nothing')
+  writeFileSync(path, source.thumbnail.toPNG())
+}
+
+async function ocrLinux(): Promise<string> {
+  const tmpImage = join(tmpdir(), `satyapan_screen_${Date.now()}.png`)
+  try {
+    await capturePrimaryPng(tmpImage)
+    try {
+      const { stdout } = await execFileAsync('tesseract', [tmpImage, 'stdout', '-l', 'eng'], {
+        timeout: 20000,
+        maxBuffer: 10 * 1024 * 1024,
+      })
+      return stdout
+    } catch (error) {
+      const code = (error as NodeJS.ErrnoException).code
+      if (code === 'ENOENT') throw new Error('Screen reading on Linux needs tesseract (sudo apt install tesseract-ocr).')
+      throw error
+    }
+  } finally {
+    try {
+      if (existsSync(tmpImage)) unlinkSync(tmpImage)
+    } catch {}
+  }
+}
+
 /**
  * On-device OCR of the screen, as plain text (finale). The screenshot file is deleted at once
  * and the text is only handed to the local engine for a check; Satya's own windows are hidden
@@ -308,7 +349,8 @@ async function ocrMac(): Promise<string> {
 export async function captureScreenText(): Promise<string> {
   if (process.platform === 'darwin') return ocrMac()
   if (process.platform === 'win32') return ocrWindows()
-  throw new Error('Screen reading is available on macOS and Windows only.')
+  if (process.platform === 'linux') return ocrLinux()
+  throw new Error(`Screen reading is not available on ${process.platform}.`)
 }
 
 async function scanScreenWindows(): Promise<ScreenScanResult> {
@@ -369,11 +411,18 @@ async function scanScreenMac(): Promise<ScreenScanResult> {
 export async function scanScreen(): Promise<ScreenScanResult> {
   if (process.platform === 'win32') return scanScreenWindows()
   if (process.platform === 'darwin') return scanScreenMac()
+  if (process.platform === 'linux') {
+    try {
+      return analyzeScreenText(await ocrLinux())
+    } catch (error) {
+      return scanError(error)
+    }
+  }
   return {
     suspicious: false,
     headline: 'Screen scan unavailable',
     matches: [],
-    reasons: ['Screen scanning is available on macOS and Windows only.'],
+    reasons: [`Screen scanning is not available on ${process.platform}.`],
     preview: '',
     accounts: [],
     ifscs: [],

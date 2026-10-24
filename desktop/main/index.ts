@@ -29,6 +29,11 @@ if (process.platform === 'darwin') {
     'MacLoopbackAudioForScreenShare,MacSckSystemAudioLoopbackOverride',
   )
 }
+if (process.platform === 'linux') {
+  // System-audio loopback through PulseAudio / PipeWire-Pulse, and screen capture on Wayland
+  // through the xdg-desktop-portal (PipeWire). Unknown feature names are ignored by Chromium.
+  app.commandLine.appendSwitch('enable-features', 'PulseaudioLoopbackForScreenShare,WebRTCPipeWireCapturer')
+}
 
 for (const stream of [process.stdout, process.stderr]) {
   stream?.on('error', () => undefined)
@@ -46,6 +51,7 @@ import type {
   CompanionEvent,
   CompanionState,
   EvidenceResult,
+  FaceCheck,
   MeetingInfo,
   Prefs,
   SatyaSignal,
@@ -385,7 +391,38 @@ function onCaptureStatus(status: CaptureStatus): void {
 // ---------------------------------------------------------------------------------------------
 // Calls
 // ---------------------------------------------------------------------------------------------
+const FACE_LABELS = new Set(['no_signs', 'inconclusive', 'likely_synthetic'])
+const FACE_PROBLEMS = new Set(['no_face', 'face_too_small', 'bad_lighting', 'too_short'])
+const FACE_CUES = new Set(['blend', 'pulse', 'light', 'lipsync'])
+
+/** Video check result for the live card: a label, never a score (makers never see scores). */
+function onVideoEvent(event: LiveBusEvent): void {
+  if (!activeCall || event.call_id !== activeCall.call_id) return
+  if (event.type === 'status' && event.code === 'video_unavailable') {
+    signal({
+      kind: 'face',
+      call_id: activeCall.call_id,
+      face: { label: 'unavailable', problem: null, cues: [], windows: 0 },
+    })
+    return
+  }
+  if (event.type !== 'video' || typeof event.label !== 'string' || !FACE_LABELS.has(event.label)) return
+  const problem = typeof event.problem === 'string' && FACE_PROBLEMS.has(event.problem) ? event.problem : null
+  const cues = Array.isArray(event.cues) ? event.cues.filter((c): c is string => typeof c === 'string' && FACE_CUES.has(c)) : []
+  signal({
+    kind: 'face',
+    call_id: activeCall.call_id,
+    face: {
+      label: event.label as FaceCheck['label'],
+      problem: problem as FaceCheck['problem'],
+      cues: cues as FaceCheck['cues'],
+      windows: typeof event.window_index === 'number' ? event.window_index + 1 : 0,
+    },
+  })
+}
+
 function onLiveEvent(event: LiveBusEvent): void {
+  if (event.type === 'video' || event.type === 'status') onVideoEvent(event)
   if (!activeCall || event.type !== 'transcript') return
   const e = event as Extract<LiveBusEvent, { type: 'transcript' }> & {
     chunk_index: number
@@ -429,12 +466,22 @@ async function startCall(source: CaptureSourceKind): Promise<BridgeResult<CallSt
     stopLiveStream?.()
     stopLiveStream = backend.streamLive(started.call_id, onLiveEvent)
     const win = await ensureCapture()
+    // The face check rides on the same yes, only if the video scope was agreed to.
+    const video = kind === 'loopback' && scopes.video
     sendCaptureCommand(win, {
       action: 'start',
       call_id: started.call_id,
       source: kind,
       replay_url: kind === 'replay' ? replayUrl() : undefined,
+      video,
     })
+    if (video) {
+      signal({
+        kind: 'face',
+        call_id: started.call_id,
+        face: { label: 'checking', problem: null, cues: [], windows: 0 },
+      })
+    }
     setStatus('Starting to listen…')
     return { ok: true, data: { call_id: started.call_id, case_id: started.case_id } }
   } catch (error) {

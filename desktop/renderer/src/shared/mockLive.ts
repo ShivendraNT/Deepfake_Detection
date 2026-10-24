@@ -98,6 +98,7 @@ export const MOCK_HEALTH: HealthInfo = {
     language: 'en',
   },
   voice_model: false,
+  video: { ready: true, error: null, model: 'rehearsal', calibrated: false },
   vendors: 5,
   oob_url: 'http://127.0.0.1:8000/oob',
 }

@@ -8,7 +8,9 @@ from __future__ import annotations
 import asyncio
 import threading
 import time
+from collections.abc import Callable
 from dataclasses import dataclass, field
+from typing import Any
 
 from satyapan.adapters.base import Transcriber
 from satyapan.asks.extractor import DETECTOR_NAME, ask_signals, normalise
@@ -25,6 +27,7 @@ from satyapan.contracts.live import (
     StatusEvent,
     TranscriptEvent,
     TranscriptSpan,
+    VideoEvent,
     VoiceEvent,
     VoiceWindowResult,
 )
@@ -50,6 +53,10 @@ class LiveSession:
     voice_windows: list[VoiceWindowResult] = field(default_factory=list)
     last_band: Band = Band.PASS
     language: str | None = None  # speech language hint ("en", "hi"; None/"auto" = detect)
+    # Video check (finale): per-call face stream; windows keep numbers only, never frames.
+    video_stream: Any = None
+    video_windows: list[Any] = field(default_factory=list)
+    video_unavailable_sent: bool = False
     # Routes run handle_chunk/handle_voice in worker threads; one call's updates never interleave.
     lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
@@ -109,6 +116,8 @@ class LiveService:
     sessions: dict[str, LiveSession] = field(default_factory=dict)
     # ADR-021: drop spoken warnings ("never share your OTP") before ask extraction.
     context_filter: bool = True
+    # Finale: returns the VideoAnalyzer, or None when the video check is unavailable here.
+    video_factory: Callable[[], Any] | None = None
 
     def start(self, call_id: str, maker_id: str) -> LiveSession:
         """Create a LIVE_CALL Case (id f"case_live_{call_id}") and a session."""
@@ -252,6 +261,70 @@ class LiveService:
         ]
         events += self._redecide(session)
         return self._publish(call_id, events)
+
+    def handle_video(self, call_id: str, frames: list[tuple[float, Any]]) -> list[LiveEvent]:
+        """Screen frames (t seconds, RGB array) of the other person's video. Windows that
+        finish are scored, the video signal is replaced (ML, media group, raise-only) and the
+        policy re-decides. Frames are dropped as soon as they are measured."""
+        session = self.sessions[call_id]
+        if not frames:
+            return []
+        with session.lock:
+            return self._handle_video(session, frames)
+
+    def _handle_video(
+        self, session: LiveSession, frames: list[tuple[float, Any]]
+    ) -> list[LiveEvent]:
+        from satyapan.video.rules import VIDEO_CODES, video_signal
+
+        call_id = session.call_id
+        analyzer = self.video_factory() if self.video_factory is not None else None
+        if analyzer is None:
+            if session.video_unavailable_sent:
+                return []
+            session.video_unavailable_sent = True
+            status = StatusEvent(
+                call_id=call_id,
+                message="The face check is not installed on this laptop (uv sync --extra "
+                "video, then make video-models). Listening continues.",
+                code="video_unavailable",
+            )
+            return self._publish(call_id, [status])
+        if session.video_stream is None:
+            session.video_stream = analyzer.new_stream()
+        results = session.video_stream.add_frames(frames)
+        if not results:
+            return []
+        session.video_windows.extend(results)
+        verdict = analyzer.verdict(session.video_windows)
+        last = results[-1]
+        signal = video_signal(
+            verdict, analyzer.thresholds, [f"ev_live_{call_id}_video"], cues=last.cues
+        )
+        others = [s for s in session.case.signals if s.code not in VIDEO_CODES]
+        session.case = session.case.model_copy(update={"signals": [*others, signal]})
+        problem = last.coverage.problem()
+        events: list[LiveEvent] = [
+            VideoEvent(
+                call_id=call_id,
+                window_index=last.index,
+                label=verdict.label,
+                consecutive_over_hi=verdict.max_consecutive_over_hi,
+                cues=list(last.cues),
+                coverage="usable" if problem is None else "incomplete",
+                problem=problem,
+                score=None,  # makers never see raw scores
+            )
+        ]
+        events += self._redecide(session)
+        return self._publish(call_id, events)
+
+    def stop_video(self, call_id: str) -> None:
+        session = self.sessions.get(call_id)
+        if session is not None and session.video_stream is not None:
+            with session.lock:
+                session.video_stream.close()
+                session.video_stream = None
 
     def _redecide(self, session: LiveSession) -> list[LiveEvent]:
         decision = decide(session.case, self.master)

@@ -122,7 +122,11 @@ export interface DemoUser {
 
 // ---- Satyapan Seal (src/satyapan/contracts/seal.py, docs/SEAL.md) ----
 export type SignalGroup =
-  | "sender_auth" | "document" | "media" | "ask" | "style" | "watchlist" | "provenance";
+  | "sender_auth" | "document" | "media" | "ask" | "style" | "watchlist" | "provenance"
+  | "cross_channel";
+// Video check (docs/VIDEO_DEEPFAKE.md, media group, ML): only LIKELY_SYNTHETIC raises (+1 band);
+// NO_SIGNS / INCONCLUSIVE are info only and never lower a band.
+export type VideoReasonCode = "VIDEO_NO_SIGNS" | "VIDEO_INCONCLUSIVE" | "VIDEO_LIKELY_SYNTHETIC";
 // Provenance reason codes: VOICE_SEALED is info only (never lowers a band, never clears).
 export type SealReasonCode =
   | "VOICE_SEALED" | "VOICE_UNSEALED_CLAIMED_EXEC" | "SEAL_PRESENCE_CONFLICT";

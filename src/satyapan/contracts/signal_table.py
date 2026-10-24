@@ -8,6 +8,9 @@ Safety notes (enforced by tests/invariants):
 - No entry has a target that LOWERS a band. The lowest target is NONE (informational).
 - STYLE codes may come from ML or LLM; they are capped at VERIFY by the policy engine anyway.
 - Deterministic codes (email, document, asks, watchlist, provenance) may NOT come from an LLM.
+- Video (docs/VIDEO_DEEPFAKE.md) mirrors voice: ML-sourced media evidence; LIKELY_SYNTHETIC is
+  one band above the floor, never more on its own (HOLD needs a second, independent strong
+  group); NO_SIGNS / INCONCLUSIVE are informational and never lower or clear anything.
 - Provenance (Satyapan Seal, docs/SEAL.md): a seal can only ADD evidence. VOICE_SEALED is
   informational (NONE), so a sealed voice never lowers a band or clears a HOLD. A missing seal
   is WEAK and at most VERIFY ("not sealed" does not mean "fake").
@@ -68,6 +71,14 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
         SignalGroup.MEDIA, TargetRule.NONE, Strength.WEAK, _ML
     ),
     ReasonCode.VOICE_LIKELY_SYNTHETIC: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.PLUS_ONE, Strength.STRONG, _ML
+    ),
+    # --- media: video (C15, ML) ---
+    ReasonCode.VIDEO_NO_SIGNS: SignalSpec(SignalGroup.MEDIA, TargetRule.NONE, Strength.WEAK, _ML),
+    ReasonCode.VIDEO_INCONCLUSIVE: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.NONE, Strength.WEAK, _ML
+    ),
+    ReasonCode.VIDEO_LIKELY_SYNTHETIC: SignalSpec(
         SignalGroup.MEDIA, TargetRule.PLUS_ONE, Strength.STRONG, _ML
     ),
     # --- ask (C5, deterministic) ---

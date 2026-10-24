@@ -7,6 +7,7 @@
         "voice_note",
         "call_recording",
         "live_call",
+        "video",
         "whatsapp_text",
         "manual"
       ],

@@ -172,6 +172,20 @@ export function createMockBridge(): CompanionBridge {
       source: 'demo_replay',
       monitoring: true,
     })
+    // Rehearsal face check: labels only, the same sequence a real 6 s / 3 s window run produces.
+    signal({ kind: 'face', call_id: id, face: { label: 'checking', problem: null, cues: [], windows: 0 } })
+    callTimers.push(setTimeout(() => {
+      if (callId !== id) return
+      signal({ kind: 'face', call_id: id, face: { label: 'inconclusive', problem: null, cues: ['blend'], windows: 1 } })
+    }, 6500))
+    callTimers.push(setTimeout(() => {
+      if (callId !== id) return
+      signal({
+        kind: 'face',
+        call_id: id,
+        face: { label: 'likely_synthetic', problem: null, cues: ['blend', 'light'], windows: 2 },
+      })
+    }, 9500))
     let speaking = false
     levelTimer = setInterval(() => {
       const value = speaking ? 0.25 + Math.random() * 0.55 : Math.random() * 0.04

@@ -3,7 +3,9 @@
  *
  * Main owns the OS permission handshake: `getDisplayMedia` from the hidden capture window is
  * answered with the primary screen + `audio: 'loopback'` (system audio: the other person's
- * voice). The renderer stops the video track immediately. The microphone is never requested.
+ * voice). The renderer stops the video track immediately unless the user agreed to the video
+ * check for this call; then it samples ~15 frames/s, downscaled, to the local engine only
+ * (frames are never written to disk). The microphone is never requested.
  *
  * The capture window reports status / loudness / speech activity over a narrow, sender-checked
  * IPC surface; main relays only what the mascot needs. Audio itself goes straight from the
@@ -15,7 +17,14 @@ import { BrowserWindow, desktopCapturer, ipcMain, session, type IpcMainEvent } f
 import type { CaptureSourceKind } from '../shared/contracts'
 
 export type CaptureCommand =
-  | { action: 'start'; call_id: string; source: 'loopback' | 'replay'; replay_url?: string }
+  | {
+      action: 'start'
+      call_id: string
+      source: 'loopback' | 'replay'
+      replay_url?: string
+      /** Finale video check: keep the screen video track and sample frames (consented scope). */
+      video?: boolean
+    }
   | { action: 'stop' }
 
 export interface CaptureStatus {

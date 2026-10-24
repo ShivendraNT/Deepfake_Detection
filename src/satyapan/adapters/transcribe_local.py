@@ -56,6 +56,16 @@ def _env(name: str, default: str) -> str:
     return value or default
 
 
+# Whisper's CTranslate2 (and OpenCV, used by the face check) ship no native Windows-on-ARM
+# wheels. Windows 11 on ARM runs x64 Python transparently (Prism), and every wheel exists there.
+_WIN_ARM_HINT = (
+    " On Windows on ARM, use x64 Python: `uv python install cpython-3.12-windows-x86_64` and"
+    " `uv venv --python cpython-3.12-windows-x86_64`."
+    if sys.platform == "win32" and platform.machine().upper() == "ARM64"
+    else ""
+)
+
+
 def is_apple_silicon() -> bool:
     return sys.platform == "darwin" and platform.machine() in {"arm64", "aarch64"}
 
@@ -189,6 +199,7 @@ class LocalTranscriber:
         if self.engine == "none":
             self.status.error = (
                 "No speech engine installed. Run `make asr` (or `uv sync --extra asr`)."
+                + _WIN_ARM_HINT
             )
 
     # ------------------------------------------------------------------ loading

@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: help sync asr doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
+.PHONY: help sync asr video video-models doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -18,6 +18,7 @@ help:
 	@echo "make task T=T07    run ONLY task T07's acceptance tests, strict (no skipping)"
 	@echo "make run           start the API on http://127.0.0.1:8000 (docs at /docs)"
 	@echo "make asr           install Satya's local speech engine + download the model (once)"
+	@echo "make video         install the face check (video deepfakes) + verify its models"
 	@echo "make demo-audio    generate the labelled DEMO REPLAY call (synthetic voice, once)"
 	@echo "make doctor        check the speech engine is ready and fast enough on this laptop"
 	@echo "make live          start the API for a live demo (no auto-reload, model warmed up)"
@@ -31,6 +32,15 @@ sync:
 asr:
 	uv sync --inexact $(ASR_EXTRAS)
 	$(RUN) python scripts/asr_check.py
+
+# The face check for video calls (docs/VIDEO_DEEPFAKE.md). Windows without make:
+#   uv run python scripts/satya.py video
+video:
+	uv sync --inexact --extra video
+	$(RUN) python scripts/video_models.py
+
+video-models:
+	$(RUN) python scripts/video_models.py
 
 doctor:
 	$(RUN) python scripts/asr_check.py

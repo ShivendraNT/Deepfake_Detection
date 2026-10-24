@@ -40,6 +40,7 @@ from satyapan.contracts.enums import (
     SignalSource,
     Strength,
     TargetRule,
+    VideoLabel,
     VoiceLabel,
 )
 from satyapan.contracts.evidence import (
@@ -64,6 +65,7 @@ from satyapan.contracts.live import (
     LiveEvent,
     StatusEvent,
     TranscriptEvent,
+    VideoEvent,
     VoiceEvent,
     VoiceWindowResult,
 )
@@ -191,6 +193,8 @@ __all__ = [
     "TranscriptEvent",
     "Vendor",
     "VendorStats",
+    "VideoEvent",
+    "VideoLabel",
     "VoiceEvent",
     "VoiceLabel",
     "VoiceWindowResult",

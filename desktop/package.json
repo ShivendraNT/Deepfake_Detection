@@ -2,17 +2,21 @@
   "name": "satyapan-companion",
   "version": "1.0.0",
   "private": true,
-  "description": "Satya — the Satyapan desktop guardian companion (T25)",
+  "description": "Satya \u2014 the Satyapan desktop guardian companion (T25)",
   "main": "out/main/index.js",
   "author": "Team Satyapan (DTU)",
   "license": "MIT",
   "scripts": {
-    "dev": "env -u ELECTRON_RUN_AS_NODE electron-vite dev",
+    "dev": "node scripts/electron-vite.mjs dev",
     "build": "npm run typecheck && electron-vite build",
-    "preview": "electron-vite preview",
+    "preview": "node scripts/electron-vite.mjs preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
     "test": "vitest run",
-    "dev:web": "vite --config vite.web.config.ts"
+    "dev:web": "vite --config vite.web.config.ts",
+    "dist": "npm run build && electron-builder --publish never",
+    "dist:mac": "npm run build && electron-builder --mac --arm64 --x64 --publish never",
+    "dist:win": "npm run build && electron-builder --win --x64 --arm64 --publish never",
+    "dist:linux": "npm run build && electron-builder --linux --x64 --arm64 --publish never"
   },
   "dependencies": {
     "framer-motion": "^11.15.0",
@@ -31,11 +35,80 @@
     "@vitejs/plugin-react": "^4.3.4",
     "autoprefixer": "^10.4.20",
     "electron": "^33.2.1",
+    "electron-builder": "^26.0.12",
     "electron-vite": "^2.3.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.17",
     "typescript": "^5.7.2",
     "vite": "^5.4.11",
     "vitest": "^2.1.8"
+  },
+  "build": {
+    "appId": "in.satyapan.companion",
+    "productName": "Satya",
+    "directories": {
+      "output": "release",
+      "buildResources": "resources"
+    },
+    "files": [
+      "out/**",
+      "resources/**",
+      "package.json"
+    ],
+    "mac": {
+      "category": "public.app-category.finance",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "hardenedRuntime": true,
+      "extendInfo": {
+        "NSAudioCaptureUsageDescription": "Satya listens to the other side of a call only after you say yes for that call. Nothing leaves this Mac.",
+        "NSScreenCaptureUsageDescription": "Satya reads on-screen text for payment tricks and, if you agree for a call, looks at the caller's face for deepfake signs. Nothing leaves this Mac.",
+        "NSMicrophoneUsageDescription": "Satya never records your microphone."
+      }
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true
+    },
+    "linux": {
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        },
+        {
+          "target": "deb",
+          "arch": [
+            "x64",
+            "arm64"
+          ]
+        }
+      ],
+      "category": "Office",
+      "maintainer": "Team Satyapan (DTU)",
+      "synopsis": "Satya: a consent-first deepfake and payment-fraud companion"
+    }
   }
 }
