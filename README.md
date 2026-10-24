@@ -64,7 +64,9 @@ No `make` (Windows)? Every Makefile task also runs as `uv run python scripts/sat
 
 **Video deepfake check** (face blending CNN, pulse, lighting, lip-sync; only after a yes for a
 call): `make video` (or `scripts/satya.py video`). Design, protocol and measured numbers:
-`docs/VIDEO_DEEPFAKE.md`. **Scam-text check** (e-mails, messages, call transcripts): ships in
+`docs/VIDEO_DEEPFAKE.md`. **Voice-clone check** (voice notes, call audio): `make voice` builds the
+model the benchmark selected (licensed, pinned, 1.3 GB ONNX, torch needed once);
+`docs/VOICE_DEEPFAKE.md`. **Scam-text check** (e-mails, messages, call transcripts): ships in
 `config/text_model.*`, no extra install; benchmark in `docs/TEXT_BENCHMARK.md`.
 
 **Benchmarks / test kit:** `docs/BENCHMARKS.md` (every detector → its open-data test, splits,
