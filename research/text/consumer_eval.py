@@ -26,6 +26,8 @@ from satyapan.contracts.enums import Band, Lang
 from satyapan.policy.bands import rank
 
 MAX_CHARS = 20_000
+LANG_GROUP = {"en": "English", "English": "English", "Hinglish": "Hinglish",
+              "hinglish": "Hinglish", "en/hi": "English/Hindi SMS", "Hindi": "Hindi"}  # fmt: skip
 FLAG = (Band.VERIFY, Band.HOLD)
 
 
@@ -71,6 +73,10 @@ def main() -> None:
         report["datasets"][ds] = {  # type: ignore[index]
             col: rates(sub, col) for col in ("band", "policy", "rules")
         }
+    test["lang_group"] = test.lang.map(LANG_GROUP).fillna("Other Indian languages")
+    report["languages"] = {
+        g: rates(test[test.lang_group == g], "band") for g in sorted(test.lang_group.unique())
+    }
     out = ROOT / "results"
     (out / "consumer_text_eval.json").write_text(json.dumps(report, indent=1) + "\n")
     (out / "consumer_text_eval.md").write_text(render(report))
@@ -101,6 +107,20 @@ def render(r: dict) -> str:
             f"| {ds} | {b['scam']['n']} | {_rate(b['scam']['flagged'])} | "
             f"{_rate(b['scam']['hold'])} | {b['genuine']['n']} | "
             f"{_rate(b['genuine']['flagged'])} | {_rate(b['genuine']['hold'])} |"
+        )
+    lines += [
+        "",
+        "By language (whole path): Other Indian languages = Bengali, Gujarati, Marathi, "
+        "Punjabi, Kashmiri, Kannada, Malayalam, Telugu, Assamese.",
+        "",
+        "| Language | scams n | scams flagged | genuine n | genuine flagged |",
+        "|---|---|---|---|---|",
+    ]
+    for g, b in r["languages"].items():
+        lines.append(
+            f"| {g} | {b['scam']['n']} | {_rate(b['scam']['flagged']) if b['scam']['n'] else '–'}"
+            f" | {b['genuine']['n']} | "
+            f"{_rate(b['genuine']['flagged']) if b['genuine']['n'] else '–'} |"
         )
     a = r["datasets"]["ALL"]
     lines += [

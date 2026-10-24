@@ -203,6 +203,7 @@ template group or official split minus leaked templates. C by grouped 5-fold CV 
 | False alarms at τ_hi per dataset (legitimate test texts) | 0.0–2.6 % | 17–1,624 legit per set | e.g. phishing e-mail 2.6 % [2.0, 3.5] | τ fitted on pooled val |
 | Whole consumer path (Scam Check page: quick check + impossible-claim rules), scam texts flagged VERIFY or HOLD | 96.6 % | 2,213 | [95.8, 97.3] | `results/consumer_text_eval.md`; in-domain test sets, so quote LODO for unseen sources |
 | Same path, genuine texts flagged / put on HOLD | 2.7 % / 0.9 % | 4,363 | [2.2, 3.2] / [0.7, 1.3] | worst set: phishing e-mail 5.4 % flagged |
+| Genuine texts flagged by language (whole consumer path) | English 3.2 %, English/Hindi SMS 0.6 %, Hindi 0 %, Hinglish 6.2 %, other Indian languages 0.6 % | 3,375 / 711 / 35 / 64 / 178 | see md | Hinglish is the worst; scams flagged 96–100 % in every language |
 | What the impossible-claim rules add over the policy path | +0.0 pts scams caught, +0.3 pts genuine flagged | 6,576 | — | their value is the plain-language reason, not recall |
 
 ## 11. Face check on video and photos (`VIDEO_*`, `IMAGE_FACE_*`, ML evidence, never HOLD alone)

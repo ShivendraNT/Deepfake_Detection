@@ -1,6 +1,6 @@
 # The consumer path on open data (research/text/consumer_eval.py)
 
-Held-out TEST texts of the 7 open sets (n = 6576), each sent through the Scam Check page's path: quick check (scam-text model + asks, band from the policy engine) and the impossible-claim rules, higher band wins. Nothing fitted here. Flagged = VERIFY or HOLD. Wilson 95 %. 11.8 ms per text on this CPU.
+Held-out TEST texts of the 7 open sets (n = 6576), each sent through the Scam Check page's path: quick check (scam-text model + asks, band from the policy engine) and the impossible-claim rules, higher band wins. Nothing fitted here. Flagged = VERIFY or HOLD. Wilson 95 %. 11.2 ms per text on this CPU.
 
 | Dataset | scams n | scams flagged | scams HOLD | genuine n | genuine flagged | genuine HOLD |
 |---|---|---|---|---|---|---|
@@ -12,6 +12,16 @@ Held-out TEST texts of the 7 open sets (n = 6576), each sent through the Scam Ch
 | scam_dialogue | 159 | 100.0% [97.6, 100.0] | 31.4% [24.7, 39.0] | 160 | 1.2% [0.3, 4.4] | 1.2% [0.3, 4.4] |
 | uci_sms | 98 | 91.8% [84.7, 95.8] | 2.0% [0.6, 7.1] | 667 | 1.4% [0.7, 2.5] | 0.1% [0.0, 0.8] |
 | ALL | 2213 | 96.6% [95.8, 97.3] | 7.0% [6.1, 8.2] | 4363 | 2.7% [2.2, 3.2] | 0.9% [0.7, 1.3] |
+
+By language (whole path): Other Indian languages = Bengali, Gujarati, Marathi, Punjabi, Kashmiri, Kannada, Malayalam, Telugu, Assamese.
+
+| Language | scams n | scams flagged | genuine n | genuine flagged |
+|---|---|---|---|---|
+| English | 1846 | 95.9% [94.9, 96.8] | 3375 | 3.2% [2.6, 3.8] |
+| English/Hindi SMS | 84 | 100.0% [95.6, 100.0] | 711 | 0.6% [0.2, 1.4] |
+| Hindi | 27 | 100.0% [87.5, 100.0] | 35 | 0.0% [0.0, 9.9] |
+| Hinglish | 128 | 100.0% [97.1, 100.0] | 64 | 6.2% [2.5, 15.0] |
+| Other Indian languages | 128 | 100.0% [97.1, 100.0] | 178 | 0.6% [0.1, 3.1] |
 
 What each part adds (ALL sets): flagged scams / flagged genuine
 
