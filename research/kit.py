@@ -93,11 +93,17 @@ def voices(out: Path, rng: random.Random) -> list[dict]:
     import soundfile as sf
 
     from research.voice.data import load
+    from satyapan.voice.audio_io import estimate_speech_seconds
+    from satyapan.voice.rules import MIN_SPEECH_SECONDS
 
     sp = load("test_itw")
+    # A voice note with under 3 s of speech is "too short to judge" in the product (T17), and
+    # 61 % of In-the-Wild clips are that short. Kit clips come from inside the product's
+    # operating range: chosen by speech length only, never by score or label.
+    long_enough = np.array([estimate_speech_seconds(a) >= MIN_SPEECH_SECONDS for a in sp.audio])
     rows = []
     for label, tag in ((1, "fake"), (0, "real")):
-        idx = sorted(np.flatnonzero(sp.labels == label).tolist())
+        idx = sorted(np.flatnonzero((sp.labels == label) & long_enough).tolist())
         for i, ix in enumerate(rng.sample(idx, min(N_VOICE, len(idx)))):
             f = out / f"{tag}_voice_itw_{i:02d}.wav"
             sf.write(f, sp.audio[ix], 16000, subtype="PCM_16")
