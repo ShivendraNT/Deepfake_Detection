@@ -4,6 +4,7 @@ Backend -> side panel: server-sent events (GET /live/{call_id}/events)."""
 from __future__ import annotations
 
 import asyncio
+import json
 from collections.abc import AsyncIterator
 from typing import Any
 
@@ -63,6 +64,42 @@ def voice(
         raise HTTPException(status_code=404, detail="unknown or stopped call")
     events = state.live().handle_voice(call_id, windows)
     state.repo.put(state.live().sessions[call_id].case)
+    return [e.model_dump(mode="json") for e in events]
+
+
+@router.post("/{call_id}/video")
+async def video(
+    call_id: str,
+    frames: list[UploadFile] = File(...),
+    times: str = Form(...),
+    state: AppState = Depends(get_state),
+) -> list[dict[str, Any]]:
+    """Screen frames of the call (finale video check). JPEG only, at most 64 per request,
+    timestamps in seconds on the capture clock. Frames live in memory for one window only."""
+    from satyapan.video.frames import MAX_FRAMES_PER_POST, decode_jpeg
+
+    if call_id not in state.live().sessions:
+        raise HTTPException(status_code=404, detail="unknown or stopped call")
+    try:
+        ts = [float(t) for t in json.loads(times)]
+    except (ValueError, TypeError) as exc:
+        raise HTTPException(status_code=422, detail="times must be a JSON list of seconds") from exc
+    if len(ts) != len(frames) or not 0 < len(frames) <= MAX_FRAMES_PER_POST:
+        raise HTTPException(status_code=422, detail="one timestamp per frame, 1-64 frames")
+    blobs = [await f.read() for f in frames]
+
+    def work() -> list[Any]:
+        decoded = []
+        for t, blob in zip(ts, blobs, strict=True):
+            try:
+                decoded.append((t, decode_jpeg(blob)))
+            except ValueError:
+                continue  # a corrupt frame is skipped; never stitched or invented
+        return state.live().handle_video(call_id, sorted(decoded, key=lambda x: x[0]))
+
+    events = await run_in_threadpool(work)
+    if call_id in state.live().sessions:
+        state.repo.put(state.live().sessions[call_id].case)
     return [e.model_dump(mode="json") for e in events]
 
 

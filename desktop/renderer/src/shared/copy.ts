@@ -46,6 +46,57 @@ export const COPY_TABLE: Record<string, CopyEntry> = {
     hinglish: 'Aapki di hui files check karna',
     hi: 'आपकी दी हुई फ़ाइलें जाँचना',
   },
+  'consent.scope.video': {
+    en: "When you say yes to a call, also check the other person's face for deepfake signs (screen frames, on this laptop, never saved)",
+    hinglish: "Call ke liye haan kehne par saamne wale ke chehre mein deepfake ke nishaan bhi dekhna (screen frames, isi laptop par, kabhi save nahi)",
+    hi: 'कॉल के लिए हाँ कहने पर सामने वाले के चेहरे में डीपफ़ेक के संकेत भी देखना (स्क्रीन फ़्रेम, इसी लैपटॉप पर, कभी सेव नहीं)',
+  },
+  'face.title': { en: 'Face check', hinglish: 'Chehra check', hi: 'चेहरे की जाँच' },
+  'face.checking': {
+    en: 'Looking at the caller’s face…',
+    hinglish: 'Caller ka chehra dekh raha hoon…',
+    hi: 'कॉल करने वाले का चेहरा देख रहा हूँ…',
+  },
+  'face.no_signs': {
+    en: 'No deepfake signs so far (this is not proof)',
+    hinglish: 'Abhi tak deepfake ke nishaan nahi (yeh saboot nahi hai)',
+    hi: 'अभी तक डीपफ़ेक के संकेत नहीं (यह सबूत नहीं है)',
+  },
+  'face.inconclusive': {
+    en: 'Face check is unsure',
+    hinglish: 'Chehra check pakka nahi keh sakta',
+    hi: 'चेहरे की जाँच पक्का नहीं कह सकती',
+  },
+  'face.likely_synthetic': {
+    en: 'The face looks swapped or AI-made',
+    hinglish: 'Chehra badla hua ya AI se bana lagta hai',
+    hi: 'चेहरा बदला हुआ या AI से बना लगता है',
+  },
+  'face.unavailable': {
+    en: 'Face check is not installed on this laptop',
+    hinglish: 'Is laptop par chehra check install nahi hai',
+    hi: 'इस लैपटॉप पर चेहरे की जाँच इंस्टॉल नहीं है',
+  },
+  'face.problem.no_face': {
+    en: 'No face on screen — show the caller’s video',
+    hinglish: 'Screen par chehra nahi — caller ka video dikhao',
+    hi: 'स्क्रीन पर चेहरा नहीं — कॉल करने वाले का वीडियो दिखाएँ',
+  },
+  'face.problem.face_too_small': {
+    en: 'Face too small — pin or enlarge the caller’s video',
+    hinglish: 'Chehra bahut chhota — caller ka video pin ya bada karo',
+    hi: 'चेहरा बहुत छोटा — कॉल करने वाले का वीडियो पिन या बड़ा करें',
+  },
+  'face.problem.bad_lighting': {
+    en: 'Too dark or too bright to judge the face',
+    hinglish: 'Chehra judge karne ke liye bahut andhera ya roshni',
+    hi: 'चेहरा परखने के लिए बहुत अँधेरा या बहुत रोशनी',
+  },
+  'face.problem.too_short': { en: 'Need a few more seconds', hinglish: 'Kuch second aur chahiye', hi: 'कुछ सेकंड और चाहिए' },
+  'face.cue.blend': { en: 'Blending at the face edge', hinglish: 'Chehre ke kinare par blending', hi: 'चेहरे के किनारे पर ब्लेंडिंग' },
+  'face.cue.pulse': { en: 'No steady pulse in the skin', hinglish: 'Twacha mein ek-sa pulse nahi', hi: 'त्वचा में एक-सी नब्ज़ नहीं' },
+  'face.cue.light': { en: 'Lighting doesn’t match', hinglish: 'Roshni mel nahi khaati', hi: 'रोशनी मेल नहीं खाती' },
+  'face.cue.lipsync': { en: 'Lips out of sync', hinglish: 'Honth awaaz se mel nahi khaate', hi: 'होंठ आवाज़ से मेल नहीं खाते' },
   'consent.never': {
     en: 'Never: your microphone, recordings, or sending anything off this laptop.',
     hinglish: 'Kabhi nahi: aapka mic, recording, ya laptop se bahar kuch bhejna.',

@@ -153,6 +153,27 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.HI: "कॉल करने वाले की आवाज़ लगातार दो हिस्सों में AI से बनी हुई लगती है। इस कॉल पर "
         "कार्रवाई न करें; OOB-Confirm या दर्ज नंबर पर कॉल-बैक के ज़रिए पुष्टि करें।",
     },
+    # --- video (face) ---
+    ReasonCode.VIDEO_NO_SIGNS: {
+        Lang.EN: "The face check found no signs of a swapped or generated face in this video. "
+        "Video can be faked in ways we cannot see; keep the other checks running and do not "
+        "treat this as approval.",
+        Lang.HI: "चेहरे की जाँच में इस वीडियो में बदले हुए या AI से बने चेहरे के संकेत नहीं मिले। "
+        "वीडियो ऐसे भी नकली हो सकता है जो हमें न दिखे; बाकी जाँच जारी रखें और इसे मंज़ूरी न मानें।",
+    },
+    ReasonCode.VIDEO_INCONCLUSIVE: {
+        Lang.EN: "The face check could not decide, or the face was too small, dark or hidden to "
+        "check. Treat it as undecided and confirm the request out of band before you act.",
+        Lang.HI: "चेहरे की जाँच तय नहीं कर पाई, या चेहरा जाँच के लिए बहुत छोटा, अँधेरे में या छिपा "
+        "हुआ था। इसे अनिर्णित मानें और कार्रवाई से पहले दूसरे चैनल से पुष्टि करें।",
+    },
+    ReasonCode.VIDEO_LIKELY_SYNTHETIC: {
+        Lang.EN: "The face on the video shows signs of being swapped or AI-generated in two "
+        "windows in a row. Do not act on this call; confirm through OOB-Confirm or a callback "
+        "on the number on file.",
+        Lang.HI: "वीडियो में दिख रहा चेहरा लगातार दो हिस्सों में बदला हुआ या AI से बना लगता है। "
+        "इस कॉल पर कार्रवाई न करें; OOB-Confirm या दर्ज नंबर पर कॉल-बैक के ज़रिए पुष्टि करें।",
+    },
     # --- asks ---
     ReasonCode.ASK_NEW_ACCOUNT: {
         Lang.EN: "The message asks you to pay a new or changed bank account. Do not update the "

@@ -109,6 +109,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/report/pack_v2.py` | C12 golden-hour report copilot (5 drafts) | F11 | done |
 | `src/satyapan/citizen/rules.py` | stretch S1 | T24 | todo |
 | `src/satyapan/seal/` | C14 Satyapan Seal: Voice Seal + Intent Seal (docs/SEAL.md) | SEAL (lead) | done (R1 prototype) |
+| `src/satyapan/video/` | C15 video deepfake check: face tracking, blend CNN, pulse, lighting, lip-sync, fusion, rule (docs/VIDEO_DEEPFAKE.md) | finale (lead) | done (prototype) |
 | `src/satyapan/pipeline.py` | evidence → detectors → decision | T01 | done |
 | `src/satyapan/context/boilerplate.py` | C5 pre-filter: footers, quoted bank notifications, protective warnings (ADR-021) | lead | done |
 | `src/satyapan/repository.py` | in-memory case store | T01 | done |

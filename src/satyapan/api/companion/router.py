@@ -78,6 +78,7 @@ def health(state: AppState = Depends(get_state)) -> dict[str, object]:
         # Finale readiness: can Satya hear (speech engine) and judge voices (model files)?
         "asr": state.asr_status(),
         "voice_model": _voice_model_present(),
+        "video": state.video_status(),
         "vendors": len(state.master.vendors),
     }
 

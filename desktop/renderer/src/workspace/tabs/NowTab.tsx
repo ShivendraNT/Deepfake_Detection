@@ -315,6 +315,19 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
               }
             />
             <CheckRow
+              ok={health ? Boolean(health.video?.ready) : null}
+              optional
+              title="Face check for video calls (optional)"
+              detail={
+                health?.video?.ready
+                  ? `Installed (${health.video.model ?? 'model'}). Looks at the caller's face only after you say yes; it can only raise the band.${
+                      health.video.calibrated ? '' : ' Not yet calibrated on our own webcam calls.'
+                    }`
+                  : `Not installed${health?.video?.error ? ` (${health.video.error})` : ''}. Calls are still listened to.`
+              }
+              fix="uv sync --extra video && make video-models"
+            />
+            <CheckRow
               ok={health ? health.vendors > 0 : null}
               title="Vendor master"
               detail={health ? `${health.vendors} vendors loaded (trusted floor for every payment).` : 'Unknown.'}

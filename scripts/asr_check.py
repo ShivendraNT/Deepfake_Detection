@@ -15,6 +15,9 @@ import sys
 import time
 from pathlib import Path
 
+ROOT = Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT / "src"))
+
 import numpy as np
 
 from satyapan.adapters.transcribe_local import (
@@ -26,8 +29,6 @@ from satyapan.adapters.transcribe_local import (
 )
 from satyapan.asks.phrasebook import extract_cues, extract_live_asks
 from satyapan.context import strip_context
-
-ROOT = Path(__file__).resolve().parents[1]
 REPLAY = ROOT / ".cache" / "replay" / "cfo_call_en.wav"
 
 

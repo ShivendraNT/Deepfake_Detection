@@ -190,3 +190,23 @@ process and live in memory for that call; the companion bus (which has replayabl
 carries transcript text, only ask quotes the user needs to see why Satya paused.
 **Why:** judges must see a real call flagged live; a deaf demo that silently "listens" is worse
 than no demo. Local ASR keeps call audio on the laptop.
+
+### ADR-025 Video deepfake check: real-faces-only blend CNN + physiological cues, raise-only (finale)
+**Decision:** during a call the user said yes to (and only with the `video` consent scope), the
+capture window keeps the screen video track and posts ~15 downscaled JPEG frames/s to the local
+engine; `src/satyapan/video/` tracks the largest face (MediaPipe Face Landmarker, 478 points) and
+scores 6 s windows (3 s hop) from four cues: a blend-artifact CNN (EfficientNet-B0) trained only on
+**real** faces with self-blended pseudo-fakes (SBI, Shiohara & Yamasaki 2022), rPPG pulse
+coherence (POS), region lighting/colour/specular consistency and lip-sync. A logistic fusion is
+fitted with identity-grouped 5-fold CV on FF++ train; thresholds come from FF++ val reals only
+(1% / 5% window FPR). Two consecutive windows over tau_hi -> `VIDEO_LIKELY_SYNTHETIC` (media
+group, ML, PLUS_ONE: one band above the floor, never HOLD on its own); `VIDEO_NO_SIGNS` and
+`VIDEO_INCONCLUSIVE` are informational (NONE). No usable face (camera off, face < 64 px, too dark)
+is an abstention, never a grey flag. Makers see labels, never scores.
+**Privacy:** frames live in RAM for one window and are dropped; nothing is written to disk;
+127.0.0.1 only. Video files handed to Satya go through the vault like any evidence.
+**Why:** the brief asks for deepfake detection, and a live video CFO is the T-1 threat. Training on
+real faces only means no deepfake method is "seen", which is the honest way to claim
+generalisation; the transaction floor and OOB-Confirm still carry the decision when the face
+check is wrong (docs/VIDEO_DEEPFAKE.md has the measured numbers and what we do not claim).
+

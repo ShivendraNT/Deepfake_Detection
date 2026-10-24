@@ -32,6 +32,8 @@ vault_data/
 *.flac
 extension/models/*
 !extension/models/README.md
+# Video-check models (config/video_models.json lists URLs + sha256): never committed.
+models/
 
 # Research data (license: never commit dataset text or paraphrases)
 research/_data/

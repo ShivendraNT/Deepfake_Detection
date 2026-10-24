@@ -423,7 +423,7 @@ export type BubbleCard =
       kind: 'file_ask'
       id: string
       file_name: string
-      file_kind: 'email' | 'pdf' | 'audio' | 'text' | 'image'
+      file_kind: 'email' | 'pdf' | 'audio' | 'video' | 'text' | 'image'
       actions: CardAction[]
     }
   | {
@@ -440,6 +440,8 @@ export type BubbleCard =
       transcribing?: boolean
       demo?: boolean
       started_at?: string | null
+      /** Finale video check on the other person's face (labels only, never a score). */
+      face?: FaceCheck | null
     }
   | { kind: 'result'; id: string; band: Band; headline: string; reasons: string[]; actions: CardAction[] }
   | {
@@ -619,6 +621,24 @@ export interface ScreenFinding {
   suspicious: boolean
 }
 
+/**
+ * Video check on the other person's face (docs/VIDEO_DEEPFAKE.md). The policy engine still sets
+ * the band; this is what Satya shows on the live card. `checking` = frames are being looked at,
+ * `unavailable` = this laptop lacks the video engine (the call is still listened to).
+ */
+export type FaceCheckLabel = 'checking' | 'no_signs' | 'inconclusive' | 'likely_synthetic' | 'unavailable'
+/** Why a window could not be judged. */
+export type FaceProblem = 'no_face' | 'face_too_small' | 'bad_lighting' | 'too_short'
+/** Which checks looked unusual: blending at the face edge, pulse, lighting, lip-sync. */
+export type FaceCue = 'blend' | 'pulse' | 'light' | 'lipsync'
+
+export interface FaceCheck {
+  label: FaceCheckLabel
+  problem: FaceProblem | null
+  cues: FaceCue[]
+  windows: number
+}
+
 /** What the user agreed to on the consent card. Each scope can be switched off. */
 export interface Scopes {
   /** Notice meetings from window titles (no audio, no recording). */
@@ -629,9 +649,14 @@ export interface Scopes {
   screen: boolean
   /** Check files you hand over. */
   files: boolean
+  /**
+   * When you say yes to a call (or to "check a video on my screen"), also look at the other
+   * person's face in screen frames for deepfake signs. On-device, in memory, never saved.
+   */
+  video: boolean
 }
 
-export const DEFAULT_SCOPES: Scopes = { meetings: true, listen: true, screen: true, files: true }
+export const DEFAULT_SCOPES: Scopes = { meetings: true, listen: true, screen: true, files: true, video: true }
 
 export interface MeetingInfo {
   app: string
@@ -649,10 +674,18 @@ export interface AsrHealth {
   language?: string
 }
 
+export interface VideoHealth {
+  ready: boolean
+  error: string | null
+  model: string | null
+  calibrated?: boolean
+}
+
 export interface HealthInfo {
   backend: boolean
   asr: AsrHealth | null
   voice_model: boolean
+  video?: VideoHealth | null
   vendors: number
   oob_url?: string
   error?: string
@@ -675,6 +708,7 @@ export type SatyaSignal =
   | { kind: 'level'; value: number }
   | { kind: 'transcribing'; index: number }
   | { kind: 'caption'; call_id: string; line: CaptionLine }
+  | { kind: 'face'; call_id: string; face: FaceCheck }
   | {
       kind: 'text_check'
       source: 'screen' | 'clipboard'

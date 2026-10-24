@@ -119,6 +119,7 @@ class Channel(StrEnum):
     VOICE_NOTE = "voice_note"
     CALL_RECORDING = "call_recording"
     LIVE_CALL = "live_call"
+    VIDEO = "video"  # a recorded video handed to Satya (call recording, forwarded clip)
     WHATSAPP_TEXT = "whatsapp_text"
     MANUAL = "manual"
 
@@ -153,6 +154,14 @@ class ClearanceMethod(StrEnum):
 
 
 class VoiceLabel(StrEnum):
+    LIKELY_SYNTHETIC = "likely_synthetic"
+    INCONCLUSIVE = "inconclusive"
+    NO_SIGNS = "no_signs"
+
+
+class VideoLabel(StrEnum):
+    """Video deepfake check result (docs/VIDEO_DEEPFAKE.md). Mirrors VoiceLabel."""
+
     LIKELY_SYNTHETIC = "likely_synthetic"
     INCONCLUSIVE = "inconclusive"
     NO_SIGNS = "no_signs"
@@ -215,6 +224,10 @@ class ReasonCode(StrEnum):
     VOICE_NO_SIGNS = "VOICE_NO_SIGNS"
     VOICE_INCONCLUSIVE = "VOICE_INCONCLUSIVE"
     VOICE_LIKELY_SYNTHETIC = "VOICE_LIKELY_SYNTHETIC"
+    # Video (C15, docs/VIDEO_DEEPFAKE.md): face blending, pulse, lighting, lip-sync cues
+    VIDEO_NO_SIGNS = "VIDEO_NO_SIGNS"
+    VIDEO_INCONCLUSIVE = "VIDEO_INCONCLUSIVE"  # also: no usable face (camera off, too small)
+    VIDEO_LIKELY_SYNTHETIC = "VIDEO_LIKELY_SYNTHETIC"
     # Asks (C5)
     ASK_NEW_ACCOUNT = "ASK_NEW_ACCOUNT"
     ASK_CREDENTIAL = "ASK_CREDENTIAL"

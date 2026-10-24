@@ -12,6 +12,8 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from datetime import UTC, datetime
+from pathlib import Path
+from typing import Any
 
 from satyapan.adapters.base import Transcriber
 from satyapan.contracts.case import Case
@@ -40,6 +42,8 @@ class PipelineContext:
     # ADR-024: product surfaces (files handed to Satya) add the live phrasebook on top of the
     # frozen lexicon. Research runs keep the default (False) so measured numbers reproduce.
     live_phrasebook: bool = False
+    # Finale video check (docs/VIDEO_DEEPFAKE.md): a VideoAnalyzer, or None if unavailable.
+    video: Any = None
 
 
 def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> DetectorOutput:
@@ -157,6 +161,45 @@ def _voice_transcript_only(data: bytes, ev: Evidence, ctx: PipelineContext) -> D
     return _asks(result.text, ev.id, ctx, out)
 
 
+def _video(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
+    """A recorded video (call recording, forwarded clip): face check + what was asked.
+
+    No analyzer on this laptop -> the face is "not_analysed" (an abstention, not a finding,
+    so no grey reason); the speech is still checked for asks when a transcriber exists."""
+    out = DetectorOutput(detector="video", version="0.1.0", evidence_id=ev.id)
+    if ctx.video is not None:
+        from satyapan.video.io import TempVideo, iter_frames, read_audio
+        from satyapan.video.rules import video_signal
+
+        suffix = Path(ev.filename or "clip.mp4").suffix or ".mp4"
+        with TempVideo(data, suffix) as path:
+            audio = read_audio(path)
+            windows = ctx.video.analyze_frames(iter_frames(path), audio)
+        verdict = ctx.video.verdict(windows)
+        cues = sorted({c for w in windows for c in w.cues})
+        out.signals.append(video_signal(verdict, ctx.video.thresholds, [ev.id], cues))
+        out.version = ctx.video.thresholds.model_version
+        out.artifacts.update(
+            {
+                "video_label": verdict.label.value,
+                "windows": verdict.windows,
+                "usable_windows": verdict.usable_windows,
+                "cues": cues,
+                "problem": verdict.problem,
+            }
+        )
+    else:
+        out.artifacts["video_label"] = "not_analysed"
+    if ctx.transcriber is not None:
+        try:
+            result = ctx.transcriber.transcribe(data, ev.media_type)
+        except (RuntimeError, ValueError):
+            return out  # no speech engine or no decodable audio: the face check still stands
+        out.artifacts["transcript"] = result.text
+        return _asks(result.text, ev.id, ctx, out)
+    return out
+
+
 def _text(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
     text = data.decode("utf-8", errors="replace")
     out = DetectorOutput(detector="ask_extractor", version="see lexicon", evidence_id=ev.id)
@@ -168,6 +211,7 @@ _DISPATCH: dict[Channel, Callable[[bytes, Evidence, Case, PipelineContext], Dete
     Channel.PDF: _pdf,
     Channel.VOICE_NOTE: _voice,
     Channel.CALL_RECORDING: _voice,
+    Channel.VIDEO: _video,
     Channel.WHATSAPP_TEXT: _text,
     Channel.MANUAL: _text,
 }

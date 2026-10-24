@@ -113,6 +113,7 @@ LIVE_CHUNK_SECONDS = 10.0
 _TEXT_SUFFIXES = {".txt", ".md", ".csv", ".json", ".log"}
 _EMAIL_SUFFIXES = {".eml", ".msg", ".mbox"}
 _VOICE_SUFFIXES = {".wav", ".m4a", ".ogg", ".opus", ".mp3", ".webm"}
+_VIDEO_SUFFIXES = {".mp4", ".mov", ".m4v", ".mkv", ".avi"}
 
 
 class CompanionError(ValueError):
@@ -565,6 +566,7 @@ class CompanionService:
             if self._call_id is not None:
                 # A new, explicitly consented start supersedes a call that was never stopped
                 # (crashed client, closed laptop lid). Its buffers are released first.
+                live.stop_video(self._call_id)
                 live.sessions.pop(self._call_id, None)
                 self._record("call.superseded", actor, f"call={self._call_id} released")
                 self._call_id = None
@@ -627,6 +629,7 @@ class CompanionService:
             target = call_id or active
             if target != active:
                 raise CompanionError("that is not the active call")
+            state.live().stop_video(target)
             state.live().sessions.pop(target, None)
             self._call_id = None
             self._call_case_id = None
@@ -820,6 +823,7 @@ class CompanionService:
                 thresholds=state.thresholds,
                 transcriber=state.transcriber(),
                 live_phrasebook=True,
+                video=state.video() if channel == Channel.VIDEO else None,
             )
             out = analyze_evidence(data, ev, case, ctx)
             case = recompute(merge_output(case, ev, out), state.master)
@@ -1606,6 +1610,8 @@ def _channel_for(filename: str | None, media_type: str) -> Channel:
         return Channel.EMAIL
     if suffix == ".pdf" or media_type == "application/pdf":
         return Channel.PDF
+    if suffix in _VIDEO_SUFFIXES or media_type.startswith("video/"):
+        return Channel.VIDEO
     if suffix in _VOICE_SUFFIXES or media_type.startswith("audio/"):
         return Channel.VOICE_NOTE
     if suffix in _TEXT_SUFFIXES or media_type.startswith("text/"):

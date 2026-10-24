@@ -170,12 +170,14 @@ export class BackendClient {
       const raw = (await this.request('/companion/health')) as {
         asr?: HealthInfo['asr']
         voice_model?: boolean
+        video?: HealthInfo['video']
         vendors?: number
       }
       return {
         backend: true,
         asr: raw.asr ?? null,
         voice_model: Boolean(raw.voice_model),
+        video: raw.video ?? null,
         vendors: raw.vendors ?? 0,
         oob_url: this.config().oob_url,
       }

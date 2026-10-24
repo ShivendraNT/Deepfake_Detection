@@ -9,6 +9,8 @@ real ever goes into a free AI model.**
    banks "Fictional Bank A-E", IFSC `FAK…`, account numbers `9999…`, phones `+91-00000-…`,
    GSTINs with state code `00`, UTRs `FAKEUTR…`. `tests/contracts/test_fixtures.py` checks this.
 2. **No media in the repo.** No `.wav/.mp3/.ogg/.mp4/.webm` (test enforced). Tests generate tones.
+   Research video data lives **outside** the checkout (`$SATYAPAN_VIDEO_DATA`, default
+   `../satyapan-data/video`); only manifests (path, sha256, label, split) are committed.
 3. **Nothing real in prompts to free models.** OpenCode Zen free models (some may train on data,
    e.g. big-pickle), Gemini free tier and others may use prompts for training. Never paste: real
    or consented voices/videos, bank details, customer data, ICFD text or paraphrases, API keys.
@@ -32,6 +34,10 @@ real ever goes into a free AI model.**
 | HF scam_ham_india_14_languages | MIT | transfer check | — |
 | Pascu et al. browser-plugin ONNX models | **no license file** | use locally, cite, email authors on Day 1 | commit or redistribute the `.onnx` files |
 | In-the-Wild, HAV-DF, IndieFake | check each license before download | evaluation | redistribution of audio |
+| FaceForensics++ c23 (Rossler et al. 2019; official splits from github.com/ondyari/FaceForensics) | FF++ terms: non-commercial research; files read from the public HF mirror `gonnerthetooner/FaceForensics` (copy of Kaggle `xdxd003/ff-c23`) | train the blend CNN on **real** videos only; fit the fusion on train; thresholds on val; evaluate on test | commit any frame/crop/video; redistribute the trained `blend_b0.onnx` outside the team; use it commercially without retraining on licensed data |
+| DFDC train parts 0-2 (Dolhansky et al. 2020; paid, consenting actors) | DFDC terms: research; HF mirror `gonnerthetooner/DFDC-extracted-full` | cross-dataset **test only** (never trained or tuned on) | redistribute videos or audio |
+| Piper TTS `en_US-ryan-medium` | public synthetic voice (MIT/CC per rhasspy/piper-voices) | the "real face + synthetic voice" lip-sync test | — |
+| MediaPipe Face Landmarker (`face_landmarker.task`) | Apache-2.0 | face tracking in the product and the benchmark | — |
 | SSL_Anti-spoofing (backup) | *verify license* | — | — |
 
 ## 4. DPDP Act 2023 data-flow table (lawful basis to confirm with counsel)

@@ -23,18 +23,20 @@ const SCOPE_ROWS: Array<{ key: keyof Scopes; label: string }> = [
   { key: 'listen', label: 'consent.scope.listen_yes' },
   { key: 'screen', label: 'consent.scope.screen' },
   { key: 'files', label: 'consent.scope.files_v2' },
+  { key: 'video', label: 'consent.scope.video' },
 ]
 
-/** "start_watching:1101" — the four scope switches in SCOPE_ROWS order. */
+/** "start_watching:11011" — the scope switches in SCOPE_ROWS order. */
 export function encodeScopes(scopes: Scopes): string {
   return SCOPE_ROWS.map((row) => (scopes[row.key] ? '1' : '0')).join('')
 }
 
 export function decodeScopes(bits: string | undefined): Scopes {
-  if (!bits || !/^[01]{4}$/.test(bits)) return { ...DEFAULT_SCOPES }
+  // Four bits = a card from before the video scope existed: video keeps its default.
+  if (!bits || !/^[01]{4,5}$/.test(bits)) return { ...DEFAULT_SCOPES }
   const out = { ...DEFAULT_SCOPES }
   SCOPE_ROWS.forEach((row, index) => {
-    out[row.key] = bits[index] === '1'
+    if (index < bits.length) out[row.key] = bits[index] === '1'
   })
   return out
 }

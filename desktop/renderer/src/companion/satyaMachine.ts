@@ -16,6 +16,7 @@ import type {
   CompanionEvent,
   CompanionMode,
   CompanionPayload,
+  FaceCheck,
   HealthInfo,
   MeetingInfo,
   NextAction,
@@ -48,6 +49,8 @@ export interface SatyaState {
   callDemo: boolean
   callStatus: string | null
   health: HealthInfo | null
+  /** Finale video check for the current call (labels only). */
+  face: FaceCheck | null
 }
 
 export type SatyaAction =
@@ -85,6 +88,7 @@ export const initialSatyaState: SatyaState = {
   callDemo: false,
   callStatus: null,
   health: null,
+  face: null,
 }
 
 const MAX_LINES = 8
@@ -97,6 +101,7 @@ const CALL_RESET = {
   callStartedAt: null,
   callDemo: false,
   callStatus: null,
+  face: null,
 }
 
 const CHECK_ACTIONS: CardAction[] = [
@@ -133,6 +138,7 @@ export function fileKindOf(name: string, mediaType = ''): FileKind {
   const type = mediaType.toLowerCase()
   if (lower.endsWith('.eml') || lower.endsWith('.msg') || type === 'message/rfc822') return 'email'
   if (lower.endsWith('.pdf') || type === 'application/pdf') return 'pdf'
+  if (/\.(mp4|mov|m4v|mkv|avi)$/.test(lower) || type.startsWith('video/')) return 'video'
   if (/\.(wav|m4a|mp3|ogg|opus|aac|flac)$/.test(lower) || type.startsWith('audio/')) return 'audio'
   if (/\.(png|jpe?g|webp|gif|heic|bmp)$/.test(lower) || type.startsWith('image/')) return 'image'
   return 'text'
@@ -190,6 +196,7 @@ function liveCard(event: CompanionEvent, callId: string | null, state?: SatyaSta
     transcribing: state?.transcribing ?? false,
     demo: state?.callDemo ?? false,
     started_at: state?.callStartedAt ?? event.occurred_at,
+    face: state?.face ?? null,
   }
 }
 
@@ -210,6 +217,7 @@ function restoreLive(state: SatyaState): BubbleCard | null {
     transcribing: state.transcribing,
     demo: state.callDemo,
     started_at: state.callStartedAt,
+    face: state.face,
   }
 }
 
@@ -645,6 +653,12 @@ function reduceSignal(state: SatyaState, signal: SatyaSignal, id: string): Satya
     case 'transcribing': {
       if (!state.callId) return state
       const next = { ...state, transcribing: true }
+      return state.card?.kind === 'live' ? { ...next, card: restoreLive(next) } : next
+    }
+    case 'face': {
+      // Labels only. The band still comes from the policy engine (alert.raised).
+      if (state.callId && signal.call_id !== state.callId) return state
+      const next = { ...state, face: signal.face }
       return state.card?.kind === 'live' ? { ...next, card: restoreLive(next) } : next
     }
     case 'caption': {
