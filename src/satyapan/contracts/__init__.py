@@ -52,6 +52,7 @@ from satyapan.contracts.evidence import (
     Signal,
 )
 from satyapan.contracts.explain import (
+    CitizenFileResult,
     CitizenResult,
     EvidenceItemForLLM,
     Explanation,
@@ -138,6 +139,7 @@ __all__ = [
     "CaseStatus",
     "ChainVerification",
     "Channel",
+    "CitizenFileResult",
     "CitizenResult",
     "ClearanceMethod",
     "ClearanceRequirement",

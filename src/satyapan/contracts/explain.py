@@ -49,3 +49,14 @@ class CitizenResult(Model):
     action_text: str
     rule_hits: list[str] = Field(default_factory=list)
     links: dict[str, str] = Field(default_factory=dict)  # {"call_1930": "tel:1930", ...}
+
+
+class CitizenFileResult(CitizenResult):
+    """Citizen check of any message or file (finale): band + action + plain reasons; never
+    scores. `checked` / `not_checked` say what this device could and could not look at."""
+
+    why: list[str] = Field(default_factory=list)
+    checked: list[str] = Field(default_factory=list)
+    not_checked: list[str] = Field(default_factory=list)
+    heard_or_read: str | None = None  # what the voice note said / the screenshot read
+    seconds: float = 0.0
