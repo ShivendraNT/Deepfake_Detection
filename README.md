@@ -53,7 +53,7 @@ make check RUN=
 | `docs/ARCHITECTURE.md` | design: components, policy tables, API, AWS mapping, failure modes |
 | `docs/THREAT_MODEL.md`, `docs/DATA_POLICY.md` | security + privacy/ethics |
 | `docs/RESEARCH_PROTOCOL.md`, `docs/EVALUATION.md` | paper protocol + honest product numbers |
-| `docs/finale/` | finale plan + mascot spec (demo script in `PLAN.md` §7) |
+| `docs/finale/` | finale plan, mascot spec, **live demo runbook** (`LIVE_DEMO.md`) |
 | `docs/DEMO_SCRIPT.md` | the Round-1 demo (superseded by `docs/finale/PLAN.md` §7) |
 | `team/` | each person's finale cards |
 | `desktop/` | Electron app: Satya the companion |
@@ -77,6 +77,34 @@ Read in this order:
 
 Desktop quickstart: `cd desktop && npm install && npm run dev:web` (browser + mock, port 5174)
 or `npm run dev` (Electron). Backend: `make run`.
+
+### Satya, live (finale build)
+
+Satya is a living desktop companion (procedural, spring-animated mascot with 12 poses and ~20
+reactions) that starts **asleep** and only watches after a consent card. On a real call he:
+
+1. notices the meeting window (Meet, Zoom, Teams, WhatsApp, Webex, Slack huddle…) and asks to listen;
+2. hears **only what the laptop plays** (system audio, never the microphone), cuts it at pauses and
+   transcribes it **on the laptop** (Whisper via `make asr`), captions about a second behind speech;
+3. highlights the *asks* (new account, secrecy, skip the approval, read me the OTP, remote access,
+   gift cards, changed bank details; English + Hinglish) and context cues (rush, authority,
+   "can't talk", amounts). The policy engine sets the band; evidence can only raise it;
+4. one tap sends the exact question to the real approver's phone (OOB-Confirm over the LAN);
+5. if money already left: the golden-hour report pack (1930 script, NCRP fields, bank recall
+   letter) is drafted with the UTR. A human submits it; nothing is sent automatically.
+
+Also: Screen Guard (on-device OCR of what is on screen, on request or every few seconds when
+allowed), clipboard check, file/voice-note checks, an expert view of how the policy decided, and
+"hide Satya from screen sharing".
+
+```bash
+make asr && make demo-audio && make doctor   # once per laptop (speech engine + replay audio)
+make live                                     # engine for the demo (no reload, warmed up)
+cd desktop && npm run build && npm run preview
+```
+
+The step-by-step live demo (two laptops, a phone hotspot, permissions, script, fallbacks):
+**`docs/finale/LIVE_DEMO.md`**.
 
 ## What is already built
 

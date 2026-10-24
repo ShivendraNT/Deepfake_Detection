@@ -6,12 +6,15 @@ HTTP. No endpoint accepts a band or a raw score (see models.py). SSE is the only
 
 from __future__ import annotations
 
+import os
 import queue
+import re
 from collections.abc import Iterator
+from datetime import datetime
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, UploadFile
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from satyapan.api.auth import Actor, get_actor, get_state
 from satyapan.api.companion.models import (
@@ -32,6 +35,8 @@ from satyapan.api.companion.models import (
     EvidenceSubmitResponse,
     OobTicket,
     ReportPackV2,
+    ScreenTextRequest,
+    ScreenTextResponse,
     SessionStartRequest,
     SessionStartResponse,
     WorkspaceSnapshot,
@@ -70,7 +75,18 @@ def health(state: AppState = Depends(get_state)) -> dict[str, object]:
         "manual_only": True,
         "default_mode": "SLEEP",
         "bus": svc.bus.stats(),
+        # Finale readiness: can Satya hear (speech engine) and judge voices (model files)?
+        "asr": state.asr_status(),
+        "voice_model": _voice_model_present(),
+        "vendors": len(state.master.vendors),
     }
+
+
+def _voice_model_present() -> bool:
+    from pathlib import Path
+
+    models = Path(__file__).resolve().parents[4] / "extension" / "models"
+    return (models / "model.onnx").exists() and (models / "logreg_prob.onnx").exists()
 
 
 @router.get("/state", response_model=CompanionStateSnapshot)
@@ -237,15 +253,54 @@ def request_oob(
         raise _http_error(exc) from exc
 
 
+@router.post("/text-check", response_model=ScreenTextResponse)
+def text_check(
+    request: ScreenTextRequest,
+    source: str = Query(default="screen", pattern=r"^(screen|clipboard)$"),
+    actor: Actor = Depends(get_actor),
+    state: AppState = Depends(get_state),
+) -> ScreenTextResponse:
+    """Screen Guard / clipboard check on text OCR'd or copied on this laptop. Not stored.
+
+    Requires a consented session (Screen Guard is one of the consent scopes)."""
+    del actor
+    svc = _service(state)
+    if svc.snapshot().session_id is None:
+        raise HTTPException(status_code=403, detail="start a consented session first")
+    finding = svc.check_text(request.text, app=request.app, source=source)
+    return ScreenTextResponse(finding=finding)
+
+
+@router.get("/replay/{name}")
+def replay_audio(name: str) -> FileResponse:
+    """The labelled DEMO REPLAY recording for the presenter fallback (local file, never real
+    media). Generate it with `make demo-audio`, or drop a consented take with the same name."""
+    from pathlib import Path
+
+    if not re.fullmatch(r"[a-z0-9_]{1,64}\.wav", name):
+        raise HTTPException(status_code=400, detail="bad replay name")
+    root = Path(__file__).resolve().parents[4]
+    folders = (
+        [Path(os.environ["SATYAPAN_REPLAY_DIR"])] if os.environ.get("SATYAPAN_REPLAY_DIR") else []
+    )
+    for folder in [*folders, root / ".cache" / "replay"]:
+        path = folder / name
+        if path.is_file():
+            return FileResponse(path, media_type="audio/wav")
+    raise HTTPException(status_code=404, detail="replay audio missing: run `make demo-audio`")
+
+
 @router.get("/report-pack", response_model=ReportPackV2)
 def report_pack(
     case_id: str = Query(..., pattern=r"^case_[A-Za-z0-9_\-]+$"),
+    utr: str | None = Query(default=None, pattern=r"^[A-Za-z0-9]{6,30}$"),
+    money_left_at: datetime | None = Query(default=None),
     actor: Actor = Depends(get_actor),
     state: AppState = Depends(get_state),
 ) -> ReportPackV2:
     del actor
     try:
-        return _service(state).report_pack(case_id)
+        return _service(state).report_pack(case_id, utr=utr, money_left_at=money_left_at)
     except CompanionNotFound as exc:
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 

@@ -146,6 +146,16 @@ class OOBService:
 
         return ["in_app", "ses"] if isinstance(self.mailer, SesMailer) else ["in_app"]
 
+    def lookup(self, token: str, session_employee_id: str) -> OOBRequest:
+        """Read-only view of a request for the approver's phone page. Same checks as respond():
+        the token must exist and the logged-in employee must be the requester."""
+        req = self._store.get(hashlib.sha256(token.encode()).hexdigest())
+        if req is None:
+            raise UnknownTokenError("no OOB request for this token")
+        if session_employee_id != req.requester_employee_id:
+            raise WrongResponderError("only the requested person may see this")
+        return req
+
     def respond(
         self, token: str, approve: bool, session_employee_id: str, now: datetime
     ) -> OOBRequest:

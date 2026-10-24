@@ -26,6 +26,18 @@
         "span_text": {
           "title": "Span Text",
           "type": "string"
+        },
+        "t_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "T S"
         }
       },
       "required": [
@@ -166,6 +178,18 @@
         "message": {
           "title": "Message",
           "type": "string"
+        },
+        "code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Code"
         }
       },
       "required": [
@@ -204,6 +228,37 @@
           "default": "unknown",
           "title": "Language",
           "type": "string"
+        },
+        "t_end_s": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "T End S"
+        },
+        "spans": {
+          "items": {
+            "$ref": "#/$defs/TranscriptSpan"
+          },
+          "title": "Spans",
+          "type": "array"
+        },
+        "latency_ms": {
+          "anyOf": [
+            {
+              "type": "number"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Latency Ms"
         }
       },
       "required": [
@@ -213,6 +268,42 @@
         "text"
       ],
       "title": "TranscriptEvent",
+      "type": "object"
+    },
+    "TranscriptSpan": {
+      "additionalProperties": false,
+      "description": "A highlight inside `TranscriptEvent.text` (character offsets, end exclusive).\n\nkind \"ask\": an A1-A7 ask that became a deterministic signal (the policy decides its effect).\nkind \"cue\": an informational context cue (RUSH, AUTHORITY, UNREACHABLE, AMOUNT) that is\nshown to the user and NEVER changes a band.",
+      "properties": {
+        "kind": {
+          "enum": [
+            "ask",
+            "cue"
+          ],
+          "title": "Kind",
+          "type": "string"
+        },
+        "code": {
+          "title": "Code",
+          "type": "string"
+        },
+        "start": {
+          "minimum": 0,
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "minimum": 0,
+          "title": "End",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "kind",
+        "code",
+        "start",
+        "end"
+      ],
+      "title": "TranscriptSpan",
       "type": "object"
     },
     "VoiceEvent": {

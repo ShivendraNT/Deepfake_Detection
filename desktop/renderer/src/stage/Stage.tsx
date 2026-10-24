@@ -10,6 +10,7 @@ import { AnimatePresence, motion } from 'framer-motion'
 import type { BubbleCard, MascotMood, Pose } from '../../../shared/contracts'
 import { USER_MODE_LABELS } from '../../../shared/contracts'
 import { api } from '../shared/api'
+import type { Lang } from '../shared/copy'
 import { SCENARIO_LIST, SCENARIOS, stepsUntil, type ScenarioKey } from '../shared/mockScenario'
 import Mascot from '../companion/Mascot'
 import BubbleCardView from '../companion/bubble/BubbleCardView'
@@ -42,6 +43,7 @@ export default function Stage(): JSX.Element {
   const [elapsed, setElapsed] = useState(0)
   const [playing, setPlaying] = useState(false)
   const [lastAction, setLastAction] = useState<string | null>(null)
+  const [lang, setLang] = useState<Lang>('en')
 
   const scenario = SCENARIOS[key]
 
@@ -127,6 +129,24 @@ export default function Stage(): JSX.Element {
           >
             Open Notebook
           </button>
+
+          {/* Trilingual Language Toggle (F08 Step 5) */}
+          <div className="flex items-center rounded-lg border border-slate-300 bg-white/70 p-0.5">
+            {(['en', 'hinglish', 'hi'] as Lang[]).map((l) => (
+              <button
+                key={l}
+                type="button"
+                onClick={() => setLang(l)}
+                className={`rounded-md px-2 py-1 text-xs font-mono transition-colors ${
+                  lang === l
+                    ? 'bg-slate-900 text-white font-semibold'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {l}
+              </button>
+            ))}
+          </div>
         </div>
       </header>
 
@@ -159,7 +179,7 @@ export default function Stage(): JSX.Element {
 
       <div className="mt-4 grid grid-cols-1 items-start gap-4 lg:grid-cols-[240px_360px_1fr]">
         <section className="flex flex-col items-center rounded-2xl border border-black/10 bg-white/60 p-4" aria-label="Mascot">
-          <Mascot mood={MOOD[pose]} size={168} />
+          <Mascot pose={pose} mood={MOOD[pose]} size={168} />
           <span className="mt-2 font-mono text-xs text-slate-500">pose: {pose}</span>
         </section>
 
@@ -175,6 +195,7 @@ export default function Stage(): JSX.Element {
               >
                 <BubbleCardView
                   card={card}
+                  lang={lang}
                   onAction={(actionId) => setLastAction(`${card.id} → ${actionId}`)}
                 />
               </motion.div>

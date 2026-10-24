@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
-import type { CompanionEvent, CompanionState } from '../../../shared/contracts'
-import { api } from '../shared/api'
+import type { CaptionLine, CompanionEvent, CompanionState, HealthInfo } from '../../../shared/contracts'
+import { api, onWorkspaceNavigate, workspaceReady } from '../shared/api'
 import Sidebar, {
   TAB_IDS,
   TAB_TITLES,
@@ -33,6 +33,30 @@ export default function Workspace(): JSX.Element {
   const [live, setLive] = useState<LiveSnapshot>(EMPTY_LIVE)
   const [events, setEvents] = useState<CompanionEvent[]>([])
   const [pendingCaseId, setPendingCaseId] = useState<string | null>(null)
+  // Captions of the current call, in memory only (dropped when the call stops).
+  const [captions, setCaptions] = useState<CaptionLine[]>([])
+  const [health, setHealth] = useState<HealthInfo | null>(null)
+
+  useEffect(() => {
+    let active = true
+    const refresh = (): void => {
+      void api.getHealth?.().then((result) => {
+        if (active && result.ok) setHealth(result.data)
+      })
+    }
+    refresh()
+    const timer = window.setInterval(refresh, 5000)
+    const off =
+      api.onSignal?.((signal) => {
+        if (signal.kind === 'caption') setCaptions((lines) => [...lines, signal.line].slice(-200))
+        if (signal.kind === 'health') setHealth(signal.health)
+      }) ?? (() => undefined)
+    return () => {
+      active = false
+      window.clearInterval(timer)
+      off()
+    }
+  }, [])
 
   useEffect(() => {
     let active = true
@@ -46,6 +70,7 @@ export default function Workspace(): JSX.Element {
         return [event, ...current].slice(0, 200)
       })
       setLive((current) => reduceLive(current, event))
+      if (event.type === 'call.started' || event.type === 'call.stopped') setCaptions([])
       setState((current) => mergeState(current, event))
     })
 
@@ -75,6 +100,14 @@ export default function Workspace(): JSX.Element {
     }
   }, [])
 
+  useEffect(() => {
+    const unsubscribe = onWorkspaceNavigate((requested) => {
+      if ((TAB_IDS as readonly string[]).includes(requested)) selectTab(requested as TabId)
+    })
+    workspaceReady()
+    return unsubscribe
+  }, [selectTab])
+
   const openCase = useCallback(
     (caseId: string | null) => {
       setPendingCaseId(caseId)
@@ -101,7 +134,7 @@ export default function Workspace(): JSX.Element {
       content = <EvidenceTab />
       break
     case 'reports':
-      content = <ReportsTab />
+      content = <ReportsTab preferredCaseId={live.lastAlert?.caseId ?? null} />
       break
     case 'privacy':
       content = <PrivacyTab state={state} />
@@ -111,7 +144,7 @@ export default function Workspace(): JSX.Element {
       break
     case 'now':
     default:
-      content = <NowTab state={state} live={live} onOpenCase={openCase} />
+      content = <NowTab state={state} live={live} onOpenCase={openCase} captions={captions} health={health} />
       break
   }
 

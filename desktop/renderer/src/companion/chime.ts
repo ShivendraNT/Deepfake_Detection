@@ -17,7 +17,7 @@ function audio(): AudioContext | null {
 export function playChime(kind: Chime): void {
   const ctx = audio()
   if (!ctx) return
-  if (ctx.state === 'suspended') void ctx.resume()
+  if (ctx.state === 'suspended') void ctx.resume().catch(() => undefined)
 
   const notes =
     kind === 'alert'

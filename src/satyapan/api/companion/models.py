@@ -146,6 +146,14 @@ class AskChip(Model):
     at_s: float | None = Field(default=None, ge=0)
 
 
+class AskQuote(Model):
+    """The exact words that produced an ask chip, so the user sees *why*."""
+
+    code: AskCode
+    text: str = Field(max_length=200)
+    at_s: float | None = None
+
+
 class OobTicket(Model):
     """A challenge sent to an approver from the directory/master. It never carries a band."""
 
@@ -205,6 +213,20 @@ class ReportPackV2(Model):
     auto_submit: Literal[False] = False
 
 
+class ScreenFinding(Model):
+    """What Screen Guard noticed in on-screen text. Informational until the user hands the
+    text to Satya as evidence (then the policy engine decides). Text is never stored."""
+
+    app: str | None = Field(default=None, max_length=80)
+    meeting: str | None = Field(default=None, max_length=80)
+    asks: list[AskQuote] = Field(default_factory=list)
+    cues: list[str] = Field(default_factory=list)
+    accounts_masked: list[str] = Field(default_factory=list)
+    unknown_accounts_masked: list[str] = Field(default_factory=list)
+    vendors: list[str] = Field(default_factory=list)
+    suspicious: bool = False
+
+
 class CompanionEventType(StrEnum):
     STATE_CHANGED = "state.changed"
     ANALYSIS_STARTED = "analysis.started"
@@ -224,6 +246,10 @@ class CompanionEventType(StrEnum):
     OOB_RESULT = "oob.result"
     CASE_UPDATED = "case.updated"
     REPORT_READY = "report.ready"
+    # Speech-engine status for the active call (finale), e.g. "asr_unavailable".
+    CALL_STATUS = "call.status"
+    # Screen Guard (finale): payment tricks noticed in on-screen text, on-device OCR.
+    SCREEN_FINDING = "screen.finding"
 
 
 class DraftKind(StrEnum):
@@ -266,6 +292,13 @@ class CompanionPayload(Model):
     report: ReportPackV2 | None = None
     user_mode: UserMode | None = None
     pose: Pose | None = None
+    # Finale: exact ask quotes, engine status, screen findings. Still no scores; captions
+    # never travel on this bus (see live_fan_in.py).
+    quotes: list[AskQuote] = Field(default_factory=list)
+    status_code: str | None = Field(default=None, max_length=40)
+    screen: ScreenFinding | None = None
+    # Who "Verify" will ask (from the employee directory, never from the call or message).
+    approver_name: str | None = Field(default=None, max_length=120)
 
     @model_validator(mode="after")
     def _no_score_fields(self) -> CompanionPayload:
@@ -416,6 +449,31 @@ class AuditRow(Model):
     detail: str = ""
 
 
+class TraceSignal(Model):
+    """One signal the policy weighed, for the expert view. Deliberately has NO score field."""
+
+    code: ReasonCode
+    group: str
+    strength: str
+    source: str
+    target: str
+    detector: str
+    evidence_ids: list[str] = Field(default_factory=list)
+
+
+class PolicyTrace(Model):
+    """How the band was reached: floor first, then every raise-only signal, then clearance."""
+
+    floor_band: Band
+    action_type: ActionType
+    signals: list[TraceSignal] = Field(default_factory=list)
+    grey: bool = False
+    clearance_methods: list[str] = Field(default_factory=list)
+    clearance_who: list[str] = Field(default_factory=list)
+    clearance_notes: list[str] = Field(default_factory=list)
+    policy_version: str = ""
+
+
 class WorkspaceSnapshot(Model):
     """Safe case view for the details window: no detector scores, masked payee details."""
 
@@ -436,6 +494,7 @@ class WorkspaceSnapshot(Model):
     evidence: list[EvidenceRef] = Field(default_factory=list)
     drafts: list[DraftArtifact] = Field(default_factory=list)
     audit: list[AuditRow] = Field(default_factory=list)
+    trace: PolicyTrace | None = None
     policy_authority: Literal["satyapan.policy"] = POLICY_AUTHORITY
     raw_scores_visible: Literal[False] = False
     manual_only: Literal[True] = True
@@ -467,6 +526,11 @@ class CallStartRequest(Model):
     source: CaptureSourceKind
     consent_id: str = Field(min_length=1, max_length=120)
     maker: str | None = Field(default=None, max_length=120)
+    # Speech language hint: "en", "hi", or None for auto-detect. Routing only, never a risk
+    # feature (accent and language never change a band).
+    language: str | None = Field(default=None, pattern=r"^(en|hi|auto)$")
+    # The meeting app noticed from its window name ("Google Meet"), for a readable case title.
+    app: str | None = Field(default=None, max_length=40)
 
 
 class CallStartResponse(Model):
@@ -493,3 +557,21 @@ class CompanionOobRequest(Model):
 
     version: Literal["1"] = CONTRACT_VERSION
     case_id: str = Field(pattern=r"^case_[A-Za-z0-9_\-]+$")
+
+
+# ---------------------------------------------------------------------------------------------
+# Finale — Screen Guard text check and engine health.
+# ---------------------------------------------------------------------------------------------
+class ScreenTextRequest(Model):
+    """On-device OCR text from the user's screen, sent only to the local engine. Not stored."""
+
+    version: Literal["1"] = CONTRACT_VERSION
+    text: str = Field(max_length=60_000)
+    app: str | None = Field(default=None, max_length=80)
+    publish: bool = True
+
+
+class ScreenTextResponse(Model):
+    version: Literal["1"] = CONTRACT_VERSION
+    finding: ScreenFinding
+    events: list[CompanionEvent] = Field(default_factory=list)

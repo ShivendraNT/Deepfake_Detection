@@ -7,7 +7,7 @@ import asyncio
 from collections.abc import AsyncIterator
 from typing import Any
 
-from fastapi import APIRouter, Depends, File, Form, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import StreamingResponse
 
@@ -32,13 +32,25 @@ async def chunk(
     call_id: str,
     chunk_index: int = Form(...),
     audio: UploadFile = File(...),
+    t_start_s: float | None = Form(None),
+    t_end_s: float | None = Form(None),
     state: AppState = Depends(get_state),
 ) -> list[dict[str, Any]]:
+    if call_id not in state.live().sessions:
+        raise HTTPException(status_code=404, detail="unknown or stopped call")
     data = await audio.read()
     # Whisper takes seconds: run it in a worker thread so SSE and other requests keep flowing.
     events = await run_in_threadpool(
-        state.live().handle_chunk, call_id, chunk_index, data, audio.content_type or "audio/webm"
+        state.live().handle_chunk,
+        call_id,
+        chunk_index,
+        data,
+        audio.content_type or "audio/webm",
+        t_start_s,
+        t_end_s,
     )
+    if call_id not in state.live().sessions:  # the call was stopped while we transcribed
+        return [e.model_dump(mode="json") for e in events]
     state.repo.put(state.live().sessions[call_id].case)
     return [e.model_dump(mode="json") for e in events]
 
@@ -47,6 +59,8 @@ async def chunk(
 def voice(
     call_id: str, windows: list[VoiceWindowResult], state: AppState = Depends(get_state)
 ) -> list[dict[str, Any]]:
+    if call_id not in state.live().sessions:
+        raise HTTPException(status_code=404, detail="unknown or stopped call")
     events = state.live().handle_voice(call_id, windows)
     state.repo.put(state.live().sessions[call_id].case)
     return [e.model_dump(mode="json") for e in events]

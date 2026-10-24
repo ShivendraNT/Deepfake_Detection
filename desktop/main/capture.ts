@@ -1,103 +1,58 @@
 /**
- * F10 capture foundation — system-audio loopback only.
+ * Capture plumbing (F10, finale).
  *
- * The hidden capture window owns the audio graph. Main owns the OS permission handshake and
- * relays the renderer's low-rate telemetry (level, VAD hint, status) to the mascot/bubble shell.
- * We never request the microphone: `getDisplayMedia` is answered with a screen source plus
- * `audio: 'loopback'`, and the renderer stops the video track after the grant.
+ * Main owns the OS permission handshake: `getDisplayMedia` from the hidden capture window is
+ * answered with the primary screen + `audio: 'loopback'` (system audio: the other person's
+ * voice). The renderer stops the video track immediately. The microphone is never requested.
  *
- * There is no network code here. The capture renderer posts only to the local backend
- * (`127.0.0.1:8000`) through the preload bridge in a later step.
+ * The capture window reports status / loudness / speech activity over a narrow, sender-checked
+ * IPC surface; main relays only what the mascot needs. Audio itself goes straight from the
+ * capture window to the local engine (127.0.0.1:8000), never through main and never off-box.
  */
 
-import {
-  BrowserWindow,
-  desktopCapturer,
-  ipcMain,
-  session,
-  type IpcMainEvent,
-} from 'electron'
+import { BrowserWindow, desktopCapturer, ipcMain, session, type IpcMainEvent } from 'electron'
 
 import type { CaptureSourceKind } from '../shared/contracts'
-import type { BackendClient } from './backend'
 
-const NO_AUDIO_TIMEOUT_MS = 3000
+export type CaptureCommand =
+  | { action: 'start'; call_id: string; source: 'loopback' | 'replay'; replay_url?: string }
+  | { action: 'stop' }
 
-interface CaptureStart {
-  source: CaptureSourceKind
-  call_id: string
+export interface CaptureStatus {
+  state: 'starting' | 'capturing' | 'stopped' | 'error'
+  reason?: string
+  source?: CaptureSourceKind
+  call_id?: string
 }
 
-type CaptureStatus =
-  | { state: 'capturing' }
-  | { state: 'stopped' }
-  | { state: 'error'; reason: string }
-
-function isCaptureSourceKind(value: unknown): value is CaptureSourceKind {
-  return value === 'extension' || value === 'loopback' || value === 'replay'
+export interface CaptureCallbacks {
+  onStatus: (status: CaptureStatus) => void
+  onLevel: (level: number) => void
+  onSpeech: (active: boolean) => void
+  onUtterance: (index: number) => void
 }
 
-function parseStart(value: unknown): CaptureStart | null {
-  if (typeof value !== 'object' || value === null) return null
-  const start = value as { source?: unknown; call_id?: unknown }
-  if (!isCaptureSourceKind(start.source)) return null
-  if (typeof start.call_id !== 'string' || start.call_id.length === 0) return null
-  return { source: start.source, call_id: start.call_id }
-}
-
-/** Accept `'capturing' | 'stopped' | 'error(reason)'` and the object form `{ state, reason }`. */
 function parseStatus(value: unknown): CaptureStatus | null {
-  if (value === 'capturing') return { state: 'capturing' }
-  if (value === 'stopped') return { state: 'stopped' }
-  if (typeof value === 'string') {
-    const match = /^error(?:\(|:)\s*(.*?)\)?$/i.exec(value)
-    if (match) return { state: 'error', reason: match[1] || 'capture error' }
-    return null
-  }
   if (typeof value !== 'object' || value === null) return null
-  const status = value as { state?: unknown; reason?: unknown }
-  if (status.state === 'capturing') return { state: 'capturing' }
-  if (status.state === 'stopped') return { state: 'stopped' }
-  if (status.state === 'error') {
-    return {
-      state: 'error',
-      reason: typeof status.reason === 'string' ? status.reason : 'capture error',
-    }
+  const v = value as Record<string, unknown>
+  if (v.state !== 'starting' && v.state !== 'capturing' && v.state !== 'stopped' && v.state !== 'error') return null
+  return {
+    state: v.state,
+    reason: typeof v.reason === 'string' ? v.reason.slice(0, 200) : undefined,
+    source: v.source === 'loopback' || v.source === 'replay' || v.source === 'extension' ? v.source : undefined,
+    call_id: typeof v.call_id === 'string' ? v.call_id : undefined,
   }
-  return null
 }
 
-function parseCallHint(value: unknown): { source: CaptureSourceKind } {
-  if (typeof value === 'object' && value !== null) {
-    const source = (value as { source?: unknown }).source
-    if (isCaptureSourceKind(source)) return { source }
-  }
-  return { source: 'loopback' }
-}
+let handlerInstalled = false
 
-function clampLevel(value: number): number {
-  if (!Number.isFinite(value)) return 0
-  return Math.min(1, Math.max(0, value))
-}
-
-/**
- * Register the capture window's OS permission handler and its narrow IPC surface.
- *
- * Called once by `main/index.ts` when the user first enters Watching. Registering again
- * replaces the handler/listeners rather than stacking them.
- */
-export function registerCapture(options: {
-  window: BrowserWindow
-  backend: BackendClient
-}): void {
-  const { window, backend } = options
-
-  // F10 spike: answer getDisplayMedia with the primary screen + system audio loopback.
-  // No microphone is ever offered, and no window/video source is exposed to the renderer.
+/** Answer getDisplayMedia with the screen + system-audio loopback. Never the microphone. */
+export function installDisplayMediaHandler(): void {
+  if (handlerInstalled) return
+  handlerInstalled = true
   session.defaultSession.setDisplayMediaRequestHandler(async (_request, callback) => {
     try {
-      const sources = await desktopCapturer.getSources({ types: ['screen'] })
-      const [source] = sources
+      const [source] = await desktopCapturer.getSources({ types: ['screen'], thumbnailSize: { width: 0, height: 0 } })
       if (!source) {
         callback({})
         return
@@ -107,136 +62,62 @@ export function registerCapture(options: {
       callback({})
     }
   })
+}
 
-  let active: CaptureStart | null = null
-  let watchdog: ReturnType<typeof setTimeout> | null = null
-  let failureReported = false
+/**
+ * Wire the hidden capture window. Only that window may report capture telemetry.
+ * Re-registering replaces the previous listeners.
+ */
+export function registerCapture(window: BrowserWindow, callbacks: CaptureCallbacks): void {
+  installDisplayMediaHandler()
+  const trusted = (event: IpcMainEvent): boolean =>
+    !window.isDestroyed() && event.sender === window.webContents
 
-  const clearWatchdog = (): void => {
-    if (watchdog) {
-      clearTimeout(watchdog)
-      watchdog = null
-    }
-  }
-
-  const sendToCapture = (channel: string, payload: unknown): void => {
-    if (window.isDestroyed() || window.webContents.isDestroyed()) return
-    try {
-      window.webContents.send(channel, payload)
-    } catch {}
-  }
-
-  const broadcastToShell = (channel: string, payload: unknown): void => {
-    for (const other of BrowserWindow.getAllWindows()) {
-      if (
-        other === window ||
-        other.isDestroyed() ||
-        other.webContents.isDestroyed() ||
-        other.webContents.isLoading()
-      ) {
-        continue
-      }
-      try {
-        other.webContents.send(channel, payload)
-      } catch {}
-    }
-  }
-
-  /** Any level packet proves samples are flowing, even when the call is silent (RMS 0). */
-  const armWatchdog = (): void => {
-    clearWatchdog()
-    watchdog = setTimeout(() => {
-      failCapture('no audio samples for 3 s')
-    }, NO_AUDIO_TIMEOUT_MS)
-  }
-
-  /**
-   * Fail closed: stop the consented session, ask the capture window to release its tracks,
-   * and tell the shell to show Sleeping with a toast. There is no auto-restart.
-   */
-  const failCapture = (reason: string): void => {
-    if (failureReported) return
-    failureReported = true
-    clearWatchdog()
-    active = null
-    sendToCapture('capture:stop', { reason })
-    broadcastToShell('companion:capture-status', {
-      state: 'error',
-      reason,
-      sleeping: true,
-      toast: 'toast.capture_error',
-    })
-    void backend.stopSession().catch(() => undefined)
-  }
-
-  const trusted = (event: IpcMainEvent): boolean => {
-    // Only the hidden capture window may drive the capture session.
-    return !window.isDestroyed() && event.sender === window.webContents
-  }
-
-  const onStart = (event: IpcMainEvent, payload: unknown): void => {
-    if (!trusted(event)) return
-    const start = parseStart(payload)
-    if (!start) return
-    failureReported = false
-    active = start
-    armWatchdog()
-    broadcastToShell('companion:capture-status', { state: 'capturing', ...start })
-  }
-
-  const onStop = (event: IpcMainEvent): void => {
-    if (!trusted(event)) return
-    clearWatchdog()
-    active = null
-    // A normal stop must not mask the error/toast that triggered a fail-closed stop.
-    if (!failureReported) broadcastToShell('companion:capture-status', { state: 'stopped' })
-  }
-
-  const onLevel = (event: IpcMainEvent, value: unknown): void => {
-    if (!trusted(event) || typeof value !== 'number' || !active) return
-    // 0..1 RMS, 20 Hz. Local only; it is never sent to the backend.
-    armWatchdog()
-    broadcastToShell('companion:audio-level', clampLevel(value))
-  }
-
-  const onCallHint = (event: IpcMainEvent, value: unknown): void => {
-    if (!trusted(event)) return
-    broadcastToShell('companion:call-hint', parseCallHint(value))
-  }
-
-  const onStatus = (event: IpcMainEvent, value: unknown): void => {
-    if (!trusted(event)) return
-    const status = parseStatus(value)
-    if (!status) return
-    if (status.state === 'capturing') {
-      armWatchdog()
-      return
-    }
-    if (status.state === 'stopped') {
-      clearWatchdog()
-      active = null
-      if (!failureReported) broadcastToShell('companion:capture-status', { state: 'stopped' })
-      return
-    }
-    failCapture(status.reason)
-  }
-
-  const channels: Array<[string, (event: IpcMainEvent, ...args: unknown[]) => void]> = [
-    ['capture:start', onStart],
-    ['capture:stop', onStop],
-    ['capture:level', onLevel],
-    ['capture:call-hint', onCallHint],
-    ['capture:status', onStatus],
+  const channels: Array<[string, (event: IpcMainEvent, payload: unknown) => void]> = [
+    [
+      'capture:status',
+      (event, payload) => {
+        if (!trusted(event)) return
+        const status = parseStatus(payload)
+        if (status) callbacks.onStatus(status)
+      },
+    ],
+    [
+      'capture:level',
+      (event, payload) => {
+        if (!trusted(event) || typeof payload !== 'number' || !Number.isFinite(payload)) return
+        callbacks.onLevel(Math.max(0, Math.min(1, payload)))
+      },
+    ],
+    [
+      'capture:speech',
+      (event, payload) => {
+        if (trusted(event) && typeof payload === 'boolean') callbacks.onSpeech(payload)
+      },
+    ],
+    [
+      'capture:utterance',
+      (event, payload) => {
+        if (!trusted(event) || typeof payload !== 'object' || payload === null) return
+        const index = (payload as { index?: unknown }).index
+        if (typeof index === 'number') callbacks.onUtterance(index)
+      },
+    ],
   ]
-
   for (const [channel, listener] of channels) {
     ipcMain.removeAllListeners(channel)
     ipcMain.on(channel, listener)
   }
-
   window.once('closed', () => {
-    clearWatchdog()
-    active = null
     for (const [channel] of channels) ipcMain.removeAllListeners(channel)
   })
+}
+
+export function sendCaptureCommand(window: BrowserWindow | null, command: CaptureCommand): void {
+  if (!window || window.isDestroyed() || window.webContents.isDestroyed()) return
+  try {
+    window.webContents.send('capture:command', command)
+  } catch {
+    // The window is going away; capture stops with it.
+  }
 }

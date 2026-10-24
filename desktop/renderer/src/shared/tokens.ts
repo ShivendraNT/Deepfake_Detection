@@ -30,6 +30,8 @@ export const ui = {
 export const motion = {
   soft:   { type: 'spring', stiffness: 220, damping: 18 },
   snappy: { type: 'spring', stiffness: 420, damping: 24 },
+  gaze:   { stiffness: 240, damping: 18 },
+  drag:   { stiffness: 450, damping: 22 },
   enter:  { duration: 0.18, ease: [0.2, 0.8, 0.2, 1] },
   exit:   { duration: 0.12, ease: 'easeIn' },
 } as const

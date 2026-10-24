@@ -10,8 +10,9 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-import type { CompanionState, MascotMood } from '../../../shared/contracts'
-import Mascot from '../companion/Mascot'
+import type { CompanionState } from '../../../shared/contracts'
+import type { SatyaPose } from '../satya/engine'
+import SatyaSprite from '../satya/SatyaSprite'
 import { FONT_SANS, focusRing, surface, tone } from './ui/theme'
 
 export type TabId = 'now' | 'cases' | 'timeline' | 'evidence' | 'reports' | 'privacy' | 'settings'
@@ -44,21 +45,21 @@ export const TAB_TITLES: Record<TabId, string> = {
   settings: 'Settings',
 }
 
-function moodFor(state: CompanionState | null, watching: boolean): MascotMood {
-  if (!state) return watching ? 'attentive' : 'sleepy'
+function poseFor(state: CompanionState | null, watching: boolean): SatyaPose {
+  if (!state) return watching ? 'idle' : 'sleep'
   switch (state.mode) {
     case 'ALERT':
-      return 'calm_alert'
+      return 'alert'
     case 'SCRIBE':
-      return 'writing'
+      return 'write'
     case 'INVESTIGATING':
-      return 'focused'
+      return 'think'
     case 'ACTIVE':
-      return 'attentive'
+      return 'idle'
     case 'DISABLED':
     case 'SLEEP':
     default:
-      return watching ? 'attentive' : 'sleepy'
+      return watching ? 'idle' : 'sleep'
   }
 }
 
@@ -70,7 +71,7 @@ export interface SidebarProps {
 }
 
 export default function Sidebar({ active, onSelect, state, watching }: SidebarProps): JSX.Element {
-  const mood = moodFor(state, watching)
+  const pose = poseFor(state, watching)
 
   return (
     <aside
@@ -79,10 +80,10 @@ export default function Sidebar({ active, onSelect, state, watching }: SidebarPr
     >
       <div className="flex items-center gap-3 px-4 pb-4 pt-4">
         <div
-          className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line} ${surface.card}`}
+          className={`grid h-12 w-12 shrink-0 place-items-center rounded-full border ${surface.line} ${surface.card}`}
           aria-hidden="true"
         >
-          <Mascot mood={mood} size={28} />
+          <SatyaSprite pose={pose} size={40} />
         </div>
         <div className="min-w-0">
           <p className="truncate text-[14px] font-semibold tracking-[-0.01em]">Satya&apos;s Notebook</p>

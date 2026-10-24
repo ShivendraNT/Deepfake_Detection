@@ -1,7 +1,7 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react'
 
 import Companion from './companion/Companion'
-import Gallery from './companion/Gallery'
+import Gallery from './satya/SatyaGallery'
 import MascotApp from './companion/MascotApp'
 import BubbleApp from './companion/bubble/BubbleApp'
 import CaptureApp from './capture/CaptureApp'
@@ -27,11 +27,11 @@ const VIEWS: View[] = [
   'legacy',
 ]
 
-class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
-  state = { failed: false }
+class Boundary extends Component<{ children: ReactNode }, { error: Error | null }> {
+  state: { error: Error | null } = { error: null }
 
-  static getDerivedStateFromError(): { failed: boolean } {
-    return { failed: true }
+  static getDerivedStateFromError(error: Error): { error: Error } {
+    return { error }
   }
 
   componentDidCatch(error: Error, info: ErrorInfo): void {
@@ -39,10 +39,19 @@ class Boundary extends Component<{ children: ReactNode }, { failed: boolean }> {
   }
 
   render(): ReactNode {
-    if (this.state.failed) {
+    const { error } = this.state
+    if (error) {
       return (
-        <div className="grid h-full place-items-center p-6 text-center text-sm text-white/60">
-          Satya hit a rendering error. Quit from the tray and open again.
+        <div className="grid h-full place-items-center overflow-auto p-6 text-center text-sm text-white/60">
+          <div className="w-full max-w-[420px]">
+            <p className="m-0 font-medium text-white/80">
+              Satya hit a rendering error. Quit from the tray and open again.
+            </p>
+            <pre className="mt-3 max-h-[60vh] w-full overflow-auto whitespace-pre-wrap break-words rounded bg-black/40 p-3 text-left text-[11px] leading-snug text-red-200">
+              {error.message}
+              {error.stack ? `\n\n${error.stack}` : ''}
+            </pre>
+          </div>
         </div>
       )
     }

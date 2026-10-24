@@ -235,7 +235,7 @@ const toastCard: BubbleCard = {
 }
 
 // ---- Report pack (manual only) ---------------------------------------------------------------
-function reportPack(): ReportPackV2 {
+export function reportPack(): ReportPackV2 {
   const fields = (section: ReportSection['id']): ReportSection => {
     if (section === 'helpline_1930') {
       return {

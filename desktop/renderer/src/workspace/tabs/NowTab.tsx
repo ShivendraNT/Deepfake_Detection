@@ -1,31 +1,46 @@
+/**
+ * Now — what Satya is doing this minute, in plain words.
+ *
+ * - Live monitoring: the call's full captions (memory only) with the asks highlighted, the chips,
+ *   the exact quotes and the band the policy relayed. Or, when idle, the next safe actions.
+ * - Ready for a live call?: an honest checklist from /companion/health. Nothing here claims a
+ *   detector is running unless the engine says so.
+ */
+
 import {
   ArrowRight,
   AudioLines,
   CheckCircle2,
-  Cpu,
+  CircleAlert,
+  CircleDashed,
   FileCheck2,
-  Fingerprint,
+  Headphones,
   Laptop,
   Lock,
   MicOff,
-  Pause,
-  PhoneCall,
-  Play,
-  QrCode,
+  PhoneOff,
+  PlayCircle,
+  ScanSearch,
   Shield,
   ShieldAlert,
-  ShieldCheck,
-  Zap,
 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
-import type { CompanionState, SealStatus } from '../../../../shared/contracts'
-import { ASK_LABELS } from '../../../../shared/contracts'
+import type {
+  CaptionLine,
+  CompanionState,
+  CueCode,
+  HealthInfo,
+  Scopes,
+} from '../../../../shared/contracts'
+import { ASK_LABELS, CUE_LABELS, DEFAULT_SCOPES } from '../../../../shared/contracts'
+import Caption from '../../companion/bubble/Caption'
 import { api } from '../../shared/api'
 import { formatDuration, relativeTime, secondsSince } from '../lib/format'
 import type { LiveSnapshot } from '../lib/live'
 import BandBadge from '../ui/BandBadge'
 import Empty from '../ui/Empty'
+import Qr from '../ui/Qr'
 import Section from '../ui/Section'
 import { button, inset, surface, tone } from '../ui/theme'
 
@@ -33,49 +48,94 @@ export interface NowTabProps {
   state: CompanionState | null
   live: LiveSnapshot
   onOpenCase: (caseId: string | null) => void
+  captions?: CaptionLine[]
+  health?: HealthInfo | null
 }
 
-function coverageCopy(coverage: LiveSnapshot['coverage']): string {
-  switch (coverage) {
-    case 'usable':
-      return 'Coverage: usable'
-    case 'degraded':
-      return 'Coverage: degraded'
-    case 'incomplete':
-      return 'Coverage: incomplete'
-    default:
-      return 'Coverage: waiting'
-  }
+const BAND_TONE = { PASS: tone.watch, VERIFY: tone.amber, HOLD: tone.coral } as const
+
+function CheckRow({
+  ok,
+  optional = false,
+  title,
+  detail,
+  fix,
+}: {
+  ok: boolean | null
+  optional?: boolean
+  title: string
+  detail: string
+  fix?: string
+}): JSX.Element {
+  const Icon = ok === null ? CircleDashed : ok ? CheckCircle2 : CircleAlert
+  const color = ok === null ? tone.slate : ok ? tone.green : optional ? tone.amber : tone.coral
+  return (
+    <li className="flex items-start gap-3 py-2">
+      <Icon size={17} style={{ color }} className="mt-0.5 shrink-0" aria-hidden="true" />
+      <div className="min-w-0">
+        <p className="text-[13px] font-medium">{title}</p>
+        <p className={`text-[12px] leading-relaxed ${surface.muted}`}>{detail}</p>
+        {fix && ok === false ? (
+          <code className={`mt-1 inline-block rounded-md px-1.5 py-0.5 text-[11.5px] ${inset}`}>{fix}</code>
+        ) : null}
+      </div>
+    </li>
+  )
 }
 
-function coverageColor(coverage: LiveSnapshot['coverage']): string {
-  if (coverage === 'usable') return tone.green
-  if (coverage === 'degraded') return tone.amber
-  return tone.slate
+function ConsentInline({ onDone }: { onDone: () => void }): JSX.Element {
+  const [scopes, setScopes] = useState<Scopes>({ ...DEFAULT_SCOPES })
+  const [busy, setBusy] = useState(false)
+  const rows: Array<[keyof Scopes, string]> = [
+    ['meetings', 'Notice when a meeting starts (window names only)'],
+    ['listen', 'Listen to a call only after I say yes'],
+    ['screen', 'Glance at on-screen text for payment tricks'],
+    ['files', 'Check files I hand over'],
+  ]
+  return (
+    <div className={`${inset} p-3`}>
+      <p className="text-[13px] font-medium">Can Satya keep watch?</p>
+      <div className="mt-2 grid gap-1.5 sm:grid-cols-2">
+        {rows.map(([key, label]) => (
+          <label key={key} className="flex items-center gap-2 text-[12.5px]">
+            <input
+              type="checkbox"
+              checked={scopes[key]}
+              onChange={(e) => setScopes((s) => ({ ...s, [key]: e.target.checked }))}
+            />
+            {label}
+          </label>
+        ))}
+      </div>
+      <p className={`mt-2 text-[12px] ${surface.muted}`}>
+        Never: the microphone, recordings, or anything leaving this laptop.
+      </p>
+      <button
+        type="button"
+        disabled={busy}
+        className={`${button.primary} mt-3`}
+        onClick={async () => {
+          setBusy(true)
+          try {
+            await api.setUserMode('WATCHING', scopes)
+            onDone()
+          } finally {
+            setBusy(false)
+          }
+        }}
+      >
+        Start watching
+      </button>
+    </div>
+  )
 }
 
-function sealCopy(seal: SealStatus | null): {
-  label: string
-  color: string
-  Icon: typeof Shield
-} {
-  if (seal === 'verified') {
-    return { label: 'Voice verified by Seal', color: tone.green, Icon: ShieldCheck }
-  }
-  if (seal === 'not_verified') {
-    return { label: 'Voice not verified by Seal', color: tone.amber, Icon: ShieldAlert }
-  }
-  if (seal === 'unavailable') {
-    return { label: 'Seal unavailable on this device', color: tone.slate, Icon: Shield }
-  }
-  return { label: 'Seal check is idle', color: tone.slate, Icon: Shield }
-}
-
-export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.Element {
+export default function NowTab({ state, live, onOpenCase, captions = [], health = null }: NowTabProps): JSX.Element {
   const [now, setNow] = useState(() => Date.now())
-  const [simulating, setSimulating] = useState(false)
-  const [switchingMode, setSwitchingMode] = useState(false)
-  const [oobUrl, setOobUrl] = useState<string | null>(null)
+  const [showConsent, setShowConsent] = useState(false)
+  const [busy, setBusy] = useState<string | null>(null)
+  const [note, setNote] = useState<string | null>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 1000)
@@ -83,265 +143,216 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
   }, [])
 
   useEffect(() => {
-    void api.getConfig().then((cfg) => {
-      if (cfg?.oob_url) setOobUrl(cfg.oob_url)
-    })
-  }, [])
+    listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
+  }, [captions.length])
 
-  const watching =
-    state?.monitoring === true ||
-    state?.mode === 'ACTIVE' ||
-    live.callId !== null ||
-    live.callStartedAt !== null
-
-  const inCall = live.callId !== null || live.callStartedAt !== null || watching
+  const inCall = live.callId !== null
+  const watching = inCall || state?.mode === 'ACTIVE' || state?.mode === 'ALERT' || state?.monitoring === true
   const elapsed = live.callStartedAt ? secondsSince(live.callStartedAt, now) : 0
-  const seal = sealCopy(live.seal)
   const alert = live.lastAlert
+  const band = live.callBand
+  const accent = band ? BAND_TONE[band] : tone.watch
+  const cues = useMemo(
+    () =>
+      Array.from(new Set(captions.flatMap((line) => line.spans.filter((s) => s.kind === 'cue').map((s) => s.code)))) as CueCode[],
+    [captions],
+  )
 
-  const handleSimulateScam = async () => {
-    setSimulating(true)
+  async function run(id: string, work: () => Promise<{ ok: boolean; error?: string } | undefined>): Promise<void> {
+    setBusy(id)
+    setNote(null)
     try {
-      await api.command('demo.replay', { scenario: 'cfo_call' })
+      const result = await work()
+      if (result && !result.ok) setNote(result.error ?? 'That did not work.')
     } finally {
-      setSimulating(false)
+      setBusy(null)
     }
   }
 
-  const handleStartProtection = async () => {
-    setSwitchingMode(true)
-    try {
-      await api.setUserMode('WATCHING')
-    } finally {
-      setSwitchingMode(false)
-    }
-  }
-
-  const handlePauseProtection = async () => {
-    setSwitchingMode(true)
-    try {
-      await api.setUserMode('SLEEPING')
-    } finally {
-      setSwitchingMode(false)
-    }
-  }
+  const asr = health?.asr ?? null
+  const asrOk = health ? Boolean(asr && asr.ready && !asr.error) : null
 
   return (
     <div className="space-y-4">
-      {/* Live Monitoring & Deepfake Defense */}
       <Section
         title="Live monitoring"
         description={
-          watching
-            ? 'Satya is actively protecting Google Meet calls and monitoring your screen. Voice neural artifacts, cryptographic seals, and payment bypasses are relayed in real-time.'
-            : 'Satya is asleep. Nothing is being watched.'
+          inCall
+            ? 'Listening to this call only. Captions live in memory and vanish when it ends.'
+            : watching
+              ? 'Watching. I notice calls and ask before I listen.'
+              : 'Satya is asleep. Nothing is being watched.'
         }
         action={
-          <span
-            className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium ${surface.line} ${surface.muted}`}
-          >
-            <AudioLines size={12} strokeWidth={2} aria-hidden="true" />
-            {coverageCopy(live.coverage)}
-          </span>
+          inCall ? (
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium tabular-nums ${surface.line}`}
+            >
+              <span className="h-2 w-2 animate-pulse rounded-full" style={{ backgroundColor: accent }} />
+              {formatDuration(elapsed)}
+            </span>
+          ) : undefined
         }
       >
         {inCall ? (
-          <div className="space-y-4">
-            {/* Call Status & Action Buttons */}
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                <span className="inline-flex items-center gap-2 text-[14px] font-semibold text-emerald-400">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                  </span>
-                  <PhoneCall size={15} style={{ color: tone.watch }} aria-hidden="true" />
-                  Live Call: Google Meet Protected
-                </span>
-                <span className={surface.muted} aria-hidden="true">
-                  ·
-                </span>
-                <span
-                  className="text-[14px] font-semibold tabular-nums"
-                  aria-label={`Call duration ${formatDuration(elapsed)}`}
-                >
-                  {formatDuration(elapsed)}
-                </span>
-                <span className={surface.muted} aria-hidden="true">
-                  ·
-                </span>
-                <span className={`text-[12px] ${surface.muted}`}>{coverageCopy(live.coverage)}</span>
+          <div className="space-y-3">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <div className="flex items-center gap-2 text-[14px] font-semibold">
+                <Headphones size={16} style={{ color: accent }} aria-hidden="true" />
+                {band ? <BandBadge band={band} /> : <span className={surface.muted}>Nothing risky asked so far</span>}
               </div>
-
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={handleSimulateScam}
-                  disabled={simulating}
-                  className="inline-flex items-center gap-1.5 rounded-[8px] bg-rose-500/15 border border-rose-500/30 px-3 py-1.5 text-[12px] font-semibold text-rose-300 transition hover:bg-rose-500/25 active:scale-95 disabled:opacity-50"
-                  title="Simulate a live Deepfake CFO voice clone attempting an urgent wire fraud bypass"
-                >
-                  <Zap size={13} className="text-rose-400 fill-rose-400" aria-hidden="true" />
-                  {simulating ? 'Injecting Attack...' : '⚡ Simulate Deepfake CFO Scam'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePauseProtection}
-                  disabled={switchingMode}
-                  className="inline-flex items-center gap-1.5 rounded-[8px] border px-2.5 py-1.5 text-[12px] font-medium text-slate-300 transition hover:bg-white/5 active:scale-95"
-                  style={{ borderColor: 'rgba(255,255,255,0.1)' }}
-                  title="Pause live monitoring and put Satya to sleep"
-                >
-                  <Pause size={12} aria-hidden="true" />
-                  Pause
-                </button>
-              </div>
+              <button type="button" className={button.outline} onClick={() => void run('stop', async () => api.stopCall?.())}>
+                <PhoneOff size={14} aria-hidden="true" />
+                Stop listening
+              </button>
             </div>
-
-            {/* 3-Engine Real-Time Forensic Pipeline */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-              <div
-                className={`rounded-[10px] border p-3 ${surface.line} ${surface.inset}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Cpu size={15} className="text-cyan-400 shrink-0" aria-hidden="true" />
-                  <span className="text-[12px] font-semibold text-slate-200">Neural Voice AI Detector</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-400 leading-snug">
-                  Model: <span className="text-cyan-300 font-mono">voice_xlsr_l7</span>
-                </p>
-                <p className="mt-0.5 text-[11px] text-emerald-400">
-                  ● Scanning synthetic vocoder artifacts
-                </p>
-              </div>
-
-              <div
-                className={`rounded-[10px] border p-3 ${surface.line} ${surface.inset}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Fingerprint size={15} className="text-amber-400 shrink-0" aria-hidden="true" />
-                  <span className="text-[12px] font-semibold text-slate-200">Satyapan VoiceSeal</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-400 leading-snug">
-                  Protocol: <span className="text-amber-300 font-mono">TESLA Key Epochs</span>
-                </p>
-                <p className="mt-0.5 text-[11px] text-emerald-400">
-                  ● Zero-bit psychoacoustic watermark
-                </p>
-              </div>
-
-              <div
-                className={`rounded-[10px] border p-3 ${surface.line} ${surface.inset}`}
-              >
-                <div className="flex items-center gap-2">
-                  <Laptop size={15} className="text-indigo-400 shrink-0" aria-hidden="true" />
-                  <span className="text-[12px] font-semibold text-slate-200">macOS Screen Guard</span>
-                </div>
-                <p className="mt-1 text-[11px] text-slate-400 leading-snug">
-                  Engine: <span className="text-indigo-300 font-mono">Apple Vision OCR</span>
-                </p>
-                <p className="mt-0.5 text-[11px] text-emerald-400">
-                  ● On-device offline visual inspection
-                </p>
-              </div>
-            </div>
-
-            {/* Live Ask Chips */}
-            <div className="flex flex-wrap gap-2 pt-1">
-              {live.chips.length > 0 ? (
-                live.chips.map((chip) => (
-                  <span
-                    key={`${chip.code}-${chip.at_s ?? 'na'}`}
-                    className="inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[12px] font-medium"
-                    style={{
-                      borderColor: `${tone.coral}40`,
-                      backgroundColor: `${tone.coral}15`,
-                      color: tone.coral,
-                    }}
-                  >
-                    <AudioLines size={12} aria-hidden="true" />
-                    {ASK_LABELS[chip.code]}
-                  </span>
-                ))
+            <div ref={listRef} className={`${inset} max-h-[260px] space-y-2 overflow-y-auto p-3`}>
+              {captions.length === 0 ? (
+                <p className={`text-[12.5px] italic ${surface.muted}`}>Waiting for the other person to speak…</p>
               ) : (
-                <span className={`text-[12px] ${surface.muted}`}>
-                  Voice and screen are clean. No synthetic artifacts, approval bypasses, or urgency detected.
-                </span>
+                captions.map((line) => (
+                  <div key={line.id} className="flex gap-3">
+                    <span className={`w-10 shrink-0 pt-0.5 text-right font-mono text-[11px] ${surface.muted}`}>
+                      {formatDuration(Math.round(line.t_start_s))}
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <Caption line={line} accent={accent} />
+                    </div>
+                  </div>
+                ))
               )}
             </div>
-          </div>
-        ) : (
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div className="flex items-start gap-3">
-              <div
-                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line} ${inset}`}
-              >
-                <PhoneCall size={17} className={surface.muted} aria-hidden="true" />
-              </div>
-              <div>
-                <p className="text-[14px] font-medium">Sleeping. I am not listening.</p>
-                <p className={`mt-1 text-[12px] leading-relaxed ${surface.muted}`}>
-                  Wake Satya to start live protection for Google Meet calls and on-screen invoices.
-                </p>
-              </div>
+            <div className="flex flex-wrap gap-2">
+              {live.chips.map((chip) => (
+                <span
+                  key={chip.code}
+                  className="rounded-full px-2.5 py-1 text-[12px] font-semibold"
+                  style={{ backgroundColor: `${accent}22`, color: tone.ink }}
+                >
+                  {ASK_LABELS[chip.code]}
+                </span>
+              ))}
+              {cues.map((cue) => (
+                <span
+                  key={cue}
+                  className={`rounded-full border border-dashed px-2.5 py-1 text-[12px] ${surface.line} ${surface.muted}`}
+                  title="Context only. It never changes the decision."
+                >
+                  {CUE_LABELS[cue] ?? cue}
+                </span>
+              ))}
             </div>
-            <button
-              type="button"
-              onClick={handleStartProtection}
-              disabled={switchingMode}
-              className="inline-flex items-center gap-2 rounded-[10px] bg-emerald-500 px-4 py-2 text-[13px] font-semibold text-slate-950 transition hover:bg-emerald-400 active:scale-95 disabled:opacity-50"
-            >
-              <Play size={14} className="fill-slate-950" aria-hidden="true" />
-              {switchingMode ? 'Starting...' : '🛡️ Start Live Call & Screen Protection'}
+          </div>
+        ) : watching ? (
+          <div className="flex flex-wrap gap-2">
+            <button type="button" className={button.primary} disabled={busy !== null} onClick={() => void run('listen', async () => api.startCall?.('loopback'))}>
+              <Headphones size={14} aria-hidden="true" />
+              Listen to a call now
+            </button>
+            <button type="button" className={button.outline} disabled={busy !== null} onClick={() => void run('replay', async () => api.startCall?.('replay'))}>
+              <PlayCircle size={14} aria-hidden="true" />
+              Play the demo call (replay)
+            </button>
+            <button type="button" className={button.outline} disabled={busy !== null} onClick={() => void run('scan', async () => api.scanScreen?.())}>
+              <ScanSearch size={14} aria-hidden="true" />
+              Scan my screen
+            </button>
+            <button type="button" className={button.ghost} onClick={() => void run('sleep', async () => api.setUserMode('SLEEPING'))}>
+              Sleep
+            </button>
+          </div>
+        ) : showConsent ? (
+          <ConsentInline onDone={() => setShowConsent(false)} />
+        ) : (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[14px] font-medium">Sleeping. I am not listening.</p>
+            <button type="button" className={button.primary} onClick={() => setShowConsent(true)}>
+              Wake Satya
             </button>
           </div>
         )}
+        {note ? <p className="mt-2 text-[12px]" style={{ color: tone.coral }}>{note}</p> : null}
       </Section>
 
-      {/* Forensic Alert & Physical Lockdown */}
+      <Section
+        title="Ready for a live call?"
+        description="Checked on this laptop. Fix anything red before the call."
+        action={
+          <button type="button" className={button.ghost} onClick={() => void api.getHealth?.()}>
+            <AudioLines size={14} aria-hidden="true" />
+            Recheck
+          </button>
+        }
+      >
+        <div className="grid gap-4 md:grid-cols-[1fr_auto]">
+          <ul className="divide-y divide-[rgba(42,34,56,0.08)]">
+            <CheckRow
+              ok={health ? health.backend : null}
+              title="Local engine"
+              detail={health?.backend ? 'Connected on 127.0.0.1:8000. Bands come only from the policy engine.' : 'Not reachable.'}
+              fix="make run"
+            />
+            <CheckRow
+              ok={asrOk}
+              title="Ears (speech to text, on this laptop)"
+              detail={
+                asr && asr.engine !== 'none'
+                  ? `${asr.engine} · ${asr.model}${asr.ready ? ' · ready' : asr.loading ? ' · loading…' : ''}${
+                      asr.last_latency_ms ? ` · last sentence ${Math.round(asr.last_latency_ms)} ms` : ''
+                    }${asr.error ? ` · ${asr.error}` : ''}`
+                  : 'No speech engine installed: I could not hear what a caller asks.'
+              }
+              fix="make asr && make run"
+            />
+            <CheckRow
+              ok={health ? health.voice_model : null}
+              optional
+              title="Voice-clone detector (optional)"
+              detail={
+                health?.voice_model
+                  ? 'Installed. It can only raise the band, never lower it.'
+                  : 'Not installed, so I do not judge voices. I still check what is asked and the payment itself.'
+              }
+            />
+            <CheckRow
+              ok={health ? health.vendors > 0 : null}
+              title="Vendor master"
+              detail={health ? `${health.vendors} vendors loaded (trusted floor for every payment).` : 'Unknown.'}
+            />
+          </ul>
+          {health?.oob_url ? (
+            <div className={`${inset} flex flex-col items-center gap-2 p-3 text-center`}>
+              <Qr value={health.oob_url} size={120} />
+              <p className="text-[12px] font-medium">Approver's phone</p>
+              <p className={`max-w-[160px] break-all font-mono text-[10.5px] ${surface.muted}`}>{health.oob_url}</p>
+            </div>
+          ) : null}
+        </div>
+      </Section>
+
       <Section
         title="Last alert"
         description="A band is a policy decision. Satya raises it; you decide what happens next."
         action={alert ? <BandBadge band={alert.band} /> : undefined}
       >
         {alert ? (
-          <div className="space-y-3">
-            <div className="flex items-start gap-3">
-              <div
-                className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line}`}
-                style={{ backgroundColor: `${tone.coral}15` }}
-              >
-                <ShieldAlert size={18} style={{ color: tone.coral }} aria-hidden="true" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="text-[15px] font-bold text-rose-300">{alert.headline}</p>
-                <p className={`mt-1 text-[12px] ${surface.muted}`}>
-                  Raised {relativeTime(alert.at, now)}. Policy engine band:{' '}
-                  <span className="font-bold text-rose-400">{alert.band}</span>. Deepfake evidence can only raise security, never lower it.
-                </p>
-              </div>
-              <div className="flex items-center gap-2 shrink-0">
-                {oobUrl ? (
-                  <button
-                    type="button"
-                    onClick={() => window.open(oobUrl, '_blank')}
-                    className="inline-flex items-center gap-1.5 rounded-[8px] bg-purple-500/15 border border-purple-500/30 px-3 py-1.5 text-[12px] font-semibold text-purple-300 transition hover:bg-purple-500/25 active:scale-95"
-                    title="Open the Linked Mobile Verification Web App to simulate out-of-band physical phone lockdown"
-                  >
-                    <QrCode size={13} aria-hidden="true" />
-                    📱 Open Phone Approver
-                  </button>
-                ) : null}
-                <button
-                  type="button"
-                  onClick={() => onOpenCase(alert.caseId)}
-                  className={`${button.outline} shrink-0`}
-                >
-                  Open case
-                  <ArrowRight size={14} aria-hidden="true" />
-                </button>
-              </div>
+          <div className="flex items-start gap-3">
+            <div
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line}`}
+              style={{ backgroundColor: `${BAND_TONE[alert.band]}18` }}
+            >
+              <ShieldAlert size={18} style={{ color: BAND_TONE[alert.band] }} aria-hidden="true" />
             </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-semibold">{alert.headline}</p>
+              <p className={`mt-1 text-[12px] ${surface.muted}`}>
+                Raised {relativeTime(alert.at, now)}. Evidence can only raise the band, never lower it.
+              </p>
+            </div>
+            <button type="button" onClick={() => onOpenCase(alert.caseId)} className={`${button.outline} shrink-0`}>
+              Open case
+              <ArrowRight size={14} aria-hidden="true" />
+            </button>
           </div>
         ) : (
           <Empty
@@ -352,13 +363,12 @@ export default function NowTab({ state, live, onOpenCase }: NowTabProps): JSX.El
         )}
       </Section>
 
-      {/* Required Privacy & Capability Sections */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
         <Section title="What Satya can see">
           <ul className="space-y-2 text-[12px]">
             <li className="flex items-start gap-2">
               <CheckCircle2 size={14} style={{ color: tone.green }} aria-hidden="true" />
-              <span>Calls he is allowed to notice — never the microphone.</span>
+              <span>The other side of a call you said yes to — never the microphone.</span>
             </li>
             <li className="flex items-start gap-2">
               <FileCheck2 size={14} style={{ color: tone.green }} aria-hidden="true" />

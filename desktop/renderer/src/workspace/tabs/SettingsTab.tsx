@@ -1,17 +1,13 @@
 import {
   Bell,
   Check,
-  Chrome,
   Globe2,
   Keyboard,
-  MonitorSpeaker,
   QrCode,
-  RotateCcw,
 } from 'lucide-react'
-import type { LucideIcon } from 'lucide-react'
 import { useEffect, useState } from 'react'
 
-import type { AppConfig, CaptureSourceKind, Lang, Prefs } from '../../../../shared/contracts'
+import { DEFAULT_SCOPES, type AppConfig, type Lang, type Prefs, type Scopes } from '../../../../shared/contracts'
 import { api } from '../../shared/api'
 // qrcode@1.5.4 ships no TypeScript declarations; Vite still resolves the runtime package.
 // @ts-expect-error - the package has no bundled types and this project does not add @types/qrcode.
@@ -105,37 +101,20 @@ const LANGS: Array<{ value: Lang; label: string }> = [
   { value: 'hi', label: 'हिन्दी' },
 ]
 
-const SOURCES: Array<{
-  value: CaptureSourceKind
-  label: string
-  detail: string
-  icon: LucideIcon
-}> = [
-  {
-    value: 'extension',
-    label: 'Chrome tab',
-    detail: 'A Meet or Teams tab you choose',
-    icon: Chrome,
-  },
-  {
-    value: 'loopback',
-    label: 'System audio',
-    detail: 'What this laptop is playing',
-    icon: MonitorSpeaker,
-  },
-  {
-    value: 'replay',
-    label: 'Replay',
-    detail: 'Demo fixtures only',
-    icon: RotateCcw,
-  },
+const HOTKEYS = [
+  { keys: 'Ctrl/⌘ + Shift + S', action: 'Wake or sleep Satya' },
+  { keys: 'Ctrl/⌘ + Shift + .', action: 'Stop everything now (emergency)' },
+  { keys: 'Ctrl/⌘ + Shift + L', action: 'Listen to the call I am on' },
+  { keys: 'Ctrl/⌘ + Shift + K', action: 'Scan my screen now' },
+  { keys: 'Ctrl/⌘ + Shift + Y', action: 'Check what I copied' },
+  { keys: 'Ctrl/⌘ + Shift + U', action: 'Open the Notebook' },
+  { keys: 'Ctrl/⌘ + Shift + D', action: 'Play the demo call (labelled replay)' },
 ]
 
-const HOTKEYS = [
-  { keys: 'Ctrl/⌘ + Shift + S', action: 'Sleep or wake Satya' },
-  { keys: 'Ctrl/⌘ + Shift + .', action: 'Stop listening now' },
-  { keys: 'Ctrl/⌘ + Shift + N', action: 'Open the Notebook' },
-  { keys: 'Ctrl/⌘ + Shift + V', action: 'Check clipboard text' },
+const CALL_LANGS: Array<{ value: 'en' | 'hi' | 'auto'; label: string }> = [
+  { value: 'en', label: 'English' },
+  { value: 'hi', label: 'Hindi' },
+  { value: 'auto', label: 'Auto-detect' },
 ]
 
 export default function SettingsTab(): JSX.Element {
@@ -195,9 +174,13 @@ export default function SettingsTab(): JSX.Element {
 
   const size = prefs.size ?? 'M'
   const lang = prefs.lang ?? 'en'
-  const source = prefs.source ?? 'replay'
   const sounds = prefs.sounds ?? prefs.sound ?? false
-  const noticeCalls = prefs.notice_calls ?? true
+  const scopes = { ...DEFAULT_SCOPES, ...(prefs.scopes ?? {}) }
+
+  async function updateScopes(next: Scopes): Promise<void> {
+    await update({ scopes: next })
+    await api.setScopes?.(next)
+  }
 
   return (
     <div className="space-y-4">
@@ -260,41 +243,48 @@ export default function SettingsTab(): JSX.Element {
             description="A small card asks before Satya listens. The microphone stays closed."
           >
             <Toggle
-              checked={noticeCalls}
+              checked={scopes.meetings}
               label="Notice calls automatically"
-              onChange={(next) => void update({ notice_calls: next })}
+              onChange={(next) => void updateScopes({ ...scopes, meetings: next })}
+            />
+          </SettingRow>
+
+        <SettingRow
+            title="Glance at my screen for payment tricks"
+            description="On-device text reading every few seconds. Nothing is stored."
+          >
+            <Toggle
+              checked={scopes.screen}
+              label="Glance at my screen"
+              onChange={(next) => void updateScopes({ ...scopes, screen: next })}
+            />
+          </SettingRow>
+          <SettingRow
+            title="Hide Satya from screen sharing and recordings"
+            description="A caller watching your shared screen never sees the warning. Turn off to record a demo video."
+          >
+            <Toggle
+              checked={prefs.hide_from_capture !== false}
+              label="Hide Satya from screen sharing"
+              onChange={(next) => void update({ hide_from_capture: next })}
             />
           </SettingRow>
         </div>
-
-        <p className={`mt-3 text-[12px] font-medium ${surface.muted}`}>Source</p>
-        <div className="mt-2 grid grid-cols-3 gap-2">
-          {SOURCES.map((item) => {
-            const Icon = item.icon
-            const active = source === item.value
-            return (
-              <button
-                key={item.value}
-                type="button"
-                aria-pressed={active}
-                onClick={() => void update({ source: item.value })}
-                className={`${focusRing} rounded-[10px] border px-3 py-3 text-left transition ${
-                  active
-                    ? 'border-[#1FB5A3]/50 bg-[#1FB5A3]/10'
-                    : `${surface.line} ${surface.hover}`
-                }`}
-              >
-                <Icon
-                  size={16}
-                  style={{ color: active ? tone.watch : tone.slate }}
-                  aria-hidden="true"
-                />
-                <p className="mt-2 text-[13px] font-medium">{item.label}</p>
-                <p className={`mt-1 text-[12px] leading-relaxed ${surface.muted}`}>{item.detail}</p>
-              </button>
-            )
-          })}
+        <p className={`mt-3 text-[12px] font-medium ${surface.muted}`}>Call language</p>
+        <div className={`mt-2 inline-flex rounded-[10px] p-1 ${inset}`}>
+          {CALL_LANGS.map((item) => (
+            <Segment
+              key={item.value}
+              active={(prefs.call_language ?? 'en') === item.value}
+              onClick={() => void update({ call_language: item.value })}
+            >
+              {item.label}
+            </Segment>
+          ))}
         </div>
+        <p className={`mt-2 text-[12px] ${surface.muted}`}>
+          Only helps the speech engine. Language and accent are never a risk signal.
+        </p>
       </Section>
 
       <Section title="Hotkeys" description="Global shortcuts. They work even when the Notebook is closed.">
@@ -317,7 +307,7 @@ export default function SettingsTab(): JSX.Element {
         </p>
       </Section>
 
-      <Section title="Approver's phone" description="Out-of-band confirmation (F16).">
+      <Section title="Approver's phone" description="Open this on the approver's phone (same Wi-Fi or hotspot). Satya asks there, not on the call.">
         <div className={`flex items-start gap-4 rounded-[14px] border p-4 ${surface.line} ${inset}`}>
           <div
             className="grid h-24 w-24 shrink-0 place-items-center rounded-[12px] border bg-white p-1"

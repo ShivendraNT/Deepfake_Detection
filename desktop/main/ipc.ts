@@ -5,6 +5,8 @@ import { app, BrowserWindow, clipboard, ipcMain, type IpcMainEvent, type IpcMain
 import type {
   BridgeResult,
   BubbleCard,
+  CallStarted,
+  CaptureSourceKind,
   CaseSummary,
   ClipboardCheck,
   CommandResult,
@@ -12,7 +14,12 @@ import type {
   CompanionState,
   DraftArtifact,
   EvidenceResult,
+  HealthInfo,
+  OobTicket,
   Prefs,
+  ReportPackV2,
+  ScreenFinding,
+  Scopes,
   SessionResult,
   UserMode,
   WorkspaceSnapshot,
@@ -27,14 +34,22 @@ export interface IpcDependencies {
   quit: () => Promise<void>
   // Finale window manager (F02). Optional so the T25 surface keeps working on its own.
   setClickThrough?: (through: boolean) => void
+  toggleScreenGuard?: () => void
   dragBy?: (dx: number, dy: number) => void
   dragEnd?: () => void
   showCard?: (card: BubbleCard) => void
   hideCard?: (cardId?: string) => void
   relayCardAction?: (cardId: string, actionId: string) => void
   resizeBubble?: (height: number) => void
-  setUserMode?: (mode: UserMode) => Promise<BridgeResult<CompanionState>>
+  setUserMode?: (mode: UserMode, scopes?: Scopes) => Promise<BridgeResult<CompanionState>>
   getUserMode?: () => UserMode
+  // Finale: calls, screen/clipboard checks, readiness.
+  startCall?: (source: CaptureSourceKind) => Promise<BridgeResult<CallStarted>>
+  stopCall?: () => Promise<BridgeResult<null>>
+  scanScreen?: () => Promise<BridgeResult<ScreenFinding>>
+  checkClipboardText?: () => Promise<BridgeResult<ScreenFinding>>
+  submitLastScreenText?: () => Promise<BridgeResult<EvidenceResult>>
+  setScopes?: (scopes: Scopes) => Promise<BridgeResult<Scopes>>
   isScreenGuardActive?: () => boolean
   getActiveCallId?: () => string | null
   getPrefs?: () => Prefs | Promise<Prefs>
@@ -127,46 +142,11 @@ export function registerIpc(deps: IpcDependencies): void {
     return backend.config()
   })
 
-  handle('companion:get-state', async (event) => {
+  handle('companion:get-state', (event) => {
     const refused = refuseUntrusted<CompanionState>(event)
     if (refused) return refused
-    const currentMode = deps.getUserMode?.() ?? 'SLEEPING'
-    const isWatching = currentMode === 'WATCHING' || deps.isScreenGuardActive?.() === true
-    let baseState: CompanionState | null = null
-    try {
-      baseState = await backend.getState()
-    } catch {}
-
-    const state: CompanionState = {
-      version: '1',
-      mode: isWatching ? ('ACTIVE' as any) : ('SLEEP' as any),
-      hidden: false,
-      monitoring: isWatching,
-      session_id: baseState?.session_id ?? `session_${Date.now()}`,
-      consent_id: baseState?.consent_id ?? `consent_${Date.now()}`,
-      source: isWatching ? 'user_selected_loopback' : null,
-      source_label: isWatching ? 'Watching Google Meet & Screen' : 'Sleeping',
-      started_at: baseState?.started_at ?? (isWatching ? new Date().toISOString() : null),
-      updated_at: new Date().toISOString(),
-      expires_at: null,
-      demo: false,
-      mode_label: isWatching ? 'Watching Google Meet & Screen' : 'Sleeping',
-      last_event_id: baseState?.last_event_id ?? null,
-      policy_authority: 'satyapan.policy',
-      raw_scores_visible: false,
-      manual_only: true,
-      ...(baseState ?? {}),
-      ...(isWatching
-        ? {
-            mode: 'ACTIVE' as any,
-            monitoring: true,
-            mode_label: 'Watching Google Meet & Screen',
-            source: 'user_selected_loopback',
-          }
-        : {}),
-    }
-
-    return { ok: true, data: state }
+    // The backend is the only source of consent state; never invent a session here.
+    return wrap(() => backend.getState())
   })
 
   handle('companion:start-session', (event, ...args) => {
@@ -198,6 +178,35 @@ export function registerIpc(deps: IpcDependencies): void {
     if (refused) return refused
     const [text, evidenceId] = args as unknown as [string, string | undefined]
     return wrap(() => backend.submitEvidence(text, evidenceId))
+  })
+
+  handle('companion:submit-file', (event, ...args) => {
+    const refused = refuseUntrusted<EvidenceResult>(event)
+    if (refused) return refused
+    const [filename, mediaType, rawBytes, rawCaseId] = args as unknown as [
+      unknown,
+      unknown,
+      unknown,
+      unknown,
+    ]
+    if (typeof filename !== 'string' || filename.trim().length === 0) {
+      return { ok: false, error: 'file name is required' } satisfies BridgeResult<EvidenceResult>
+    }
+    const bytes =
+      rawBytes instanceof ArrayBuffer
+        ? new Uint8Array(rawBytes)
+        : rawBytes instanceof Uint8Array
+          ? rawBytes
+          : null
+    if (!bytes || bytes.byteLength === 0) {
+      return { ok: false, error: 'file bytes are required' } satisfies BridgeResult<EvidenceResult>
+    }
+    const type =
+      typeof mediaType === 'string' && mediaType.length > 0
+        ? mediaType
+        : 'application/octet-stream'
+    const caseId = typeof rawCaseId === 'string' && rawCaseId.length > 0 ? rawCaseId : null
+    return wrap(() => backend.submitFile(filename, type, bytes, caseId))
   })
 
   handle('companion:draft', (event, ...args) => {
@@ -307,9 +316,81 @@ export function registerIpc(deps: IpcDependencies): void {
   handle('companion:set-user-mode', (event, ...args) => {
     const refused = refuseUntrusted<CompanionState>(event)
     if (refused) return refused
-    const [mode] = args as [UserMode]
+    const [mode, scopes] = args as [UserMode, Scopes | undefined]
+    if (mode !== 'WATCHING' && mode !== 'SLEEPING' && mode !== 'OFF') {
+      return { ok: false, error: 'unknown mode' }
+    }
     if (!deps.setUserMode) return { ok: false, error: 'window manager is not ready' }
-    return deps.setUserMode(mode)
+    return deps.setUserMode(mode, scopes)
+  })
+
+  handle('companion:start-call', (event, ...args) => {
+    const refused = refuseUntrusted<CallStarted>(event)
+    if (refused) return refused
+    const [source] = args as [unknown]
+    const kind: CaptureSourceKind = source === 'replay' ? 'replay' : 'loopback'
+    if (!deps.startCall) return { ok: false, error: 'capture is not ready' }
+    return deps.startCall(kind)
+  })
+
+  handle('companion:stop-call', (event) => {
+    const refused = refuseUntrusted<null>(event)
+    if (refused) return refused
+    return deps.stopCall?.() ?? { ok: true, data: null }
+  })
+
+  handle('companion:request-oob', (event, ...args) => {
+    const refused = refuseUntrusted<OobTicket>(event)
+    if (refused) return refused
+    const [caseId] = args as [unknown]
+    if (typeof caseId !== 'string' || !/^case_[A-Za-z0-9_-]+$/.test(caseId)) {
+      return { ok: false, error: 'a case id is required' }
+    }
+    // The approver comes from the employee directory on the backend, never from the renderer.
+    return wrap(() => backend.requestOob(caseId))
+  })
+
+  handle('companion:report-pack', (event, ...args) => {
+    const refused = refuseUntrusted<ReportPackV2>(event)
+    if (refused) return refused
+    const [caseId, options] = args as [unknown, { utr?: unknown; money_left_at?: unknown } | undefined]
+    if (typeof caseId !== 'string' || !/^case_[A-Za-z0-9_-]+$/.test(caseId)) {
+      return { ok: false, error: 'a case id is required' }
+    }
+    const utr = typeof options?.utr === 'string' && /^[A-Za-z0-9]{6,30}$/.test(options.utr) ? options.utr : undefined
+    const left = typeof options?.money_left_at === 'string' ? options.money_left_at : undefined
+    return wrap(() => backend.reportPack(caseId, utr, left))
+  })
+
+  handle('companion:scan-screen', (event) => {
+    const refused = refuseUntrusted<ScreenFinding>(event)
+    if (refused) return refused
+    return deps.scanScreen?.() ?? { ok: false, error: 'screen checks are not available' }
+  })
+
+  handle('companion:check-clipboard-text', (event) => {
+    const refused = refuseUntrusted<ScreenFinding>(event)
+    if (refused) return refused
+    return deps.checkClipboardText?.() ?? { ok: false, error: 'clipboard checks are not available' }
+  })
+
+  handle('companion:submit-last-screen-text', (event) => {
+    const refused = refuseUntrusted<EvidenceResult>(event)
+    if (refused) return refused
+    return deps.submitLastScreenText?.() ?? { ok: false, error: 'nothing to check' }
+  })
+
+  handle('companion:get-health', (event) => {
+    const refused = refuseUntrusted<HealthInfo>(event)
+    if (refused) return refused
+    return wrap(() => backend.healthInfo())
+  })
+
+  handle('companion:set-scopes', (event, ...args) => {
+    const refused = refuseUntrusted<Scopes>(event)
+    if (refused) return refused
+    const [scopes] = args as [Scopes]
+    return deps.setScopes?.(scopes) ?? { ok: false, error: 'not ready' }
   })
 
   handle('companion:get-prefs', (event) => {

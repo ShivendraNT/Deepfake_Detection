@@ -12,11 +12,12 @@ Safety design:
 from __future__ import annotations
 
 import hashlib
+import re
 import threading
 import uuid
 from collections import deque
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from typing import TYPE_CHECKING
 
@@ -25,8 +26,10 @@ from satyapan.api.companion.live_fan_in import attach_live_bus
 from satyapan.api.companion.models import (
     MANUAL_ONLY,
     AskChip,
+    AskQuote,
     AuditRow,
     CallStartRequest,
+    CaptureSourceKind,
     CaseSummary,
     CommandRequest,
     CommandType,
@@ -46,11 +49,14 @@ from satyapan.api.companion.models import (
     NextAction,
     OobSummary,
     OobTicket,
+    PolicyTrace,
     ReportField,
     ReportPackV2,
     ReportSection,
+    ScreenFinding,
     SealStatus,
     SessionStartRequest,
+    TraceSignal,
     WorkspaceSnapshot,
 )
 from satyapan.asks.extractor import extract_asks
@@ -69,7 +75,14 @@ from satyapan.contracts.enums import (
     VoiceLabel,
 )
 from satyapan.contracts.evidence import Evidence, Signal
-from satyapan.contracts.live import AskEvent, BandEvent, LiveEvent, VoiceEvent
+from satyapan.contracts.live import (
+    AskEvent,
+    BandEvent,
+    LiveEvent,
+    StatusEvent,
+    TranscriptEvent,
+    VoiceEvent,
+)
 from satyapan.contracts.transaction import PaymentAction
 from satyapan.explain.templates import explain_template, reason_text
 from satyapan.master.store import MasterData
@@ -203,6 +216,7 @@ class CompanionService:
         self._call_id: str | None = None
         self._call_case_id: str | None = None
         self._chips: dict[str, float] = {}
+        self._quotes: dict[str, AskQuote] = {}
         self._coverage: Coverage = Coverage.USABLE
         self._seal: SealStatus = SealStatus.NOT_VERIFIED
         self._live_attached = False
@@ -547,29 +561,44 @@ class CompanionService:
         """Start one listened call on an already-consented session. Never starts capture itself."""
         with self._lock:
             self._require_consented(request.consent_id)
-            if self._call_id is not None:
-                raise CompanionError("already listening to a call; stop it first")
             live = state.live()
+            if self._call_id is not None:
+                # A new, explicitly consented start supersedes a call that was never stopped
+                # (crashed client, closed laptop lid). Its buffers are released first.
+                live.sessions.pop(self._call_id, None)
+                self._record("call.superseded", actor, f"call={self._call_id} released")
+                self._call_id = None
             attach_live_bus(live, self._ingest_live_event)
             call_id = f"call_{uuid.uuid4().hex[:10]}"
             maker = request.maker or actor
             session = live.start(call_id, maker)
+            session.language = request.language
+            title = f"Call on {request.app}" if request.app else "Live call"
+            if request.source == CaptureSourceKind.REPLAY:
+                title = "Demo call (replay)"
+            session.case = session.case.model_copy(update={"title": title})
             state.repo.put(session.case)
             self._call_id = call_id
             self._call_case_id = session.case.id
             self._chips = {}
+            self._quotes = {}
             self._coverage = Coverage.USABLE
             self._seal = SealStatus.NOT_VERIFIED
             self._state = self._state.model_copy(
                 update={"mode": CompanionMode.ACTIVE, "monitoring": True, "updated_at": utcnow()}
             )
+            replay = request.source == CaptureSourceKind.REPLAY
             event = self._publish(
                 CompanionEventType.CALL_STARTED,
+                # A replayed recording is always labelled DEMO REPLAY — NOT LIVE CAPTURE.
+                demo=replay,
+                source=CompanionSource.DEMO_REPLAY if replay else None,
+                mode_label=DEMO_LABEL if replay else None,
                 state=CompanionMode.ACTIVE,
                 headline="Listening to this call.",
                 explanation=(
-                    "Only this call. Ask words and the policy band are relayed; the transcript "
-                    "stays in the live window and is never sent to the companion."
+                    "Only this call, only on this laptop. Captions stay in memory and are "
+                    "dropped when the call ends unless you keep them as evidence."
                 ),
                 call_id=call_id,
                 case_id=session.case.id,
@@ -602,6 +631,7 @@ class CompanionService:
             self._call_id = None
             self._call_case_id = None
             self._chips = {}
+            self._quotes = {}
             self._state = self._state.model_copy(
                 update={"mode": CompanionMode.ACTIVE, "monitoring": False, "updated_at": utcnow()}
             )
@@ -621,10 +651,38 @@ class CompanionService:
         with self._lock:
             if call_id != self._call_id:
                 return
+            if isinstance(event, TranscriptEvent):
+                # Captions never cross into the companion bus (it keeps a replayable history).
+                # The desktop reads them from the per-call live stream, in memory only.
+                return
+            if isinstance(event, StatusEvent):
+                self._publish(
+                    CompanionEventType.CALL_STATUS,
+                    state=self._state.mode,
+                    headline=(event.message or "Call status")[:140],
+                    explanation=event.message[:2000],
+                    status_code=(event.code or "status")[:40],
+                    call_id=call_id,
+                    case_id=self._call_case_id,
+                    monitoring=True,
+                    next_actions=[],
+                )
+                self._record("call.status", "system", f"call={call_id} code={event.code}")
+                return
             if isinstance(event, AskEvent):
                 code = event.ask_type.value
+                at_s = (
+                    event.t_s
+                    if event.t_s is not None
+                    else float(event.chunk_index) * LIVE_CHUNK_SECONDS
+                )
                 if code not in self._chips:
-                    self._chips[code] = float(event.chunk_index) * LIVE_CHUNK_SECONDS
+                    self._chips[code] = at_s
+                    self._quotes[code] = AskQuote(
+                        code=code,  # type: ignore[arg-type]
+                        text=event.span_text[:200],
+                        at_s=at_s,
+                    )
                 chips = self._chips_list()
                 self._state = self._state.model_copy(
                     update={"mode": CompanionMode.ACTIVE, "updated_at": utcnow()}
@@ -643,6 +701,7 @@ class CompanionService:
                     call_id=call_id,
                     case_id=self._call_case_id,
                     monitoring=True,
+                    quotes=self._quotes_list(),
                 )
                 self._record(
                     "call.chips",
@@ -692,10 +751,15 @@ class CompanionService:
                     case_id=self._call_case_id,
                     monitoring=True,
                     next_actions=list(_ALERT_ACTIONS),
+                    quotes=self._quotes_list(),
+                    approver_name=self._approver_name_for(self._call_case_id),
                 )
                 self._record(
                     "call.alert", "system", f"call={call_id} band={event.band.value} relayed"
                 )
+
+    def _quotes_list(self) -> list[AskQuote]:
+        return sorted(self._quotes.values(), key=lambda q: (q.at_s or 0.0, q.code))[:7]
 
     def _chips_list(self) -> list[AskChip]:
         ordered = sorted(self._chips.items(), key=lambda item: (item[1], item[0]))
@@ -754,7 +818,8 @@ class CompanionService:
                 master=state.master,
                 settings=state.settings,
                 thresholds=state.thresholds,
-                transcriber=state.transcriber_override,
+                transcriber=state.transcriber(),
+                live_phrasebook=True,
             )
             out = analyze_evidence(data, ev, case, ctx)
             case = recompute(merge_output(case, ev, out), state.master)
@@ -804,6 +869,7 @@ class CompanionService:
         self._state = self._state.model_copy(update={"mode": state, "updated_at": utcnow()})
         return self._publish(
             CompanionEventType.CASE_UPDATED,
+            approver_name=self._approver_name_for(case.id) if alerting else None,
             state=state,
             headline=headline,
             explanation=explain_template(decision, Lang.EN).text,
@@ -906,6 +972,16 @@ class CompanionService:
         second = self.note_case_updated(case, "system", headline="Case updated after OOB")
         return [first, second]
 
+    def _approver_name_for(self, case_id: str | None) -> str | None:
+        """Display name of who OOB-Confirm would ask for this case (directory only)."""
+        case = self._repo.get(case_id) if case_id else None
+        if case is None:
+            return None
+        try:
+            return str(getattr(self._resolve_approver(case), "name", "")) or None
+        except CompanionError:
+            return None
+
     def _resolve_approver(self, case: Case) -> object:
         requester_id = case.oob.requester_employee_id if case.oob else None
         if requester_id is None and case.txn is not None:
@@ -918,14 +994,77 @@ class CompanionService:
             return senior[0]
         raise CompanionError("no approver in the employee directory for this case")
 
+    # ---------------------------------------------------------------- text checks (finale)
+    def check_text(self, text: str, *, app: str | None, source: str) -> ScreenFinding:
+        """Screen Guard / clipboard: what payment tricks are visible in this text?
+
+        Deterministic and read-only: the same context filter, frozen lexicon and live phrasebook
+        as calls, plus a vendor-master comparison. Nothing is stored and no band is set; the
+        user can hand the text to Satya as evidence, and then the policy engine decides.
+        """
+        from satyapan.asks.phrasebook import extract_cues, extract_live_asks
+        from satyapan.context import strip_context
+
+        cleaned = strip_context(text).cleaned
+        quotes: dict[str, AskQuote] = {}
+        for span in extract_live_asks(cleaned):
+            code = span.ask_type.value
+            if code not in quotes:
+                quotes[code] = AskQuote(code=code, text=span.text[:200])  # type: ignore[arg-type]
+        cues = list(dict.fromkeys(c.code for c in extract_cues(text)))
+
+        accounts = _accounts_in(text)
+        vendors: list[str] = []
+        known: set[str] = set()
+        for vendor in self._master.vendors.values():
+            names = {vendor.legal_name.lower()}
+            first = vendor.legal_name.split()[0]
+            if len(first) >= 5:
+                names.add(first.lower())
+            lower = text.lower()
+            if any(_word_in(name, lower) for name in names):
+                vendors.append(vendor.legal_name)
+            known.update(acct.account_number for acct in vendor.accounts)
+        unknown = [a for a in accounts if a not in known]
+        meeting = _meeting_in(text)
+        suspicious = bool(quotes) or bool(vendors and unknown)
+        finding = ScreenFinding(
+            app=app,
+            meeting=meeting,
+            asks=sorted(quotes.values(), key=lambda q: q.code),
+            cues=cues,
+            accounts_masked=[_mask(a) for a in accounts][:6],
+            unknown_accounts_masked=[_mask(a) for a in unknown][:6],
+            vendors=vendors[:6],
+            suspicious=suspicious,
+        )
+        if suspicious:
+            with self._lock:
+                self._record(
+                    f"{source}.finding",
+                    "system",
+                    f"asks={','.join(quotes) or '-'} vendors={len(vendors)} "
+                    f"unknown_accounts={len(unknown)} text_stored=false",
+                )
+        return finding
+
     # ---------------------------------------------------------------- report pack (F03)
-    def report_pack(self, case_id: str) -> ReportPackV2:
-        """Golden-hour pack: five drafts, all MANUAL_ONLY. Nothing is ever filed."""
+    def report_pack(
+        self,
+        case_id: str,
+        *,
+        utr: str | None = None,
+        money_left_at: datetime | None = None,
+    ) -> ReportPackV2:
+        """Golden-hour pack: five drafts, all MANUAL_ONLY. Nothing is ever filed.
+
+        `utr` / `money_left_at` are maker-entered at report time (the payment already left), so
+        the 1930 script can start with the UTR. They only fill text; they never touch a band."""
         case = self._repo.get(case_id)
         if case is None:
             raise CompanionNotFound(f"unknown case: {case_id}")
         txn = case.txn
-        utr = (txn.utr if txn and txn.utr else None) or "Not provided — ask the maker"
+        utr = utr or (txn.utr if txn and txn.utr else None) or "Not provided — ask the maker"
         amount = _format_inr(txn.amount_inr) if txn else "Not provided"
         payee = txn.beneficiary_masked if txn else "Not provided"
         evidence = [f"{ev.id} · SHA-256 {ev.sha256}" for ev in case.evidence] or [
@@ -1063,7 +1202,7 @@ class CompanionService:
         return ReportPackV2(
             case_id=case.id,
             generated_at=utcnow(),
-            money_left_at=txn.created_at if txn else None,
+            money_left_at=money_left_at or (txn.created_at if txn else None),
             sections=sections,
             submission=MANUAL_ONLY,  # type: ignore[arg-type]
             auto_submit=False,
@@ -1255,6 +1394,27 @@ class CompanionService:
             evidence=refs,
             drafts=drafts,
             audit=self.audit(),
+            trace=PolicyTrace(
+                floor_band=decision.floor_band,
+                action_type=decision.action_type,
+                signals=[
+                    TraceSignal(
+                        code=sig.code,
+                        group=sig.group.value,
+                        strength=sig.strength.value,
+                        source=sig.source.value,
+                        target=sig.target.value,
+                        detector=sig.detector,
+                        evidence_ids=list(sig.evidence_ids),
+                    )
+                    for sig in case.signals
+                ],
+                grey=decision.grey,
+                clearance_methods=[m.value for m in decision.clearance.methods],
+                clearance_who=[r.value for r in decision.clearance.who],
+                clearance_notes=list(decision.clearance.notes),
+                policy_version=decision.policy_version,
+            ),
         )
 
     # ---------------------------------------------------------------- internals
@@ -1282,6 +1442,10 @@ class CompanionService:
         ticket: OobTicket | None = None,
         report: ReportPackV2 | None = None,
         next_actions: list[NextAction] | None = None,
+        quotes: list[AskQuote] | None = None,
+        status_code: str | None = None,
+        screen: ScreenFinding | None = None,
+        approver_name: str | None = None,
     ) -> CompanionEvent:
         payload = CompanionPayload(
             state=state,
@@ -1305,6 +1469,10 @@ class CompanionService:
             oob=oob,
             ticket=ticket,
             report=report,
+            quotes=quotes or [],
+            status_code=status_code,
+            screen=screen,
+            approver_name=approver_name,
         )
         event = CompanionEvent(
             type=event_type,
@@ -1317,6 +1485,7 @@ class CompanionService:
         self._call_id = None
         self._call_case_id = None
         self._chips = {}
+        self._quotes = {}
         self._state = self._state.model_copy(
             update={
                 "session_id": None,
@@ -1346,6 +1515,46 @@ class CompanionService:
 
     def _record(self, action: str, actor: str, detail: str) -> None:
         self._audit.append(AuditRow(actor=actor, action=action, detail=detail))
+
+
+_ACCOUNT_RE = re.compile(r"(?<![\d-])\d(?:[ -]?\d){8,17}(?![\d-])")
+_ACCOUNT_KEY_RE = re.compile(r"(a/c|acct|account|acc\.?\s*no|beneficiary)", re.IGNORECASE)
+
+
+def _accounts_in(text: str) -> list[str]:
+    """Bank-account-looking numbers. 11+ digits anywhere; 9-10 digits only right after an
+    account keyword (so phone numbers do not count)."""
+    out: list[str] = []
+    for m in _ACCOUNT_RE.finditer(text):
+        digits = re.sub(r"[ -]", "", m.group(0))
+        if len(digits) < 9 or len(digits) > 18:
+            continue
+        if len(digits) < 11 and not _ACCOUNT_KEY_RE.search(
+            text[max(0, m.start() - 40) : m.start()]
+        ):
+            continue
+        if digits not in out:
+            out.append(digits)
+    return out
+
+
+def _word_in(needle: str, haystack: str) -> bool:
+    return re.search(rf"(?<!\w){re.escape(needle)}(?!\w)", haystack) is not None
+
+
+def _mask(account: str) -> str:
+    return f"••••{account[-4:]}"
+
+
+def _meeting_in(text: str) -> str | None:
+    lower = text.lower()
+    if "meet.google.com" in lower or "google meet" in lower:
+        return "Google Meet"
+    if "teams.microsoft.com" in lower or "microsoft teams" in lower:
+        return "Microsoft Teams"
+    if "zoom.us" in lower or "zoom meeting" in lower:
+        return "Zoom"
+    return None
 
 
 def _source_label(source: CompanionSource) -> str:

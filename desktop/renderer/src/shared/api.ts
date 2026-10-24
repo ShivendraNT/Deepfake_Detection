@@ -29,6 +29,9 @@ import type {
   WorkspaceSnapshot,
 } from '../../../shared/contracts'
 import { MockCompanionClient } from '../companion/mockClient'
+import type { SatyaSignal, Scopes } from '../../../shared/contracts'
+import { MOCK_CALL, MOCK_HEALTH, MOCK_SCREEN_FINDING, captionFor, quotesUntil } from './mockLive'
+import { reportPack as mockReportPack } from './mockScenario'
 
 type Unsubscribe = () => void
 type Listener<T> = (value: T) => void
@@ -136,6 +139,97 @@ export function createMockBridge(): CompanionBridge {
     emit('card-action', { card_id: cardId, action_id: actionId })
   }
 
+  // ---- Finale: a scripted live call so the whole flow can be rehearsed in a browser ----
+  const signal = (value: SatyaSignal): void => emit('signal', value)
+  let callTimers: Array<ReturnType<typeof setTimeout>> = []
+  let levelTimer: ReturnType<typeof setInterval> | null = null
+  let callId: string | null = null
+  const CASE = 'case_demo_cfo_call'
+
+  function endMockCall(): void {
+    for (const timer of callTimers) clearTimeout(timer)
+    callTimers = []
+    if (levelTimer) clearInterval(levelTimer)
+    levelTimer = null
+    if (!callId) return
+    const id = callId
+    callId = null
+    signal({ kind: 'level', value: 0 })
+    client.emitEvent('call.stopped', { state: 'ACTIVE', headline: 'Stopped listening to this call.', call_id: id })
+  }
+
+  function startMockCall(): { call_id: string; case_id: string } {
+    endMockCall()
+    const id = `call_mock_${Date.now().toString(36)}`
+    callId = id
+    client.emitEvent('call.started', {
+      state: 'ACTIVE',
+      headline: 'Listening to this call.',
+      call_id: id,
+      case_id: CASE,
+      coverage: 'usable',
+      seal: 'not_verified',
+      source: 'demo_replay',
+      monitoring: true,
+    })
+    let speaking = false
+    levelTimer = setInterval(() => {
+      const value = speaking ? 0.25 + Math.random() * 0.55 : Math.random() * 0.04
+      signal({ kind: 'level', value })
+    }, 60)
+    MOCK_CALL.forEach((step, index) => {
+      const begin = step.at_ms - 3600
+      callTimers.push(setTimeout(() => {
+        speaking = true
+        signal({ kind: 'speech', active: true })
+      }, begin + 400))
+      callTimers.push(setTimeout(() => {
+        speaking = false
+        signal({ kind: 'speech', active: false })
+        signal({ kind: 'transcribing', index })
+      }, step.at_ms - 800))
+      callTimers.push(setTimeout(() => {
+        if (callId !== id) return
+        signal({ kind: 'caption', call_id: id, line: captionFor(step, index) })
+        const quotes = quotesUntil(index)
+        if (quotes.length > quotesUntil(index - 1).length || index === 0) {
+          const chips = quotes.map((q) => ({ code: q.code, at_s: q.at_s }))
+          if (chips.length > 0) {
+            client.emitEvent('live.chips', {
+              state: 'ACTIVE',
+              headline: `${chips.length} payment trick word(s) heard so far`,
+              call_id: id,
+              case_id: CASE,
+              chips,
+              quotes,
+              monitoring: true,
+            })
+          }
+          if (index === 1) {
+            client.emitEvent('alert.raised', {
+              state: 'ALERT',
+              headline: 'Pause this payment and verify independently',
+              band: 'HOLD',
+              reason_codes: ['ASK_SECRECY', 'ASK_NEW_ACCOUNT'],
+              chips,
+              quotes,
+              call_id: id,
+              case_id: CASE,
+              approver_name: 'Rajesh Iyer',
+              monitoring: true,
+              next_actions: [
+                { id: 'verify', label: 'Verify with the approver', variant: 'primary' },
+                { id: 'copy_reply', label: 'Copy a safe reply', variant: 'outline' },
+                { id: 'open_notebook', label: 'Open Notebook', variant: 'outline' },
+              ],
+            })
+          }
+        }
+      }, step.at_ms))
+    })
+    return { call_id: id, case_id: CASE }
+  }
+
   return {
     getConfig: async (): Promise<AppConfig> => ({
       backendUrl: 'http://127.0.0.1:8000',
@@ -152,6 +246,16 @@ export function createMockBridge(): CompanionBridge {
     command: (type: string, payload: Record<string, unknown> = {}) =>
       wrap(() => client.command(type, payload)),
     submitEvidence: (text: string, _evidenceId?: string) => wrap(() => client.submitEvidence(text)),
+    submitFile: (
+      filename: string,
+      _mediaType: string,
+      _bytes: ArrayBuffer,
+      _caseId?: string | null,
+    ) =>
+      wrap(async () => {
+        const result = await client.submitEvidence(`Mock file check: ${filename}`)
+        return { ...result, evidence_id: `ev_file_mock_${Date.now().toString(36)}` }
+      }),
     draft: (kind: 'section63' | 'helpline_1930', caseId: string) =>
       wrap(() => client.draft(kind, caseId)),
     workspace: (caseId?: string) => wrap(() => client.workspace(caseId)),
@@ -200,7 +304,56 @@ export function createMockBridge(): CompanionBridge {
       ),
     cardAction,
     resizeBubble: () => undefined,
+    startCall: async () => {
+      try {
+        return { ok: true, data: startMockCall() }
+      } catch (error) {
+        return { ok: false, error: errorOf(error) }
+      }
+    },
+    stopCall: async () => {
+      endMockCall()
+      return { ok: true, data: null }
+    },
+    requestOob: async (caseId: string) => {
+      const ticket = {
+        oob_id: `oob_mock_${Date.now().toString(36)}`,
+        case_id: caseId,
+        approver_name: 'Rajesh Iyer',
+        channel: 'console' as const,
+        inbox_url: '/oob/inbox',
+        expires_at: new Date(Date.now() + 600_000).toISOString(),
+      }
+      client.emitEvent('oob.sent', {
+        state: 'ALERT',
+        headline: 'Asked Rajesh Iyer on their own phone.',
+        band: 'HOLD',
+        case_id: caseId,
+        ticket,
+        oob: { oob_id: ticket.oob_id, approver_name: ticket.approver_name },
+      })
+      setTimeout(() => {
+        client.emitEvent('oob.result', {
+          state: 'ALERT',
+          headline: "Rajesh Iyer says they didn't ask for this. I've put it on hold.",
+          band: 'HOLD',
+          reason_codes: ['OOB_DENIED'],
+          case_id: caseId,
+          oob: { oob_id: ticket.oob_id, approver_name: ticket.approver_name, outcome: 'not_requested' },
+        })
+      }, 4500)
+      return { ok: true, data: ticket }
+    },
+    reportPack: async () => ({ ok: true, data: mockReportPack() }),
+    scanScreen: async () => {
+      setTimeout(() => signal({ kind: 'text_check', source: 'screen', finding: MOCK_SCREEN_FINDING, on_demand: true }), 900)
+      return { ok: true, data: MOCK_SCREEN_FINDING }
+    },
+    getHealth: async () => ({ ok: true, data: MOCK_HEALTH }),
+    onSignal: (callback) => on<SatyaSignal>('signal', callback),
+    setScopes: async (scopes: Scopes) => ({ ok: true, data: scopes }),
     setUserMode: async (mode: UserMode) => {
+      if (mode !== 'WATCHING') endMockCall()
       const state = await client.getState()
       if (mode === 'WATCHING') {
         if (state.mode === 'ACTIVE') return { ok: true, data: state }
@@ -233,6 +386,31 @@ const mockBridge = FORCE_MOCK || !realBridge ? createMockBridge() : null
 
 /** The app's only transport. Import this, never `window.satyapan`. */
 export const api: CompanionBridge = mockBridge ?? (realBridge as CompanionBridge)
+
+interface WorkspaceNavigationBridge {
+  onWorkspaceNavigate?: (callback: (tab: string) => void) => () => void
+  workspaceReady?: () => void
+}
+
+function workspaceNavigationBridge(): WorkspaceNavigationBridge | undefined {
+  return (window as unknown as { satyapan?: WorkspaceNavigationBridge }).satyapan
+}
+
+export function onWorkspaceNavigate(callback: (tab: string) => void): () => void {
+  return workspaceNavigationBridge()?.onWorkspaceNavigate?.(callback) ?? (() => undefined)
+}
+
+export function workspaceReady(): void {
+  workspaceNavigationBridge()?.workspaceReady?.()
+}
+
+/** Toggle ambient screen analysis through the narrow Electron bridge when available. */
+export function toggleScreenGuard(): void {
+  const bridge = (window as unknown as {
+    satyapan?: CompanionBridge & { toggleScreenGuard?: () => void }
+  }).satyapan
+  bridge?.toggleScreenGuard?.()
+}
 
 /** True in browser mock mode, so a view can render cards inline instead of in a window. */
 export const isMockBridge = mockBridge !== null
