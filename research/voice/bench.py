@@ -213,7 +213,8 @@ def gate_index(val: Split) -> np.ndarray:
 
 
 def warm(argv: list[str]) -> None:
-    """Fill caches in parallel processes: `ours SPLIT...` or `hf NAME SPLIT COND...`."""
+    """Fill caches in parallel processes: `ours SPLIT...`, `hf NAME SPLIT COND...` or
+    `hfsub NAME SPLIT COND...` (seeded test subset, amendment 2)."""
     import torch
 
     torch.set_num_threads(2)
@@ -226,6 +227,11 @@ def warm(argv: list[str]) -> None:
         val = load("val")
         for name in argv[1:]:
             hf_gate(name, gate_index(val))
+    elif argv[0] == "hfsub":  # the seeded test subsets of a shipped off-the-shelf model
+        name, split, *conds = argv[1:]
+        idx = test_subset(split, load(split))
+        for cond in conds:
+            hf_scores(name, split, cond, idx)
     else:
         name, split, *conds = argv[1:]
         for cond in conds:
