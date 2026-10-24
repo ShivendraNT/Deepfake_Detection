@@ -130,11 +130,16 @@ uv run pytest tests/invariants -q
 # 2. the full story: consent -> call -> alert -> OOB "not me" -> report pack -> stop
 make dry-run
 
-# 3. the health posture the desktop shows on startup
+# 3. the real phone page over HTTP (start the engine first: make live)
+make oob-check
+
+# 4. the health posture the desktop shows on startup
 curl -s http://127.0.0.1:8000/companion/health | python -m json.tool
 # -> policy_authority: satyapan.policy, raw_scores_visible: false, manual_only: true,
 #    default_mode: SLEEP
 ```
 
 Last run: `docs/finale/DRY_RUNS.md` (3/3 automated runs, 94–132 ms each; the human stage run is
-still to be filled in on the demo laptop).
+still to be filled in on the demo laptop). `make oob-check` passed over a real uvicorn server:
+the page served at `/oob`, `/api/oob/inbox`, the exact question, and “I did not request this” →
+DENIED / HOLD.

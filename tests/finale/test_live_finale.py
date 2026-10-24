@@ -360,6 +360,32 @@ def test_phone_page_shows_the_real_question_to_the_approver_only(client) -> None
 
 
 # --------------------------------------------------------------------------- reports + trace
+def test_phone_page_api_prefix_matches_the_served_page(client) -> None:
+    """The page is served at /oob and its JS calls /api/oob/*. Both must exist on one origin."""
+    token = _replay_and_request_oob(client)
+    page = client.get("/oob")
+    assert page.status_code == 200
+    assert "/api/oob/inbox" in page.text
+    assert "/api/oob/respond" in page.text
+
+    inbox = client.get("/api/oob/inbox", headers=RAJESH)
+    assert inbox.status_code == 200, inbox.text
+    assert any(token in message["body"] for message in inbox.json())
+
+    request = client.get("/api/oob/request", params={"token": token}, headers=RAJESH)
+    assert request.status_code == 200, request.text
+    assert request.json()["state"] == "pending"
+
+    answer = client.post(
+        "/api/oob/respond",
+        json={"token": token, "approve": False, "reason": "not_requested"},
+        headers=RAJESH,
+    )
+    assert answer.status_code == 200, answer.text
+    assert answer.json()["result"] == "DENIED"
+    assert answer.json()["reason"] == "not_requested"
+
+
 def test_report_pack_uses_the_maker_entered_utr_and_stays_manual(client) -> None:
     client.post(
         "/companion/commands",

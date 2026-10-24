@@ -9,11 +9,12 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video voice video-models doctor demo-audio live live-personal check lint fmt typecheck test task run demo-data schemas status judge dry-run console-test ext-test clean
+.PHONY: scan help sync asr video voice video-models doctor demo-audio live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
 	@echo "make check         lint + format check + typecheck + all tests (run before every commit)"
+	@echo "make ci            every surface: Python + desktop + OOB console + extension"
 	@echo "make test          all tests (task tests skip until their task is implemented)"
 	@echo "make task T=T07    run ONLY task T07's acceptance tests, strict (no skipping)"
 	@echo "make run           start the API on http://127.0.0.1:8000 (docs at /docs)"
@@ -27,6 +28,7 @@ help:
 	@echo "make status        print the task board from docs/STATUS.md"
 	@echo "make judge         score the detector stack + check a judge's own input"
 	@echo "make dry-run       automated end-to-end rehearsal (real app, fake speech)"
+	@echo "make oob-check     check the approver phone page over HTTP (engine must be running)"
 
 sync:
 	uv sync --inexact
@@ -79,6 +81,12 @@ task:
 check: lint typecheck test
 	@echo "make check: ALL GREEN"
 
+ci: check
+	cd desktop && npm run typecheck && npx vitest run && npm run build
+	cd console && npm test && npm run build
+	cd extension && node --test tests/*.test.mjs
+	@echo "make ci: ALL SURFACES GREEN"
+
 run:
 	$(RUN) uvicorn --app-dir src satyapan.api.app:app --reload --host 0.0.0.0 --port 8000
 
@@ -111,6 +119,9 @@ judge:
 
 dry-run:
 	$(RUN) python scripts/dry_run.py
+
+oob-check:
+	$(RUN) python scripts/oob_http_check.py
 
 console-test:
 	cd console && npm install && npm test

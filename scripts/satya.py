@@ -136,6 +136,34 @@ def desktop() -> None:
     run(npm, "run", "dev", cwd=cwd)
 
 
+def _tool(name: str) -> str:
+    found = shutil.which(name) or shutil.which(f"{name}.cmd")
+    if not found:
+        sys.exit(f"{name} is not installed (install Node.js: https://nodejs.org)")
+    return found
+
+
+def ci() -> None:
+    """Every surface, on every OS: Python + desktop + OOB console + extension."""
+    check()
+    npm, npx, node = _tool("npm"), _tool("npx"), _tool("node")
+    desktop_dir = ROOT / "desktop"
+    if not (desktop_dir / "node_modules").exists():
+        run(npm, "ci", cwd=desktop_dir)
+    run(npm, "run", "typecheck", cwd=desktop_dir)
+    run(npx, "vitest", "run", cwd=desktop_dir)
+    run(npm, "run", "build", cwd=desktop_dir)
+    console_dir = ROOT / "console"
+    if not (console_dir / "node_modules").exists():
+        run(npm, "ci", cwd=console_dir)
+    run(npm, "test", cwd=console_dir)
+    run(npm, "run", "build", cwd=console_dir)
+    ext_dir = ROOT / "extension"
+    tests = sorted(str(p.relative_to(ext_dir)) for p in (ext_dir / "tests").glob("*.test.mjs"))
+    run(node, "--test", *tests, cwd=ext_dir)
+    print("satya ci: ALL SURFACES GREEN")
+
+
 TASKS: dict[str, tuple[str, Callable[[], None]]] = {
     "sync": ("install core + dev dependencies", sync),
     "asr": ("install the local speech engine for this OS/CPU and check it", asr),
@@ -146,6 +174,7 @@ TASKS: dict[str, tuple[str, Callable[[], None]]] = {
         lambda: py("python", "scripts/asr_check.py"),
     ),
     "check": ("lint + format check + typecheck + tests", check),
+    "ci": ("every surface: Python + desktop + OOB console + extension", ci),
     "test": ("all tests", lambda: py("pytest")),
     "judge": (
         "score the detector stack and check a judge's own input",
@@ -154,6 +183,10 @@ TASKS: dict[str, tuple[str, Callable[[], None]]] = {
     "dry-run": (
         "automated end-to-end rehearsal (real app, fake speech)",
         lambda: py("python", "scripts/dry_run.py"),
+    ),
+    "oob-check": (
+        "check the approver phone page over HTTP (engine must be running)",
+        lambda: py("python", "scripts/oob_http_check.py"),
     ),
     "fmt": ("auto-format", lambda: (py("ruff", "format", "."), py("ruff", "check", "--fix", "."))),
     "schemas": ("regenerate JSON schemas", lambda: py("python", "scripts/export_schemas.py")),

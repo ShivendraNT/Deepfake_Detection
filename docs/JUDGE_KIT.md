@@ -37,9 +37,27 @@ uv run python scripts/judge_kit.py --screen --text "Account 9999000099917 ..."
 # a normal invoice is not automatically fraud
 uv run python scripts/judge_kit.py --file data/demo/invoices/inv_kaveri_ok.pdf --vendor-id V001
 
-# machine-readable scoreboard
+# a machine-readable scoreboard
 uv run python scripts/judge_kit.py --json
+
+# score a labelled kit supplied by the judges (one JSON object per line)
+uv run python scripts/judge_kit.py --labels kit.jsonl
 ```
+
+`kit.jsonl` format:
+
+```json
+{"id":"bec-1","path":"samples/bank-change.eml","vendor_id":"V002","amount":284000,"expected":"VERIFY"}
+{"id":"cfo-call","text":"Keep this between us. Pay the new account.","new_payee":true,"amount":4850000,"expected":"HOLD"}
+{"id":"routine","path":"samples/invoice.pdf","vendor_id":"V001","amount":210000,"expected":"PASS"}
+```
+
+`expected` is the **policy band** for that sample (PASS / VERIFY / HOLD), not a free-text
+“scam/benign” label: a benign message can still be VERIFY because the payment itself is a new
+payee. The mode prints the exact-match rate, the share of unsafe samples caught at ≥ VERIFY,
+the false-alarm rate on safe samples, a confusion matrix and each failure with its policy reasons.
+Rows can override any global payment flag (`vendor_id`, `new_payee`, `amount`, `account`, `ifsc`,
+`beneficiary`).
 
 The scoreboard takes **under a second** on a laptop. The live checks take a few milliseconds for
 text/email, and roughly 50–300 ms for a PDF (text extraction).

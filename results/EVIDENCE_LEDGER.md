@@ -101,7 +101,7 @@ defences are structural (LLM never sets the band, template fallback).
 |---|---|---|---|---|
 | Automated tests | 511 passed, 138 skipped (unfinished tasks) | `make check` | `7f28b4e` | superseded |
 | Automated tests (incl. Seal tests) | **561 passed**, 138 skipped (unfinished tasks) | `make check` | `2afaf2a` | measured |
-| Automated tests (24 Oct finale) | **814 passed, 20 skipped** (unfinished T18–T23 + video fusion) | `make check` | current | measured |
+| Automated tests (24 Oct finale) | **818 passed, 20 skipped** (unfinished T18–T23 + video fusion) | `make check` | current | measured |
 | Desktop tests (24 Oct finale) | **84 passed** | `cd desktop && npx vitest run` | current | measured |
 | Safety invariants property-tested (monotone, raise-only, LLM cap, floor isolation, OOB/grey, single weak signal) | 7 invariant files, hypothesis 200 examples each | `tests/invariants/` | `7f28b4e` | measured |
 

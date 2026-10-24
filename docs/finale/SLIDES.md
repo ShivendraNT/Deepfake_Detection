@@ -106,7 +106,7 @@ Walkthrough: `docs/ENGINEERING_DEEP_DIVE.md`.
 
 **Built:** consent/modes, live call route A + replay, chips + alert, OOB phone page, file checks,
 Screen Guard, Scribe/Report Copilot, Notebook, PWA OOB, automated dry runs 3/3, `make check` green
-(814 passed).
+(818 passed).
 
 **Cut, with reasons:** Gmail button (P2; no demo value), loopback as the *primary* route
 (permission risk; kept as P1), “keep call audio” UI (vault exists; not in the 3-minute story),

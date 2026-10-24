@@ -5,6 +5,11 @@
     uv run python scripts/judge_kit.py --file path/to/invoice.pdf --vendor-id V001
     uv run python scripts/judge_kit.py --file path/to/message.eml --new-payee --amount 4800000
     uv run python scripts/judge_kit.py --screen --text "Account 9999000099917 ..."
+    uv run python scripts/judge_kit.py --labels kit.jsonl
+
+`--labels` scores a JSONL kit supplied by the judges: one object per line with `id`,
+`expected` (PASS/VERIFY/HOLD), and either `text` or `path`; optional payment fields
+(`vendor_id`, `new_payee`, `amount`, `account`, `ifsc`, `beneficiary`).
 
 What the scoreboard measures (all local, no network, no real customer data):
   1. Ask detection on the pre-registered held-out TEST split: frozen lexicon, context layer,
@@ -41,6 +46,7 @@ from research.heldout.stats import (  # noqa: E402
     load_jsonl,
     sha256_path,
     split_of,
+    wilson,
 )
 from satyapan.asks.extractor import extract_asks  # noqa: E402
 from satyapan.asks.phrasebook import extract_live_asks  # noqa: E402
@@ -333,22 +339,28 @@ def _payment(
     )
 
 
-def live_check(args: argparse.Namespace) -> int:
-    master = load_master(Settings().data_dir)
-    if args.text is not None:
-        raw = args.text.encode("utf-8")
-        source = "text"
-        channel = Channel.MANUAL
-        filename = None
-    else:
-        path = Path(args.file).expanduser()
-        if not path.is_file():
-            print(f"file not found: {path}")
-            return 2
-        raw = path.read_bytes()
-        source = path.name
-        channel = _channel_for(path)
-        filename = path.name
+def _read_input(text: str | None, file: str | None) -> tuple[bytes, str, Channel, str | None]:
+    if text is not None:
+        return text.encode("utf-8"), "text", Channel.MANUAL, None
+    path = Path(file or "").expanduser()
+    if not path.is_file():
+        raise FileNotFoundError(path)
+    return path.read_bytes(), path.name, _channel_for(path), path.name
+
+
+def _analyze(
+    raw: bytes,
+    source: str,
+    channel: Channel,
+    filename: str | None,
+    master: Any,
+    *,
+    vendor_id: str | None,
+    amount: int,
+    account: str | None,
+    ifsc: str | None,
+    beneficiary: str | None,
+) -> dict[str, Any]:
     evidence = Evidence(
         id="ev_judge_kit",
         case_id="case_judge_kit",
@@ -364,11 +376,11 @@ def live_check(args: argparse.Namespace) -> int:
     )
     txn = _payment(
         master,
-        vendor_id=None if args.new_payee else args.vendor_id,
-        amount=args.amount,
-        account=args.account,
-        ifsc=args.ifsc,
-        beneficiary=args.beneficiary,
+        vendor_id=vendor_id,
+        amount=amount,
+        account=account,
+        ifsc=ifsc,
+        beneficiary=beneficiary,
     )
     case = Case(
         id="case_judge_kit",
@@ -388,7 +400,39 @@ def live_check(args: argparse.Namespace) -> int:
     out = analyze_evidence(raw, evidence, case, ctx)
     case = recompute(merge_output(case, evidence, out), master)
     assert case.decision is not None
-    decision = case.decision
+    return {
+        "source": source,
+        "channel": channel,
+        "raw": raw,
+        "txn": txn,
+        "out": out,
+        "decision": case.decision,
+        "case": case,
+    }
+
+
+def live_check(args: argparse.Namespace) -> int:
+    master = load_master(Settings().data_dir)
+    try:
+        raw, source, channel, filename = _read_input(args.text, args.file)
+    except FileNotFoundError as exc:
+        print(f"file not found: {exc}")
+        return 2
+    analyzed = _analyze(
+        raw,
+        source,
+        channel,
+        filename,
+        master,
+        vendor_id=None if args.new_payee else args.vendor_id,
+        amount=args.amount,
+        account=args.account,
+        ifsc=args.ifsc,
+        beneficiary=args.beneficiary,
+    )
+    txn = analyzed["txn"]
+    out = analyzed["out"]
+    decision = analyzed["decision"]
 
     print("=" * 78)
     print("SATYAPAN JUDGE KIT — live check")
@@ -433,6 +477,98 @@ def live_check(args: argparse.Namespace) -> int:
     print()
     print("Safeguards: no raw score is shown; nothing was sent; report drafts are MANUAL_ONLY.")
     print("=" * 78)
+    return 0
+
+
+def labels_check(args: argparse.Namespace) -> int:
+    """Score a JSONL kit supplied by the judges: one object per line.
+
+    Required: `id`, `expected` (PASS/VERIFY/HOLD), and either `text` or `path`.
+    Optional: `vendor_id`, `new_payee`, `amount`, `account`, `ifsc`, `beneficiary`.
+    Global payment flags fill the gaps. The same real pipeline is used for every row.
+    """
+    path = Path(args.labels).expanduser()
+    if not path.is_file():
+        print(f"labels file not found: {path}")
+        return 2
+    rows = [
+        json.loads(line) for line in path.read_text(encoding="utf-8").splitlines() if line.strip()
+    ]
+    if not rows:
+        print("labels file is empty")
+        return 2
+    master = load_master(Settings().data_dir)
+    results: list[dict[str, Any]] = []
+    for index, row in enumerate(rows, 1):
+        sample_id = str(row.get("id") or f"sample-{index}")
+        expected = str(row.get("expected", "")).upper()
+        text = row.get("text")
+        file = row.get("path") or row.get("file")
+        try:
+            raw, source, channel, filename = _read_input(text, file)
+            account = row.get("account", args.account)
+            ifsc = row.get("ifsc", args.ifsc)
+            new_payee = bool(row.get("new_payee", args.new_payee))
+            if new_payee and account is None and ifsc is None:
+                account, ifsc = "9999000099917", "FAKE0009999"
+            analyzed = _analyze(
+                raw,
+                source,
+                channel,
+                filename,
+                master,
+                vendor_id=None if new_payee else row.get("vendor_id", args.vendor_id),
+                amount=int(row.get("amount", args.amount)),
+                account=account,
+                ifsc=ifsc,
+                beneficiary=row.get("beneficiary", args.beneficiary),
+            )
+            got = analyzed["decision"].band.value
+            reasons = [r.value for r in analyzed["decision"].reason_codes]
+        except Exception as exc:  # noqa: BLE001 - a bad row is a finding, not a crash
+            got = "ERROR"
+            reasons = [f"{type(exc).__name__}: {exc}"[:160]]
+        results.append({"id": sample_id, "expected": expected, "got": got, "reasons": reasons})
+
+    valid = [r for r in results if r["expected"] in {"PASS", "VERIFY", "HOLD"}]
+    correct = sum(1 for r in valid if r["got"] == r["expected"])
+    unsafe = [r for r in valid if r["expected"] in {"VERIFY", "HOLD"}]
+    caught = sum(1 for r in unsafe if r["got"] in {"VERIFY", "HOLD"})
+    safe = [r for r in valid if r["expected"] == "PASS"]
+    false_alarms = sum(1 for r in safe if r["got"] != "PASS")
+    confusion: dict[str, dict[str, int]] = {}
+    for r in valid:
+        confusion.setdefault(r["expected"], {}).setdefault(r["got"], 0)
+        confusion[r["expected"]][r["got"]] += 1
+
+    print("=" * 84)
+    print("SATYAPAN JUDGE KIT — labelled kit")
+    print("=" * 84)
+    print(f"kit {path} | {len(results)} samples | {len(valid)} with a band label")
+    print()
+    print(f"{'id':<28} {'expected':<9} {'got':<9} result")
+    for r in results:
+        ok = "ok" if r["got"] == r["expected"] else "MISS"
+        print(f"{r['id'][:27]:<28} {r['expected']:<9} {r['got']:<9} {ok}")
+    print()
+    if valid:
+        print(f"Exact band match : {pct(wilson(correct, len(valid)))}")
+        print(f"Unsafe caught    : {pct(wilson(caught, len(unsafe)))}")
+        print(f"Safe false alarm : {pct(wilson(false_alarms, len(safe)))}")
+        print("Confusion matrix : " + json.dumps(confusion, sort_keys=True))
+    else:
+        print("No valid expected bands: nothing can be scored (expected PASS/VERIFY/HOLD).")
+    labelled = {"PASS", "VERIFY", "HOLD"}
+    failures = [r for r in results if r["expected"] in labelled and r["got"] != r["expected"]]
+    if failures:
+        print()
+        print("Failures:")
+        for r in failures:
+            reasons = "; ".join(r["reasons"][:3])
+            print(f"  {r['id']}: expected {r['expected']}, got {r['got']} — {reasons}")
+    print()
+    print("Safeguards: the band came from satyapan.policy; no score is shown; nothing was sent.")
+    print("=" * 84)
     return 0
 
 
@@ -622,6 +758,10 @@ def main() -> None:
     parser = argparse.ArgumentParser(description="Satyapan judge kit")
     parser.add_argument("--text", help="check this text (email body, call transcript, screen)")
     parser.add_argument("--file", help="check this file (.eml, .pdf, audio, video, text)")
+    parser.add_argument(
+        "--labels",
+        help="JSONL labelled kit: id, expected (PASS/VERIFY/HOLD), text or path",
+    )
     parser.add_argument("--screen", action="store_true", help="screen/clipboard finding (no band)")
     parser.add_argument("--vendor-id", default="V001", help="known vendor id (default V001)")
     parser.add_argument("--new-payee", action="store_true", help="treat the payment as a new payee")
@@ -632,6 +772,8 @@ def main() -> None:
     parser.add_argument("--json", action="store_true", help="print the scoreboard as JSON")
     args = parser.parse_args()
 
+    if args.labels:
+        raise SystemExit(labels_check(args))
     if args.screen:
         if args.text is None:
             parser.error("--screen needs --text")

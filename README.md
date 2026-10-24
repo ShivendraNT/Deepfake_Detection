@@ -74,6 +74,11 @@ model the benchmark selected (licensed, pinned, 1.3 GB ONNX, torch needed once);
 **Benchmarks / test kit:** `docs/BENCHMARKS.md` (every detector → its open-data test, splits,
 CV, frozen thresholds, synthetic-data generators); `python -m research.run_all --list`.
 
+**Cross-platform CI:** `.github/workflows/ci.yml` runs the Python suite on Ubuntu, macOS x64 and
+arm64, and Windows, plus the desktop typecheck/tests/bundle, the OOB console and the extension.
+Locally, `make ci` (or `uv run python scripts/satya.py ci`) runs every surface. The OS/arch
+matrix, permissions and honest gaps are in `docs/CROSS_PLATFORM.md`.
+
 ## Repo map
 
 | Path | What |
@@ -91,6 +96,7 @@ CV, frozen thresholds, synthetic-data generators); `python -m research.run_all -
 | `docs/finale/` | finale plan, mascot spec, **live demo runbook** (`LIVE_DEMO.md`), `DELIVERED.md`, `SAFEGUARDS.md`, `DRY_RUNS.md`, `SLIDES.md` |
 | `docs/JUDGE_KIT.md` | how to score the shipped stack in five minutes, with failure cases |
 | `docs/ENGINEERING_DEEP_DIVE.md` | the judge walkthrough of the policy, signals, X1 and response path |
+| `docs/CROSS_PLATFORM.md` | OS/arch matrix, CI, and the one OS-specific piece (audio capture) |
 | `docs/DEMO_SCRIPT.md` | the Round-1 demo (superseded by `docs/finale/PLAN.md` §7) |
 | `team/` | each person's finale cards |
 | `desktop/` | Electron app: Satya the companion |
@@ -148,6 +154,7 @@ The step-by-step live demo (two laptops, a phone hotspot, permissions, script, f
 ```bash
 make judge                 # measured scoreboard + a check on any judge-supplied email/PDF/text
 make dry-run               # the whole story in-process: consent -> call -> alert -> OOB -> report
+make oob-check             # the real phone page over HTTP (engine must be running: make live)
 ```
 
 `docs/JUDGE_KIT.md` explains the protocol, the numbers, the named failure cases and the limits.

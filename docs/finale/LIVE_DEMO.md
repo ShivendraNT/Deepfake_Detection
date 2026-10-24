@@ -51,6 +51,8 @@ with the replay; it has to be rehearsed on the actual demo laptop.
    optional and stays amber (model files are not shipped, see §6).
 4. The approver scans the QR on that card with their phone (it encodes
    `http://<laptop-A-ip>:8000/oob`). The page says "Waiting for a request…".
+   Run `make oob-check` once after `make live`: it creates a demo request, opens the served page
+   and answers "I did not request this", so you know the phone path works before the judges arrive.
 5. Laptop B creates the Meet; laptop A joins it in Chrome. **Sound on**, volume above ~30%.
    Speakers or headphones both work: Satya taps what the laptop plays, never the microphone, so he
    hears only the other side of the call.

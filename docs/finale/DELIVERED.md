@@ -35,7 +35,7 @@ The rubric rows this supports:
 | **F13** Gmail “Ask Satya” button | P2 | **cut** | Deferred after CP3: the Chrome extension already captures Meet/Teams tabs, and the Gmail button adds no value to the 3-minute demo. The drop-a-file path covers “hand Satya an email”. |
 | **F14** Notebook shell + tabs | P0 | **done** | `workspace/Workspace.tsx`, 7 tabs, 5 workspace tests; 1120×720 |
 | **F15** Reports tab: Scribe + Report Copilot | P0 | **done** | `workspace/tabs/ReportsTab.tsx` is fully wired: golden-hour timer, typed Scribe over the backend text, 5 sections, copy/open, `MANUAL_ONLY` banner, case picker. It compiles and typechecks; add one UI test before the stage run if time allows. |
-| **F16** Approver phone page + QR | P0 | **done** | `console/public/oob.html`; live QR in Settings; phone tests; `not_requested` third button |
+| **F16** Approver phone page + QR | P0 | **done** | `console/public/oob.html`; live QR in Settings; phone tests; `not_requested` third button. A regression test now fetches the served page at `/oob` and drives its real `/api/oob/*` endpoints end to end. |
 
 ---
 
@@ -113,9 +113,13 @@ The rubric rows this supports:
 # the whole story in-process: consent -> live call -> alert -> OOB "not me" -> report -> stop
 make dry-run
 
-# the measured scoreboard + a judge's own input
+# the measured scoreboard + a judge's own input or labelled kit
 make judge
 uv run python scripts/judge_kit.py --file data/demo/emails/02_bec_bank_change_narmada.eml
+uv run python scripts/judge_kit.py --labels my_kit.jsonl
+
+# every surface: Python + desktop + OOB console + extension
+make ci
 
 # the safety invariants
 uv run pytest tests/invariants -q
@@ -125,7 +129,8 @@ cd desktop && npm run typecheck && npx vitest run
 ```
 
 Expected: dry run 3/3 PASS, scoreboard below a second, email check → VERIFY (floor PASS, asks
-raise), invariants green, desktop 84/84.
+raise), labelled kit prints exact/unsafe/false-alarm rates with a confusion matrix, all surfaces
+green, invariants green, desktop 84/84.
 
 ---
 
