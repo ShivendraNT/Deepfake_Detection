@@ -2,6 +2,8 @@
 
     python -m research.run_all text            # ~1.5 h on 4 CPU cores
     python -m research.run_all video           # ~10 h on 4 CPU cores (no GPU needed)
+    python -m research.run_all voice           # ~8 h on 4 CPU cores
+    python -m research.run_all kit             # the whole product on a mixed test kit (~15 min)
     python -m research.run_all video --from video-tables     # resume from a stage
     python -m research.run_all --list
 
@@ -63,7 +65,18 @@ STAGES: dict[str, list[tuple[str, list[str]]]] = {
         ("video-benchmark", [V + "run_benchmark", "--cnn", "gend_clip_l14"]),
         ("video-benchmark-blend", [V + "run_benchmark", "--cnn", "blend"]),
         ("video-lipsync", [V + "lipsync_eval"]),
+        ("video-image-eval", [V + "image_eval"]),  # one crop = one photo (the photo check)
         ("video-manifest", [V + "manifest"]),
+    ],
+    "voice": [
+        ("voice-data", ["research.voice.data"]),  # In-the-Wild + ASVspoof 2019, 5 s clips
+        ("voice-bench", ["research.voice.bench"]),  # gate -> selection -> thresholds -> test
+        ("voice-export", ["research.voice.export"]),  # two-file ONNX the product reads
+    ],
+    # The whole product on a mixed kit built from the test sets (run after text/video/voice).
+    "kit": [
+        ("kit-build", ["research.kit", "build"]),
+        ("kit-run", ["research.kit", "run"]),
     ],
 }  # fmt: skip
 

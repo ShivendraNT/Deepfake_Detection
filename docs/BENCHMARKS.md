@@ -12,6 +12,8 @@ uv sync --extra video --extra video-research      # or the pip fallback in READM
 python -m research.run_all --list                 # every stage and its exact command
 python -m research.run_all text                   # scam-text benchmark       (~1.5 h, 4 cores)
 python -m research.run_all video                  # video face check + baselines (~10 h, 4 cores)
+python -m research.run_all voice                  # voice-clone benchmark + ONNX export (~8 h)
+python -m research.run_all kit                    # mixed kit from the test sets -> satya scan
 python -m research.heldout.run_eval               # ask extractor, held-out set (seconds)
 python -m research.alert_budget.run_alert_budget  # alert budget through the real policy path
 python -m research.redteam.run_deterministic      # deterministic red team
