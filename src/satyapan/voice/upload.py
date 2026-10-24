@@ -19,7 +19,7 @@ def analyze_voice_upload(
     mime: str,
     evidence_id: str,
     scorer: WindowScorer,
-    transcriber: Transcriber,
+    transcriber: Transcriber | None,
     thresholds: VoiceThresholds,
 ) -> DetectorOutput:
     """1. samples = decode_to_16k_mono(data, mime)   (ValueError -> grey PARSE_FAILURE)
@@ -66,16 +66,12 @@ def analyze_voice_upload(
     if not scorer_failed:
         signals.append(voice_signal(verdict, thresholds, [evidence_id]))
 
-    trans_result = transcriber.transcribe(data, mime)
-    transcript_text = trans_result.text
-    spans = extract_asks(transcript_text)
-    signals.extend(ask_signals(spans, evidence_id=evidence_id))
-
-    artifacts = {
-        "transcript": transcript_text,
-        "language": trans_result.language,
-        "voice_label": verdict.label,
-    }
+    artifacts: dict[str, object] = {"voice_label": verdict.label}
+    if transcriber is not None:  # no speech engine: the voice is still judged, the words not
+        trans_result = transcriber.transcribe(data, mime)
+        spans = extract_asks(trans_result.text)
+        signals.extend(ask_signals(spans, evidence_id=evidence_id))
+        artifacts.update({"transcript": trans_result.text, "language": trans_result.language})
 
     # Deduplicate grey reasons preserving order
     seen: set[GreyReason] = set()

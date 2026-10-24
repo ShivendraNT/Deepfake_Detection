@@ -146,8 +146,9 @@ def _voice(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detec
 
     if ctx.scorer is None and ctx.transcriber is not None:
         return _voice_transcript_only(data, ev, ctx)
-    if ctx.scorer is None or ctx.transcriber is None:
-        raise NotImplementedError("voice scorer/transcriber not configured (T17)")
+    if ctx.scorer is None:  # neither model on this laptop: an abstention, not a finding
+        return DetectorOutput(detector="voice", version="0.1.0", evidence_id=ev.id,
+                              artifacts={"voice_label": "not_analysed"})  # fmt: skip
     return analyze_voice_upload(
         data, ev.media_type, ev.id, ctx.scorer, ctx.transcriber, ctx.thresholds
     )
