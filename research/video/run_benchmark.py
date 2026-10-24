@@ -20,10 +20,10 @@ import numpy as np
 import pandas as pd
 
 from research.metrics import auroc
-from research.video.data import ROOT
+from research.video.data import DATA, ROOT
 from research.video.fit_fusion import MAX_T_START, MODELS, SETS
 from research.video.stats import cluster_paired_diff, summarize, wilson
-from research.video.tables import TABLES
+from research.video.tables import BLEND, table_path
 from satyapan.video.fusion import FusionModel
 from satyapan.video.rules import classify_windows, load_thresholds
 
@@ -33,11 +33,11 @@ CONDITIONS = ("orig", "call720", "call360")
 SEEN = ("Deepfakes", "Face2Face", "FaceSwap", "NeuralTextures")
 
 
-def score_windows(df: pd.DataFrame) -> dict[str, np.ndarray]:
+def score_windows(df: pd.DataFrame, cnn: str = BLEND) -> dict[str, np.ndarray]:
     """Window scores for every model; NaN where the window abstained (no usable face)."""
     out: dict[str, np.ndarray] = {}
     usable = df["usable"].to_numpy() == 1
-    for name in SETS:
+    for name in SETS if cnn == BLEND else ():  # the cue-set fusions were fitted on SBI logits
         m = FusionModel.load(MODELS / f"fusion_{name}.json")
         s = m.score(df[list(m.features)].to_numpy(float))
         out[f"fusion:{name}"] = np.where(usable, s, np.nan)
@@ -114,23 +114,32 @@ def evaluate(
 
 
 def main() -> None:
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--cnn", default=BLEND, help="must be the CNN the shipped config uses")
+    ap.add_argument("--tag", help="write results/video_benchmark__<tag>.* (a non-shipped run)")
+    a = ap.parse_args()
+    shipped_cnn = (FusionModel.load(ROOT / "config" / "video_fusion.json").cnn or {}).get(
+        "file", "blend_b0.onnx"
+    )
+    if (a.cnn == BLEND) != (shipped_cnn == "blend_b0.onnx"):
+        raise SystemExit(f"config/video_fusion.json is fitted for {shipped_cnn}, not {a.cnn}")
     thr = load_thresholds()
+    fit_log = DATA / "logs" / ("fit_fusion.json" if a.cnn == BLEND else f"fit_fusion__{a.cnn}.json")
     report: dict[str, object] = {
+        "cnn": a.cnn,
         "thresholds": json.loads((ROOT / "config" / "video_thresholds.json").read_text()),
-        "fit": json.loads(
-            (ROOT / "research" / "_data" / "video" / "logs" / "fit_fusion.json").read_text()
-        )
-        if (ROOT / "research" / "_data" / "video" / "logs" / "fit_fusion.json").exists()
-        else None,
+        "fit": json.loads(fit_log.read_text()) if fit_log.exists() else None,
         "conditions": {},
     }
     for cond in CONDITIONS:
-        path = TABLES / f"{cond}.csv"
+        path = table_path(cond, a.cnn)
         if not path.exists():
             continue
         df = pd.read_csv(path)
         df = df[df.t_start <= MAX_T_START + 1e-6].reset_index(drop=True)
-        scores = score_windows(df)
+        scores = score_windows(df, a.cnn)
         blocks: dict[str, object] = {}
         test = df.split == "test"
         if test.any():
@@ -153,9 +162,10 @@ def main() -> None:
         cov = df.groupby("split").usable.mean().round(4).to_dict()
         report["conditions"][cond] = {"sets": blocks, "usable_window_fraction": cov}  # type: ignore[index]
     RESULTS.mkdir(exist_ok=True)
-    (RESULTS / "video_benchmark.json").write_text(json.dumps(report, indent=1) + "\n")
-    (RESULTS / "video_benchmark.md").write_text(render(report))
-    print((RESULTS / "video_benchmark.md").read_text())
+    stem = "video_benchmark" + (f"__{a.tag}" if a.tag else "")
+    (RESULTS / f"{stem}.json").write_text(json.dumps(report, indent=1) + "\n")
+    (RESULTS / f"{stem}.md").write_text(render(report))
+    print((RESULTS / f"{stem}.md").read_text())
 
 
 def _ci(x: dict[str, float]) -> str:

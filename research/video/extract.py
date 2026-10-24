@@ -1,5 +1,5 @@
 """Per-frame extraction over a dataset (the expensive pass). Writes one .npz (+ one .jpg
-mosaic of face crops) per video under research/_data/video/frames/<condition>/.
+mosaic of face crops) per video under $SATYAPAN_VIDEO_DATA/frames/<condition>/.
 
     python -m research.video.extract --sets ffpp dfdc --condition orig --workers 4
 

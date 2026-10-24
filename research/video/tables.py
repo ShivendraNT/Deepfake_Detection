@@ -3,8 +3,8 @@ crop logits. Built from the per-frame extraction (cheap; no video decoding).
 
     python -m research.video.tables --condition orig
 
-Writes research/_data/video/tables/<condition>.csv. The CNN is run once per crop mosaic and
-cached in research/_data/video/logits/<condition>/.
+Writes $SATYAPAN_VIDEO_DATA/tables/<condition>.csv. The CNN is run once per crop mosaic and
+cached in $SATYAPAN_VIDEO_DATA/logits/<condition>/.
 """
 
 from __future__ import annotations
@@ -25,6 +25,23 @@ TABLES = DATA / "tables"
 LOGITS = DATA / "logits"
 META = ("key", "condition", "split", "source", "method", "label", "identity", "w_index",
         "t_start", "seconds", "face_fraction", "face_px", "luma", "usable", "problem")  # fmt: skip
+
+
+BLEND = "blend"  # our SBI CNN; any other name is an hf_baselines model (cached logits)
+
+
+def table_path(condition: str, cnn: str = BLEND) -> Path:
+    return TABLES / (f"{condition}.csv" if cnn == BLEND else f"{condition}__{cnn}.csv")
+
+
+def external_logits(item: Item, condition: str, cnn: str, crop_t: np.ndarray):
+    """(crop times, logits) of an hf_baselines model: K evenly spaced crops, as scored."""
+    from research.video.hf_baselines import cache_path, pick
+
+    f = cache_path(cnn, condition, item)
+    if not f.exists():
+        return crop_t[:0], None
+    return crop_t[pick(len(crop_t))], np.load(f)
 
 
 def crop_logits(item: Item, condition: str, n: int) -> np.ndarray | None:
@@ -53,15 +70,18 @@ def crop_logits(item: Item, condition: str, n: int) -> np.ndarray | None:
 _SCORER = None
 
 
-def rows_for(job: tuple[Item, str]) -> list[dict[str, object]]:
+def rows_for(job: tuple[Item, str, str]) -> list[dict[str, object]]:
     from satyapan.video.features import coverage, window_features, windows
 
-    item, condition = job
+    item, condition, cnn = job
     npz, _ = out_paths(item, condition)
     if not npz.exists():
         return []
     recs, crop_t, audio = load_records(npz)
-    logits = crop_logits(item, condition, len(crop_t))
+    if cnn == BLEND:
+        logits = crop_logits(item, condition, len(crop_t))
+    else:
+        crop_t, logits = external_logits(item, condition, cnn, crop_t)
     rows = []
     for w, (s, e) in enumerate(windows(recs[0].t, recs[-1].t + 1e-6)):
         win = [r for r in recs if s <= r.t < e]
@@ -87,13 +107,13 @@ def items_for(condition: str) -> list[Item]:
     return [i for i in items if out_paths(i, condition)[0].exists()]
 
 
-def build(condition: str, workers: int) -> Path:
+def build(condition: str, workers: int, cnn: str = BLEND) -> Path:
     items = items_for(condition)
     with Pool(workers) as pool:
-        chunks = pool.map(rows_for, [(i, condition) for i in items], chunksize=8)
+        chunks = pool.map(rows_for, [(i, condition, cnn) for i in items], chunksize=8)
     rows = [r for c in chunks for r in c]
     TABLES.mkdir(parents=True, exist_ok=True)
-    out = TABLES / f"{condition}.csv"
+    out = table_path(condition, cnn)
     from satyapan.video.features import FEATURES
 
     cols = list(META) + list(FEATURES) + ["speech_frac"]
@@ -110,8 +130,9 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--condition", default="orig")
     ap.add_argument("--workers", type=int, default=4)
+    ap.add_argument("--cnn", default=BLEND, help="blend, or an hf_baselines model name")
     args = ap.parse_args()
-    build(args.condition, args.workers)
+    build(args.condition, args.workers, args.cnn)
 
 
 if __name__ == "__main__":
