@@ -72,7 +72,8 @@ STAGES: dict[str, list[tuple[str, list[str]]]] = {
     "voice": [
         ("voice-data", ["research.voice.data"]),  # In-the-Wild + ASVspoof 2019, 5 s clips
         ("voice-bench", ["research.voice.bench"]),  # gate -> selection -> thresholds -> test
-        ("voice-export", ["research.voice.export"]),  # two-file ONNX the product reads
+        ("voice-export", ["research.voice.export", "--install"]),  # the product's two files
+        ("voice-evasion", ["research.voice.evasion"]),  # noise / speed / pitch, paired
     ],
     # The whole product on a mixed kit built from the test sets (run after text/video/voice).
     "kit": [

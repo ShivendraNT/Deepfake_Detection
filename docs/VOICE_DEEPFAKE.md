@@ -120,3 +120,6 @@ Named limits:
 3. **Not our calls.** The thresholds come from public recordings, not consented calls through
    Meet (`calibrated: false`).
 4. **GSM** was used to set the thresholds (val) but not tested (amendment 2).
+5. **Background noise defeats it.** 10 dB of white noise drops the fakes flagged from 63.9 % to
+   1.9 % (`results/voice_evasion.md`); speed and pitch changes do not. The fix is a validated
+   noise-robust front end (chosen on val, thresholds re-fitted, tested once); not done yet.
