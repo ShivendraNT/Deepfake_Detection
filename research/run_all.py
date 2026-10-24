@@ -27,6 +27,7 @@ STAGES: dict[str, list[tuple[str, list[str]]]] = {
         ("text-bench", ["research.text.bench"]),  # CV -> frozen thresholds -> test once
         ("text-neardup", ["research.text.neardup"]),  # near-copy audit of the test splits
         ("text-embed-baseline", ["research.text.embed_baseline"]),  # multilingual-e5 + LR
+        ("text-consumer", ["research.text.consumer_eval"]),  # the Scam Check page's whole path
     ],
     "video": [
         ("video-data", [V + "data", "ffpp", "dfdc"]),

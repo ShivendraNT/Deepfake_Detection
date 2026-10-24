@@ -201,6 +201,9 @@ template group or official split minus leaked templates. C by grouped 5-fold CV 
 | Fraud texts caught at τ_hi, clean / combined obfuscation attack, with de-obfuscation | 97.0 % / 96.2 % | 2,213 attacked fraud test texts | [96.2, 97.6] / [95.4, 97.0] | attacks are code-generated (`research/text/attacks.py`) |
 | Same, model without the de-obfuscation layer | 96.6 % / 40.1 % | 2,213 | [95.8, 97.3] / [38.1, 42.2] | the layer is what keeps recall under attack |
 | False alarms at τ_hi per dataset (legitimate test texts) | 0.0–2.6 % | 17–1,624 legit per set | e.g. phishing e-mail 2.6 % [2.0, 3.5] | τ fitted on pooled val |
+| Whole consumer path (Scam Check page: quick check + impossible-claim rules), scam texts flagged VERIFY or HOLD | 96.6 % | 2,213 | [95.8, 97.3] | `results/consumer_text_eval.md`; in-domain test sets, so quote LODO for unseen sources |
+| Same path, genuine texts flagged / put on HOLD | 2.7 % / 0.9 % | 4,363 | [2.2, 3.2] / [0.7, 1.3] | worst set: phishing e-mail 5.4 % flagged |
+| What the impossible-claim rules add over the policy path | +0.0 pts scams caught, +0.3 pts genuine flagged | 6,576 | — | their value is the plain-language reason, not recall |
 
 ## 11. Face check on video and photos (`VIDEO_*`, `IMAGE_FACE_*`, ML evidence, never HOLD alone)
 

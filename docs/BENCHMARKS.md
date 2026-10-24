@@ -36,6 +36,7 @@ resumable (`--from <stage>`).
 | Scam-text classifier | `TEXT_SCAM_LIKELY` (STYLE, capped at VERIFY) | 7 open sets: phishing e-mail, CLAIR fraud, UCI SMS, Indian SMS, 14-language Indian scam/ham, Hinglish scam calls, scam dialogues | template-dedup + group splits; C by GroupKFold CV; τ on val; test once; leave-one-dataset-out | `results/text_benchmark.md`, `results/text_neardup.md` | measured |
 | Text evasion robustness | same | the fraud test texts after 5 code-generated attacks | frozen model and τ | `results/text_benchmark.md` §robustness | measured |
 | Text transformer baseline (multilingual-e5-small + LR) | comparison only | same 7 sets | same protocol | `results/text_embed_baseline.md` | measured |
+| The consumer Scam Check path (quick check + impossible-claim rules, higher band wins) | PASS / VERIFY / HOLD for a pasted message | the same 7 sets, held-out test texts | nothing fitted | `results/consumer_text_eval.md` | measured |
 | Ask extractor (payment asks) | ask chips + `ASK_*` signals | S-HO held-out texts (written before the lexicon was opened) | dev/test split; frozen lexicon | `results/asks_heldout_eval.json` | measured |
 | Policy engine (bands) | PASS / VERIFY / HOLD | S-AB synthetic payment cases through the real decision path | — | `results/alert_budget.json` | measured |
 | Safety invariants (raise-only, LLM cap, floor isolation) | — | property tests, 200 examples each | — | `tests/invariants/` | measured |
@@ -78,7 +79,7 @@ flagged in `research/text/data.py` and reported separately, never pooled into a 
 
 | Channel | Test (never used to fit) | Catches | False alarms on genuine items | Named failure case |
 |---|---|---|---|---|
-| Scam text (messages, e-mails, transcripts, OCR) | 7 open sets; leave-one-dataset-out | AUC 0.989–1.000 in-domain; 96.2 % of fraud texts under a combined obfuscation attack | 0.0–2.6 % per set at τ_hi | a never-seen source drops to AUC 0.69 (phishing e-mail) |
+| Scam text (messages, e-mails, transcripts, OCR) | 7 open sets; leave-one-dataset-out | the whole consumer path flags 96.6 % of 2,213 scam texts; 96.2 % of fraud texts under a combined obfuscation attack | 2.7 % of 4,363 genuine texts flagged (0.9 % HOLD) | a never-seen source drops to AUC 0.69 (phishing e-mail); phishing e-mail is also the worst false-alarm set (5.4 %) |
 | Face in a video | FF++ c23 test, DFDC (unseen) | 74.7 % / 24.8 % of fakes flagged for a call-back | 0 of 563 real videos called synthetic; 1.2 % flagged for a call-back | unseen method FaceShifter 32 %; small faces at 360p → "couldn't check" |
 | Face in a photo | same, one crop each | AUC 0.923 / 0.747 | 0.4 % / 0.0 % of real crops over τ_hi | expression-only edits (NeuralTextures) |
 | Voice clone | In-the-Wild test, ASVspoof 2019 eval | running | running | see `docs/VOICE_DEEPFAKE.md` §5 |
