@@ -57,6 +57,16 @@ def video_scores(model: str, condition: str) -> pd.DataFrame:
     return pd.DataFrame(rows)
 
 
+def complete(v: pd.DataFrame) -> tuple[pd.DataFrame, dict[str, str]]:
+    """Only splits the model scored (almost) fully: a half-scored split is not a result."""
+    if v.empty:
+        return v, {}
+    total = pd.Series([it.split for it in items()]).value_counts()
+    got = v.split.value_counts()
+    partial = {s: f"{int(got[s])}/{int(total[s])}" for s in got.index if got[s] < 0.95 * total[s]}
+    return v[~v.split.isin(list(partial))], partial
+
+
 def _block(v: pd.DataFrame, tau: float | None) -> dict[str, object]:
     out: dict[str, object] = {"n_real": int((v.label == 0).sum()), "n_fake": int(v.label.sum())}
     if v.label.nunique() == 2:
@@ -69,7 +79,7 @@ def _block(v: pd.DataFrame, tau: float | None) -> dict[str, object]:
 
 
 def evaluate(model: str, condition: str) -> dict[str, object] | None:
-    v = video_scores(model, condition)
+    v, partial = complete(video_scores(model, condition))
     if v.empty:
         return None
     judged = v[np.isfinite(v.s)]
@@ -84,6 +94,7 @@ def evaluate(model: str, condition: str) -> dict[str, object] | None:
     res: dict[str, object] = {
         "videos_scored": int(len(v)),
         "videos_without_face": int(len(v) - len(judged)),
+        "left_out_partial_splits": partial,
         "tau_1pct_val": tau,
         "val": _block(val, None),
         "ffpp_test_seen": _block(seen, tau),
@@ -99,7 +110,7 @@ def evaluate(model: str, condition: str) -> dict[str, object] | None:
 
 def paired(model: str, condition: str, split: str) -> dict[str, float] | None:
     """AUC(model) - AUC(our SBI CNN) on the same videos, identity clusters resampled."""
-    a, b = video_scores(model, condition), video_scores(OURS, condition)
+    a, b = complete(video_scores(model, condition))[0], video_scores(OURS, condition)
     both = a.merge(b[["key", "s"]], on="key", suffixes=("_a", "_b"))
     both = both[(both.split == split) & np.isfinite(both.s_a) & np.isfinite(both.s_b)]
     if both.label.nunique() < 2:

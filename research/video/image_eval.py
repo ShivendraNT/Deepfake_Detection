@@ -28,12 +28,15 @@ CONDITIONS = ("orig", "call720", "call360")
 
 
 def crops(split: str, cond: str) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """(logits, labels, identity, method) over every scored crop of a split."""
+    """(logits, labels, identity, method) over every scored crop of a split; empty if fewer
+    than 95% of the split's videos were scored (a half-scored split is not a result)."""
     s, y, g, m = [], [], [], []
-    for it in items():
+    todo = [it for it in items() if it.split == split]
+    done = [it for it in todo if cache_path(MODEL, cond, it).exists()]
+    if len(done) < 0.95 * len(todo):
+        return np.array(s), np.array(y), np.array(g), np.array(m)
+    for it in done:
         f = cache_path(MODEL, cond, it)
-        if it.split != split or not f.exists():
-            continue
         lg = np.load(f)
         s += lg.tolist()
         y += [it.label] * len(lg)

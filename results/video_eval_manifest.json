@@ -36,7 +36,7 @@
 "config_sha256": {
 "video_fusion.json": "486d4ceaa482e55a8eaf18aafde2826f39df9735bcc2c3f24f1a3e3f9cc34279",
 "video_fusion__blend.json": "e1931a8755659892884c1dfda7d0711b5c34f5c77c43717079eb42c9aae1a44c",
-"video_models.json": "6c6f6bdee71e22a626ce486b83961c0ae7f212d6992f2f80ca95a80cf0ffd5f3",
+"video_models.json": "a413b77a13225b0019b80b7164deb3ff67458ba65b1df2f7d7f641099384936e",
 "video_thresholds.json": "9cdd0cebe1c48b95e1f60898fb377155392de2e7d3764d8254f9fe2cdb2d9f3c",
 "video_thresholds__blend.json": "33d41b8a4306b2c565d8ed6739be5d4f5168ec63b195e0e985c95788eee14319"
 },
