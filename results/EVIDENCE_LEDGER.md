@@ -245,3 +245,16 @@ Script: `python -m research.run_all voice` (= `research.voice.data`, `research.v
 | Genuine voices over τ_hi (one window) | 0.0–0.1 % | 669 | [0.0, 0.8] | |
 | ASVspoof 2019 eval AUC | 0.999 | 300 + 390 | [0.997, 1.000] | upper bound: the model card says "ASVspoof 2019" without a split |
 | Our re-trained recipe (not shipped), val AUC under Opus | 0.791 | 1,457 | [0.706, 0.904] | in-domain CV AUC 1.000: the out-of-domain gap |
+
+## 13. The whole product on a mixed kit from the test sets (`satya scan`)
+
+Script: `python -m research.run_all kit` (= `research.kit build` + `run`) →
+`results/kit_scan.{csv,md}`, `results/kit_manifest.json` (source and sha256 of every file;
+media outside the repo). Same answer as the consumer page (quick check + claim rules). Status:
+**measured** (small n: quote as a spot check, not a benchmark).
+
+| Claim | Value | n | Notes |
+|---|---|---|---|
+| Genuine files passed | 87 / 88 | 40 texts, 20 photos, 20 voices, 8 videos | one genuine voice note got VERIFY |
+| Fakes and scams flagged | 68 / 96 | 40 / 20 / 20 / 16 | texts 38, voices 15, videos 7, photos 8 |
+| Time for 184 files, 4-core CPU | ≈ 7.5 min | — | first file includes model loading |

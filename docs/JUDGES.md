@@ -56,8 +56,25 @@ automatically, with a per-channel table of fakes flagged and genuine files passe
 
 **On a kit we built the same way from the open test sets:** `python -m research.run_all kit`
 writes 184 files and runs the whole product on them: 80 texts, 40 photos, 40 voice clips and 24
-videos, seeded, with a sha256 manifest. The result is `results/kit_scan.md`. When a model is
-missing on a laptop, the answer says "could not check …"; it never turns that into an alarm.
+videos, seeded, with a sha256 manifest (`results/kit_manifest.json`). The result is
+`results/kit_scan.md`; on a 4-core CPU the whole kit takes about 7.5 minutes.
+
+| Channel | Fakes / scams flagged | Genuine passed |
+|---|---|---|
+| Texts | 38 / 40 | 40 / 40 |
+| Voice notes (≥ 3 s of speech) | 15 / 20 | 19 / 20 |
+| Videos | 7 / 16 | 8 / 8 |
+| Photos | 8 / 20 | 20 / 20 |
+| **All** | **68 / 96** | **87 / 88** |
+
+Satya is built to keep false alarms rare, and accepts misses to do so. Of the 28 misses:
+- 17 are faces, mostly unseen or expression-only methods (FaceShifter, NeuralTextures), which
+  the benchmarks name;
+- 5 are cloned voices scored under τ_lo;
+- 2 are scam texts with no ask and no scam wording.
+
+When a model is missing on a laptop, the answer says "could not check …"; it never turns that
+into an alarm.
 
 **On open data** (held-out test sets, thresholds frozen on validation first, scored once,
 95 % intervals; full index and reproduction: [`BENCHMARKS.md`](BENCHMARKS.md)):
