@@ -26,7 +26,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T15 | Local LLM summary (Ollama) + faithfulness + red-team | Shivendra | done | T02, T14 | [spec](tasks/T15-llm-summary-faithfulness.md) | prompt builder pre-done; Ollama local, free |
 | T16 | Report pack | Kartikey | done | T09, T13 | [spec](tasks/T16-report-pack.md) | UTR-first call script, bank email, NCRP draft, BSA Sec 63 index; 10/10 tests green |
 | T17 | Voice uploads path | Kartikey | done | T07 (model file), T01 | [spec](tasks/T17-voice-uploads.md) | 5/5 tests green; audio_io + upload + onnx + transcribe |
-| T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | todo | T07 | [spec](tasks/T18-audio-channel-eval.md) | previous numbers were simulated; real measurement needed (see results/INVALIDATED.md) |
+| T18 | Audio channel evaluation + thresholds | Saarika + Shivendra | in-progress | T07 | [spec](tasks/T18-audio-channel-eval.md) | previous numbers were simulated; real measurement needed (see results/INVALIDATED.md) |
 | T19 | Research R1: loader, D2, D3, metrics | Kartikey + Shivendra | done | T05 frozen | [spec](tasks/T19-research-baselines-metrics.md) | metrics module, D2 baseline, ICFD loader, thresholds.json, research_clean.csv; 8/8 tests green |
 | T20 | Research R2: paraphrase attacks + filters | Shivendra | todo | T19 | [spec](tasks/T20-research-paraphrase-attacks.md) | email ICFD authors first |
 | T21 | Research R3: evaluation + money figure | Shivendra | todo | T19, T20 | [spec](tasks/T21-research-eval-money-figure.md) | |
@@ -45,7 +45,7 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F02 | Window manager (mascot / bubble / notebook / capture, tray, hotkeys) | Shivendra | P0 | done |
 | F03 | Backend glue (calls, files, oob, event fan-in) | Shivendra | P0 | done |
 | F04 | X1 cross-channel signal | Shivendra | P1 | done — X1 cross-channel signal (30-min window, A1/A6/A7 + new/changed beneficiary -> VERIFY, A4/A5 urgency -> HOLD; raise-only; EN/HI templates; 16 tests green) |
-| F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | todo |
+| F05 | Integration, dry runs, backup recording | Shivendra + all | P0 | in-progress — consumer path end to end: /check page (any file), money-sent drafts, personal live alert; `satya scan` + `research.kit`; judges' guide `docs/JUDGES.md` |
 | F06 | Mascot component (10 poses) + gallery | Saarika | P0 | done — blue-blob 3D pose renders, cross-faded pose changes, subtle breathe/sway/hop loops, aura ring, gallery view; duplicate SVG shield/paw overlays removed |
 | F07 | Mascot window: radial menu, drag, brain reducer | Saarika | P0 | done — satyaMachine pure reducer, radial menu, drag physics, 26 vitest tests green |
 | F08 | Bubble cards + copy EN/Hinglish/हिन्दी | Saarika | P0 | done — 10 modular bubble cards, CardShell, trilingual copy.ts engine, 8 vitest tests green |
@@ -69,6 +69,9 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 22 Oct, F03: done — `/companion/calls/start|stop`, `/companion/files`, `/companion/oob`, `/companion/report-pack`; live bus fan-in relays AskChips, coverage and the policy `BandEvent.band` unchanged; OOB approver from directory only, `not_requested` hook on `/oob/respond`; 11 finale tests + T25 37/37, make check ALL GREEN (728 passed). 
 23 Oct, T25: done — preloaded pose renders with jelly breathing, spring gaze/drag, timed fidgets, elastic transitions, and state-specific effects; T25 37/37, desktop 65/65, make check green.
 23 Oct, F06: mascot animation pass — verified all 10 poses use the blue-blob 3D art (no shield mascot imports); pose changes now cross-fade over 220 ms, one transform layer (no double-applied motion), subtle spring loops, alert hops once and holds, and duplicated SVG shield/paw overlays were removed; desktop typecheck + 65 vitest tests + make check ALL GREEN.
+24 Oct, lead (video): GenD selected on val by the pre-registered rule (+0.183 AUC, SE 0.023); frozen run: FF++ test AUC 0.946, DFDC 0.778, 0/563 real videos called synthetic (`results/video_benchmark.md`). Photo check: AUC 0.923 / 0.747.
+24 Oct, lead (consumer): Scam Check takes any file; "money already sent?" drafts (UTR-first, MANUAL_ONLY); personal live alert (SATYAPAN_PROFILE); engine serves /check; genuine OTP SMS and awareness forwards no longer flagged. Whole consumer path on 6,576 open test texts: 96.6 % scams flagged, 2.7 % genuine flagged.
+24 Oct, lead (voice / T18): licensed re-training of the XLS-R layer-7 + LR recipe on ASVspoof 2019 train; In-the-Wild + ASVspoof eval benchmark running (protocol + amendments in docs/VOICE_DEEPFAKE.md).
 <!-- One line per event: date, task, what happened (e.g. "05 Oct, T07: scores logged on Meet tab, audio audible"). -->
 06 Oct, T07: steps 2-7 implemented (Gemini). Review fixed: ORT 1.14→1.20.1 (logreg.onnx is IR 10), ZipMap output unreadable in ort-web → logreg_prob.onnx, D5, window ordering, consecutiveOverHi field. Scorer verified in Node vs Python (~2.8 s/window, Node single-thread). Manual Meet test NOT done yet.
 07 Oct, T05: done — n=104 sentences, precision=1.000, recall=1.000; lexicon v1.0.0 ready for `lexicon-v1.0` tag.
