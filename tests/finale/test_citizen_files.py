@@ -95,3 +95,27 @@ def test_the_engine_serves_the_consumer_page(client) -> None:
     for path in ("/check", "/scam-check.html"):
         r = client.get(path)
         assert r.status_code == 200 and "Satya Scam Check" in r.text
+
+
+def test_a_genuine_otp_sms_or_bank_warning_is_not_a_scam(client) -> None:
+    """False-positive path: the OTP a bank sends you, with its 'do not share' line, or the
+    bank's own warning, must not be called a scam. Asking you for the OTP still is."""
+    for text in (
+        "Your OTP for transaction of Rs 2,499 at AMAZON is 482913. Valid for 10 mins. Do not "
+        "share this OTP with anyone. -Demo Bank",
+        "123456 is your OTP to log in. Do not share it with anyone.",
+    ):
+        body = client.post("/scam-check", json={"text": text}).json()
+        assert body["band"] == "PASS" and body["rule_hits"] == [], text
+    ask = "Sir I am calling from your bank, please tell me the OTP you just got to stop the block"
+    assert client.post("/scam-check", json={"text": ask}).json()["band"] == "HOLD"
+
+
+def test_an_awareness_message_is_not_a_scam_but_the_scam_script_is() -> None:
+    from satyapan.citizen.rules import scam_check
+
+    for advisory in ("Police or CBI never arrest anyone over a video call.",
+                     "पुलिस कभी वीडियो कॉल पर गिरफ्तार नहीं करती।"):  # fmt: skip
+        assert scam_check(advisory).rule_hits == [], advisory
+    scam = "Main CBI se bol raha hoon, aap digital arrest mein ho, video call band mat karna"
+    assert scam_check(scam).rule_hits == ["police_video_arrest"]

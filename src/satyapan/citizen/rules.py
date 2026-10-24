@@ -12,6 +12,7 @@ import re
 from urllib.parse import quote
 
 from satyapan.asks.extractor import extract_asks
+from satyapan.context import strip_context
 from satyapan.contracts.enums import AskType, Band, Lang
 from satyapan.contracts.explain import CitizenResult
 
@@ -67,6 +68,24 @@ IMPOSSIBLE_CLAIMS: list[tuple[str, str, str, str]] = [
     ),
 ]
 
+# An awareness line names an institution and says it NEVER does the thing ("Police never
+# arrest anyone over a video call", "बैंक कभी ओटीपी नहीं माँगता"). Scam scripts speak as the
+# institution and order you to act, so such sentences are dropped before the claim rules run.
+_ADVISORY = re.compile(
+    r"\b(police|cbi|rbi|reserve bank|banks?|officials?|government|electricity board|courier|"
+    r"customs|nobody|no one)\b[^.!?\n]{0,40}?\b(never|kabhi)\b"
+    r"|(पुलिस|सीबीआई|आरबीआई|बैंक|अधिकारी|सरकार|कोई)[^.!?\n।]{0,40}?कभी",
+    re.I,
+)
+_SENTENCE = re.compile(r"[^.!?\n।]+[.!?\n।]*")
+
+
+def _drop_advisories(text: str) -> str:
+    return " ".join(
+        m.group(0) for m in _SENTENCE.finditer(text) if not _ADVISORY.search(m.group(0))
+    )
+
+
 HOLD_ASKS = frozenset({AskType.A2, AskType.A3})
 VERIFY_ASKS = frozenset({AskType.A1, AskType.A4, AskType.A5, AskType.A6, AskType.A7})
 
@@ -98,11 +117,17 @@ def scam_check(text: str, lang: Lang = Lang.EN) -> CitizenResult:
        has left.", VERIFY -> "Do not pay yet. Verify by calling the official number yourself.",
        PASS -> "No known scam pattern found. Still verify before paying."
     4. links = LINKS plus "share" = "https://wa.me/?text=" + urlencoded warning.
-    Never include scores."""
+    Never include scores.
+
+    Finale: the rules and asks read the text after the context filter (the same one the live
+    path uses), so a genuine OTP SMS ("do not share this OTP") or a bank's own warning ("we
+    never ask for your OTP") is not a scam; a request for the OTP still is."""
+    text = strip_context(text).cleaned
+    claims = _drop_advisories(text)
     hits = [
         rule_id
         for rule_id, pattern, _en, _hi in IMPOSSIBLE_CLAIMS
-        if re.search(pattern, text, re.I | re.S)
+        if re.search(pattern, claims, re.I | re.S)
     ]
     ask_types = {span.ask_type for span in extract_asks(text)}
     if hits or ask_types & HOLD_ASKS:
