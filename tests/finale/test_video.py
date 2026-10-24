@@ -417,3 +417,16 @@ def test_model_files_are_never_committed() -> None:
     root = Path(__file__).resolve().parents[2]
     ignore = (root / ".gitignore").read_text()
     assert "*.onnx" in ignore and "models/" in ignore
+
+
+def test_stream_audio_fills_gaps_with_silence_and_stays_bounded() -> None:
+    stream = _fake_analyzer().new_stream()
+    one = np.ones(16000, np.float32)
+    stream.add_audio(one, 0.0)
+    stream.add_audio(one, 2.0)  # a 1 s pause between utterances becomes silence
+    assert stream._audio is not None and len(stream._audio) == 3 * 16000
+    assert stream._audio[16000:32000].max() == 0.0
+    for k in range(40):
+        stream.add_audio(one, 3.0 + k)
+    assert len(stream._audio) <= int((F.WINDOW_S + F.HOP_S + 2) * 16000)
+    stream.close()

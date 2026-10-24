@@ -16,7 +16,7 @@ import numpy as np
 
 from satyapan.video.features import ANALYSIS_FPS
 
-MAX_FILE_SECONDS = 60.0
+MAX_FILE_SECONDS = 30.0  # 9 windows; keeps a dropped file to ~10-15 s of CPU
 
 
 def iter_frames(path: Path, max_s: float = MAX_FILE_SECONDS) -> Iterator[tuple[float, np.ndarray]]:

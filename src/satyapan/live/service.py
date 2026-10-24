@@ -164,6 +164,7 @@ class LiveService:
     ) -> list[LiveEvent]:
         call_id = session.call_id
         start_s = t_start_s if t_start_s is not None else chunk_index * CHUNK_SECONDS
+        self._feed_video_audio(session, audio, start_s)
         t0 = time.perf_counter()
         try:
             hint = session.language if session.language not in (None, "auto") else None
@@ -318,6 +319,19 @@ class LiveService:
         ]
         events += self._redecide(session)
         return self._publish(call_id, events)
+
+    @staticmethod
+    def _feed_video_audio(session: LiveSession, audio: bytes, start_s: float) -> None:
+        """Give the face check the call audio for its lip-sync cue (same capture clock).
+        Only plain PCM WAV utterances from the capture window; anything else is skipped."""
+        if session.video_stream is None or audio[:4] != b"RIFF":
+            return
+        from satyapan.adapters.transcribe_local import SAMPLE_RATE, decode_wav
+
+        try:
+            session.video_stream.add_audio(decode_wav(audio), start_s, SAMPLE_RATE)
+        except ValueError:
+            return
 
     def stop_video(self, call_id: str) -> None:
         session = self.sessions.get(call_id)

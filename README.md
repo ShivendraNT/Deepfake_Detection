@@ -43,6 +43,25 @@ pip install -e . pytest hypothesis httpx ruff mypy numpy
 make check RUN=
 ```
 
+## Any laptop: Windows, macOS, Linux on x64 or arm64
+
+No `make` (Windows)? Every Makefile task also runs as `uv run python scripts/satya.py <task>`
+(`sync`, `asr`, `video`, `check`, `run`, `live`, `desktop`). Installers for the Electron app:
+`cd desktop && npm run dist:mac` (dmg, arm64 + x64), `dist:win` (NSIS, x64 + arm64),
+`dist:linux` (AppImage + deb, x64 + arm64).
+
+| Laptop | Notes |
+|---|---|
+| macOS Apple Silicon | everything native; speech uses mlx-whisper |
+| macOS Intel | use Python 3.11/3.12; the last mediapipe/onnxruntime builds for Intel Macs are pinned |
+| Windows x64 | everything native; system-audio loopback is built into Windows |
+| Windows on ARM | the app is native arm64; run the Python engine as **x64 Python** (Windows 11 emulates it transparently): `uv python install cpython-3.12-windows-x86_64` then `uv venv --python cpython-3.12-windows-x86_64` (Whisper's CTranslate2 and OpenCV have no win_arm64 wheels) |
+| Linux x64 / arm64 | `sudo apt install ffmpeg libegl1 libgles2 tesseract-ocr` (face check needs EGL; Screen Guard OCR needs tesseract) |
+
+**Video deepfake check** (face blending CNN, pulse, lighting, lip-sync; only after a yes for a
+call): `make video` (or `scripts/satya.py video`). Design, protocol and measured numbers:
+`docs/VIDEO_DEEPFAKE.md`.
+
 ## Repo map
 
 | Path | What |
@@ -53,6 +72,7 @@ make check RUN=
 | `docs/ARCHITECTURE.md` | design: components, policy tables, API, AWS mapping, failure modes |
 | `docs/THREAT_MODEL.md`, `docs/DATA_POLICY.md` | security + privacy/ethics |
 | `docs/RESEARCH_PROTOCOL.md`, `docs/EVALUATION.md` | paper protocol + honest product numbers |
+| `docs/VIDEO_DEEPFAKE.md` | video deepfake check: idea-by-idea verdict, protocol, benchmark |
 | `docs/finale/` | finale plan, mascot spec, **live demo runbook** (`LIVE_DEMO.md`) |
 | `docs/DEMO_SCRIPT.md` | the Round-1 demo (superseded by `docs/finale/PLAN.md` §7) |
 | `team/` | each person's finale cards |

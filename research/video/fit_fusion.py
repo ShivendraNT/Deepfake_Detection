@@ -11,8 +11,10 @@ Protocol (docs/VIDEO_DEEPFAKE.md §5):
    (config/video_fusion.json) is chosen by the one-standard-error rule (Breiman et al.): the
    simplest set (fewest features) whose mean CV AUC is within one standard error of the best
    set's. This rule was fixed before any CNN or test number existed.
-3. Thresholds from FF++ `val` REAL windows only: tau_hi = 1% window FPR, tau_lo = 5%.
-   Written to config/video_thresholds.json with calibrated=false (no webcam calibration yet).
+3. Thresholds from FF++ `val` REAL windows only: tau_hi = 1% window FPR, tau_lo = 5%, fitted
+   per channel condition (orig, call720, call360) and the highest kept, so the false-alarm
+   target holds on call-quality video too. Written to config/video_thresholds.json with
+   calibrated=false (no webcam calibration yet).
 """
 
 from __future__ import annotations
@@ -156,19 +158,37 @@ def main() -> None:
     fusion_path = ROOT / "config" / "video_fusion.json"
     fusion_path.write_text(shipped.read_text())
     model = FusionModel.load(fusion_path)
-    s_val = model.score(val_real[list(model.features)].to_numpy(float))
-    tau_hi = threshold_at_fpr(s_val.tolist(), 0.01)
-    tau_lo = threshold_at_fpr(s_val.tolist(), 0.05)
+    # Satya sees call-quality video, so the operating point must hold in every channel
+    # condition: fit the 1% / 5% window-FPR thresholds on val reals per condition (orig and
+    # the VP8 call simulations, when extracted) and keep the most conservative (highest).
+    per_condition: dict[str, dict[str, float]] = {}
+    n_windows: dict[str, int] = {}
+    for cond in ("orig", "call720", "call360"):
+        if not (TABLES / f"{cond}.csv").exists():
+            continue
+        t = load_table(cond)
+        vr = t[(t.split == "val") & (t.label == 0) & (t.usable == 1)]
+        if vr.empty:
+            continue
+        sv = model.score(vr[list(model.features)].to_numpy(float)).tolist()
+        per_condition[cond] = {
+            "tau_hi": round(float(threshold_at_fpr(sv, 0.01)), 6),
+            "tau_lo": round(float(threshold_at_fpr(sv, 0.05)), 6),
+        }
+        n_windows[cond] = int(len(vr))
+    tau_hi = max(v["tau_hi"] for v in per_condition.values())
+    tau_lo = min(max(v["tau_lo"] for v in per_condition.values()), tau_hi)
     fusion_sha = hashlib.sha256(fusion_path.read_bytes()).hexdigest()
     thresholds = {
         "tau_hi": round(float(tau_hi), 6),
         "tau_lo": round(float(tau_lo), 6),
         "model_version": f"blend_b0:{cnn_meta['onnx_sha256'][:12]}+fusion:{fusion_sha[:12]}",
         "calibrated": False,
-        "calibration_set": f"FF++ c23 val reals, {len(val_real)} usable 6 s windows "
-        f"({val_real.key.nunique()} videos); NOT webcam calls",
+        "calibration_set": f"FF++ c23 val reals ({val_real.key.nunique()} videos), usable 6 s "
+        f"windows per channel condition {n_windows}; max over conditions; NOT webcam calls",
         "cue_flag_logit": 0.75,
         "fpr_targets": {"tau_hi": 0.01, "tau_lo": 0.05},
+        "per_condition": per_condition,
     }
     (ROOT / "config" / "video_thresholds.json").write_text(json.dumps(thresholds, indent=1) + "\n")
     report["thresholds"] = thresholds

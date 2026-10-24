@@ -63,6 +63,38 @@ def cluster_ci(
     }
 
 
+def cluster_paired_diff(
+    metric: Callable[[np.ndarray, np.ndarray], float],
+    y: Sequence[int],
+    s_a: Sequence[float],
+    s_b: Sequence[float],
+    groups: Sequence[str],
+    seed: int = 0,
+    n_boot: int = N_BOOT,
+) -> dict[str, float]:
+    """metric(a) - metric(b) on the same videos, identity clusters resampled together."""
+    y_arr = np.asarray(y)
+    a_arr, b_arr, g_arr = np.asarray(s_a, float), np.asarray(s_b, float), np.asarray(groups)
+    point = float(metric(y_arr, a_arr) - metric(y_arr, b_arr))
+    uniq = np.unique(g_arr)
+    members = {g: np.flatnonzero(g_arr == g) for g in uniq}
+    rng = np.random.default_rng(seed)
+    vals = []
+    for _ in range(n_boot):
+        idx = np.concatenate([members[g] for g in rng.choice(uniq, size=len(uniq))])
+        yb = y_arr[idx]
+        if yb.min() == yb.max():
+            continue
+        vals.append(float(metric(yb, a_arr[idx]) - metric(yb, b_arr[idx])))
+    lo, hi = np.percentile(vals, [2.5, 97.5]) if vals else (point, point)
+    return {
+        "value": round(point, 4),
+        "low": round(float(lo), 4),
+        "high": round(float(hi), 4),
+        "n_boot": len(vals),
+    }
+
+
 def summarize(
     y: Sequence[int],
     s: Sequence[float],

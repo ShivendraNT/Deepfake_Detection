@@ -19,9 +19,10 @@ import json
 import numpy as np
 import pandas as pd
 
+from research.metrics import auroc
 from research.video.data import ROOT
 from research.video.fit_fusion import MAX_T_START, MODELS, SETS
-from research.video.stats import summarize, wilson
+from research.video.stats import cluster_paired_diff, summarize, wilson
 from research.video.tables import TABLES
 from satyapan.video.fusion import FusionModel
 from satyapan.video.rules import classify_windows, load_thresholds
@@ -45,6 +46,10 @@ def score_windows(df: pd.DataFrame) -> dict[str, np.ndarray]:
     out[SHIPPED_MODEL] = np.where(usable, s, np.nan)
     out["cnn_raw"] = np.where(usable, df["blend"].to_numpy(float), np.nan)  # zero-fit baseline
     out["lipsync_raw"] = np.where(usable, -df["av_corr"].to_numpy(float), np.nan)
+    # Shortcut checks: capture properties, not the face. A high AUC here would mean the
+    # dataset leaks a confound (it should sit near 0.5 on FF++, where fakes reuse the frames).
+    out["shortcut:face_px"] = np.where(usable, df["face_px"].to_numpy(float), np.nan)
+    out["shortcut:luma"] = np.where(usable, df["luma"].to_numpy(float), np.nan)
     return out
 
 
@@ -92,6 +97,19 @@ def evaluate(
         if model == SHIPPED_MODEL:
             entry["rule"] = rule_rates(v, thr)
         res[model] = entry
+    # Does the shipped fusion beat the zero-fit CNN score on the same videos?
+    a = per_video(sub, scores[SHIPPED_MODEL][sel.to_numpy()])
+    b = per_video(sub, scores["cnn_raw"][sel.to_numpy()])
+    both = a.merge(b[["key", "s"]], on="key", suffixes=("_a", "_b"))
+    both = both[np.isfinite(both.s_a) & np.isfinite(both.s_b)]
+    if both.label.nunique() == 2:
+        res["delta_auc_shipped_minus_cnn_raw"] = cluster_paired_diff(
+            lambda yy, ss: auroc(yy.tolist(), ss.tolist()),
+            both.label.tolist(),
+            both.s_a.tolist(),
+            both.s_b.tolist(),
+            both.identity.tolist(),
+        )
     return res
 
 
@@ -175,13 +193,16 @@ def render(report: dict[str, object]) -> str:
         ]
         for set_name, models in block["sets"].items():
             for model, e in models.items():
+                if model.startswith("delta_"):
+                    lines.append(f"| {set_name} | Δ AUC shipped − cnn_raw | | {_ci(e)} | | |")
+                    continue
                 lines.append(
                     f"| {set_name} | {model} | {e['n_real']} / {e['n_fake']} | "
                     f"{_ci(e['auc'])} | {_ci(e['eer'])} | {e['abstained_videos']} |"
                 )
         lines += [
             "",
-            "Product rule (fusion:visual, >= 2 consecutive windows >= tau_hi -> LIKELY_SYNTHETIC):",
+            "Product rule (fusion:shipped, >= 2 windows in a row >= tau_hi -> LIKELY_SYNTHETIC):",
             "",
             "| Set | fakes flagged (TPR) | reals flagged (FPR) | reals inconclusive |",
             "|---|---|---|---|",
