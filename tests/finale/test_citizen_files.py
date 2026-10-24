@@ -58,3 +58,34 @@ def test_nothing_is_kept(client, monkeypatch) -> None:
     r = client.post("/scam-check/file", files={"file": ("p.png", _png(), "image/png")})
     assert r.status_code == 200
     assert len(state.repo.all_cases()) == before  # no case, no vault entry
+
+
+def test_money_sent_gives_utr_first_drafts_and_never_submits(client) -> None:
+    r = client.post("/scam-check/money-sent", json={
+        "utr": "412345678901", "amount_inr": 48500, "sent_at": "2026-10-24T16:42",
+        "rail": "UPI", "your_bank": "Demo Bank", "your_account_last4": "4821",
+        "to_upi": "refund.desk@fakupi", "scammer_phone": "+91 99999 00000",
+        "what_happened": "Caller said my KYC expires and asked me to pay a fee.",
+    })  # fmt: skip
+    assert r.status_code == 200
+    body = r.json()
+    assert body["submission"] == "MANUAL_ONLY"
+    first = body["call_script_1930"].splitlines()[0]
+    assert first.startswith("UTR 412345678901") and "₹48,500" in first and "••••4821" in first
+    assert "24 Oct 2026 16:42" in first and "refund.desk@fakupi" in first
+    assert body["facts"]["sent_at"].endswith("+05:30")
+    labels = {f["label"]: f["value"] for f in body["ncrp_draft"]}
+    assert labels["Transaction ID / UTR"] == "412345678901"
+    assert labels["Sub-category"] == "UPI related fraud"
+    assert body["links"]["call_1930"] == "tel:1930"
+
+
+def test_money_sent_needs_a_utr_and_a_real_amount(client) -> None:
+    assert client.post("/scam-check/money-sent", json={"amount_inr": 500}).status_code == 422
+    bad = {"utr": "412345678901", "amount_inr": 0}
+    assert client.post("/scam-check/money-sent", json=bad).status_code == 422
+    r = client.post("/scam-check/money-sent", json={"utr": "AB12-345", "amount_inr": 900,
+                                                    "lang": "hi"})  # fmt: skip
+    assert r.status_code == 200
+    first = r.json()["call_script_1930"].splitlines()[0]
+    assert "1930" in r.json()["steps"][0] and "account" not in first  # no empty "account  to"

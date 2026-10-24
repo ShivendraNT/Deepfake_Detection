@@ -423,6 +423,25 @@
       .fp-box { margin-top: 1rem; padding: .8rem 1rem; border-radius: 12px; background: rgba(255,255,255,.04);
         font-size: .85rem; line-height: 1.5; color: var(--text-muted); }
       .fp-box strong { color: var(--text); }
+      details.ms { margin-top: 1.2rem; padding: .9rem 1rem; border-radius: 14px; border: 1px solid rgba(239,68,68,.35);
+        background: rgba(239,68,68,.06); }
+      details.ms summary { cursor: pointer; font-weight: 700; color: var(--text); }
+      .ms-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; margin-top: .8rem; }
+      .ms-grid label { display: grid; gap: .25rem; font-size: .78rem; color: var(--text-muted); }
+      .ms-grid .wide { grid-column: 1 / -1; }
+      .ms-grid input, .ms-grid select, .ms-grid textarea { width: 100%; padding: .55rem .7rem; border-radius: 10px;
+        border: 1px solid rgba(255,255,255,.15); background: rgba(0,0,0,.25); color: var(--text); font: inherit; font-size: .9rem; min-height: 0; }
+      .ms-out { margin-top: 1rem; display: none; gap: .8rem; }
+      .ms-out h3 { font-size: .9rem; margin: .6rem 0 .3rem; color: var(--text); }
+      .ms-out pre { white-space: pre-wrap; font: inherit; font-size: .88rem; line-height: 1.5; padding: .7rem .8rem;
+        border-radius: 10px; background: rgba(0,0,0,.3); color: var(--text); }
+      .ms-out table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+      .ms-out td { padding: .3rem .4rem; border-bottom: 1px solid rgba(255,255,255,.08); vertical-align: top; }
+      .ms-out td:first-child { color: var(--text-muted); width: 42%; }
+      .ms-out ol { margin-left: 1.1rem; display: grid; gap: .3rem; font-size: .88rem; line-height: 1.45; }
+      .copy-btn { margin-top: .3rem; padding: .35rem .8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,.2);
+        background: transparent; color: var(--text); cursor: pointer; font-size: .8rem; }
+      @media (max-width: 480px) { .ms-grid { grid-template-columns: 1fr; } }
     </style>
   </head>
   <body>
@@ -504,6 +523,34 @@
           <div id="fpBox" class="fp-box"></div>
         </section>
 
+        <details id="ms" class="ms">
+          <summary data-i18n="msTitle">Money already sent? Get your 1930 report ready</summary>
+          <div class="ms-grid">
+            <label><span data-i18n="msUtr">UTR / transaction ID (in your bank or UPI app) *</span><input id="msUtr" inputmode="text" autocomplete="off" /></label>
+            <label><span data-i18n="msAmt">Amount in ₹ *</span><input id="msAmt" type="number" min="1" inputmode="numeric" /></label>
+            <label><span data-i18n="msWhen">When</span><input id="msWhen" type="datetime-local" /></label>
+            <label><span data-i18n="msRail">Paid by</span><select id="msRail"><option>UPI</option><option>IMPS</option><option>NEFT</option><option>RTGS</option><option value="CARD">Card</option><option value="WALLET">Wallet</option><option value="OTHER">Other</option></select></label>
+            <label><span data-i18n="msBank">Your bank or wallet</span><input id="msBank" autocomplete="off" /></label>
+            <label><span data-i18n="msLast4">Last 4 digits of your account (optional)</span><input id="msLast4" maxlength="4" inputmode="numeric" autocomplete="off" /></label>
+            <label><span data-i18n="msTo">Sent to: UPI ID or account number</span><input id="msTo" autocomplete="off" /></label>
+            <label><span data-i18n="msPhone">Fraudster's phone number</span><input id="msPhone" inputmode="tel" autocomplete="off" /></label>
+            <label class="wide"><span data-i18n="msStory">What happened (one or two lines)</span><textarea id="msStory" rows="2" maxlength="1000"></textarea></label>
+          </div>
+          <button id="msBtn" class="primary-btn" type="button" data-i18n="msBtn">Prepare my report</button>
+          <p id="msStatus" class="meta"></p>
+          <div id="msOut" class="ms-out">
+            <h3 data-i18n="msSteps">Do this now, in this order</h3>
+            <ol id="msStepsList"></ol>
+            <h3 data-i18n="msScript">Read this on the 1930 call</h3>
+            <pre id="msScriptText"></pre><button class="copy-btn" type="button" data-copy="msScriptText" data-i18n="copy">Copy</button>
+            <h3 data-i18n="msBankH">Message for your bank</h3>
+            <pre id="msBankText"></pre><button class="copy-btn" type="button" data-copy="msBankText" data-i18n="copy">Copy</button>
+            <h3 data-i18n="msFields">For cybercrime.gov.in › Report financial fraud</h3>
+            <table id="msFieldsTable"></table>
+            <p class="meta" id="msDisclaimer"></p>
+          </div>
+        </details>
+
         <div class="shield-footer">
           <div class="trust-badges">
             <div class="badge-item"><span>🔒</span> <span data-i18n="b1">Runs on this device</span></div>
@@ -552,6 +599,14 @@
             speak: "Listen to Advice",
             share: "Share Warning on WhatsApp",
             note: "Satya checks <strong>the words, the voice and the face</strong> on this device and tells you why; it can be wrong, so the call-back step decides. Official agencies, banks, or police will <strong>NEVER</strong> conduct arrest procedures over video calls or ask for OTPs / account transfers.",
+            msTitle: "Money already sent? Get your 1930 report ready",
+            msUtr: "UTR / transaction ID (in your bank or UPI app) *", msAmt: "Amount in ₹ *", msWhen: "When",
+            msRail: "Paid by", msBank: "Your bank or wallet", msLast4: "Last 4 digits of your account (optional)",
+            msTo: "Sent to: UPI ID or account number", msPhone: "Fraudster's phone number",
+            msStory: "What happened (one or two lines)", msBtn: "Prepare my report",
+            msSteps: "Do this now, in this order", msScript: "Read this on the 1930 call",
+            msBankH: "Message for your bank", msFields: "For cybercrime.gov.in › Report financial fraud",
+            copy: "Copy", copied: "Copied", msNeed: "The UTR / transaction ID and the amount are needed.",
           },
           hi: {
             title: "सत्य स्कैम चेक",
@@ -576,6 +631,14 @@
             speak: "यह सलाह सुनें",
             share: "परिवार के साथ व्हाट्सएप पर साझा करें",
             note: "सत्य <strong>शब्द, आवाज़ और चेहरा</strong> इसी डिवाइस पर जाँचता है और कारण बताता है; वह ग़लत भी हो सकता है, इसलिए फ़ैसला वापस कॉल करके ही करें। पुलिस, सीबीआई या बैंक कभी भी वीडियो कॉल पर गिरफ़्तारी नहीं करते और न ही कभी ओटीपी या पैसे ट्रांसफर करने को कहते हैं।",
+            msTitle: "पैसा जा चुका है? 1930 की शिकायत तैयार कीजिए",
+            msUtr: "UTR / ट्रांज़ैक्शन ID (बैंक या UPI ऐप में) *", msAmt: "रकम ₹ में *", msWhen: "कब",
+            msRail: "कैसे भेजा", msBank: "आपका बैंक या वॉलेट", msLast4: "आपके खाते के आख़िरी 4 अंक (वैकल्पिक)",
+            msTo: "किसे भेजा: UPI ID या खाता नंबर", msPhone: "ठग का फ़ोन नंबर",
+            msStory: "क्या हुआ (एक-दो लाइन)", msBtn: "शिकायत तैयार करें",
+            msSteps: "अभी, इसी क्रम में कीजिए", msScript: "1930 कॉल पर यह पढ़िए",
+            msBankH: "बैंक के लिए संदेश", msFields: "cybercrime.gov.in › Report financial fraud के लिए",
+            copy: "कॉपी", copied: "कॉपी हो गया", msNeed: "UTR / ट्रांज़ैक्शन ID और रकम ज़रूरी हैं।",
           },
         };
 
@@ -672,6 +735,48 @@
             $("checkBtn").disabled = false;
           }
         }
+
+        async function moneySent() {
+          var utr = $("msUtr").value.trim(), amt = parseInt($("msAmt").value, 10);
+          if (!utr || !(amt > 0)) { $("msStatus").textContent = t("msNeed"); return; }
+          var to = $("msTo").value.trim();
+          var body = {
+            utr: utr.replace(/\s+/g, ""), amount_inr: amt, rail: $("msRail").value,
+            sent_at: $("msWhen").value || null, your_bank: $("msBank").value.trim(),
+            your_account_last4: $("msLast4").value.trim(), scammer_phone: $("msPhone").value.trim(),
+            what_happened: $("msStory").value.trim(), lang: lang === "hi" ? "hi" : "en",
+            to_upi: to.indexOf("@") > 0 ? to : "", to_account: to.indexOf("@") > 0 ? "" : to,
+          };
+          var res = null, detail = "";
+          for (var i = 0; i < ENDPOINTS.length && !res; i++) {
+            try {
+              var r = await fetch(ENDPOINTS[i] + "/money-sent", { method: "POST",
+                headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+              if (r.ok) res = await r.json();
+              else if (r.status === 422) detail = t("msNeed");
+            } catch (e) { /* try next endpoint */ }
+          }
+          if (!res) { $("msStatus").textContent = detail || t("error"); return; }
+          $("msStatus").textContent = "";
+          var ol = $("msStepsList"); ol.innerHTML = "";
+          res.steps.forEach(function (s) { var li = document.createElement("li"); li.textContent = s; ol.appendChild(li); });
+          $("msScriptText").textContent = res.call_script_1930;
+          $("msBankText").textContent = res.bank_message.subject + "\n\n" + res.bank_message.body;
+          var tb = $("msFieldsTable"); tb.innerHTML = "";
+          res.ncrp_draft.forEach(function (f) {
+            var tr = document.createElement("tr"), a = document.createElement("td"), b = document.createElement("td");
+            a.textContent = f.label; b.textContent = f.value; tr.appendChild(a); tr.appendChild(b); tb.appendChild(tr);
+          });
+          $("msDisclaimer").textContent = res.disclaimer;
+          $("msOut").style.display = "grid";
+        }
+        $("msBtn").addEventListener("click", moneySent);
+        Array.prototype.forEach.call(document.querySelectorAll(".copy-btn"), function (btn) {
+          btn.addEventListener("click", function () {
+            var txt = $(btn.getAttribute("data-copy")).textContent;
+            try { navigator.clipboard.writeText(txt); btn.textContent = t("copied"); } catch (e) { /* manual copy */ }
+          });
+        });
 
         // Quick Try Chips
         Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (btn) {

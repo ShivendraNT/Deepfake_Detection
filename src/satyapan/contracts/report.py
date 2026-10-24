@@ -69,3 +69,20 @@ class ReportPack(Model):
         "Draft only. Nothing has been submitted. A human must review and submit "
         "via 1930 / cybercrime.gov.in / your bank."
     )
+
+
+class CitizenReportDraft(Model):
+    """A person's golden-hour pack after money has left (finale, citizen page). Drafts only:
+    the person calls 1930, files on the portal and messages the bank themselves."""
+
+    facts: TransactionFacts
+    call_script_1930: str  # first line leads with the UTR / transaction ID
+    bank_message: EmailDraft
+    ncrp_draft: list[NcrpField]
+    steps: list[str]
+    links: dict[str, str] = Field(default_factory=dict)
+    submission: Literal["MANUAL_ONLY"] = "MANUAL_ONLY"
+    disclaimer: str = (
+        "Draft only. Nothing has been submitted. You call 1930, file on cybercrime.gov.in "
+        "and contact your bank yourself."
+    )
