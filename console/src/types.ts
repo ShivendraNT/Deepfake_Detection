@@ -127,6 +127,8 @@ export type SignalGroup =
 // Video check (docs/VIDEO_DEEPFAKE.md, media group, ML): only LIKELY_SYNTHETIC raises (+1 band);
 // NO_SIGNS / INCONCLUSIVE are info only and never lower a band.
 export type VideoReasonCode = "VIDEO_NO_SIGNS" | "VIDEO_INCONCLUSIVE" | "VIDEO_LIKELY_SYNTHETIC";
+// Scam-text model (docs/TEXT_BENCHMARK.md): style group, ML, capped at VERIFY.
+export type TextReasonCode = "TEXT_SCAM_LIKELY";
 // Provenance reason codes: VOICE_SEALED is info only (never lowers a band, never clears).
 export type SealReasonCode =
   | "VOICE_SEALED" | "VOICE_UNSEALED_CLAIMED_EXEC" | "SEAL_PRESENCE_CONFLICT";

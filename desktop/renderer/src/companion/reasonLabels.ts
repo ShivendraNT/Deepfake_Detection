@@ -29,6 +29,7 @@ const LABELS: Record<string, string> = {
   ASK_UNUSUAL_PAYMENT_METHOD: 'Unusual payment method instruction',
   ASK_PAYEE_CHANGE: 'Asked to change beneficiary payee',
   STYLE_PRESSURE: 'High-pressure urgency or authority coercion',
+  TEXT_SCAM_LIKELY: 'Reads like known scam / phishing messages (text model)',
   WATCHLIST_HIT: 'Matches the watchlist',
   MULTI_GROUP_STRONG: 'Independent forensic checks agree',
   GREY_FLAG: 'A check could not complete',

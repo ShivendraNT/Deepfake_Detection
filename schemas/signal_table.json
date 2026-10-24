@@ -184,6 +184,14 @@
       "ml"
     ]
   },
+  "TEXT_SCAM_LIKELY": {
+    "group": "style",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
   "WATCHLIST_HIT": {
     "group": "watchlist",
     "target": "PLUS_ONE",

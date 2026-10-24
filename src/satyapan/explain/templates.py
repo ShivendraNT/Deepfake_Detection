@@ -224,6 +224,12 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.HI: "भाषा में असामान्य जल्दबाज़ी, धमकी या गोपनीयता दिख रही है, जो दबाव बनाने का आम "
         "तरीका है। जल्दबाज़ी न करें और दर्ज नंबर पर अनुरोधकर्ता से पुष्टि करें।",
     },
+    ReasonCode.TEXT_SCAM_LIKELY: {
+        Lang.EN: "This text reads like known scam or phishing messages (a trained text model, not "
+        "proof). Confirm the request with the requester on the number on file before acting.",
+        Lang.HI: "यह संदेश जाने-पहचाने धोखाधड़ी या फ़िशिंग संदेशों जैसा लगता है (एक प्रशिक्षित टेक्स्ट "
+        "मॉडल, सबूत नहीं)। कार्रवाई से पहले दर्ज नंबर पर अनुरोधकर्ता से पुष्टि करें।",
+    },
     # --- watchlist ---
     ReasonCode.WATCHLIST_HIT: {
         Lang.EN: "The sender or caller appears on our watchlist from the last 30 days. Do not "

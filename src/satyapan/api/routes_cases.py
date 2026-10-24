@@ -112,6 +112,7 @@ async def upload_evidence(
         settings=state.settings,
         thresholds=state.thresholds,
         transcriber=state.transcriber_override,
+        text_model=state.text_model(),
     )
     out = analyze_evidence(data, ev, case, ctx)
     case = recompute(merge_output(case, ev, out), state.master)

@@ -242,6 +242,9 @@ class ReasonCode(StrEnum):
     CROSS_CHANNEL_URGENT_BYPASS = "CROSS_CHANNEL_URGENT_BYPASS"  # plus A4 secrecy / A5 bypass
     # Style (C8 / LLM) — raise-only, capped at VERIFY
     STYLE_PRESSURE = "STYLE_PRESSURE"
+    # Scam-text model (docs/TEXT_BENCHMARK.md): reads like known scam/phishing text. Style group,
+    # so capped at VERIFY, never strong, never corroborates an ask.
+    TEXT_SCAM_LIKELY = "TEXT_SCAM_LIKELY"
     # Watchlist (R4)
     WATCHLIST_HIT = "WATCHLIST_HIT"
     # Provenance: Satyapan Seal (C14, docs/SEAL.md). Raise-only like every other signal.

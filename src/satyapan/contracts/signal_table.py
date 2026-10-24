@@ -103,6 +103,9 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
     ReasonCode.STYLE_PRESSURE: SignalSpec(
         SignalGroup.STYLE, TargetRule.VERIFY, Strength.WEAK, _STYLE_SOURCES
     ),
+    ReasonCode.TEXT_SCAM_LIKELY: SignalSpec(
+        SignalGroup.STYLE, TargetRule.VERIFY, Strength.WEAK, _ML
+    ),
     # --- watchlist (R4, deterministic) ---
     ReasonCode.WATCHLIST_HIT: SignalSpec(
         SignalGroup.WATCHLIST, TargetRule.PLUS_ONE, Strength.WEAK, _DET
