@@ -54,7 +54,8 @@ capture window (Electron, after a yes)                     local engine (127.0.0
   screen track ─ ImageCapture ─ 15 fps ─ ≤1280 px JPEG ─▶  POST /live/{call}/video
                                                             │ decode (Pillow), RAM only
                                                             ▼
-                                     FaceTracker (MediaPipe, 478 landmarks, largest face)
+          FaceTracker: YuNet finds the largest face (≤640 px copy) → MediaPipe 478 landmarks
+          on a face-centred crop that follows the face (small grid/1080p faces stay trackable)
                                                             ▼
                          FrameRecord: 5 skin patches, iris highlights, mouth opening,
                          face size/brightness, a 224 px face crop every 0.75 s
@@ -96,6 +97,13 @@ product rule's alert rates on reals (false alarms) and fakes (detections) with W
 ## 6. Results
 
 See §8 (filled from `results/video_benchmark.md` by the benchmark run).
+
+**A bug the benchmark caught.** The first extraction used MediaPipe's landmarker alone. Its
+built-in detector is the short-range BlazeFace (128 px input, selfie framing): it found **no
+face at all in 361 of 674 DFDC videos** (people at 1–2 m in a 1080p frame) — exactly the small
+faces of a Meet grid. We replaced it with a two-stage tracker (YuNet detection + landmarks on a
+face-centred crop) and re-ran every extraction, so the numbers describe the shipped tracker.
+(The CNN's training crops came from FF++ close-ups, where both trackers agree.)
 
 ## 7. What we do not claim
 
