@@ -37,12 +37,14 @@ Paired delta AUC vs our SBI CNN (same videos):
 | Model | val AUC | FF++ test AUC (4 seen) | FaceShifter AUC (unseen) | DFDC AUC (unseen) | DFDC TPR @ tau | DFDC FPR @ tau |
 |---|---|---|---|---|---|---|
 | satya_sbi | – | 0.721 [0.696, 0.749] | 0.704 [0.659, 0.751] | – | – | – |
+| gend_clip_l14 | – | 0.938 [0.923, 0.954] | 0.798 [0.755, 0.838] | – | – | – |
 | ms_eff_gcvit_b0 * | – | 0.914 [0.888, 0.937] | 0.896 [0.861, 0.927] | – | – | – |
 
 Paired delta AUC vs our SBI CNN (same videos):
 
 | Model | val | FF++ test | DFDC |
 |---|---|---|---|
+| gend_clip_l14 | – | 0.192 [0.161, 0.221] | – |
 | ms_eff_gcvit_b0 | – | 0.193 [0.158, 0.227] | – |
 
 ## Condition `call360`

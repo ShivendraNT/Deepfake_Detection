@@ -1166,6 +1166,105 @@
           }
         }
       },
+      "gend_clip_l14": {
+        "videos_scored": 840,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {
+          "val": "140/420"
+        },
+        "tau_1pct_val": null,
+        "val": {
+          "n_real": 0,
+          "n_fake": 0
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.9383,
+            "low": 0.9227,
+            "high": 0.9538,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.9101,
+            "low": 0.8916,
+            "high": 0.9273,
+            "n_boot": 2000
+          }
+        },
+        "dfdc": {
+          "n_real": 0,
+          "n_fake": 0
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9873,
+              "low": 0.9762,
+              "high": 0.9956,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9489,
+              "low": 0.9248,
+              "high": 0.9696,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7976,
+              "low": 0.7548,
+              "high": 0.8376,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9794,
+              "low": 0.9622,
+              "high": 0.9933,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8375,
+              "low": 0.8011,
+              "high": 0.8731,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": null,
+          "test": {
+            "value": 0.1923,
+            "low": 0.1612,
+            "high": 0.2214,
+            "se": 0.0152,
+            "n_boot": 2000
+          },
+          "xtest": null
+        }
+      },
       "ms_eff_gcvit_b0": {
         "videos_scored": 840,
         "videos_without_face": 0,

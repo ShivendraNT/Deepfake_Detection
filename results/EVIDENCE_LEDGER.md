@@ -221,6 +221,7 @@ Data: FF++ c23 (official identity-disjoint splits), DFDC parts 0–2 (never used
 | Fakes flagged for a call-back (VERIFY or above), FF++ test / DFDC | 74.7 % / 24.8 % | 695 / 250 | [71.3, 77.8] / [19.9, 30.5] | LIKELY alone: 44.8 % / 7.2 % |
 | Real videos called LIKELY_SYNTHETIC | 0 / 563 | 139 FF++ + 424 DFDC | [0, 0.7 %] | the strict alert never fired on a real test video |
 | Real videos flagged for a call-back | 1.2 % (7 / 563) | 563 | — | 2.9 % FF++, 0.7 % DFDC |
+| At 720p call quality: FF++ AUC / fakes flagged / reals flagged | 0.913 / 58.8 % / 2.2 % | 695 fake, 139 real | [0.895, 0.931] | VP8 1.2 Mbit/s + JPEG |
 | At 360p call quality: FF++ AUC / fakes flagged / reals flagged | 0.877 / 50.6 % / 5.0 % | 695 fake, 139 real | [0.854, 0.900] | DFDC: 82 % of faces too small → "couldn't check" |
 | Unseen method (FaceShifter) flagged | 31.7 % | 139 | — | vs 85.4 % for the 4 seen methods: name it as a failure case |
 | Our SBI CNN (fallback), FF++ test / DFDC AUC | 0.786 / 0.633 | same videos | [0.760, 0.812] / [0.584, 0.682] | |

@@ -118,6 +118,59 @@
     ]
    }
   },
+  "ffpp_test/call720": {
+   "n_real_crops": 560,
+   "n_fake_crops": 2800,
+   "auc": {
+    "value": 0.867,
+    "low": 0.8503,
+    "high": 0.8825,
+    "n_boot": 2000
+   },
+   "tpr@tau_hi": {
+    "k": 374,
+    "n": 2800,
+    "value": 0.1336,
+    "ci95": [
+     0.1215,
+     0.1467
+    ]
+   },
+   "fpr@tau_hi": {
+    "k": 2,
+    "n": 560,
+    "value": 0.0036,
+    "ci95": [
+     0.001,
+     0.0129
+    ]
+   },
+   "tpr@tau_lo": {
+    "k": 980,
+    "n": 2800,
+    "value": 0.35,
+    "ci95": [
+     0.3325,
+     0.3679
+    ]
+   },
+   "fpr@tau_lo": {
+    "k": 3,
+    "n": 560,
+    "value": 0.0054,
+    "ci95": [
+     0.0018,
+     0.0156
+    ]
+   },
+   "auc_per_method": {
+    "Deepfakes": 0.9644,
+    "Face2Face": 0.8993,
+    "FaceShifter": 0.746,
+    "FaceSwap": 0.9534,
+    "NeuralTextures": 0.7718
+   }
+  },
   "ffpp_test/call360": {
    "n_real_crops": 560,
    "n_fake_crops": 2800,

@@ -71,6 +71,60 @@ Product outcomes (fusion:shipped). LIKELY = >= 2 windows in a row >= tau_hi; SUS
 
 Usable-window fraction by split: {'fusion_train': 0.9775, 'test': 0.9711, 'val': 1.0, 'xtest': 0.9095}
 
+## Condition: call720
+
+| Set | Model | n real / fake | AUC | EER | abstained |
+|---|---|---|---|---|---|
+| ffpp_test_all | fusion:shipped | 135 / 675 | 0.913 [0.895, 0.931] | 0.176 [0.141, 0.200] | 24 |
+| ffpp_test_all | cnn_raw | 135 / 675 | 0.914 [0.896, 0.931] | 0.173 [0.141, 0.199] | 24 |
+| ffpp_test_all | shortcut:face_px | 135 / 675 | 0.500 [0.496, 0.505] | 0.496 [0.487, 0.511] | 24 |
+| ffpp_test_all | shortcut:luma | 135 / 675 | 0.491 [0.481, 0.499] | 0.504 [0.490, 0.519] | 24 |
+| ffpp_test_all | Δ AUC shipped − cnn_raw | | -0.001 [-0.002, 0.000] | | |
+| ffpp_test_seen4 | fusion:shipped | 135 / 540 | 0.943 [0.927, 0.958] | 0.133 [0.103, 0.156] | 20 |
+| ffpp_test_seen4 | cnn_raw | 135 / 540 | 0.944 [0.928, 0.959] | 0.132 [0.103, 0.154] | 20 |
+| ffpp_test_seen4 | shortcut:face_px | 135 / 540 | 0.499 [0.494, 0.505] | 0.496 [0.487, 0.513] | 20 |
+| ffpp_test_seen4 | shortcut:luma | 135 / 540 | 0.496 [0.485, 0.506] | 0.504 [0.487, 0.517] | 20 |
+| ffpp_test_seen4 | Δ AUC shipped − cnn_raw | | -0.001 [-0.002, 0.000] | | |
+| ffpp_test_Deepfakes | fusion:shipped | 135 / 135 | 0.987 [0.976, 0.996] | 0.044 [0.022, 0.081] | 8 |
+| ffpp_test_Deepfakes | cnn_raw | 135 / 135 | 0.988 [0.977, 0.997] | 0.044 [0.022, 0.081] | 8 |
+| ffpp_test_Deepfakes | shortcut:face_px | 135 / 135 | 0.498 [0.490, 0.504] | 0.496 [0.485, 0.522] | 8 |
+| ffpp_test_Deepfakes | shortcut:luma | 135 / 135 | 0.483 [0.459, 0.504] | 0.511 [0.478, 0.537] | 8 |
+| ffpp_test_Deepfakes | Δ AUC shipped − cnn_raw | | -0.001 [-0.002, 0.000] | | |
+| ffpp_test_Face2Face | fusion:shipped | 135 / 135 | 0.958 [0.935, 0.978] | 0.096 [0.066, 0.140] | 8 |
+| ffpp_test_Face2Face | cnn_raw | 135 / 135 | 0.959 [0.937, 0.978] | 0.096 [0.060, 0.140] | 8 |
+| ffpp_test_Face2Face | shortcut:face_px | 135 / 135 | 0.499 [0.492, 0.504] | 0.496 [0.478, 0.511] | 8 |
+| ffpp_test_Face2Face | shortcut:luma | 135 / 135 | 0.507 [0.499, 0.518] | 0.489 [0.478, 0.515] | 8 |
+| ffpp_test_Face2Face | Δ AUC shipped − cnn_raw | | -0.001 [-0.003, 0.000] | | |
+| ffpp_test_FaceSwap | fusion:shipped | 135 / 135 | 0.980 [0.964, 0.994] | 0.044 [0.022, 0.082] | 8 |
+| ffpp_test_FaceSwap | cnn_raw | 135 / 135 | 0.981 [0.965, 0.994] | 0.044 [0.022, 0.082] | 8 |
+| ffpp_test_FaceSwap | shortcut:face_px | 135 / 135 | 0.501 [0.495, 0.507] | 0.496 [0.485, 0.515] | 8 |
+| ffpp_test_FaceSwap | shortcut:luma | 135 / 135 | 0.495 [0.482, 0.506] | 0.504 [0.474, 0.522] | 8 |
+| ffpp_test_FaceSwap | Δ AUC shipped − cnn_raw | | -0.000 [-0.001, 0.000] | | |
+| ffpp_test_NeuralTextures | fusion:shipped | 135 / 135 | 0.847 [0.812, 0.884] | 0.222 [0.184, 0.272] | 8 |
+| ffpp_test_NeuralTextures | cnn_raw | 135 / 135 | 0.848 [0.814, 0.885] | 0.222 [0.180, 0.272] | 8 |
+| ffpp_test_NeuralTextures | shortcut:face_px | 135 / 135 | 0.500 [0.495, 0.506] | 0.496 [0.489, 0.515] | 8 |
+| ffpp_test_NeuralTextures | shortcut:luma | 135 / 135 | 0.497 [0.487, 0.506] | 0.504 [0.489, 0.526] | 8 |
+| ffpp_test_NeuralTextures | Δ AUC shipped − cnn_raw | | -0.001 [-0.003, 0.001] | | |
+| ffpp_test_FaceShifter | fusion:shipped | 135 / 135 | 0.792 [0.751, 0.835] | 0.304 [0.259, 0.356] | 8 |
+| ffpp_test_FaceShifter | cnn_raw | 135 / 135 | 0.793 [0.751, 0.836] | 0.304 [0.259, 0.356] | 8 |
+| ffpp_test_FaceShifter | shortcut:face_px | 135 / 135 | 0.504 [0.500, 0.509] | 0.496 [0.481, 0.518] | 8 |
+| ffpp_test_FaceShifter | shortcut:luma | 135 / 135 | 0.473 [0.463, 0.479] | 0.511 [0.496, 0.541] | 8 |
+| ffpp_test_FaceShifter | Δ AUC shipped − cnn_raw | | -0.001 [-0.003, 0.002] | | |
+
+Product outcomes (fusion:shipped). LIKELY = >= 2 windows in a row >= tau_hi; SUSPICIOUS = a usable window >= tau_lo (VERIFY: call back first); flagged = either; couldn't check = no usable face (no band effect).
+
+| Set | fakes LIKELY | fakes flagged | reals LIKELY (FPR) | reals flagged | fakes / reals couldn't check |
+|---|---|---|---|---|---|
+| ffpp_test_all | 23.0% [20.1, 26.3] (160/695) | 58.9% [55.1, 62.5] (409/695) | 0.0% [0.0, 2.7] (0/139) | 2.2% [0.7, 6.2] (3/139) | 3% / 3% |
+| ffpp_test_seen4 | 28.2% [24.6, 32.1] (157/556) | 68.5% [64.5, 72.2] (381/556) | 0.0% [0.0, 2.7] (0/139) | 2.2% [0.7, 6.2] (3/139) | 3% / 3% |
+| ffpp_test_Deepfakes | 49.6% [41.4, 57.9] (69/139) | 89.9% [83.8, 93.9] (125/139) | 0.0% [0.0, 2.7] (0/139) | 2.2% [0.7, 6.2] (3/139) | 3% / 3% |
+| ffpp_test_Face2Face | 19.4% [13.7, 26.8] (27/139) | 71.2% [63.2, 78.1] (99/139) | 0.0% [0.0, 2.7] (0/139) | 2.2% [0.7, 6.2] (3/139) | 3% / 3% |
+| ffpp_test_FaceSwap | 41.0% [33.2, 49.3] (57/139) | 85.6% [78.8, 90.5] (119/139) | 0.0% [0.0, 2.7] (0/139) | 2.2% [0.7, 6.2] (3/139) | 3% / 3% |
+| ffpp_test_NeuralTextures | 2.9% [1.1, 7.2] (4/139) | 27.3% [20.6, 35.3] (38/139) | 0.0% [0.0, 2.7] (0/139) | 2.2% [0.7, 6.2] (3/139) | 3% / 3% |
+| ffpp_test_FaceShifter | 2.2% [0.7, 6.2] (3/139) | 20.1% [14.3, 27.6] (28/139) | 0.0% [0.0, 2.7] (0/139) | 2.2% [0.7, 6.2] (3/139) | 3% / 3% |
+
+Usable-window fraction by split: {'test': 0.9711, 'val': 1.0}
+
 ## Condition: call360
 
 | Set | Model | n real / fake | AUC | EER | abstained |
