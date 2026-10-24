@@ -49,7 +49,9 @@ benchmark machine, so GSM stands in for AMR-NB.
    the full `val` grid and the test sets are scored for the **shipped** model only. If an
    off-the-shelf model is shipped, its test sets are seeded subsets (1,000 In-the-Wild clips;
    300 bonafide + 30 per attack of ASVspoof eval) under `clean` and `opus16`.
-   `research/voice/bench.py::test_subset`.)*
+   `research/voice/bench.py::test_subset`.)* *(Fix, 24 Oct 21:50 UTC: the GSM channel had
+   never run (ffmpeg cannot write libgsm into a WAV file, so every clip failed); it now uses
+   the raw `.gsm` container. No GSM score of any model existed before the fix.)*
 2. **Selection for the product:** eligible = licence allows redistribution + documented training
    data that does not include In-the-Wild. Among eligible gate-passers, an off-the-shelf model
    replaces ours only if its `val` AUC under `opus16` exceeds ours by more than one bootstrap SE
