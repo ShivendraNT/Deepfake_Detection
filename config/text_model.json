@@ -1,0 +1,37 @@
+{
+ "version": "textrisk-1.0+cb5003c8ad",
+ "model": "hashed TF-IDF (word 1-2 + char_wb 2-5, 2^20 buckets, CRC-32) + logistic regression, de-obfuscation layer on",
+ "intercept": -3.57611204957073,
+ "normalise": true,
+ "C": 32.0,
+ "thresholds": {
+  "tau_hi": 0.427092,
+  "tau_lo": 0.120402,
+  "tau_f1": 0.483403
+ },
+ "fpr_targets": {
+  "tau_hi": 0.01,
+  "tau_lo": 0.05
+ },
+ "trained_on": [
+  "clair_fraud",
+  "hinglish_calls",
+  "india_14lang",
+  "india_sms",
+  "phish_email",
+  "scam_dialogue",
+  "uci_sms"
+ ],
+ "train_rows": 33462,
+ "data_table_sha256": "ab178c01146f6e5151b82cc81c3e8ce157bdc512ca78bfdef24b5d0753441322",
+ "npz_sha256": "cb5003c8ad8cbaaf8854940cc8ad337ac8b77532cb345e27399724c5b3d118a7",
+ "licences": {
+  "phish_email": "LGPL-3.0",
+  "clair_fraud": "CC-BY-3.0",
+  "uci_sms": "CC-BY-4.0",
+  "india_sms": "MIT",
+  "india_14lang": "MIT",
+  "hinglish_calls": "Apache-2.0",
+  "scam_dialogue": "Apache-2.0"
+ }
+}
