@@ -51,6 +51,8 @@ class LiveSession:
     transcript: list[str] = field(default_factory=list)
     asks: list[AskSpan] = field(default_factory=list)
     voice_windows: list[VoiceWindowResult] = field(default_factory=list)
+    client_voice: bool = False  # the client scores its own voice windows (extension)
+    next_voice_index: int = 0  # server-scored windows (desktop app: scored here)
     last_band: Band = Band.PASS
     language: str | None = None  # speech language hint ("en", "hi"; None/"auto" = detect)
     # Video check (finale): per-call face stream; windows keep numbers only, never frames.
@@ -119,6 +121,9 @@ class LiveService:
     context_filter: bool = True
     # Finale: returns the VideoAnalyzer, or None when the video check is unavailable here.
     video_factory: Callable[[], Any] | None = None
+    # Voice-clone model for clients that send only audio (the desktop capture window): every
+    # utterance chunk is cut into 5 s windows and scored here, on this laptop.
+    voice_factory: Callable[[], Any] | None = None
     # Returns the scam-text model (TextRiskModel), or None.
     text_factory: Callable[[], Any] | None = None
 
@@ -168,20 +173,21 @@ class LiveService:
         call_id = session.call_id
         start_s = t_start_s if t_start_s is not None else chunk_index * CHUNK_SECONDS
         self._feed_video_audio(session, audio, start_s)
+        voice_events = self._server_voice(session, audio, mime, start_s)
         t0 = time.perf_counter()
         try:
             hint = session.language if session.language not in (None, "auto") else None
             res = self.transcriber.transcribe(audio, mime, hint)
         except ValueError as exc:
             status = StatusEvent(call_id=call_id, message=str(exc), code="decode_failed")
-            return self._publish(call_id, [status])
+            return voice_events + self._publish(call_id, [status])
         except RuntimeError as exc:
             status = StatusEvent(call_id=call_id, message=str(exc), code="asr_unavailable")
-            return self._publish(call_id, [status])
+            return voice_events + self._publish(call_id, [status])
         latency_ms = round((time.perf_counter() - t0) * 1000, 1)
         text = normalise(res.text)
         if not text:
-            return []
+            return voice_events
         session.transcript.append(text)
 
         # ADR-021: drop spoken warnings ("never share your OTP") before ask extraction.
@@ -224,7 +230,48 @@ class LiveService:
         self._score_transcript(session)
 
         events += self._redecide(session)
-        return self._publish(call_id, events)
+        return voice_events + self._publish(call_id, events)
+
+    def _server_voice(
+        self, session: LiveSession, audio: bytes, mime: str, start_s: float
+    ) -> list[LiveEvent]:
+        """Score this chunk's 5 s windows with the voice-clone model (desktop clients).
+
+        Skipped when the client already sends its own windows, when no model is installed
+        (the health card says so), or when the chunk does not decode (the transcript path
+        reports that). Only labels leave this function: makers never see a score."""
+        scorer = self.voice_factory() if self.voice_factory and not session.client_voice else None
+        if scorer is None:
+            return []
+        from satyapan.voice.audio_io import (
+            SAMPLE_RATE,
+            decode_to_16k_mono,
+            estimate_speech_seconds,
+            split_windows,
+        )
+
+        try:
+            windows = split_windows(decode_to_16k_mono(audio, mime))
+            scores = scorer.score_windows(windows) if windows else []
+        except Exception:  # noqa: BLE001 - a broken chunk or model never breaks the call
+            return []
+        results, t = [], start_s
+        for w, score in zip(windows, scores, strict=True):
+            t_end = t + len(w) / SAMPLE_RATE
+            results.append(
+                VoiceWindowResult(
+                    call_id=session.call_id,
+                    window_index=session.next_voice_index,
+                    t_start_s=t,
+                    t_end_s=t_end,
+                    score=float(min(1.0, max(0.0, score))),
+                    speech_seconds=estimate_speech_seconds(w),
+                    model_version=self.thresholds.model_version,
+                )
+            )
+            session.next_voice_index += 1
+            t = t_end
+        return self._handle_voice(session, results) if results else []
 
     def handle_voice(self, call_id: str, windows: list[VoiceWindowResult]) -> list[LiveEvent]:
         """Append windows; classify_windows over ALL scores so far; replace the session's voice
@@ -233,6 +280,7 @@ class LiveService:
         if not windows:
             return []
         with session.lock:
+            session.client_voice = True
             return self._handle_voice(session, windows)
 
     def _handle_voice(

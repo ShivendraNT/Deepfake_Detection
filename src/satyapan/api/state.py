@@ -34,6 +34,9 @@ class AppState:
     _video_error: str | None = None
     video_override: Any = None  # tests inject a fake analyzer here
     _text_model: Any = None  # scam-text model, or False when config/text_model.* are missing
+    _voice_scorer: Any = None  # voice-clone model, or False when its files are missing
+    _voice_error: str | None = None
+    voice_scorer_override: Any = None  # tests inject a fake WindowScorer here
 
     @classmethod
     def build(cls, settings: Settings) -> AppState:
@@ -124,6 +127,31 @@ class AppState:
                 self._video_error = str(exc)[:300]
         return self._video or None
 
+    def voice_scorer(self) -> Any:
+        """The voice-clone model (docs/VOICE_DEEPFAKE.md), or None when its two ONNX files are
+        not on this laptop: voice notes are then transcribed and their asks checked, and the
+        voice itself is reported as not analysed (never a silent pass)."""
+        if self.voice_scorer_override is not None:
+            return self.voice_scorer_override
+        if self._voice_scorer is None:
+            try:
+                from satyapan.voice.detector import load_default_detector
+
+                self._voice_scorer = load_default_detector(self.thresholds.model_version)
+            except Exception as exc:  # noqa: BLE001 - missing files or onnxruntime
+                self._voice_scorer = False
+                self._voice_error = str(exc)[:300]
+        return self._voice_scorer or None
+
+    def voice_status(self) -> dict[str, Any]:
+        scorer = self.voice_scorer()
+        return {
+            "ready": scorer is not None,
+            "error": None if scorer is not None else self._voice_error,
+            "model": self.thresholds.model_version,
+            "calibrated": bool(getattr(self.thresholds, "calibrated", False)),
+        }
+
     def text_model(self) -> Any:
         """The shipped scam-text model (config/text_model.npz), or None if not present."""
         if self._text_model is None:
@@ -157,6 +185,7 @@ class AppState:
                 thresholds=self.thresholds,
                 video_factory=self.video,
                 text_factory=self.text_model,
+                voice_factory=self.voice_scorer,
             )
         return self._live
 

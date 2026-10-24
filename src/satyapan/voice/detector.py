@@ -21,8 +21,14 @@ class WindowScorer(Protocol):
         ...
 
 
+MODEL_DIR = Path(__file__).resolve().parents[3] / "extension" / "models"
+MODEL_FILE, HEAD_FILE = "model.onnx", "logreg_prob.onnx"
+
+
 class OnnxVoiceDetector:
-    def __init__(self, model_path: Path, logreg_path: Path, model_version: str) -> None:
+    def __init__(
+        self, model_path: Path, logreg_path: Path, model_version: str, threads: int = 2
+    ) -> None:
         try:
             import onnxruntime as ort
         except ImportError as exc:
@@ -30,8 +36,12 @@ class OnnxVoiceDetector:
                 "onnxruntime is required for OnnxVoiceDetector: uv sync --extra audio"
             ) from exc
         self.model_version = model_version
-        self.model_session = ort.InferenceSession(str(model_path))
-        self.logreg_session = ort.InferenceSession(str(logreg_path))
+        opts = ort.SessionOptions()
+        opts.intra_op_num_threads = threads
+        opts.inter_op_num_threads = 1
+        cpu = ["CPUExecutionProvider"]
+        self.model_session = ort.InferenceSession(str(model_path), opts, providers=cpu)
+        self.logreg_session = ort.InferenceSession(str(logreg_path), opts, providers=cpu)
 
     def score_windows(self, windows: list[Any]) -> list[float]:
         """Score each 5-second audio window (float32 array).
@@ -70,3 +80,13 @@ class OnnxVoiceDetector:
                     prob = float(item[0].get(1, 0.0))
             scores.append(float(np.clip(prob, 0.0, 1.0)))
         return scores
+
+
+def load_default_detector(model_version: str, model_dir: Path = MODEL_DIR) -> OnnxVoiceDetector:
+    """Satya's voice-clone model (docs/VOICE_DEEPFAKE.md): our XLS-R layer-7 + logistic
+    regression re-training, in the plug-in's two-file format. FileNotFoundError if absent."""
+    model, head = model_dir / MODEL_FILE, model_dir / HEAD_FILE
+    for f in (model, head):
+        if not f.exists():
+            raise FileNotFoundError(f"voice model missing: {f} (run `make voice-models`)")
+    return OnnxVoiceDetector(model, head, model_version)
