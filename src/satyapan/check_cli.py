@@ -38,11 +38,32 @@ def files_in(paths: list[str]) -> list[Path]:
     out: list[Path] = []
     for p in map(Path, paths):
         if p.is_dir():
-            out += sorted(f for f in p.rglob("*") if f.is_file() and not f.name.startswith("."))
+            out += sorted(
+                f
+                for f in p.rglob("*")
+                if f.is_file() and not f.name.startswith(".") and f.name != "kit_manifest.json"
+            )
         elif p.is_file():
             out.append(p)
         else:
             print(f"skipped (not found): {p}", file=sys.stderr)
+    return out
+
+
+def grade(rows: list[dict]) -> list[str]:
+    """Per-channel summary of the files whose name says what they are (Markdown lines)."""
+    graded = [r for r in rows if r.get("expected")]
+    if not graded:
+        return []
+    out = ["| Channel | fakes / scams flagged | genuine passed | right |", "|---|---|---|---|"]
+    for ch in [*sorted({r["channel"] for r in graded}), "ALL"]:
+        sub = [r for r in graded if ch in ("ALL", r["channel"])]
+        fakes = [r for r in sub if r["expected"] == "flag"]
+        reals = [r for r in sub if r["expected"] == "pass"]
+        ok = sum(r["correct"] == "True" for r in sub)
+        caught = sum(r["correct"] == "True" for r in fakes)
+        passed = sum(r["correct"] == "True" for r in reals)
+        out.append(f"| {ch} | {caught}/{len(fakes)} | {passed}/{len(reals)} | {ok}/{len(sub)} |")
     return out
 
 
@@ -92,21 +113,17 @@ def main(argv: list[str] | None = None) -> int:
             "not_checked": "; ".join(r.not_checked), "seconds": r.seconds,
             "why": " | ".join(r.why), "sha256": r.sha256,
         })  # fmt: skip
-    graded = [r for r in rows if r.get("expected")]
-    if graded:
-        hits = sum(r["correct"] == "True" for r in graded)
-        fakes = [r for r in graded if r["expected"] == "flag"]
-        reals = [r for r in graded if r["expected"] == "pass"]
-        caught = sum(r["correct"] == "True" for r in fakes)
-        passed = sum(r["correct"] == "True" for r in reals)
-        print(f"\nnamed files: {hits}/{len(graded)} right; fakes flagged {caught}/{len(fakes)}, "
-              f"genuine passed {passed}/{len(reals)}")  # fmt: skip
+    summary = grade(rows)
+    if summary:
+        print("\n" + "\n".join(summary))
     keys = list(dict.fromkeys(k for r in rows for k in r))
     with open(f"{a.out}.csv", "w", newline="", encoding="utf-8") as fh:
         w = csv.DictWriter(fh, fieldnames=keys)
         w.writeheader()
         w.writerows(rows)
     with open(f"{a.out}.md", "w", encoding="utf-8") as fh:
+        if summary:
+            fh.write("\n".join(summary) + "\n\n")
         fh.write(
             "| File | Verdict | Expected | Why | Not checked | s |\n|---|---|---|---|---|---|\n"
         )
