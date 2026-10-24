@@ -210,3 +210,23 @@ real faces only means no deepfake method is "seen", which is the honest way to c
 generalisation; the transaction floor and OOB-Confirm still carry the decision when the face
 check is wrong (docs/VIDEO_DEEPFAKE.md has the measured numbers and what we do not claim).
 
+
+### ADR-026 GenD (CLIP ViT-L/14, MIT) replaces our SBI CNN as the face CNN; SBI is the fallback (finale)
+**Decision:** the crop CNN of ADR-025 is now GenD (Yermakov et al., WACV 2026,
+`yermandy/GenD_CLIP_L_14`, MIT), exported to one fp32 ONNX file (`research/video/export_gend.py`,
+matches PyTorch to < 1e-5). It scores one face crop every 2.25 s, each crop once; its fusion is
+the identity on the mean crop logit and its thresholds are the same 1 % / 5 % window FPR on FF++
+val reals, max over the three channel conditions (`config/video_fusion.json`,
+`config/video_thresholds.json`). Our SBI CNN keeps its own config (`config/video_*__blend.json`)
+and is used automatically when the GenD file is not on the laptop; a CNN never runs with
+another CNN's thresholds.
+**How it was chosen:** five Hugging Face detectors and our CNN were scored on the same stored
+crops under one protocol; the selection rule (eligible = redistributable licence + documented
+training split disjoint from our val/test + exact ONNX export; replace only if the call360 val
+AUC gain exceeds one bootstrap SE) was committed before any of them was scored
+(`docs/VIDEO_DEEPFAKE.md` §5b). Result on val only: +0.183 AUC (SE 0.023) → GenD
+(`results/video_selection.json`, recorded before any GenD test metric existed).
+**Why not int8:** dynamic int8 quantisation changed GenD's logits (r = 0.92 vs fp32), so it would
+not be the model we benchmarked. **Cost:** 1.2 GB on disk; about one ViT-L forward pass per 2 s
+of call on a laptop CPU. **Not changed:** raise-only, PLUS_ONE cap, labels not scores for makers,
+consent and RAM-only frames (ADR-025).
