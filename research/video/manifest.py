@@ -16,8 +16,21 @@ from research.video.hf_baselines import EXTERNAL
 
 def main() -> None:
     items = [i for i in ffpp_items() if i.split != "spare"] + dfdc_items()
+    path = ROOT / "results" / "video_eval_manifest.json"
+    # Raw videos already hashed may be deleted afterwards to save disk (frames and crops are
+    # extracted); their recorded sha256 is kept, and a re-download is checked against it.
+    known = (
+        {r["key"]: r["sha256"] for r in json.loads(path.read_text())["items"]}
+        if path.exists()
+        else {}
+    )
+
+    def digest(it) -> str:
+        f = DATA / it.path
+        return sha256_file(f) if f.exists() else known[it.key]
+
     with ThreadPoolExecutor(4) as pool:
-        digests = list(pool.map(lambda it: sha256_file(DATA / it.path), items))
+        digests = list(pool.map(digest, items))
     rows = [
         {"key": it.key, "path": it.path, "sha256": d, "label": it.label,
          "identity": it.identity, "split": it.split, "source": it.source, "method": it.method}
@@ -45,7 +58,6 @@ def main() -> None:
         "counts": {s: sum(1 for r in rows if r["split"] == s) for s in splits},
         "items": rows,
     }
-    path = ROOT / "results" / "video_eval_manifest.json"
     path.write_text(json.dumps(out, indent=0) + "\n")
     print(path, out["counts"])
 
