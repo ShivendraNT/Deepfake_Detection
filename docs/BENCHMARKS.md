@@ -28,11 +28,13 @@ resumable (`--from <stage>`).
 
 | Satya component | Decides | Benchmark (open data) | Split / selection | Result file | Status |
 |---|---|---|---|---|---|
-| Video face check: blend CNN + fusion + 2-window rule | `VIDEO_LIKELY_SYNTHETIC` (ML, capped) | FF++ c23 (official splits), FaceShifter (unseen method), DFDC (unseen dataset); orig + 2 simulated call channels | CNN on train reals only; fusion by identity-grouped 5-fold CV + 1-SE rule; τ on val reals; test once | `results/video_benchmark.md` | see file |
-| Off-the-shelf video detectors (Hugging Face) | baseline / candidate for the CNN slot | same videos and crops as above | rule fixed before scoring (`docs/VIDEO_DEEPFAKE.md` §5b) | `results/video_external.md` | see file |
+| Video face check (shipped): GenD crop CNN + 2-window rule | `VIDEO_LIKELY_SYNTHETIC` (ML, capped) | FF++ c23 (official splits), FaceShifter (unseen method), DFDC (unseen dataset); orig + 2 simulated call channels | chosen on val by a rule fixed in advance (`results/video_selection.json`); τ on val reals; test once | `results/video_benchmark.md` | see file |
+| Video face check (fallback): our SBI CNN + fusion | same | same | CNN on train reals only; fusion by identity-grouped 5-fold CV + 1-SE rule; τ on val reals; test once | `results/video_benchmark__blend.md` | measured |
+| Off-the-shelf video detectors (Hugging Face): GenD, MS-EffGCViT, 2 popular ViT "deepfake" classifiers, CommunityForensics | baselines / candidates for the CNN slot | same videos and crops as above | rule fixed before scoring (`docs/VIDEO_DEEPFAKE.md` §5b) | `results/video_external.md` | see file |
 | Lip-sync cue | part of the face check | DFDC reals with own / swapped / TTS / 1 s-delayed audio | zero parameters | `results/video_lipsync.json` | measured |
-| Scam-text classifier | `TEXT_SCAM_LIKELY` (STYLE, capped at VERIFY) | 7 open sets: phishing e-mail, CLAIR fraud, UCI SMS, Indian SMS, 14-language Indian scam/ham, Hinglish scam calls, scam dialogues | template-dedup + group splits; C by GroupKFold CV; τ on val; test once; leave-one-dataset-out | `results/text_benchmark.md`, `results/text_neardup.md` | see file |
-| Text evasion robustness | same | the fraud test texts after 5 code-generated attacks | frozen model and τ | `results/text_benchmark.md` §robustness | see file |
+| Scam-text classifier | `TEXT_SCAM_LIKELY` (STYLE, capped at VERIFY) | 7 open sets: phishing e-mail, CLAIR fraud, UCI SMS, Indian SMS, 14-language Indian scam/ham, Hinglish scam calls, scam dialogues | template-dedup + group splits; C by GroupKFold CV; τ on val; test once; leave-one-dataset-out | `results/text_benchmark.md`, `results/text_neardup.md` | measured |
+| Text evasion robustness | same | the fraud test texts after 5 code-generated attacks | frozen model and τ | `results/text_benchmark.md` §robustness | measured |
+| Text transformer baseline (multilingual-e5-small + LR) | comparison only | same 7 sets | same protocol | `results/text_embed_baseline.md` | measured |
 | Ask extractor (payment asks) | ask chips + `ASK_*` signals | S-HO held-out texts (written before the lexicon was opened) | dev/test split; frozen lexicon | `results/asks_heldout_eval.json` | measured |
 | Policy engine (bands) | PASS / VERIFY / HOLD | S-AB synthetic payment cases through the real decision path | — | `results/alert_budget.json` | measured |
 | Safety invariants (raise-only, LLM cap, floor isolation) | — | property tests, 200 examples each | — | `tests/invariants/` | measured |
