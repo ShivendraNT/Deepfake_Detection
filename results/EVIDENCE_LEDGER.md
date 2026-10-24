@@ -255,6 +255,6 @@ media outside the repo). Same answer as the consumer page (quick check + claim r
 
 | Claim | Value | n | Notes |
 |---|---|---|---|
-| Genuine files passed | 87 / 88 | 40 texts, 20 photos, 20 voices, 8 videos | one genuine voice note got VERIFY |
+| Genuine files passed | 86 / 88 | 40 texts, 20 photos, 20 voices, 8 videos | two genuine voice notes got VERIFY (voice unusual; words read like a scam) |
 | Fakes and scams flagged | 68 / 96 | 40 / 20 / 20 / 16 | texts 38, voices 15, videos 7, photos 8 |
 | Time for 184 files, 4-core CPU | ≈ 7.5 min | — | first file includes model loading |
