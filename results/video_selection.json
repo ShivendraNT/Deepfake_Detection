@@ -1,0 +1,40 @@
+{
+ "decided_at_utc": "2026-10-24T14:04:51+00:00",
+ "rule": "delta val AUC (GenD - SBI CNN), call360, must exceed 1 bootstrap SE",
+ "gend_test_metrics_computed_at_decision": false,
+ "val_auc": {
+  "orig/satya_sbi": {
+   "value": 0.8076,
+   "low": 0.7715,
+   "high": 0.844,
+   "n_boot": 2000
+  },
+  "orig/gend_clip_l14": {
+   "value": 0.9708,
+   "low": 0.9572,
+   "high": 0.9832,
+   "n_boot": 2000
+  },
+  "call360/satya_sbi": {
+   "value": 0.7024,
+   "low": 0.6634,
+   "high": 0.7427,
+   "n_boot": 2000
+  },
+  "call360/gend_clip_l14": {
+   "value": 0.8852,
+   "low": 0.8629,
+   "high": 0.9094,
+   "n_boot": 2000
+  }
+ },
+ "delta": {
+  "value": 0.1828,
+  "low": 0.1382,
+  "high": 0.227,
+  "se": 0.0225,
+  "n_boot": 2000
+ },
+ "decision": "gend_clip_l14",
+ "gend_onnx_sha256": "4349cd59083563fda3fa2a567ade5f3796291656ac59902d5ac79516da0e886e"
+}
