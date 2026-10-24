@@ -264,7 +264,11 @@ _THREADS = 2
 
 
 def score_all(
-    model: str, conditions: tuple[str, ...], threads: int, splits: tuple[str, ...] = SPLITS
+    model: str,
+    conditions: tuple[str, ...],
+    threads: int,
+    splits: tuple[str, ...] = SPLITS,
+    reverse: bool = False,
 ) -> None:
     import torch
 
@@ -276,10 +280,12 @@ def score_all(
         todo = [
             it for it in items() if it.split in splits and not cache_path(model, cond, it).exists()
         ]
+        if reverse:  # a second worker on the same cache walks from the other end
+            todo.reverse()
         t0, done, crops_done = time.time(), 0, 0
         for it in todo:
             npz, jpg = out_paths(it, cond)
-            if not npz.exists():
+            if not npz.exists() or cache_path(model, cond, it).exists():
                 continue
             _, crop_t, _ = load_records(npz)
             idx = pick(len(crop_t))
@@ -337,6 +343,7 @@ def main() -> None:
     ap.add_argument("--conditions", nargs="+", default=list(CONDITIONS))
     ap.add_argument("--threads", type=int, default=2)
     ap.add_argument("--splits", nargs="+", default=list(SPLITS))
+    ap.add_argument("--reverse", action="store_true", help="second worker: start from the end")
     a = ap.parse_args()
     if a.gated:
         from research.video.hf_report import call_gate
@@ -346,7 +353,7 @@ def main() -> None:
         print("call gate passed:", a.models, flush=True)
     if a.score:
         for m in a.models:
-            score_all(m, tuple(a.conditions), a.threads, tuple(a.splits))
+            score_all(m, tuple(a.conditions), a.threads, tuple(a.splits), a.reverse)
     if a.latency:
         out = {m: round(latency(m, a.threads), 1) for m in [*a.models, "satya_sbi"]}
         (HF_LOGITS / "latency.json").write_text(json.dumps(out, indent=2))
