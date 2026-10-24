@@ -91,6 +91,7 @@ def cluster_paired_diff(
         "value": round(point, 4),
         "low": round(float(lo), 4),
         "high": round(float(hi), 4),
+        "se": round(float(np.std(vals, ddof=1)), 4) if len(vals) > 1 else 0.0,
         "n_boot": len(vals),
     }
 
