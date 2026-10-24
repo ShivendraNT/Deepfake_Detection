@@ -11,6 +11,7 @@ import json
 from concurrent.futures import ThreadPoolExecutor
 
 from research.video.data import DATA, ROOT, SEED, dfdc_items, ffpp_items, sha256_file
+from research.video.hf_baselines import EXTERNAL
 
 
 def main() -> None:
@@ -32,6 +33,15 @@ def main() -> None:
             "dfdc": "HF gonnerthetooner/DFDC-extracted-full, train parts 0-2",
         },
         "blend_cnn_onnx_sha256": meta["onnx_sha256"],
+        "gend_onnx_sha256": json.loads((ROOT / "config" / "video_models.json").read_text())[
+            "files"
+        ]["gend_clip_l14.onnx"]["sha256"],
+        "external_models": {
+            e.name: {"repo": e.repo, "revision": e.revision, "licence": e.licence} for e in EXTERNAL
+        },
+        "config_sha256": {
+            f.name: sha256_file(f) for f in sorted((ROOT / "config").glob("video_*.json"))
+        },
         "counts": {s: sum(1 for r in rows if r["split"] == s) for s in splits},
         "items": rows,
     }
