@@ -7,6 +7,7 @@ extension/models/ locally. Install: `uv sync --extra audio`.
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 from typing import Any, Protocol
 
@@ -82,9 +83,16 @@ class OnnxVoiceDetector:
         return scores
 
 
-def load_default_detector(model_version: str, model_dir: Path = MODEL_DIR) -> OnnxVoiceDetector:
-    """Satya's voice-clone model (docs/VOICE_DEEPFAKE.md): our XLS-R layer-7 + logistic
-    regression re-training, in the plug-in's two-file format. FileNotFoundError if absent."""
+def voice_model_dir() -> Path:
+    """extension/models/, or $SATYAPAN_VOICE_MODELS (the test session points it elsewhere)."""
+    env = os.environ.get("SATYAPAN_VOICE_MODELS")
+    return Path(env) if env else MODEL_DIR
+
+
+def load_default_detector(model_version: str, model_dir: Path | None = None) -> OnnxVoiceDetector:
+    """Satya's voice-clone model (docs/VOICE_DEEPFAKE.md): the model the voice benchmark
+    selected, in the plug-in's two-file format (`make voice`). FileNotFoundError if absent."""
+    model_dir = model_dir or voice_model_dir()
     model, head = model_dir / MODEL_FILE, model_dir / HEAD_FILE
     for f in (model, head):
         if not f.exists():

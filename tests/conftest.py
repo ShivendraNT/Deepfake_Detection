@@ -9,6 +9,9 @@
    Loopback (`127.0.0.1` / `::1` / `localhost`) is allowed: it is how asyncio builds its
    in-process self-pipe (Windows `socket.socketpair` fallback) and reaches nothing outside
    the machine. Real hostnames stay blocked.
+5. Unit tests never load real model files that `make voice` installs (1.3 GB per engine,
+   one engine per test): SATYAPAN_VOICE_MODELS points to an empty place. Tests that need a
+   voice score inject a fake scorer.
 """
 
 from __future__ import annotations
@@ -22,6 +25,7 @@ import pytest
 from hypothesis import HealthCheck, settings
 
 ROOT = Path(__file__).resolve().parents[1]
+os.environ.setdefault("SATYAPAN_VOICE_MODELS", str(ROOT / "tests" / ".no-voice-model"))
 
 settings.register_profile(
     "repo",
