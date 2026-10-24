@@ -60,7 +60,11 @@ No `make` (Windows)? Every Makefile task also runs as `uv run python scripts/sat
 
 **Video deepfake check** (face blending CNN, pulse, lighting, lip-sync; only after a yes for a
 call): `make video` (or `scripts/satya.py video`). Design, protocol and measured numbers:
-`docs/VIDEO_DEEPFAKE.md`.
+`docs/VIDEO_DEEPFAKE.md`. **Scam-text check** (e-mails, messages, call transcripts): ships in
+`config/text_model.*`, no extra install; benchmark in `docs/TEXT_BENCHMARK.md`.
+
+**Benchmarks / test kit:** `docs/BENCHMARKS.md` (every detector → its open-data test, splits,
+CV, frozen thresholds, synthetic-data generators); `python -m research.run_all --list`.
 
 ## Repo map
 
@@ -73,6 +77,8 @@ call): `make video` (or `scripts/satya.py video`). Design, protocol and measured
 | `docs/THREAT_MODEL.md`, `docs/DATA_POLICY.md` | security + privacy/ethics |
 | `docs/RESEARCH_PROTOCOL.md`, `docs/EVALUATION.md` | paper protocol + honest product numbers |
 | `docs/VIDEO_DEEPFAKE.md` | video deepfake check: idea-by-idea verdict, protocol, benchmark |
+| `docs/TEXT_BENCHMARK.md` | scam-text classifier: open datasets, protocol, results |
+| `docs/BENCHMARKS.md` | the test kit: every benchmark, how to reproduce it, what it may claim |
 | `docs/finale/` | finale plan, mascot spec, **live demo runbook** (`LIVE_DEMO.md`) |
 | `docs/DEMO_SCRIPT.md` | the Round-1 demo (superseded by `docs/finale/PLAN.md` §7) |
 | `team/` | each person's finale cards |
