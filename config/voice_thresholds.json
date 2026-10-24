@@ -1,8 +1,8 @@
 {
-  "tau_hi": 0.9,
-  "tau_lo": 0.6,
-  "model_version": "pascu-xlsr-l7-UNCALIBRATED",
-  "calibration_set_sha256": null,
-  "calibrated": false,
-  "note": "PLACEHOLDER, NOT CALIBRATED. Same values as extension/lib/thresholds.js. A version committed in f83e3b7 held thresholds fitted to simulated (random.gauss) scores and was withdrawn on 07 Oct 2026 (see results/INVALIDATED.md). T18 replaces these with tau_hi = score at 1% FPR and tau_lo = 5% FPR on real Meet-captured bonafide calibration windows listed in results/audio_eval_manifest.json. The UI must show 'uncalibrated' while calibrated=false."
+ "tau_hi": 0.903162,
+ "tau_lo": 0.772848,
+ "model_version": "gustking_xlsr@f7050b5",
+ "calibration_set_sha256": null,
+ "calibrated": false,
+ "note": "tau_hi / tau_lo = 1 % / 5 % FPR on In-the-Wild val BONAFIDE 5 s clips (public recordings, speakers disjoint from test), max over clean / Opus 16 kbps / GSM; research/voice/bench.py, results/voice_selection.json. Not fitted on our own calls: calibrated=false until consented Meet audio exists (T18)."
 }
