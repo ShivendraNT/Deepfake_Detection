@@ -183,3 +183,21 @@ replay (epoch + 3), wrong identity.
 | Seal through a real Google Meet call (server-side processing, Meet noise cancellation on/off) | — | — | — | consented / synthetic | `scripts/seal_cli.py verify ...` (README §6) | — | **pending** (finale hour 0-4) |
 | Human listening test (A/B 1.5 vs 2.0 dB, 3 listeners) | — | — | — | — | README §6 step 8 | — | **pending** |
 | Intent Seal verification time 0.146 ms (innovation-lab probe) | not reproduced in the repo | — | — | — | — | — | not for the PDF |
+
+## 10. Scam-text classifier (`TEXT_SCAM_LIKELY`, style evidence capped at VERIFY)
+
+Script: `python -m research.run_all text` (= `research.text.data`, `research.text.bench`,
+`research.text.neardup`) → `results/text_benchmark.{json,md}`, `results/text_neardup.{json,md}`,
+`results/text_eval_manifest.json` (sha256 of every raw file and of the table; rebuild identical).
+Data: 7 open sets (licences in `docs/TEXT_BENCHMARK.md` §2), template-deduplicated, splits by
+template group or official split minus leaked templates. C by grouped 5-fold CV on train,
+τ_hi = 1 % FPR on val legitimate texts, test scored once. Status: **measured**.
+
+| Claim | Value | n | 95% CI | Notes |
+|---|---|---|---|---|
+| Test AUC, in-domain (union model), per dataset | 0.989–1.000 | 112–2,576 test texts per set | template-cluster bootstrap, see md | two sets are near-copies of train (neardup audit); quote LODO for generalisation |
+| AUC on novel test texts only (no train text with cos ≥ 0.8) | 0.987–1.000 (5 sets with n ≥ 163) | 163–2,159 | see `text_neardup.md` | unchanged vs all test texts |
+| Leave-one-dataset-out test AUC (never-seen source) | 0.693 (phishing e-mail) to 0.995 (Hinglish calls) | per set | e.g. UCI SMS 0.856 [0.815, 0.893], Indian SMS 0.850 [0.815, 0.881] | the honest generalisation number |
+| Fraud texts caught at τ_hi, clean / combined obfuscation attack, with de-obfuscation | 97.0 % / 96.2 % | 2,213 attacked fraud test texts | [96.2, 97.6] / [95.4, 97.0] | attacks are code-generated (`research/text/attacks.py`) |
+| Same, model without the de-obfuscation layer | 96.6 % / 40.1 % | 2,213 | [95.8, 97.3] / [38.1, 42.2] | the layer is what keeps recall under attack |
+| False alarms at τ_hi per dataset (legitimate test texts) | 0.0–2.6 % | 17–1,624 legit per set | e.g. phishing e-mail 2.6 % [2.0, 3.5] | τ fitted on pooled val |
