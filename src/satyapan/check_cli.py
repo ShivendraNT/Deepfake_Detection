@@ -3,8 +3,9 @@
     uv run python scripts/satya.py scan KIT_FOLDER [more files...] [--lang hi] [--out report]
     (= uv run python -m satyapan.check_cli ...)
 
-Every file goes through the same quick check as the consumer Scam Check page (all detectors
-on this laptop, band from the policy engine, nothing kept). Prints one line per file and
+Every file gets exactly the consumer Scam Check page's answer: the quick check (all detectors
+on this laptop, band from the policy engine, nothing kept), raised by the impossible-claim
+rules on the file's words. Prints one line per file and
 writes <out>.csv + <out>.md. If a file name starts with "real"/"genuine"/"legit" or
 "fake"/"scam"/"spoof", the expected answer is read from it and the summary counts hits.
 """
@@ -48,6 +49,22 @@ def files_in(paths: list[str]) -> list[Path]:
         else:
             print(f"skipped (not found): {p}", file=sys.stderr)
     return out
+
+
+def with_rules(r, f: Path) -> tuple[Band, list[str]]:
+    """The consumer page's answer: the quick check's band, raised (never lowered) by the
+    impossible-claim rules on whatever words the file holds (satyapan.citizen.check)."""
+    from satyapan.citizen.rules import scam_check
+    from satyapan.contracts.enums import Channel
+    from satyapan.policy.bands import rank
+
+    words = r.transcript or (
+        f.read_text(encoding="utf-8", errors="replace") if r.channel == Channel.MANUAL else ""
+    )
+    if not words.strip():
+        return r.band, []
+    rules = scam_check(words)
+    return (rules.band if rank(rules.band) > rank(r.band) else r.band), rules.rule_hits
 
 
 def grade(rows: list[dict]) -> list[str]:
@@ -95,18 +112,20 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{f.name:40.40}  ERROR {exc}")
             rows.append({"file": f.name, "verdict": "ERROR", "why": str(exc)[:200]})
             continue
+        band, hits = with_rules(r, f)
         exp = expected(f.name)
-        got = "flag" if r.band in FLAG else "pass"
+        got = "flag" if band in FLAG else "pass"
         mark = "" if exp is None else (" ok" if exp == got else " MISS")
         findings = "; ".join(f"{k}={v}" for k, v in r.findings.items())
-        print(f"{f.name:40.40}  {r.band.value:6}  {r.channel.value:10} {r.seconds:5.1f}s  "
+        print(f"{f.name:40.40}  {band.value:6}  {r.channel.value:10} {r.seconds:5.1f}s  "
               f"{findings}{mark}")  # fmt: skip
         for line in r.why[:3]:
             print(f"{'':42}- {line[:110]}")
         if r.not_checked:
             print(f"{'':42}! not checked here: {', '.join(r.not_checked)}")
         rows.append({
-            "file": f.name, "channel": r.channel.value, "verdict": r.band.value,
+            "file": f.name, "channel": r.channel.value, "verdict": band.value,
+            "rule_hits": " ".join(hits),
             "expected": exp or "", "correct": "" if exp is None else str(exp == got),
             "reasons": " ".join(c.value for c in r.reason_codes),
             "info": " ".join(c.value for c in r.info_codes), "findings": findings,
