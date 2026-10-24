@@ -1,0 +1,377 @@
+{
+ "novel_below": 0.8,
+ "per_dataset": {
+  "phish_email": {
+   "n_test": 2576,
+   "near_copy_ge_0_9": {
+    "k": 232,
+    "n": 2576,
+    "value": 0.0901,
+    "ci95": [
+     0.0796,
+     0.1017
+    ]
+   },
+   "near_copy_ge_0_8": {
+    "k": 417,
+    "n": 2576,
+    "value": 0.1619,
+    "ci95": [
+     0.1482,
+     0.1766
+    ]
+   },
+   "median_max_cos": 0.384,
+   "auc_all": {
+    "value": 0.9935,
+    "low": 0.991,
+    "high": 0.9957,
+    "n_boot": 2000
+   },
+   "n_novel": 2159,
+   "n_novel_fraud": 693,
+   "auc_novel": {
+    "value": 0.991,
+    "low": 0.9878,
+    "high": 0.994,
+    "n_boot": 2000
+   },
+   "tpr_novel@tau_hi": {
+    "k": 647,
+    "n": 693,
+    "value": 0.9336,
+    "ci95": [
+     0.9126,
+     0.9499
+    ]
+   },
+   "fpr_novel@tau_hi": {
+    "k": 43,
+    "n": 1466,
+    "value": 0.0293,
+    "ci95": [
+     0.0218,
+     0.0393
+    ]
+   }
+  },
+  "clair_fraud": {
+   "n_test": 1496,
+   "near_copy_ge_0_9": {
+    "k": 92,
+    "n": 1496,
+    "value": 0.0615,
+    "ci95": [
+     0.0504,
+     0.0748
+    ]
+   },
+   "near_copy_ge_0_8": {
+    "k": 173,
+    "n": 1496,
+    "value": 0.1156,
+    "ci95": [
+     0.1004,
+     0.1328
+    ]
+   },
+   "median_max_cos": 0.413,
+   "auc_all": {
+    "value": 0.9996,
+    "low": 0.9993,
+    "high": 0.9999,
+    "n_boot": 2000
+   },
+   "n_novel": 1323,
+   "n_novel_fraud": 455,
+   "auc_novel": {
+    "value": 0.9995,
+    "low": 0.999,
+    "high": 0.9998,
+    "n_boot": 2000
+   },
+   "tpr_novel@tau_hi": {
+    "k": 444,
+    "n": 455,
+    "value": 0.9758,
+    "ci95": [
+     0.9572,
+     0.9864
+    ]
+   },
+   "fpr_novel@tau_hi": {
+    "k": 4,
+    "n": 868,
+    "value": 0.0046,
+    "ci95": [
+     0.0018,
+     0.0118
+    ]
+   }
+  },
+  "uci_sms": {
+   "n_test": 765,
+   "near_copy_ge_0_9": {
+    "k": 9,
+    "n": 765,
+    "value": 0.0118,
+    "ci95": [
+     0.0062,
+     0.0222
+    ]
+   },
+   "near_copy_ge_0_8": {
+    "k": 16,
+    "n": 765,
+    "value": 0.0209,
+    "ci95": [
+     0.0129,
+     0.0337
+    ]
+   },
+   "median_max_cos": 0.306,
+   "auc_all": {
+    "value": 0.9886,
+    "low": 0.9757,
+    "high": 0.9974,
+    "n_boot": 2000
+   },
+   "n_novel": 749,
+   "n_novel_fraud": 85,
+   "auc_novel": {
+    "value": 0.9868,
+    "low": 0.9732,
+    "high": 0.9966,
+    "n_boot": 2000
+   },
+   "tpr_novel@tau_hi": {
+    "k": 77,
+    "n": 85,
+    "value": 0.9059,
+    "ci95": [
+     0.8251,
+     0.9515
+    ]
+   },
+   "fpr_novel@tau_hi": {
+    "k": 8,
+    "n": 664,
+    "value": 0.012,
+    "ci95": [
+     0.0061,
+     0.0236
+    ]
+   }
+  },
+  "india_sms": {
+   "n_test": 795,
+   "near_copy_ge_0_9": {
+    "k": 0,
+    "n": 795,
+    "value": 0.0,
+    "ci95": [
+     0.0,
+     0.0048
+    ]
+   },
+   "near_copy_ge_0_8": {
+    "k": 27,
+    "n": 795,
+    "value": 0.034,
+    "ci95": [
+     0.0234,
+     0.049
+    ]
+   },
+   "median_max_cos": 0.585,
+   "auc_all": {
+    "value": 1.0,
+    "low": 1.0,
+    "high": 1.0,
+    "n_boot": 2000
+   },
+   "n_novel": 768,
+   "n_novel_fraud": 84,
+   "auc_novel": {
+    "value": 1.0,
+    "low": 1.0,
+    "high": 1.0,
+    "n_boot": 2000
+   },
+   "tpr_novel@tau_hi": {
+    "k": 84,
+    "n": 84,
+    "value": 1.0,
+    "ci95": [
+     0.9563,
+     1.0
+    ]
+   },
+   "fpr_novel@tau_hi": {
+    "k": 0,
+    "n": 684,
+    "value": 0.0,
+    "ci95": [
+     0.0,
+     0.0056
+    ]
+   }
+  },
+  "india_14lang": {
+   "n_test": 513,
+   "near_copy_ge_0_9": {
+    "k": 194,
+    "n": 513,
+    "value": 0.3782,
+    "ci95": [
+     0.3373,
+     0.4209
+    ]
+   },
+   "near_copy_ge_0_8": {
+    "k": 350,
+    "n": 513,
+    "value": 0.6823,
+    "ci95": [
+     0.6407,
+     0.7211
+    ]
+   },
+   "median_max_cos": 0.87,
+   "auc_all": {
+    "value": 1.0,
+    "low": 1.0,
+    "high": 1.0,
+    "n_boot": 2000
+   },
+   "n_novel": 163,
+   "n_novel_fraud": 80,
+   "auc_novel": {
+    "value": 1.0,
+    "low": 1.0,
+    "high": 1.0,
+    "n_boot": 2000
+   },
+   "tpr_novel@tau_hi": {
+    "k": 80,
+    "n": 80,
+    "value": 1.0,
+    "ci95": [
+     0.9542,
+     1.0
+    ]
+   },
+   "fpr_novel@tau_hi": {
+    "k": 0,
+    "n": 83,
+    "value": 0.0,
+    "ci95": [
+     0.0,
+     0.0442
+    ]
+   }
+  },
+  "hinglish_calls": {
+   "n_test": 112,
+   "near_copy_ge_0_9": {
+    "k": 44,
+    "n": 112,
+    "value": 0.3929,
+    "ci95": [
+     0.3074,
+     0.4854
+    ]
+   },
+   "near_copy_ge_0_8": {
+    "k": 108,
+    "n": 112,
+    "value": 0.9643,
+    "ci95": [
+     0.9118,
+     0.986
+    ]
+   },
+   "median_max_cos": 0.886,
+   "auc_all": {
+    "value": 1.0,
+    "low": 1.0,
+    "high": 1.0,
+    "n_boot": 2000
+   },
+   "n_novel": 4,
+   "n_novel_fraud": 4,
+   "tpr_novel@tau_hi": {
+    "k": 4,
+    "n": 4,
+    "value": 1.0,
+    "ci95": [
+     0.5101,
+     1.0
+    ]
+   },
+   "fpr_novel@tau_hi": {
+    "k": 0,
+    "n": 0,
+    "value": null,
+    "ci95": [
+     null,
+     null
+    ]
+   }
+  },
+  "scam_dialogue": {
+   "n_test": 319,
+   "near_copy_ge_0_9": {
+    "k": 7,
+    "n": 319,
+    "value": 0.0219,
+    "ci95": [
+     0.0107,
+     0.0446
+    ]
+   },
+   "near_copy_ge_0_8": {
+    "k": 21,
+    "n": 319,
+    "value": 0.0658,
+    "ci95": [
+     0.0435,
+     0.0985
+    ]
+   },
+   "median_max_cos": 0.63,
+   "auc_all": {
+    "value": 1.0,
+    "low": 1.0,
+    "high": 1.0,
+    "n_boot": 2000
+   },
+   "n_novel": 298,
+   "n_novel_fraud": 159,
+   "auc_novel": {
+    "value": 1.0,
+    "low": 1.0,
+    "high": 1.0,
+    "n_boot": 2000
+   },
+   "tpr_novel@tau_hi": {
+    "k": 159,
+    "n": 159,
+    "value": 1.0,
+    "ci95": [
+     0.9764,
+     1.0
+    ]
+   },
+   "fpr_novel@tau_hi": {
+    "k": 0,
+    "n": 139,
+    "value": 0.0,
+    "ci95": [
+     0.0,
+     0.0269
+    ]
+   }
+  }
+ }
+}
