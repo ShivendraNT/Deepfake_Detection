@@ -147,3 +147,44 @@ def test_the_reasons_speak_to_a_person_not_a_finance_team(client) -> None:
     assert "number you already have" in why or "someone you trust" in why
     for business in ("checker", "vendor", "oob-confirm", "number on file"):
         assert business not in why, business
+
+
+def test_a_voice_note_is_judged_on_its_voice_and_on_its_words(client, monkeypatch) -> None:
+    """The voice model scores the voice; the transcript goes through the same scam-text model
+    and asks as a message, so a read-aloud scam is caught even if the voice sounds human."""
+    import io
+    import wave
+
+    import numpy as np
+
+    from satyapan.adapters.base import FakeTranscriber
+
+    class CalmScorer:
+        model_version = "fake"
+
+        def score_windows(self, windows):  # type: ignore[no-untyped-def]
+            return [0.05 for _ in windows]
+
+    state = client.app.state.satyapan
+    monkeypatch.setattr(state, "voice_scorer_override", CalmScorer())
+    monkeypatch.setattr(
+        state,
+        "transcriber_override",
+        FakeTranscriber(
+            ["This is your bank. Share the OTP you just received or your account will be blocked."]
+        ),
+    )
+    t = np.arange(16000 * 6) / 16000
+    pcm = (0.3 * np.sin(2 * np.pi * 220 * t) * 32767).astype("<i2").tobytes()
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1), w.setsampwidth(2), w.setframerate(16000)
+        w.writeframes(pcm)
+    body = client.post(
+        "/scam-check/file", files={"file": ("note.wav", buf.getvalue(), "audio/wav")}
+    ).json()
+    assert body["band"] == "HOLD"
+    assert any("wording" in c for c in body["checked"]) and any(
+        "voice" in c for c in body["checked"]
+    )
+    assert body["heard_or_read"].startswith("This is your bank")

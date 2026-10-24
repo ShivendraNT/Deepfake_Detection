@@ -149,9 +149,17 @@ def _voice(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detec
     if ctx.scorer is None:  # neither model on this laptop: an abstention, not a finding
         return DetectorOutput(detector="voice", version="0.1.0", evidence_id=ev.id,
                               artifacts={"voice_label": "not_analysed"})  # fmt: skip
-    return analyze_voice_upload(
-        data, ev.media_type, ev.id, ctx.scorer, ctx.transcriber, ctx.thresholds
-    )
+    # The voice is scored here; the words go through the same text + asks step as a message
+    # or a video (scam-text model, context filter, live phrasebook), so nothing is skipped.
+    out = analyze_voice_upload(data, ev.media_type, ev.id, ctx.scorer, None, ctx.thresholds)
+    if ctx.transcriber is None or out.error:
+        return out
+    try:
+        result = ctx.transcriber.transcribe(data, ev.media_type)
+    except (RuntimeError, ValueError):
+        return out  # no speech engine or no decodable speech: the voice verdict still stands
+    out.artifacts.update({"transcript": result.text, "language": result.language})
+    return _asks(result.text, ev.id, ctx, out)
 
 
 def _voice_transcript_only(data: bytes, ev: Evidence, ctx: PipelineContext) -> DetectorOutput:

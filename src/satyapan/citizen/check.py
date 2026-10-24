@@ -109,6 +109,20 @@ PERSONAL_WHY: dict[ReasonCode, dict[Lang, str]] = {
         "it as unchecked.",
         Lang.HI: "सत्य इस फ़ोटो का चेहरा नहीं जाँच सका (चेहरा नहीं है या बहुत छोटा है)। इसे बिना जाँचा मानिए।",
     },
+    R.VOICE_NO_SIGNS: {
+        Lang.EN: "The voice check found no signs of a cloned voice (not proof it is genuine).",
+        Lang.HI: "आवाज़ की जाँच में नकल की गई आवाज़ के संकेत नहीं मिले (यह असली होने का सबूत नहीं है)।",
+    },
+    R.VIDEO_NO_SIGNS: {
+        Lang.EN: "The face check found no signs of a swapped face (not proof of who it is).",
+        Lang.HI: "चेहरे की जाँच में बदले हुए चेहरे के संकेत नहीं मिले (यह पहचान का सबूत नहीं है)।",
+    },
+    R.IMAGE_FACE_NO_SIGNS: {
+        Lang.EN: "The face check found no signs of a swapped or AI-made face (a photo still "
+        "proves nothing about who sent it).",
+        Lang.HI: "चेहरे की जाँच में बदले हुए या AI से बने चेहरे के संकेत नहीं मिले (फ़ोटो फिर भी "
+        "यह साबित नहीं करती कि भेजा किसने)।",
+    },
     R.MULTI_GROUP_STRONG: {
         Lang.EN: "Several different warning signs at once.",
         Lang.HI: "एक साथ कई अलग-अलग चेतावनी संकेत।",
