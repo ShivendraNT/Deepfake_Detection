@@ -394,6 +394,12 @@ export function useSatya(options: SatyaOptions = {}): SatyaController {
             card: { kind: 'liveness', id: `liveness_${Date.now()}`, actions: [{ id: 'dismiss', variant: 'ghost' }] },
           })
           return
+        case 'call_1930':
+          await api.openExternal('tel:1930')
+          return
+        case 'open_check':
+          await api.openExternal('http://127.0.0.1:8000/check#money')
+          return
         case 'open_notebook':
           await api.openWorkspace('now')
           return

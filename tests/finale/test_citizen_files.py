@@ -89,3 +89,9 @@ def test_money_sent_needs_a_utr_and_a_real_amount(client) -> None:
     assert r.status_code == 200
     first = r.json()["call_script_1930"].splitlines()[0]
     assert "1930" in r.json()["steps"][0] and "account" not in first  # no empty "account  to"
+
+
+def test_the_engine_serves_the_consumer_page(client) -> None:
+    for path in ("/check", "/scam-check.html"):
+        r = client.get(path)
+        assert r.status_code == 200 and "Satya Scam Check" in r.text

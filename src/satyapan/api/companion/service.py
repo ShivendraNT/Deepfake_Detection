@@ -90,6 +90,7 @@ from satyapan.policy.bands import rank as band_rank
 from satyapan.policy.config import DEFAULT_CONFIG, PolicyConfig
 from satyapan.policy.engine import decide
 from satyapan.repository import CaseRepository
+from satyapan.settings import get_settings
 
 if TYPE_CHECKING:  # avoids a runtime import cycle (state -> companion -> state)
     from satyapan.api.state import AppState
@@ -107,6 +108,17 @@ _ALERT_ACTIONS = [
     NextAction(id="copy_reply", label="Copy a safe reply", variant="outline"),
     NextAction(id="open_notebook", label="Open Notebook", variant="outline"),
 ]
+# A person on their own call (no company approver in the directory): the safe moves are to
+# say no and hang up, call back on a number they already have, and, if money left, 1930.
+_PERSONAL_ALERT_ACTIONS = [
+    NextAction(id="copy_reply", label="Copy a safe reply, then hang up", variant="primary"),
+    NextAction(id="call_1930", label="Money sent? Call 1930", variant="outline"),
+    NextAction(id="open_check", label="Prepare my report", variant="outline"),
+]
+PERSONAL_ADVICE = (
+    "Real police, banks and officials never ask for money, a code or secrecy on a call. Hang "
+    "up and call back on a number you already have (saved contact, back of your card)."
+)
 # A live chunk is 10 s (T11). AskEvent carries the chunk index, not the span time.
 LIVE_CHUNK_SECONDS = 10.0
 
@@ -737,20 +749,27 @@ class CompanionService:
                 self._state = self._state.model_copy(
                     update={"mode": CompanionMode.ALERT, "updated_at": utcnow()}
                 )
+                approver = self._approver_name_for(self._call_case_id)
+                profile = get_settings().profile
+                personal = profile == "personal" or (profile != "business" and approver is None)
+                approver = None if personal else approver
+                explanation = self._band_explanation(event)
+                if personal:
+                    explanation = f"{PERSONAL_ADVICE}\n\n{explanation}"[:2000]
                 self._publish(
                     CompanionEventType.ALERT_RAISED,
                     state=CompanionMode.ALERT,
-                    headline=_alert_headline(event.band),
-                    explanation=self._band_explanation(event),
+                    headline=_alert_headline(event.band, personal=personal),
+                    explanation=explanation,
                     band=event.band,
                     reason_codes=list(event.reason_codes),
                     chips=self._chips_list(),
                     call_id=call_id,
                     case_id=self._call_case_id,
                     monitoring=True,
-                    next_actions=list(_ALERT_ACTIONS),
+                    next_actions=list(_PERSONAL_ALERT_ACTIONS if personal else _ALERT_ACTIONS),
                     quotes=self._quotes_list(),
-                    approver_name=self._approver_name_for(self._call_case_id),
+                    approver_name=approver,
                 )
                 self._record(
                     "call.alert", "system", f"call={call_id} band={event.band.value} relayed"
@@ -1577,8 +1596,12 @@ def _start_headline(source: CompanionSource) -> str:
     }[source]
 
 
-def _alert_headline(band: Band) -> str:
+def _alert_headline(band: Band, personal: bool = False) -> str:
     """Plain-language, non-accusatory headline. Never names a speaker or a detector score."""
+    if personal and band == Band.HOLD:
+        return "Stop: don't pay or share any code on this call"
+    if personal and band == Band.VERIFY:
+        return "Don't act yet: call them back on a number you already have"
     if band == Band.HOLD:
         return "Pause this payment and verify independently"
     if band == Band.VERIFY:

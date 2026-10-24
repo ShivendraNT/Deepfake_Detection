@@ -159,6 +159,13 @@ export const COPY_TABLE: Record<string, CopyEntry> = {
     hinglish: 'Isse pakka nahi hota ki bol kaun raha hai — isliye payment {approver} se unke apne phone par confirm karo.',
     hi: 'इससे पक्का नहीं होता कि बोल कौन रहा है — इसलिए पेमेंट {approver} से उनके अपने फ़ोन पर पक्का करें।',
   },
+  'alert.body.personal': {
+    en: "Real police, banks and officials never ask for money, a code or secrecy on a call. Hang up and call back on a number you already have.",
+    hinglish: 'Asli police, bank ya officer kabhi call par paise, code ya "kisi ko mat batana" nahi maangte. Call kaato aur apne paas wale number par wapas call karo.',
+    hi: 'असली पुलिस, बैंक या अधिकारी कभी कॉल पर पैसे, कोड या गोपनीयता नहीं माँगते। कॉल काटिए और अपने पास पहले से मौजूद नंबर पर वापस कॉल कीजिए।',
+  },
+  'action.call_1930': { en: 'Money sent? Call 1930', hinglish: 'Paise gaye? 1930 call karo', hi: 'पैसे गए? 1930 पर कॉल करें' },
+  'action.open_check': { en: 'Prepare my report', hinglish: 'Meri report taiyaar karo', hi: 'मेरी शिकायत तैयार करें' },
   'action.liveness': { en: 'Video check tips', hinglish: 'Video check tips', hi: 'वीडियो जाँच के सुझाव' },
   'liveness.title': {
     en: 'Is the face real? Try a quick check',

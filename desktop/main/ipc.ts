@@ -58,11 +58,14 @@ export interface IpcDependencies {
 }
 
 /**
- * `openExternal` is deliberately tiny. Satya may open the 1930 dialler, a mail draft, or the
- * NCRP portal for the human. Nothing else, and never with a message-supplied phone number.
+ * `openExternal` is deliberately tiny. Satya may open the 1930 dialler, a mail draft, the
+ * NCRP portal, or the local engine's "money already sent?" page for the human. Nothing else, and never with a message-supplied phone number.
  */
+export const LOCAL_CHECK_PAGE = 'http://127.0.0.1:8000/check#money'
+
 export function isAllowedExternal(url: string): boolean {
   if (url === 'tel:1930') return true
+  if (url === LOCAL_CHECK_PAGE) return true // the engine's own Scam Check page (drafts only)
   if (/^mailto:[^\s]+@[^\s]+$/i.test(url)) return true
   return /^https:\/\/cybercrime\.gov\.in(?:\/|$)/i.test(url)
 }

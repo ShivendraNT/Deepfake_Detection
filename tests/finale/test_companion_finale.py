@@ -341,3 +341,20 @@ def test_no_companion_response_or_sse_event_contains_a_raw_score(client) -> None
     _assert_no_scores(report.json())
     _assert_no_scores([event.model_dump(mode="json") for event in _events(client)])
     _assert_no_scores(_sse_events(client.get("/companion/events", params={"replay_only": "true"})))
+
+
+def test_a_personal_call_gets_consumer_actions_not_an_approver(client, monkeypatch) -> None:
+    """No company approver (SATYAPAN_PROFILE=personal or an empty directory): the alert tells
+    the person what to do themselves. The band is still the policy's, unchanged."""
+    monkeypatch.setenv("SATYAPAN_PROFILE", "personal")
+    state = _state(client)
+    state.transcriber_override = FakeTranscriber([CALL_TEXT])
+    call_id = _start_call(client, _start_session(client))["call_id"]
+    state.live().handle_chunk(call_id, 0, b"fake-audio", "audio/webm")
+    alert = _of_type(client, "alert.raised")[0].payload
+    assert alert.band == state.live().sessions[call_id].last_band
+    assert [a.id for a in alert.next_actions] == ["copy_reply", "call_1930", "open_check"]
+    assert alert.approver_name is None
+    assert alert.headline.startswith(("Stop:", "Don't act yet"))
+    assert "call back on a number you already have" in alert.explanation
+    _assert_no_scores([event.model_dump(mode="json") for event in _events(client)])

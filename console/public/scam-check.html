@@ -803,6 +803,7 @@
           speak($("action").textContent);
         });
         renderStatic();
+        if (location.hash === "#money") { $("ms").open = true; $("ms").scrollIntoView(); }
         if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
       })();
     </script>

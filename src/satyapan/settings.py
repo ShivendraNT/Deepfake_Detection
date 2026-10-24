@@ -40,6 +40,10 @@ class Settings:
     trusted_authserv_id: str = field(
         default_factory=lambda: _env("SATYAPAN_TRUSTED_AUTHSERV_ID", "mx.demo-industries.example")
     )
+    # Who Satya protects on a live call: "personal" (no company approver: say no, hang up,
+    # call back, 1930), "business" (OOB-Confirm with the approver), or "auto" (personal when
+    # the employee directory has nobody to ask).
+    profile: str = field(default_factory=lambda: _env("SATYAPAN_PROFILE", "auto"))
     voice_thresholds_path: Path = field(
         default_factory=lambda: Path(
             _env("SATYAPAN_VOICE_THRESHOLDS", str(REPO_ROOT / "config" / "voice_thresholds.json"))
