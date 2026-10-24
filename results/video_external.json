@@ -1,0 +1,1786 @@
+{
+  "k_crops": 4,
+  "models": {
+    "gend_clip_l14": {
+      "repo": "yermandy/GenD_CLIP_L_14",
+      "revision": "891ce014a0308386c4d7d25b3dcf436a22db5504",
+      "licence": "MIT",
+      "params_m": 304.0,
+      "trained_on": "FF++ c23 official train split, 4 methods (paper Sec. 4)",
+      "ffpp_val_test_unseen": true,
+      "note": "WACV 2026 state of the art; CLIP ViT-L/14, LayerNorm-tuned; trained on RetinaFace-aligned 1.3x crops (ours are 1.3x box crops without in-plane alignment)"
+    },
+    "ms_eff_gcvit_b0": {
+      "repo": "KoreaPeter/ms-eff-gcvit-deepfake-b0-ff-plus-plus",
+      "revision": "db131babaff2cac0b2e9c2d2db3db41b5c9e802b",
+      "licence": "MIT",
+      "params_m": 8.7,
+      "trained_on": "FF++ c23 with the authors' own train/test lists (not published in the wheel)",
+      "ffpp_val_test_unseen": false,
+      "note": "EfficientNet-B0 + global-context ViT; same size class as our CNN"
+    },
+    "vit_dima806": {
+      "repo": "dima806/deepfake_vs_real_image_detection",
+      "revision": "29e4cf9efc543845610045f6ba7e88e5cf9d9301",
+      "licence": "Apache-2.0",
+      "params_m": 86.0,
+      "trained_on": "undocumented image dataset (Kaggle-style real/fake faces)",
+      "ffpp_val_test_unseen": false,
+      "note": "most-downloaded face 'deepfake vs real' image classifier on the Hub"
+    },
+    "vit_prithiv_v2": {
+      "repo": "prithivMLmods/Deep-Fake-Detector-v2-Model",
+      "revision": "3a99ae26f52c7ac7c3a53103b6cf3a8b617f7093",
+      "licence": "Apache-2.0",
+      "params_m": 86.0,
+      "trained_on": "undocumented image dataset",
+      "ffpp_val_test_unseen": false,
+      "note": "popular ViT-B/16 deepfake image classifier"
+    },
+    "community_forensics": {
+      "repo": "buildborderless/CommunityForensics-DeepfakeDet-ViT",
+      "revision": "ac6ee457bea904a373065754107451793b56db00",
+      "licence": "MIT",
+      "params_m": 22.0,
+      "trained_on": "2.7M AI-generated images from 4,803 generators (CVPR 2025); no face swaps",
+      "ffpp_val_test_unseen": false,
+      "note": "generic AI-image detector: tests whether 'any synthetic-image model' transfers"
+    }
+  },
+  "conditions": {
+    "orig": {
+      "satya_sbi": {
+        "videos_scored": 1934,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 7.032960891723633,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.8076,
+            "low": 0.7715,
+            "high": 0.844,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.7802,
+            "low": 0.7547,
+            "high": 0.8073,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 58,
+            "n": 560,
+            "value": 0.1036,
+            "ci95": [
+              0.081,
+              0.1316
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.7741,
+            "low": 0.7468,
+            "high": 0.8021,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 61,
+            "n": 700,
+            "value": 0.0871,
+            "ci95": [
+              0.0684,
+              0.1104
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 424,
+          "n_fake": 250,
+          "auc": {
+            "value": 0.6359,
+            "low": 0.5898,
+            "high": 0.6816,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 6,
+            "n": 250,
+            "value": 0.024,
+            "ci95": [
+              0.011,
+              0.0514
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 424,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.009
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.928,
+              "low": 0.8972,
+              "high": 0.9537,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7753,
+              "low": 0.743,
+              "high": 0.8116,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7496,
+              "low": 0.7077,
+              "high": 0.793,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7316,
+              "low": 0.6881,
+              "high": 0.7743,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.686,
+              "low": 0.652,
+              "high": 0.7237,
+              "n_boot": 2000
+            }
+          }
+        }
+      },
+      "gend_clip_l14": {
+        "videos_scored": 1934,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 3.338099718093872,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.9708,
+            "low": 0.9572,
+            "high": 0.9832,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.9742,
+            "low": 0.9625,
+            "high": 0.9844,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 425,
+            "n": 560,
+            "value": 0.7589,
+            "ci95": [
+              0.7218,
+              0.7925
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.9468,
+            "low": 0.933,
+            "high": 0.9586,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 445,
+            "n": 700,
+            "value": 0.6357,
+            "ci95": [
+              0.5994,
+              0.6705
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 424,
+          "n_fake": 250,
+          "auc": {
+            "value": 0.8002,
+            "low": 0.7615,
+            "high": 0.8399,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 44,
+            "n": 250,
+            "value": 0.176,
+            "ci95": [
+              0.1338,
+              0.228
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 424,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.009
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9963,
+              "low": 0.9919,
+              "high": 0.9992,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9814,
+              "low": 0.9674,
+              "high": 0.9923,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8372,
+              "low": 0.7962,
+              "high": 0.8744,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9824,
+              "low": 0.9643,
+              "high": 0.9968,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9367,
+              "low": 0.9101,
+              "high": 0.9598,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": {
+            "value": 0.1632,
+            "low": 0.1255,
+            "high": 0.1983,
+            "se": 0.0189,
+            "n_boot": 2000
+          },
+          "test": {
+            "value": 0.1727,
+            "low": 0.1445,
+            "high": 0.1984,
+            "se": 0.0137,
+            "n_boot": 2000
+          },
+          "xtest": {
+            "value": 0.1643,
+            "low": 0.1182,
+            "high": 0.2129,
+            "se": 0.0248,
+            "n_boot": 2000
+          }
+        }
+      },
+      "ms_eff_gcvit_b0": {
+        "videos_scored": 1934,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 6.613516330718994,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.9845,
+            "low": 0.9708,
+            "high": 0.9952,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.9777,
+            "low": 0.9618,
+            "high": 0.9891,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 184,
+            "n": 560,
+            "value": 0.3286,
+            "ci95": [
+              0.291,
+              0.3685
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.9752,
+            "low": 0.959,
+            "high": 0.9873,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 222,
+            "n": 700,
+            "value": 0.3171,
+            "ci95": [
+              0.2837,
+              0.3525
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 424,
+          "n_fake": 250,
+          "auc": {
+            "value": 0.6951,
+            "low": 0.659,
+            "high": 0.7322,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 0,
+            "n": 250,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0151
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 424,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.009
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9866,
+              "low": 0.9738,
+              "high": 0.9957,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.986,
+              "low": 0.9734,
+              "high": 0.9955,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9651,
+              "low": 0.9451,
+              "high": 0.9811,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.976,
+              "low": 0.9557,
+              "high": 0.9909,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9622,
+              "low": 0.9379,
+              "high": 0.9808,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": {
+            "value": 0.1769,
+            "low": 0.1398,
+            "high": 0.2123,
+            "se": 0.0188,
+            "n_boot": 2000
+          },
+          "test": {
+            "value": 0.2011,
+            "low": 0.1706,
+            "high": 0.2292,
+            "se": 0.0149,
+            "n_boot": 2000
+          },
+          "xtest": {
+            "value": 0.0592,
+            "low": 0.006,
+            "high": 0.1123,
+            "se": 0.0274,
+            "n_boot": 2000
+          }
+        }
+      },
+      "vit_dima806": {
+        "videos_scored": 1934,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 7.078574180603027,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.5703,
+            "low": 0.5268,
+            "high": 0.6109,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.5514,
+            "low": 0.5227,
+            "high": 0.581,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 23,
+            "n": 560,
+            "value": 0.0411,
+            "ci95": [
+              0.0275,
+              0.0609
+            ]
+          },
+          "fpr@tau": {
+            "k": 2,
+            "n": 140,
+            "value": 0.0143,
+            "ci95": [
+              0.0039,
+              0.0506
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.5341,
+            "low": 0.5054,
+            "high": 0.5629,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 24,
+            "n": 700,
+            "value": 0.0343,
+            "ci95": [
+              0.0231,
+              0.0505
+            ]
+          },
+          "fpr@tau": {
+            "k": 2,
+            "n": 140,
+            "value": 0.0143,
+            "ci95": [
+              0.0039,
+              0.0506
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 424,
+          "n_fake": 250,
+          "auc": {
+            "value": 0.4615,
+            "low": 0.413,
+            "high": 0.5101,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 16,
+            "n": 250,
+            "value": 0.064,
+            "ci95": [
+              0.0398,
+              0.1014
+            ]
+          },
+          "fpr@tau": {
+            "k": 22,
+            "n": 424,
+            "value": 0.0519,
+            "ci95": [
+              0.0345,
+              0.0773
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.4514,
+              "low": 0.3934,
+              "high": 0.5115,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.5329,
+              "low": 0.5046,
+              "high": 0.5629,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.4648,
+              "low": 0.4225,
+              "high": 0.5088,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7546,
+              "low": 0.7065,
+              "high": 0.8045,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.4667,
+              "low": 0.4408,
+              "high": 0.4909,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": {
+            "value": -0.2373,
+            "low": -0.297,
+            "high": -0.1817,
+            "se": 0.0291,
+            "n_boot": 2000
+          },
+          "test": {
+            "value": -0.24,
+            "low": -0.2801,
+            "high": -0.2018,
+            "se": 0.02,
+            "n_boot": 2000
+          },
+          "xtest": {
+            "value": -0.1744,
+            "low": -0.2299,
+            "high": -0.1214,
+            "se": 0.0269,
+            "n_boot": 2000
+          }
+        }
+      },
+      "vit_prithiv_v2": {
+        "videos_scored": 1934,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 1.5507045984268188,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.5168,
+            "low": 0.4765,
+            "high": 0.5618,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.5219,
+            "low": 0.4928,
+            "high": 0.5509,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 1,
+            "n": 560,
+            "value": 0.0018,
+            "ci95": [
+              0.0003,
+              0.01
+            ]
+          },
+          "fpr@tau": {
+            "k": 1,
+            "n": 140,
+            "value": 0.0071,
+            "ci95": [
+              0.0013,
+              0.0393
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.5152,
+            "low": 0.4854,
+            "high": 0.5453,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 1,
+            "n": 700,
+            "value": 0.0014,
+            "ci95": [
+              0.0003,
+              0.008
+            ]
+          },
+          "fpr@tau": {
+            "k": 1,
+            "n": 140,
+            "value": 0.0071,
+            "ci95": [
+              0.0013,
+              0.0393
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 424,
+          "n_fake": 250,
+          "auc": {
+            "value": 0.6155,
+            "low": 0.5756,
+            "high": 0.6549,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 0,
+            "n": 250,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0151
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 424,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.009
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6276,
+              "low": 0.5687,
+              "high": 0.6826,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.5351,
+              "low": 0.5131,
+              "high": 0.5584,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.4884,
+              "low": 0.4405,
+              "high": 0.5386,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.3191,
+              "low": 0.2623,
+              "high": 0.375,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6058,
+              "low": 0.5834,
+              "high": 0.6355,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": {
+            "value": -0.2908,
+            "low": -0.3441,
+            "high": -0.2364,
+            "se": 0.0274,
+            "n_boot": 2000
+          },
+          "test": {
+            "value": -0.2589,
+            "low": -0.2996,
+            "high": -0.2206,
+            "se": 0.0201,
+            "n_boot": 2000
+          },
+          "xtest": {
+            "value": -0.0204,
+            "low": -0.0896,
+            "high": 0.0501,
+            "se": 0.0361,
+            "n_boot": 2000
+          }
+        }
+      },
+      "community_forensics": {
+        "videos_scored": 1934,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 0.6189596056938171,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.6412,
+            "low": 0.5883,
+            "high": 0.6893,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.6473,
+            "low": 0.6191,
+            "high": 0.6767,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 9,
+            "n": 560,
+            "value": 0.0161,
+            "ci95": [
+              0.0085,
+              0.0303
+            ]
+          },
+          "fpr@tau": {
+            "k": 1,
+            "n": 140,
+            "value": 0.0071,
+            "ci95": [
+              0.0013,
+              0.0393
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.6415,
+            "low": 0.6116,
+            "high": 0.6718,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 21,
+            "n": 700,
+            "value": 0.03,
+            "ci95": [
+              0.0197,
+              0.0454
+            ]
+          },
+          "fpr@tau": {
+            "k": 1,
+            "n": 140,
+            "value": 0.0071,
+            "ci95": [
+              0.0013,
+              0.0393
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 424,
+          "n_fake": 250,
+          "auc": {
+            "value": 0.4827,
+            "low": 0.4426,
+            "high": 0.5221,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 0,
+            "n": 250,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0151
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 424,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.009
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7239,
+              "low": 0.6839,
+              "high": 0.7632,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6384,
+              "low": 0.6037,
+              "high": 0.6759,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.618,
+              "low": 0.5608,
+              "high": 0.6704,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.5262,
+              "low": 0.4811,
+              "high": 0.5695,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7007,
+              "low": 0.6683,
+              "high": 0.7351,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": {
+            "value": -0.1664,
+            "low": -0.2323,
+            "high": -0.1039,
+            "se": 0.0325,
+            "n_boot": 2000
+          },
+          "test": {
+            "value": -0.1326,
+            "low": -0.172,
+            "high": -0.0938,
+            "se": 0.0197,
+            "n_boot": 2000
+          },
+          "xtest": {
+            "value": -0.1532,
+            "low": -0.2161,
+            "high": -0.0904,
+            "se": 0.0323,
+            "n_boot": 2000
+          }
+        }
+      }
+    },
+    "call720": {
+      "satya_sbi": {
+        "videos_scored": 840,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {
+          "val": "140/420"
+        },
+        "tau_1pct_val": null,
+        "val": {
+          "n_real": 0,
+          "n_fake": 0
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.7214,
+            "low": 0.6961,
+            "high": 0.7488,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.7179,
+            "low": 0.6921,
+            "high": 0.7465,
+            "n_boot": 2000
+          }
+        },
+        "dfdc": {
+          "n_real": 0,
+          "n_fake": 0
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8903,
+              "low": 0.8534,
+              "high": 0.9248,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6987,
+              "low": 0.6654,
+              "high": 0.7348,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7038,
+              "low": 0.6593,
+              "high": 0.7514,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6918,
+              "low": 0.6471,
+              "high": 0.7368,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6047,
+              "low": 0.5779,
+              "high": 0.6335,
+              "n_boot": 2000
+            }
+          }
+        }
+      },
+      "ms_eff_gcvit_b0": {
+        "videos_scored": 840,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {
+          "val": "140/420"
+        },
+        "tau_1pct_val": null,
+        "val": {
+          "n_real": 0,
+          "n_fake": 0
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.9142,
+            "low": 0.8881,
+            "high": 0.9373,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.9105,
+            "low": 0.8837,
+            "high": 0.9347,
+            "n_boot": 2000
+          }
+        },
+        "dfdc": {
+          "n_real": 0,
+          "n_fake": 0
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9546,
+              "low": 0.9318,
+              "high": 0.9738,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9359,
+              "low": 0.908,
+              "high": 0.9605,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8957,
+              "low": 0.8606,
+              "high": 0.9273,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9269,
+              "low": 0.8965,
+              "high": 0.9537,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8394,
+              "low": 0.8024,
+              "high": 0.8756,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": null,
+          "test": {
+            "value": 0.1926,
+            "low": 0.1579,
+            "high": 0.2265,
+            "se": 0.0175,
+            "n_boot": 2000
+          },
+          "xtest": null
+        }
+      }
+    },
+    "call360": {
+      "satya_sbi": {
+        "videos_scored": 1931,
+        "videos_without_face": 0,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 16.28986167907715,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.7024,
+            "low": 0.6634,
+            "high": 0.7427,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.6826,
+            "low": 0.6576,
+            "high": 0.7086,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 14,
+            "n": 560,
+            "value": 0.025,
+            "ci95": [
+              0.0149,
+              0.0415
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.6774,
+            "low": 0.6524,
+            "high": 0.7049,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 14,
+            "n": 700,
+            "value": 0.02,
+            "ci95": [
+              0.012,
+              0.0333
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 423,
+          "n_fake": 248,
+          "auc": {
+            "value": 0.5995,
+            "low": 0.557,
+            "high": 0.639,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 1,
+            "n": 248,
+            "value": 0.004,
+            "ci95": [
+              0.0007,
+              0.0225
+            ]
+          },
+          "fpr@tau": {
+            "k": 2,
+            "n": 423,
+            "value": 0.0047,
+            "ci95": [
+              0.0013,
+              0.0171
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8413,
+              "low": 0.7994,
+              "high": 0.8806,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6558,
+              "low": 0.6266,
+              "high": 0.6915,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.657,
+              "low": 0.6163,
+              "high": 0.7021,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6779,
+              "low": 0.6341,
+              "high": 0.7241,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.5552,
+              "low": 0.5307,
+              "high": 0.583,
+              "n_boot": 2000
+            }
+          }
+        }
+      },
+      "gend_clip_l14": {
+        "videos_scored": 1934,
+        "videos_without_face": 3,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 4.111954212188721,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.8852,
+            "low": 0.8629,
+            "high": 0.9094,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.889,
+            "low": 0.8664,
+            "high": 0.9101,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 130,
+            "n": 560,
+            "value": 0.2321,
+            "ci95": [
+              0.1991,
+              0.2689
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.8578,
+            "low": 0.8336,
+            "high": 0.8815,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 133,
+            "n": 700,
+            "value": 0.19,
+            "ci95": [
+              0.1627,
+              0.2207
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 423,
+          "n_fake": 248,
+          "auc": {
+            "value": 0.6709,
+            "low": 0.628,
+            "high": 0.711,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 9,
+            "n": 248,
+            "value": 0.0363,
+            "ci95": [
+              0.0192,
+              0.0675
+            ]
+          },
+          "fpr@tau": {
+            "k": 8,
+            "n": 423,
+            "value": 0.0189,
+            "ci95": [
+              0.0096,
+              0.0369
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9663,
+              "low": 0.9447,
+              "high": 0.9838,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8954,
+              "low": 0.8644,
+              "high": 0.924,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.733,
+              "low": 0.6892,
+              "high": 0.7798,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.9451,
+              "low": 0.9196,
+              "high": 0.9675,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7492,
+              "low": 0.7116,
+              "high": 0.7893,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": {
+            "value": 0.1828,
+            "low": 0.1382,
+            "high": 0.227,
+            "se": 0.0225,
+            "n_boot": 2000
+          },
+          "test": {
+            "value": 0.1803,
+            "low": 0.1525,
+            "high": 0.2074,
+            "se": 0.0143,
+            "n_boot": 2000
+          },
+          "xtest": {
+            "value": 0.0714,
+            "low": 0.0155,
+            "high": 0.1282,
+            "se": 0.0287,
+            "n_boot": 2000
+          }
+        }
+      },
+      "ms_eff_gcvit_b0": {
+        "videos_scored": 1934,
+        "videos_without_face": 3,
+        "left_out_partial_splits": {},
+        "tau_1pct_val": 7.3010969161987305,
+        "val": {
+          "n_real": 140,
+          "n_fake": 280,
+          "auc": {
+            "value": 0.7525,
+            "low": 0.7112,
+            "high": 0.7922,
+            "n_boot": 2000
+          }
+        },
+        "ffpp_test_seen": {
+          "n_real": 140,
+          "n_fake": 560,
+          "auc": {
+            "value": 0.7697,
+            "low": 0.7405,
+            "high": 0.799,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 0,
+            "n": 560,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0068
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "ffpp_test_all": {
+          "n_real": 140,
+          "n_fake": 700,
+          "auc": {
+            "value": 0.7714,
+            "low": 0.7419,
+            "high": 0.801,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 0,
+            "n": 700,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0055
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 140,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0267
+            ]
+          }
+        },
+        "dfdc": {
+          "n_real": 423,
+          "n_fake": 248,
+          "auc": {
+            "value": 0.5374,
+            "low": 0.4911,
+            "high": 0.5835,
+            "n_boot": 2000
+          },
+          "tpr@tau": {
+            "k": 0,
+            "n": 248,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.0153
+            ]
+          },
+          "fpr@tau": {
+            "k": 0,
+            "n": 423,
+            "value": 0.0,
+            "ci95": [
+              0.0,
+              0.009
+            ]
+          }
+        },
+        "per_method": {
+          "Deepfakes": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8828,
+              "low": 0.8463,
+              "high": 0.915,
+              "n_boot": 2000
+            }
+          },
+          "Face2Face": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.8202,
+              "low": 0.7834,
+              "high": 0.8578,
+              "n_boot": 2000
+            }
+          },
+          "FaceShifter": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7783,
+              "low": 0.7372,
+              "high": 0.8184,
+              "n_boot": 2000
+            }
+          },
+          "FaceSwap": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.6759,
+              "low": 0.6257,
+              "high": 0.7238,
+              "n_boot": 2000
+            }
+          },
+          "NeuralTextures": {
+            "n_real": 140,
+            "n_fake": 140,
+            "auc": {
+              "value": 0.7,
+              "low": 0.6693,
+              "high": 0.7357,
+              "n_boot": 2000
+            }
+          }
+        },
+        "delta_auc_vs_satya_sbi": {
+          "val": {
+            "value": 0.0501,
+            "low": -0.003,
+            "high": 0.1012,
+            "se": 0.0261,
+            "n_boot": 2000
+          },
+          "test": {
+            "value": 0.094,
+            "low": 0.0601,
+            "high": 0.1263,
+            "se": 0.0172,
+            "n_boot": 2000
+          },
+          "xtest": {
+            "value": -0.0622,
+            "low": -0.1151,
+            "high": -0.0108,
+            "se": 0.027,
+            "n_boot": 2000
+          }
+        }
+      }
+    }
+  },
+  "latency_ms_per_crop": null,
+  "selection": {
+    "rule": "delta val AUC (GenD - SBI CNN), call360, must exceed 1 bootstrap SE",
+    "delta": {
+      "value": 0.1828,
+      "low": 0.1382,
+      "high": 0.227,
+      "se": 0.0225,
+      "n_boot": 2000
+    },
+    "decision": "gend_clip_l14"
+  }
+}

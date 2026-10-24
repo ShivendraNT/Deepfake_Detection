@@ -2,17 +2,12 @@
  "model": "gend_clip_l14.onnx",
  "tau_hi_logit": 4.6858,
  "tau_lo_logit": 3.7513,
- "calibration_set": "single GenD crops of FF++ c23 val REAL videos, 1% / 5% FPR per channel condition ['call360', 'call720', 'orig'], max kept; NOT phone photos",
+ "calibration_set": "single GenD crops of FF++ c23 val REAL videos, 1% / 5% FPR per channel condition ['call360', 'orig'], max kept; NOT phone photos",
  "calibrated": false,
  "per_condition": {
   "orig": {
    "tau_hi": 4.140151023864746,
    "tau_lo": 2.9566431045532227,
-   "n_real_crops": 560
-  },
-  "call720": {
-   "tau_hi": 3.8793036937713623,
-   "tau_lo": 2.625359296798706,
    "n_real_crops": 560
   },
   "call360": {
