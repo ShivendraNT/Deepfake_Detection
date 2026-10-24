@@ -30,10 +30,15 @@ from satyapan.video.features import (
     coverage,
     window_features,
 )
+from satyapan.video.fusion import DEFAULT_PATH as FUSION_PATH
 from satyapan.video.fusion import FusionModel
 from satyapan.video.landmarks import FaceTracker, VideoUnavailable, model_dir
 from satyapan.video.observe import FrameRecord, observe
+from satyapan.video.rules import DEFAULT_PATH as THRESHOLDS_PATH
 from satyapan.video.rules import VideoThresholds, VideoVerdict, classify_windows, load_thresholds
+
+FALLBACK_FUSION = FUSION_PATH.with_name("video_fusion__blend.json")
+FALLBACK_THRESHOLDS = THRESHOLDS_PATH.with_name("video_thresholds__blend.json")
 
 
 @dataclass
@@ -67,15 +72,29 @@ class VideoAnalyzer:
     def load(
         cls, fusion_path: Path | None = None, thresholds_path: Path | None = None
     ) -> VideoAnalyzer:
-        try:
-            fusion = FusionModel.load(fusion_path) if fusion_path else FusionModel.load()
-            thr = load_thresholds(thresholds_path) if thresholds_path else load_thresholds()
-        except FileNotFoundError as exc:
-            raise VideoUnavailable(f"video config missing: {exc}") from exc
-        FaceTracker().close()  # fail early if mediapipe or the face model is missing
-        spec = CnnSpec.from_config(fusion.cnn)
-        return cls(fusion, thr, BlendScorer(model_dir() / spec.file), FaceTracker,
-                   spec.crop_every_s)  # fmt: skip
+        """The shipped config; if its crop CNN is not on this laptop (e.g. the 1.2 GB GenD file
+        was never built), the SBI fallback config (config/*__blend.json) with its own fusion and
+        thresholds. Never a CNN with thresholds fitted for another one."""
+        pairs = (
+            [(fusion_path, thresholds_path or THRESHOLDS_PATH)]
+            if fusion_path
+            else [(FUSION_PATH, THRESHOLDS_PATH), (FALLBACK_FUSION, FALLBACK_THRESHOLDS)]
+        )
+        problems: list[str] = []
+        for fp, tp in pairs:
+            try:
+                fusion, thr = FusionModel.load(fp), load_thresholds(tp)
+            except FileNotFoundError as exc:
+                problems.append(f"video config missing: {exc.filename}")
+                continue
+            spec = CnnSpec.from_config(fusion.cnn)
+            if not (model_dir() / spec.file).exists():
+                problems.append(f"{spec.file} missing in {model_dir()}")
+                continue
+            FaceTracker().close()  # fail early if mediapipe or the face model is missing
+            return cls(fusion, thr, BlendScorer(model_dir() / spec.file), FaceTracker,
+                       spec.crop_every_s)  # fmt: skip
+        raise VideoUnavailable("; ".join(problems) + " (run `make video-models`)")
 
     def new_stream(self) -> VideoStream:
         return VideoStream(self)

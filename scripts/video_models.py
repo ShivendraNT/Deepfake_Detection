@@ -6,7 +6,10 @@
 Files and their sha256 are listed in config/video_models.json. The blend CNN is not hosted in
 this repo (licence: trained on FaceForensics++); the leader shares it, or it is rebuilt with
 `python -m research.video.train_sbi`. Set SATYAPAN_BLEND_MODEL_URL to download it from a team
-release. A file with the wrong hash is deleted and reported, never used.
+release. GenD (the face CNN the benchmark selected, MIT) is 1.2 GB and is built locally with
+`python -m research.video.export_gend` (or downloaded from SATYAPAN_GEND_MODEL_URL); until it
+exists Satya uses the blend CNN with its own fallback config. A file with the wrong hash is
+deleted and reported, never used.
 """
 
 from __future__ import annotations
@@ -50,8 +53,9 @@ def main() -> int:
     ap.add_argument("--verify", action="store_true", help="do not download, only check")
     args = ap.parse_args()
     files = json.loads(MANIFEST.read_text(encoding="utf-8"))["files"]
-    if os.environ.get("SATYAPAN_BLEND_MODEL_URL"):
-        files["blend_b0.onnx"]["url"] = os.environ["SATYAPAN_BLEND_MODEL_URL"]
+    for meta in files.values():
+        if meta.get("url_env") and os.environ.get(meta["url_env"]):
+            meta["url"] = os.environ[meta["url_env"]]
     ok = True
     for name, meta in files.items():
         dest = model_dir() / name
@@ -59,8 +63,11 @@ def main() -> int:
             print(f"downloading {name} ...")
             download(meta["url"], dest)
         if not dest.exists():
-            ok = False
             how = meta.get("build") or "set its URL in config/video_models.json"
+            if meta.get("optional"):
+                print(f"OPTIONAL {name} not present ({meta['optional']}): {how}")
+                continue
+            ok = False
             print(f"MISSING  {name}: {how}")
             continue
         want = meta.get("sha256", "")

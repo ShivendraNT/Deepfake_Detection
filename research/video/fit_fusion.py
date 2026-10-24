@@ -8,12 +8,12 @@ Protocol (docs/VIDEO_DEEPFAKE.md §5):
    never sits on both sides of a fold) over C in a small grid; score = mean of the video's
    window probabilities; report CV video-AUC mean +- sd. Pick C by mean CV AUC.
 2. Refit each cue set on all of fusion_train with its C. The set that ships
-   (config/video_fusion.json) is chosen by the one-standard-error rule (Breiman et al.): the
+   (config/video_fusion__blend.json) is chosen by the one-standard-error rule (Breiman): the
    simplest set (fewest features) whose mean CV AUC is within one standard error of the best
    set's. This rule was fixed before any CNN or test number existed.
 3. Thresholds from FF++ `val` REAL windows only: tau_hi = 1% window FPR, tau_lo = 5%, fitted
    per channel condition (orig, call720, call360) and the highest kept, so the false-alarm
-   target holds on call-quality video too. Written to config/video_thresholds.json with
+   target holds on call-quality video too. Written to config/video_thresholds__blend.json with
    calibrated=false (no webcam calibration yet).
 
     python -m research.video.fit_fusion --cnn gend_clip_l14
@@ -199,10 +199,14 @@ def main() -> None:
 
     ap = argparse.ArgumentParser()
     ap.add_argument("--cnn", default=BLEND)
+    ap.add_argument(
+        "--ship-blend", action="store_true", help="also make the SBI config the primary one"
+    )
     a = ap.parse_args()
     if a.cnn != BLEND:
         main_external(a.cnn)
         return
+    ship_blend = a.ship_blend
     from satyapan.video.fusion import FusionModel
 
     df = load_table("orig")
@@ -236,7 +240,9 @@ def main() -> None:
     report["shipped_set"] = chosen
     print("shipped cue set (1-SE rule):", chosen, flush=True)
     shipped = MODELS / f"fusion_{chosen}.json"
-    fusion_path = ROOT / "config" / "video_fusion.json"
+    # Our SBI CNN's config is the product's fallback (used when the selected CNN's model file
+    # is not on the laptop); the selected one is written by main_external (or --ship-blend).
+    fusion_path = ROOT / "config" / "video_fusion__blend.json"
     fusion_path.write_text(shipped.read_text())
     model = FusionModel.load(fusion_path)
     # Satya sees call-quality video, so the operating point must hold in every channel
@@ -245,7 +251,11 @@ def main() -> None:
     fusion_sha = hashlib.sha256(fusion_path.read_bytes()).hexdigest()
     version = f"blend_b0:{cnn_meta['onnx_sha256'][:12]}+fusion:{fusion_sha[:12]}"
     thresholds = freeze_thresholds(model, BLEND, version, int(val_real.key.nunique()))
-    (ROOT / "config" / "video_thresholds.json").write_text(json.dumps(thresholds, indent=1) + "\n")
+    thr_path = ROOT / "config" / "video_thresholds__blend.json"
+    thr_path.write_text(json.dumps(thresholds, indent=1) + "\n")
+    if ship_blend:  # the selection rule kept our CNN: it is also the primary config
+        (ROOT / "config" / "video_fusion.json").write_text(fusion_path.read_text())
+        (ROOT / "config" / "video_thresholds.json").write_text(thr_path.read_text())
     report["thresholds"] = thresholds
     report["fusion_sha256"] = fusion_sha
     out = DATA / "logs" / "fit_fusion.json"
