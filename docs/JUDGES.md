@@ -221,6 +221,9 @@ This page, [`README.md`](../README.md), and the live script in
 | A new face-swap method | FaceShifter (unseen) flagged 32 % vs 85 % for the 4 seen methods | add newer generators when a licensed test set exists; liveness prompt on the alert (turn your head, hand over the face) |
 | Small face / low bitrate | at 360p, 82 % of DFDC faces are too small: "couldn't check — pin the caller" | ask for a larger view; never guess |
 | Real footage of the person + a cloned voice | the face check is blind by design; lip-sync is weak (0.62–0.67 AUC) | the voice check and the asks carry this case |
+| Send the cloned voice through WhatsApp / VoIP compression | Opus 16 kbps barely moves the voice check (In-the-Wild AUC 0.921 → 0.909) | keep testing new codecs (AMR-NB needs sox) |
+| A very short voice note | under 3 s of speech is "too short to judge" (VERIFY: fail closed), never a pass | ask for a longer note or a call back |
+| A newer voice-cloning system | In-the-Wild (real-world fakes of public figures) is our proxy: AUC 0.92–0.95; one model is still one model | re-run the protocol on new public sets; calibrate on consented calls (T18) |
 | Probe Satya to tune a fake | only coarse answers (band + reasons), no scores, local only | keep scores hidden; rate-limit any hosted version |
 | Text that "talks to" an LLM | the LLM never sets the band; untrusted text never enters the system prompt | — |
 | A scam with no ask (a long con, investment "groups") | missed until money is asked for | a payment-time check in the UPI app, where the ask always appears |
@@ -232,6 +235,7 @@ Satya never blocks a payment, so a genuine user is past it as soon as that call 
 "think this is a mistake?" box under every answer says exactly that. Measured false alarms on
 genuine items:
 - texts 2.7 % (0.9 % HOLD);
+- genuine voices 0.6 % with ≥ 3 s of speech (1.6–1.8 % of all clips);
 - real videos 1.2 % flagged for a call-back, 0 called synthetic;
 - real photo crops 0.4 % over the strict threshold.
 
