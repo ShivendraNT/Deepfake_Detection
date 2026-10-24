@@ -46,7 +46,7 @@ def channel(x: np.ndarray, cond: str) -> np.ndarray:
         y = opus(x.astype(np.float64), 16)
     elif cond == "gsm":
         y = _ffmpeg_roundtrip(
-            x.astype(np.float64), ["-ar", "8000", "-ac", "1", "-c:a", "libgsm"], "wav"
+            x.astype(np.float64), ["-ar", "8000", "-ac", "1", "-c:a", "libgsm"], "gsm"
         )
     else:
         raise ValueError(cond)
