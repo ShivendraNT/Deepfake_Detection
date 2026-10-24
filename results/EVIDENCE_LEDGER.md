@@ -1,7 +1,7 @@
 # Evidence ledger
 
 Every number that may appear in the Round 1 PDF must have a row here. If it is not here, or its
-status is not **measured** or **external, cited**, it does not go on a slide. Last update: 08 Oct 2026 (Seal rows added for the R1 PDF).
+status is not **measured** or **external, cited**, it does not go on a slide. Last update: 24 Oct 2026 (finale: text §10, face check §11, voice §12 when measured).
 
 **Status values.** *measured*: produced by the listed script on the listed data at the listed
 commit; re-run the command to reproduce. *external, cited*: someone else's published number;
@@ -201,3 +201,25 @@ template group or official split minus leaked templates. C by grouped 5-fold CV 
 | Fraud texts caught at τ_hi, clean / combined obfuscation attack, with de-obfuscation | 97.0 % / 96.2 % | 2,213 attacked fraud test texts | [96.2, 97.6] / [95.4, 97.0] | attacks are code-generated (`research/text/attacks.py`) |
 | Same, model without the de-obfuscation layer | 96.6 % / 40.1 % | 2,213 | [95.8, 97.3] / [38.1, 42.2] | the layer is what keeps recall under attack |
 | False alarms at τ_hi per dataset (legitimate test texts) | 0.0–2.6 % | 17–1,624 legit per set | e.g. phishing e-mail 2.6 % [2.0, 3.5] | τ fitted on pooled val |
+
+## 11. Face check on video and photos (`VIDEO_*`, `IMAGE_FACE_*`, ML evidence, never HOLD alone)
+
+Script: `python -m research.run_all video` → `results/video_benchmark.{json,md}` (shipped GenD
+check), `results/video_benchmark__blend.{json,md}` (our SBI fallback), `results/video_external.md`,
+`results/image_face_benchmark.md`, `results/video_selection.json`, `results/video_eval_manifest.json`.
+Data: FF++ c23 (official identity-disjoint splits), DFDC parts 0–2 (never used to fit anything).
+τ_hi = 1 % / τ_lo = 5 % FPR on FF++ val reals, test scored once. Status: **measured**.
+
+| Claim | Value | n | 95% CI | Notes |
+|---|---|---|---|---|
+| Selection: GenD − our SBI CNN, val AUC at call quality (360p) | +0.183 (SE 0.023) | FF++ val, call360 | [0.138, 0.227] | decided before any test number (`video_selection.json`) |
+| Video AUC, FF++ test (5 methods) / DFDC (unseen) | 0.946 / 0.778 | 810 / 623 videos | [0.932, 0.960] / [0.734, 0.823] | `video_benchmark.md`, condition orig |
+| Fakes flagged for a call-back (VERIFY or above), FF++ test / DFDC | 74.7 % / 24.8 % | 695 / 250 | [71.3, 77.8] / [19.9, 30.5] | LIKELY alone: 44.8 % / 7.2 % |
+| Real videos called LIKELY_SYNTHETIC | 0 / 563 | 139 FF++ + 424 DFDC | [0, 0.7 %] | the strict alert never fired on a real test video |
+| Real videos flagged for a call-back | 1.2 % (7 / 563) | 563 | — | 2.9 % FF++, 0.7 % DFDC |
+| At 360p call quality: FF++ AUC / fakes flagged / reals flagged | 0.877 / 50.6 % / 5.0 % | 695 fake, 139 real | [0.854, 0.900] | DFDC: 82 % of faces too small → "couldn't check" |
+| Unseen method (FaceShifter) flagged | 31.7 % | 139 | — | vs 85.4 % for the 4 seen methods: name it as a failure case |
+| Our SBI CNN (fallback), FF++ test / DFDC AUC | 0.786 / 0.633 | same videos | [0.760, 0.812] / [0.584, 0.682] | |
+| Generic Hugging Face "deepfake" classifiers, FF++ test AUC | 0.52–0.65 | same crops | see `video_external.md` | popular ≠ tested |
+| Photo check (one face crop), FF++ test / DFDC AUC | 0.923 / 0.747 | 3,360 / 2,688 crops | [0.909, 0.936] / [0.714, 0.779] | real crops over τ_hi: 0.4 % / 0.0 % |
+| GenD latency | ≈ 1.3 s per crop, 2 CPU threads, other jobs running | benchmark logs | — | product: 1 crop per 2.25 s of call |

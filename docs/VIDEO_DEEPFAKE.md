@@ -134,7 +134,40 @@ which gives the same alerts as any monotone 1-D fit at thresholds set on val rea
 
 ## 6. Results
 
-See §8 (filled from `results/video_benchmark.md` by the benchmark run).
+Full tables: `results/video_benchmark.md` (shipped GenD check), `results/video_benchmark__blend.md`
+(our SBI fallback), `results/video_external.md` (all six models, matched crops),
+`results/image_face_benchmark.md` (one crop = one photo). Selection, made on val before any
+test number existed: GenD − SBI on call360 val = +0.183 (SE 0.023) → GenD ships
+(`results/video_selection.json`, decided 14:04 UTC 24 Oct).
+
+What the product does per video, held-out sets scored once (Wilson 95 % in the result files):
+
+| Set | Condition | AUC [95 % CI] | Fakes flagged (VERIFY or above) | Real videos flagged | Real videos called LIKELY_SYNTHETIC |
+|---|---|---|---|---|---|
+| FF++ test, 4 seen methods | orig | 0.975 [0.963, 0.985] | 85.4 % (475/556) | 2.9 % (4/139) | 0 / 139 |
+| FF++ test, FaceShifter (method unseen) | orig | 0.832 [0.791, 0.870] | 31.7 % (44/139) | 2.9 % | 0 / 139 |
+| DFDC (dataset unseen) | orig | 0.778 [0.734, 0.823] | 24.8 % (62/250) | 0.7 % (3/424) | 0 / 424 |
+| FF++ test, all 5 methods | call360 (VP8 0.4 Mbit/s + JPEG) | 0.877 [0.854, 0.900] | 50.6 % (352/695) | 5.0 % (7/139) | 0 / 139 |
+| DFDC | call360 | 0.728 [0.653, 0.805]\* | 4.4 % (11/250) | 0.5 % (2/424) | 0 / 424 |
+
+\* only 78 real / 47 fake DFDC videos keep a ≥ 64 px face at 360p; the other 82 % are "couldn't
+check" (no band effect).
+
+Same sets with our SBI CNN (fallback): FF++ test 0.786, DFDC 0.633, FF++ call360 0.714; it
+flags 15 % of FF++ fakes. Generic Hugging Face "deepfake" image classifiers score 0.46–0.65
+AUC on the same crops (`results/video_external.md`): popular is not the same as tested.
+
+**Named failure cases** (each one is in the tables above):
+1. *New methods.* FaceShifter (not in GenD's training) is flagged 32 % of the time vs 85 % for
+   the four seen methods; NeuralTextures (expression-only edits) drops to 24 % at 360p.
+2. *Small faces.* At 360p most DFDC faces are under 64 px: Satya says "couldn't check — pin or
+   enlarge the caller" instead of guessing. In a 3×3 grid this is the common case.
+3. *Real face, cloned voice.* The face check is blind by construction; lip-sync is weak
+   (0.62–0.67 AUC) and the voice check and the asks carry this scam.
+4. *Strict alerts are rare on unseen data.* LIKELY_SYNTHETIC fires on 7 % of DFDC fakes; most
+   catches there are SUSPICIOUS (VERIFY: "call back first"), never HOLD on the face alone.
+5. *Codec cost.* 360p call quality costs 0.05–0.16 AUC (DFDC; NeuralTextures worst); thresholds stay fixed, so
+   the false-alarm rate on reals rises to 5 % (all VERIFY, none LIKELY).
 
 **A bug the benchmark caught.** The first extraction used MediaPipe's landmarker alone. Its
 built-in detector is the short-range BlazeFace (128 px input, selfie framing): it found **no
@@ -158,7 +191,18 @@ face-centred crop) and re-ran every extraction, so the numbers describe the ship
 
 ## 8. Headline numbers
 
-(Filled in from `results/video_benchmark.md` after the frozen run.)
+- **Shipped face check (GenD):** FF++ test AUC 0.946 [0.932, 0.960] (all 5 methods), DFDC
+  (never seen) 0.778 [0.734, 0.823]; flags 74.7 % of FF++ fakes and 24.8 % of DFDC fakes for a
+  call-back; **0 of 563 real test videos** called LIKELY_SYNTHETIC, 7 of 563 flagged for a
+  call-back (1.2 %).
+- **Photo check (one crop):** FF++ test AUC 0.923, DFDC 0.747; 0.4 % / 0.0 % of real crops
+  over τ_hi (`results/image_face_benchmark.md`).
+- **Selection was honest:** GenD beat our SBI CNN by +0.183 val AUC (SE 0.023) under call
+  quality before any test number existed; our CNN stays as the automatic fallback.
+- **Latency:** ≈ 1.3 s per GenD crop on 2 CPU threads while other jobs ran (benchmark logs);
+  the product scores one crop per 2.25 s of call, so a 4-core laptop keeps up.
+- 720p (`call720`) GenD scoring was stopped at 141 of 980 videos to free the CPU for the voice
+  benchmark; reports leave partial splits out rather than print them.
 
 ## 9. Laptops (any OS, any CPU)
 
