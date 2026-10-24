@@ -92,6 +92,18 @@ _LABEL_TO_CODE = {
 }
 
 
+def reason_code(verdict: VoiceVerdict, thresholds: VoiceThresholds) -> ReasonCode:
+    """INCONCLUSIVE with enough speech means a window over tau_lo: SUSPICIOUS (VERIFY: call
+    back first). Too little speech stays INCONCLUSIVE ("could not judge"): no band effect."""
+    if (
+        verdict.label == VoiceLabel.INCONCLUSIVE
+        and not verdict.grey_reasons
+        and verdict.max_score >= thresholds.tau_lo
+    ):
+        return ReasonCode.VOICE_SUSPICIOUS
+    return _LABEL_TO_CODE[verdict.label]
+
+
 def voice_signal(
     verdict: VoiceVerdict,
     thresholds: VoiceThresholds,
@@ -99,7 +111,7 @@ def voice_signal(
     detector: str = "voice_xlsr_l7",
 ) -> Signal:
     return Signal.make(
-        _LABEL_TO_CODE[verdict.label],
+        reason_code(verdict, thresholds),
         source=SignalSource.ML,
         evidence_ids=evidence_ids,
         detector=f"{detector}@{thresholds.model_version}",

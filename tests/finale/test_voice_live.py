@@ -103,3 +103,21 @@ def test_no_voice_model_means_no_voice_verdict_not_a_pass(master) -> None:
         ReasonCode.VOICE_NO_SIGNS,
         ReasonCode.VOICE_LIKELY_SYNTHETIC,
     }
+
+
+def test_one_unusual_window_with_enough_speech_asks_for_a_call_back() -> None:
+    """A short voice note is often one 5 s window: two windows over tau_hi can't happen, so a
+    window over tau_lo with enough speech is SUSPICIOUS (VERIFY). Too little speech is
+    'could not judge' (INCONCLUSIVE, no band effect); a clean voice is NO_SIGNS."""
+    from satyapan.contracts.enums import ReasonCode, TargetRule
+    from satyapan.voice.rules import VoiceThresholds, classify_windows, voice_signal
+
+    thr = VoiceThresholds(tau_hi=0.9, tau_lo=0.6, model_version="t")
+    sig = voice_signal(classify_windows([0.95], thr, speech_seconds=4.5), thr, ["ev_1"])
+    assert sig.code == ReasonCode.VOICE_SUSPICIOUS and sig.target == TargetRule.VERIFY
+    short = voice_signal(classify_windows([0.95], thr, speech_seconds=1.0), thr, ["ev_1"])
+    assert short.code == ReasonCode.VOICE_INCONCLUSIVE and short.target == TargetRule.NONE
+    clean = voice_signal(classify_windows([0.1, 0.2], thr, speech_seconds=9.0), thr, ["ev_1"])
+    assert clean.code == ReasonCode.VOICE_NO_SIGNS
+    two = voice_signal(classify_windows([0.95, 0.97], thr, speech_seconds=9.0), thr, ["ev_1"])
+    assert two.code == ReasonCode.VOICE_LIKELY_SYNTHETIC

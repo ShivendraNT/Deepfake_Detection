@@ -39,6 +39,7 @@ from satyapan.voice.rules import VoiceThresholds, classify_windows, voice_signal
 CHUNK_SECONDS = 10.0
 _VOICE_CODES = {
     ReasonCode.VOICE_LIKELY_SYNTHETIC,
+    ReasonCode.VOICE_SUSPICIOUS,
     ReasonCode.VOICE_INCONCLUSIVE,
     ReasonCode.VOICE_NO_SIGNS,
 }

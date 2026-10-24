@@ -73,6 +73,9 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
     ReasonCode.VOICE_LIKELY_SYNTHETIC: SignalSpec(
         SignalGroup.MEDIA, TargetRule.PLUS_ONE, Strength.STRONG, _ML
     ),
+    ReasonCode.VOICE_SUSPICIOUS: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.VERIFY, Strength.WEAK, _ML
+    ),
     # --- media: video (C15, ML) ---
     ReasonCode.VIDEO_NO_SIGNS: SignalSpec(SignalGroup.MEDIA, TargetRule.NONE, Strength.WEAK, _ML),
     ReasonCode.VIDEO_INCONCLUSIVE: SignalSpec(

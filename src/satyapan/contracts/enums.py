@@ -225,6 +225,7 @@ class ReasonCode(StrEnum):
     VOICE_NO_SIGNS = "VOICE_NO_SIGNS"
     VOICE_INCONCLUSIVE = "VOICE_INCONCLUSIVE"
     VOICE_LIKELY_SYNTHETIC = "VOICE_LIKELY_SYNTHETIC"
+    VOICE_SUSPICIOUS = "VOICE_SUSPICIOUS"  # enough speech, a window between tau_lo and tau_hi
     # Video (C15, docs/VIDEO_DEEPFAKE.md): face blending, pulse, lighting, lip-sync cues
     VIDEO_NO_SIGNS = "VIDEO_NO_SIGNS"
     VIDEO_INCONCLUSIVE = "VIDEO_INCONCLUSIVE"  # also: no usable face (camera off, too small)

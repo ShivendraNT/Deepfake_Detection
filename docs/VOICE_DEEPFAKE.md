@@ -57,7 +57,12 @@ benchmark machine, so GSM stands in for AMR-NB.
 3. **Thresholds:** τ_hi = 1 % FPR and τ_lo = 5 % FPR on `val` bonafide windows, per condition,
    the highest kept (the same rule as the video check). `calibrated: false` until consented
    Meet audio exists (T18): these are public recordings, not our calls.
-4. **Test once:** the test sets never select or tune anything. AUC/EER with 95 % bootstrap over
+4. **What the person sees** (same mapping as the face check): two 5 s windows in a row over
+   τ_hi → `VOICE_LIKELY_SYNTHETIC` (+1 band); enough speech (≥ 3 s) and a window over τ_lo →
+   `VOICE_SUSPICIOUS` (VERIFY: call back on a number you already have); less speech → "could
+   not judge" (no band effect). A short voice note is one window, so the benchmark's
+   "spoof @ τ_lo" column is its call-back rate. *(Added 24 Oct, before any test score.)*
+5. **Test once:** the test sets never select or tune anything. AUC/EER with 95 % bootstrap over
    speakers (2,000 resamples), rates with Wilson intervals; per-attack AUC on ASVspoof eval.
 
 ## 5. Results
