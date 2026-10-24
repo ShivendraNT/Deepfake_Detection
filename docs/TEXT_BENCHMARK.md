@@ -93,6 +93,29 @@ evidence capped at VERIFY rather than a verdict.
 | spaced-out words | 96.8 % [96.0, 97.5] | 95.4 % [94.4, 96.2] |
 | all four combined | **96.2 % [95.4, 97.0]** | **40.1 % [38.1, 42.2]** |
 
+**Transformer baseline** (`research/text/embed_baseline.py` → `results/text_embed_baseline.md`):
+multilingual-e5-small sentence embeddings + logistic regression, same table, splits, CV,
+thresholds and leave-one-dataset-out.
+
+| Dataset | AUC: TF-IDF / e5 | Caught at τ_hi: TF-IDF / e5 | Unseen-source AUC: TF-IDF / e5 |
+|---|---|---|---|
+| phishing e-mail | **0.994** / 0.967 | **95.0 %** / 64.9 % | 0.693 / **0.743** |
+| CLAIR fraud | **1.000** / 0.993 | **98.2 %** / 78.8 % | **0.982** / 0.916 |
+| UCI SMS | **0.989** / 0.974 | **91.8 %** / 67.3 % | 0.856 / **0.920** |
+| Indian SMS | 1.000 / 0.999 | **100 %** / 71.4 % | 0.850 / **0.950** |
+| 14-language Indian | 1.000 / 0.991 | **100 %** / 71.8 % | 0.753 / **0.901** |
+| Hinglish calls (synthetic) | 1.000 / 1.000 | **100 %** / 92.6 % | **0.995** / 0.975 |
+| scam dialogues (synthetic) | 1.000 / 1.000 | **100 %** / 78.6 % | **0.725** / 0.661 |
+| combined obfuscation attack | — | **96.2 %** / 75.7 % (69.4 % on raw input) | — |
+
+Reading: on sources it has seen, the n-gram model is sharper (it catches 20–30 points more at
+the same 1 % false-alarm target) and, with the de-obfuscation layer, far harder to evade; the
+multilingual embeddings transfer better to a source or language they never saw (4 of 7 sets).
+We ship TF-IDF (6 MB, pure numpy, any laptop) and keep the leave-one-dataset-out gap as a known
+limit. A TF-IDF + embedding ensemble is the obvious next step; we did **not** pick one here
+because the idea came after seeing these test numbers, and choosing on test would not be
+defensible.
+
 **Zero-shot ask lexicon** (does the message ask for money, an OTP, secrecy...?): AUC 0.50–0.74,
 catching 0–49 % of scams. Most open "scam" sets are phishing/spam without an explicit payment
 ask; the lexicon is built for the payment-instruction asks of BEC/impersonation and keeps its
