@@ -77,8 +77,13 @@ def main() -> None:
     def auc(yy, ss):
         return auroc(yy.tolist(), ss.tolist())
 
-    out: dict = {"n_bonafide": int((y == 0).sum()), "n_spoof": int(y.sum()),
-                 "model": thr.model_version, "tau_hi": thr.tau_hi, "tau_lo": thr.tau_lo}  # fmt: skip
+    out: dict = {
+        "n_bonafide": int((y == 0).sum()),
+        "n_spoof": int(y.sum()),
+        "model": thr.model_version,
+        "tau_hi": thr.tau_hi,
+        "tau_lo": thr.tau_lo,
+    }
     for h in EDITS:
         s = scores[h]
         out[h] = {
@@ -100,8 +105,12 @@ def _r(w: dict) -> str:
 
 
 def render(o: dict) -> str:
-    names = {"clean": "as recorded", "noise": "+ white noise, 10 dB SNR",
-             "speed": "10 % faster (pitch kept)", "pitch": "2 semitones up (duration kept)"}  # fmt: skip
+    names = {
+        "clean": "as recorded",
+        "noise": "+ white noise, 10 dB SNR",
+        "speed": "10 % faster (pitch kept)",
+        "pitch": "2 semitones up (duration kept)",
+    }
     lines = [
         "# Voice evasion attempts (research/voice/evasion.py)",
         "",
@@ -109,7 +118,8 @@ def render(o: dict) -> str:
         f"{o['n_spoof']} spoof), the product's scorer `{o['model']}`, frozen tau_lo "
         f"{o['tau_lo']:.3f}. Flagged = VERIFY or above for a one-window voice note.",
         "",
-        "| Edit | AUC [95% CI] | change vs as recorded (paired) | fakes flagged | genuine flagged |",
+        "| Edit | AUC [95% CI] | change vs as recorded (paired) | fakes flagged "
+        "| genuine flagged |",
         "|---|---|---|---|---|",
     ]
     for h in EDITS:
