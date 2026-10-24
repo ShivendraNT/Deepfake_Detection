@@ -1,28 +1,32 @@
-# Satyapan (सत्यापन) — Payment Verification Desk
+# Satya (Satyapan, सत्यापन): check it before you pay
 
-**Deepfake detection for financial communications, anchored on the payment.**
-Amazon hackathon project · team of 4 · Delhi Technological University.
+**A scam and deepfake check for one person, on their own laptop.** Forward Satya what a scammer
+sent you (a message, a screenshot, a voice note, a photo or a video), or let it listen to a
+call after you say yes. It answers **PASS**, **VERIFY** (call back on a number you already have)
+or **HOLD** (stop: don't pay, don't share a code). It says why in plain English or Hindi and
+gives the next step. If money already left, it drafts your 1930 call with the UTR first.
+Nothing is uploaded and nothing is kept.
 
-Indian SME finance teams receive payment requests by email, WhatsApp and video calls. A deepfake
-"CFO" on Google Meet, a compromised vendor mailbox, or an edited invoice can redirect lakhs in
-minutes. Detectors alone are not enough (on 2026's newest fakes the best video detector scores
-69.7% AUROC, and 34.5% on commercial generators). So:
+Amazon AI Cyber Security Hackathon · team of 4 · Delhi Technological University.
 
-- **The payment sets the floor, not the message.** We compare the pending payment with the
-  company's own vendor master (new beneficiary? changed bank details? unusual amount?) and set a
-  minimum band: PASS / VERIFY / HOLD.
-- **Evidence can only raise the band.** Email authentication, invoice-vs-master checks, a
-  deterministic "ask" detector (OTP, secrecy, new account… in English and Hinglish) and an
-  on-device voice-deepfake detector in a Chrome side panel for Meet/Teams. No LLM can lower it.
-- **Detectors decide who verifies.** A deepfake signal moves verification from the possibly
-  manipulated maker to the checker. **OOB-Confirm** asks the real CFO "did you ask for this?"
-  through their own login.
-- **Actionable path.** A UTR-first draft for the 1930 helpline, the NCRP portal and the bank's
-  fraud desk. A human always submits it.
+- **Judges: start at [`docs/JUDGES.md`](docs/JUDGES.md)** (one page per criterion: run it,
+  measured accuracy with failure cases, safeguards, the live journey, robustness, responsible AI).
+- Try it: `make sync && make video && make live`, then open http://127.0.0.1:8000/check (a phone
+  on the same Wi-Fi: `http://<laptop-ip>:8000/check`). Any folder of files:
+  `make scan F=folder/`.
+- How we know it works: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), the reproducible test kit
+  on open data, with every number in [`results/EVIDENCE_LEDGER.md`](results/EVIDENCE_LEDGER.md).
 
-Research core: *"Ask, Not Style"* — are Hinglish fraud-conversation detectors robust to LLM
-paraphrase, and do detectors that look only at the attacker's unavoidable *ask* hold up?
-See `docs/RESEARCH_PROTOCOL.md`.
+**How it decides.** The *ask* (OTP, "safe account", secrecy, remote access, a new payee) is the
+part a scam cannot hide, so Satya checks it deterministically, in English, Hinglish and
+Devanagari. A scam-text model, an on-device voice-clone model and a face-swap check add evidence
+that can **only raise** the answer, never lower it. One policy engine sets the band, and no
+AI model can clear it. Satya never blocks anything and never reports on its own: a human
+decides.
+
+**Also for businesses** (our Round 1 scope): the same engine compares a pending payment with the
+company's vendor master, sends "did you ask for this?" to the real approver's phone
+(OOB-Confirm), and drafts the UTR-first report pack. See `docs/finale/LIVE_DEMO.md`.
 
 ## 60-second quickstart (macOS, Apple Silicon)
 
@@ -70,6 +74,7 @@ CV, frozen thresholds, synthetic-data generators); `python -m research.run_all -
 
 | Path | What |
 |---|---|
+| `docs/JUDGES.md` | **judges start here**: one page per rubric criterion |
 | `AGENTS.md` | **rules for every AI agent and human** (single source of truth) |
 | `docs/tasks/` | T-task specs (`T01` … `T25`), mostly done |
 | `docs/STATUS.md` | task board: owner, status, dependencies |
@@ -132,11 +137,10 @@ cd desktop && npm run build && npm run preview
 The step-by-step live demo (two laptops, a phone hotspot, permissions, script, fallbacks):
 **`docs/finale/LIVE_DEMO.md`**.
 
-## What is already built
+## What is built
 
-T01 (contracts, fixtures, mock API), T02 (policy engine + property tests), the vault's hash
-chain, the voice window rules (Python + JS), the LLM prompt isolation, and the evidence pipeline
-are implemented and tested. Everything else is a precise stub with an acceptance test.
+Everything on the Satya path runs and is tested (`make check`: 860+ Python tests; desktop: typecheck +
+vitest). Status per task: `docs/STATUS.md`; plan vs built vs cut: `docs/JUDGES.md` §5.
 
 ## License
 
