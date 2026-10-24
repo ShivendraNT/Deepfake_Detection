@@ -113,6 +113,7 @@ async def upload_evidence(
         thresholds=state.thresholds,
         transcriber=state.transcriber_override,
         text_model=state.text_model(),
+        scorer=state.voice_scorer(),
     )
     out = analyze_evidence(data, ev, case, ctx)
     case = recompute(merge_output(case, ev, out), state.master)
