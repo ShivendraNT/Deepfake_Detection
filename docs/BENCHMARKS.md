@@ -43,7 +43,7 @@ resumable (`--from <stage>`).
 | Policy engine (bands) | PASS / VERIFY / HOLD | S-AB synthetic payment cases through the real decision path | — | `results/alert_budget.json` | measured |
 | Safety invariants (raise-only, LLM cap, floor isolation) | — | property tests, 200 examples each | — | `tests/invariants/` | measured |
 | Satyapan Seal | caller authenticity | SYN-V synthetic voices through 14 codec chains + Chrome WebRTC | — | `results/seal_*.json` | measured (illustrative) |
-| Voice-clone detector: XLS-R layers 1–7 + LR (ours) vs 4 Hugging Face models | `VOICE_*` | ASVspoof 2019 LA train → In-the-Wild (speaker-disjoint val/test) + ASVspoof 2019 eval (13 attacks); clean, Opus 16 kbps, GSM | gate + selection on val (rule fixed first, `docs/VOICE_DEEPFAKE.md` §4); τ on val bonafide; test once | `results/voice_benchmark.md` | running (24 Oct) |
+| Voice-clone detector: ours (XLS-R layers 1–7 + LR) vs 4 Hugging Face models; `gustking_xlsr` selected and shipped | `VOICE_*` (SUSPICIOUS → VERIFY) | ASVspoof 2019 LA train → In-the-Wild (speaker-disjoint val/test) + ASVspoof 2019 eval (13 attacks); clean, Opus 16 kbps, GSM | gate + selection on val (rule fixed first, `docs/VOICE_DEEPFAKE.md` §4); τ on val bonafide; test once | `results/voice_benchmark.md`, `results/voice_selection.json` | measured |
 | Whole product on any files (the judges' kit) | band per file | any folder of files; names starting `fake…`/`real…` are graded | nothing fitted | `satya scan KIT/` → `<out>.csv/.md` | runner |
 
 ## 3. Synthetic data: what we generated and the code that generates it
@@ -84,7 +84,7 @@ flagged in `research/text/data.py` and reported separately, never pooled into a 
 | Scam text (messages, e-mails, transcripts, OCR) | 7 open sets; leave-one-dataset-out | the whole consumer path flags 96.6 % of 2,213 scam texts; 96.2 % of fraud texts under a combined obfuscation attack | 2.7 % of 4,363 genuine texts flagged (0.9 % HOLD) | a never-seen source drops to AUC 0.69 (phishing e-mail); phishing e-mail is also the worst false-alarm set (5.4 %) |
 | Face in a video | FF++ c23 test, DFDC (unseen) | 74.7 % / 24.8 % of fakes flagged for a call-back | 0 of 563 real videos called synthetic; 1.2 % flagged for a call-back | unseen method FaceShifter 32 %; small faces at 360p → "couldn't check" |
 | Face in a photo | same, one crop each | AUC 0.923 / 0.747 | 0.4 % / 0.0 % of real crops over τ_hi | expression-only edits (NeuralTextures) |
-| Voice clone | In-the-Wild test, ASVspoof 2019 eval | running | running | see `docs/VOICE_DEEPFAKE.md` §5 |
+| Voice clone | In-the-Wild test (real-world deepfakes, speakers never seen) | AUC 0.921 (clean) / 0.909 (Opus); with ≥ 3 s of speech 0.952, 64–67 % of fakes flagged for a call-back | 0.6 % of genuine voices with ≥ 3 s of speech (1.6–1.8 % of all clips) | clips under 3 s of speech: "too short to judge"; ASVspoof eval (0.999) may be in the model's training data |
 | Asks (OTP, new account, secrecy…) | S-HO held-out texts (test split) | recall 0.33 [0.24, 0.42], precision 0.60 | 11.5 % of benign texts get a false ask | paraphrased asks are mostly missed: the text model and the call-back step carry them |
 
 Video numbers: `docs/VIDEO_DEEPFAKE.md` §6/§8. Text: `docs/TEXT_BENCHMARK.md`. Any kit of files:

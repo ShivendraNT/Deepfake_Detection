@@ -227,3 +227,21 @@ Data: FF++ c23 (official identity-disjoint splits), DFDC parts 0–2 (never used
 | Generic Hugging Face "deepfake" classifiers, FF++ test AUC | 0.52–0.65 | same crops | see `video_external.md` | popular ≠ tested |
 | Photo check (one face crop), FF++ test / DFDC AUC | 0.923 / 0.747 | 3,360 / 2,688 crops | [0.909, 0.936] / [0.714, 0.779] | real crops over τ_hi: 0.4 % / 0.0 % |
 | GenD latency | ≈ 1.3 s per crop, 2 CPU threads, other jobs running | benchmark logs | — | product: 1 crop per 2.25 s of call |
+
+## 12. Voice-clone check (`VOICE_*`, ML evidence; SUSPICIOUS → VERIFY, two windows over τ_hi → +1 band)
+
+Script: `python -m research.run_all voice` (= `research.voice.data`, `research.voice.bench`,
+`research.voice.export`) → `results/voice_benchmark.{json,md}`, `results/voice_selection.json`,
+`results/voice_eval_manifest.json`. Protocol and amendments fixed before scoring:
+`docs/VOICE_DEEPFAKE.md` §4. Status: **measured**.
+
+| Claim | Value | n | 95% CI | Notes |
+|---|---|---|---|---|
+| Selection: gustking − ours, val AUC under Opus 16 kbps | +0.157 (SE 0.054) | 1,457 val clips | [0.026, 0.244] | decided before any test score; ours 0.791, gustking 0.949 |
+| In-the-Wild test AUC, clean / Opus (real-world deepfakes, unseen speakers) | 0.921 / 0.909 | 669 bonafide + 331 spoof | [0.868, 0.957] / [0.857, 0.948] | seeded subset (amendment 2) |
+| Same, clips with ≥ 3 s of speech (the product's range) | 0.952 / 0.947 | 160 + 155 | [0.910, 0.980] / [0.903, 0.978] | |
+| Fakes flagged for a call-back (≥ τ_lo), ≥ 3 s speech, clean / Opus | 63.9 % / 66.5 % | 155 | [56.1, 71.0] / [58.7, 73.4] | |
+| Genuine voices flagged (≥ τ_lo), ≥ 3 s speech | 0.6 % | 160 | [0.1, 3.5] | all clips: 1.6–1.8 % |
+| Genuine voices over τ_hi (one window) | 0.0–0.1 % | 669 | [0.0, 0.8] | |
+| ASVspoof 2019 eval AUC | 0.999 | 300 + 390 | [0.997, 1.000] | upper bound: the model card says "ASVspoof 2019" without a split |
+| Our re-trained recipe (not shipped), val AUC under Opus | 0.791 | 1,457 | [0.706, 0.904] | in-domain CV AUC 1.000: the out-of-domain gap |
