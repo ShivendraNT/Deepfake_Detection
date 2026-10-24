@@ -1,0 +1,111 @@
+{
+ "n_frames": 200,
+ "n_with_face_both": 200,
+ "quality": 60,
+ "max_side": 1600,
+ "thresholds": {
+  "tau_hi": 4.6858,
+  "tau_lo": 3.7513
+ },
+ "orig": {
+  "name": "as stored",
+  "auc": {
+   "value": 0.9133,
+   "low": 0.8721,
+   "high": 0.9486,
+   "n_boot": 2000
+  },
+  "fakes_flagged_tau_lo": {
+   "k": 49,
+   "n": 100,
+   "value": 0.49,
+   "ci95": [
+    0.3942,
+    0.5865
+   ]
+  },
+  "reals_flagged_tau_lo": {
+   "k": 0,
+   "n": 100,
+   "value": 0.0,
+   "ci95": [
+    0.0,
+    0.037
+   ]
+  },
+  "fakes_tau_hi": {
+   "k": 15,
+   "n": 100,
+   "value": 0.15,
+   "ci95": [
+    0.0931,
+    0.2328
+   ]
+  },
+  "reals_tau_hi": {
+   "k": 0,
+   "n": 100,
+   "value": 0.0,
+   "ci95": [
+    0.0,
+    0.037
+   ]
+  }
+ },
+ "wa": {
+  "name": "WhatsApp-style JPEG q60",
+  "auc": {
+   "value": 0.8716,
+   "low": 0.8253,
+   "high": 0.9166,
+   "n_boot": 2000
+  },
+  "fakes_flagged_tau_lo": {
+   "k": 35,
+   "n": 100,
+   "value": 0.35,
+   "ci95": [
+    0.2636,
+    0.4475
+   ]
+  },
+  "reals_flagged_tau_lo": {
+   "k": 0,
+   "n": 100,
+   "value": 0.0,
+   "ci95": [
+    0.0,
+    0.037
+   ]
+  },
+  "fakes_tau_hi": {
+   "k": 10,
+   "n": 100,
+   "value": 0.1,
+   "ci95": [
+    0.0552,
+    0.1744
+   ]
+  },
+  "reals_tau_hi": {
+   "k": 0,
+   "n": 100,
+   "value": 0.0,
+   "ci95": [
+    0.0,
+    0.037
+   ]
+  }
+ },
+ "delta_auc_wa_minus_orig": {
+  "value": -0.0417,
+  "low": -0.0776,
+  "high": -0.0082,
+  "se": 0.0176,
+  "n_boot": 2000
+ },
+ "mean_logit_shift": {
+  "fake": -0.3347,
+  "real": 0.4387
+ }
+}

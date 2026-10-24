@@ -66,6 +66,7 @@ STAGES: dict[str, list[tuple[str, list[str]]]] = {
         ("video-benchmark-blend", [V + "run_benchmark", "--cnn", "blend"]),
         ("video-lipsync", [V + "lipsync_eval"]),
         ("video-image-eval", [V + "image_eval"]),  # one crop = one photo (the photo check)
+        ("video-photo-whatsapp", [V + "photo_whatsapp"]),  # the same photos after a re-encode
         ("video-manifest", [V + "manifest"]),
     ],
     "voice": [
