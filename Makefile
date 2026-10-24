@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video video-models doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
+.PHONY: scan help sync asr video voice video-models doctor demo-audio live check lint fmt typecheck test task run demo-data schemas status console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -19,6 +19,7 @@ help:
 	@echo "make run           start the API on http://127.0.0.1:8000 (docs at /docs)"
 	@echo "make asr           install Satya's local speech engine + download the model (once)"
 	@echo "make video         install the face check (video deepfakes) + verify its models"
+	@echo "make voice         build + install the voice-clone model (needs torch once)"
 	@echo "make demo-audio    generate the labelled DEMO REPLAY call (synthetic voice, once)"
 	@echo "make doctor        check the speech engine is ready and fast enough on this laptop"
 	@echo "make live          start the API for a live demo (no auto-reload, model warmed up)"
@@ -38,6 +39,13 @@ asr:
 video:
 	uv sync --inexact --extra video --extra ocr
 	$(RUN) python scripts/video_models.py
+
+# The voice-clone check (docs/VOICE_DEEPFAKE.md): builds model.onnx from the pinned XLS-R
+# revision and logreg_prob.onnx from config/voice_head.json, checks them against PyTorch and
+# installs both in extension/models/. Needs torch once (CPU wheel is fine).
+voice:
+	uv sync --inexact --extra audio --extra voice-build
+	$(RUN) python -m research.voice.export --install
 
 video-models:
 	$(RUN) python scripts/video_models.py

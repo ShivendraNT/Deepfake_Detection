@@ -93,6 +93,12 @@ def video() -> None:
     py("python", "scripts/video_models.py")
 
 
+def voice() -> None:
+    need_uv()
+    run(UV, "sync", "--inexact", "--extra", "audio", "--extra", "voice-build")  # type: ignore[arg-type]
+    py("python", "-m", "research.voice.export", "--install")
+
+
 def check() -> None:
     py("ruff", "check", ".")
     py("ruff", "format", "--check", ".")
@@ -131,6 +137,7 @@ TASKS: dict[str, tuple[str, Callable[[], None]]] = {
     "sync": ("install core + dev dependencies", sync),
     "asr": ("install the local speech engine for this OS/CPU and check it", asr),
     "video": ("install the face check (video deepfakes) and verify its models", video),
+    "voice": ("build + install the voice-clone model (needs torch once)", voice),
     "doctor": (
         "check the speech engine on this laptop",
         lambda: py("python", "scripts/asr_check.py"),

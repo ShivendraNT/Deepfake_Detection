@@ -88,5 +88,5 @@ def load_default_detector(model_version: str, model_dir: Path = MODEL_DIR) -> On
     model, head = model_dir / MODEL_FILE, model_dir / HEAD_FILE
     for f in (model, head):
         if not f.exists():
-            raise FileNotFoundError(f"voice model missing: {f} (run `make voice-models`)")
+            raise FileNotFoundError(f"voice model missing: {f} (run `make voice`)")
     return OnnxVoiceDetector(model, head, model_version)
