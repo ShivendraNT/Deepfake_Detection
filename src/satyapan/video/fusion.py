@@ -12,6 +12,7 @@ import json
 import math
 from dataclasses import dataclass
 from pathlib import Path
+from typing import Any
 
 import numpy as np
 
@@ -28,6 +29,7 @@ class FusionModel:
     missing_coef: np.ndarray  # per feature (weight of the "missing" indicator)
     intercept: float
     version: str
+    cnn: dict[str, Any] | None = None  # which crop CNN this fusion was fitted with (CnnSpec)
 
     @classmethod
     def load(cls, path: Path = DEFAULT_PATH) -> FusionModel:
@@ -41,6 +43,7 @@ class FusionModel:
             missing_coef=np.array(raw["missing_coef"], float),
             intercept=float(raw["intercept"]),
             version=str(raw["version"]),
+            cnn=raw.get("cnn"),
         )
 
     def design(self, x: np.ndarray) -> tuple[np.ndarray, np.ndarray]:

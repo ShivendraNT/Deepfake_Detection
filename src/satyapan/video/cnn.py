@@ -1,9 +1,14 @@
-"""Blend-artifact CNN (ONNX Runtime, CPU). Trained by research/video/train_sbi.py on real
-faces and self-blended pseudo-fakes only. Output: one logit per face crop (higher = more
-likely a blended/swapped face)."""
+"""Face-crop CNN (ONNX Runtime, CPU): one logit per 224 px face crop, higher = more likely a
+blended/swapped face. The default is our blend CNN (research/video/train_sbi.py: real faces
+and self-blended pseudo-fakes only). Any ONNX model with the same input (ImageNet-normalised
+NCHW crops) and output (one fake-logit per crop) can take its place; which file runs, and how
+how often it samples a crop, is set by the "cnn" block of config/video_fusion.json
+(written by research/video/fit_fusion.py together with the fusion it was fitted with)."""
 
 from __future__ import annotations
 
+from collections.abc import Mapping
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
@@ -14,6 +19,21 @@ from satyapan.video.landmarks import VideoUnavailable, model_dir
 CNN_FILE = "blend_b0.onnx"
 _MEAN = np.array([0.485, 0.456, 0.406], np.float32)
 _STD = np.array([0.229, 0.224, 0.225], np.float32)
+
+
+@dataclass(frozen=True)
+class CnnSpec:
+    file: str = CNN_FILE
+    crop_every_s: float = 0.75  # = features.CROP_EVERY_S; a heavy model samples fewer crops
+
+    @classmethod
+    def from_config(cls, raw: Mapping[str, Any] | None) -> CnnSpec:
+        if not raw:
+            return cls()
+        return cls(
+            file=str(raw.get("file", CNN_FILE)),
+            crop_every_s=float(raw.get("crop_every_s", cls.crop_every_s)),
+        )
 
 
 class BlendScorer:

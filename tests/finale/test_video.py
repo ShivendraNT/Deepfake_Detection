@@ -451,3 +451,42 @@ def test_lipsync_uses_the_covered_part_of_a_short_clip() -> None:
     assert lipsync_features(t, talk, audio, 16000, FS)["av_corr"] > 0.5
     too_short = audio[: int(16000 * 2.0)]
     assert math.isnan(lipsync_features(t, talk, too_short, 16000, FS)["av_corr"])
+
+
+def test_a_heavy_crop_model_samples_fewer_crops_and_scores_each_once(monkeypatch) -> None:
+    import dataclasses
+
+    import satyapan.video.analyzer as an
+    from satyapan.video.cnn import CnnSpec
+    from satyapan.video.features import CROP_EVERY_S
+
+    assert CnnSpec().crop_every_s == CROP_EVERY_S
+    spec = CnnSpec.from_config({"file": "other.onnx", "crop_every_s": 2.25})
+    assert (spec.file, spec.crop_every_s) == ("other.onnx", 2.25)
+
+    class CountingScorer:
+        calls = 0
+
+        def logits(self, crops: np.ndarray) -> np.ndarray:
+            CountingScorer.calls += len(crops)
+            return np.zeros(len(crops), np.float32)
+
+    real_observe = an.observe
+
+    def observe(rgb, t, pts, jaw_open, want_crop=False):  # crops without OpenCV
+        rec = real_observe(rgb, t, pts, jaw_open, want_crop=False)
+        crop = np.zeros((224, 224, 3), np.uint8) if want_crop else None
+        return dataclasses.replace(rec, crop=crop)
+
+    monkeypatch.setattr(an, "observe", observe)
+    analyzer = _fake_analyzer()
+    analyzer.scorer = CountingScorer()  # type: ignore[assignment]
+    analyzer.crop_every_s = 2.25
+    stream = analyzer.new_stream()
+    windows = stream.add_frames(_frames(12.2))
+    # 12 s -> 6 crops (0, 2.25, 4.5, 6.75, 9, 11.25 s). The windows 0-6, 3-9 and 6-12 s hold
+    # 3 + 2 + 3 = 8 crop slots; with the shared cache each crop is scored exactly once.
+    assert len(windows) == 3
+    assert CountingScorer.calls == 6
+    assert all(t >= 9.0 for t in stream._logits)  # logits of past windows are forgotten
+    stream.close()
