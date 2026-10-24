@@ -8,7 +8,8 @@ voice dubbed over it, or a talking-head generator, breaks or shifts that link.
   av_corr  best Pearson correlation over lags in [-0.4, 0.4] s
   av_lag   the |lag| (s) at which it is best
 
-Only computed when there is speech in at least 25% of the window; otherwise NaN (abstain).
+Only computed when the audio covers >= 70% of the window and there is speech in at least 25%
+of it; otherwise NaN (abstain).
 """
 
 from __future__ import annotations
@@ -17,6 +18,7 @@ import numpy as np
 
 MAX_LAG_S = 0.4
 MIN_SPEECH_FRACTION = 0.25
+MIN_AUDIO_COVERAGE = 0.7  # the audio must cover most of the window (live buffers, short clips)
 
 
 def envelope_at(audio: np.ndarray, sr: int, times: np.ndarray, half_s: float = 0.04) -> np.ndarray:
@@ -56,9 +58,13 @@ def lipsync_features(
     grid = np.arange(t[ok][0], t[ok][-1] + 1e-9, 1.0 / fs)
     m = np.interp(grid, t[ok], mouth[ok])
     env = envelope_at(audio, sr, grid)
+    covered = np.isfinite(env)
+    if covered.mean() < MIN_AUDIO_COVERAGE:
+        return out  # the audio does not cover this window: abstain
+    m, env = m[covered], env[covered]
     speech = speech_mask(env)
     out["speech_frac"] = float(speech.mean())
-    if speech.mean() < MIN_SPEECH_FRACTION or not np.isfinite(env).all():
+    if speech.mean() < MIN_SPEECH_FRACTION:
         return out
     max_lag = int(round(MAX_LAG_S * fs))
     best, best_lag = -1.0, 0

@@ -441,3 +441,13 @@ def test_a_patch_leaving_the_frame_does_not_break_the_window() -> None:
         recs.append(FrameRecord(t=i / FS, found=True, face_w=150, luma=120, patches=patches))
     feats = F.window_features(recs)
     assert math.isfinite(feats["light_chroma_gap"])
+
+
+def test_lipsync_uses_the_covered_part_of_a_short_clip() -> None:
+    rng = _rng(5)
+    t = np.arange(0, 6, 1 / FS)
+    talk = np.clip(np.sin(2 * np.pi * 2.5 * t) + 0.4, 0, None)
+    audio = _speech(talk, 16000, rng)[: int(16000 * 5.0)]  # audio ends 1 s early
+    assert lipsync_features(t, talk, audio, 16000, FS)["av_corr"] > 0.5
+    too_short = audio[: int(16000 * 2.0)]
+    assert math.isnan(lipsync_features(t, talk, too_short, 16000, FS)["av_corr"])
