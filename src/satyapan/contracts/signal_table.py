@@ -81,6 +81,16 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
     ReasonCode.VIDEO_LIKELY_SYNTHETIC: SignalSpec(
         SignalGroup.MEDIA, TargetRule.PLUS_ONE, Strength.STRONG, _ML
     ),
+    # --- media: still image (same face CNN, one crop; ML) ---
+    ReasonCode.IMAGE_FACE_NO_SIGNS: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.NONE, Strength.WEAK, _ML
+    ),
+    ReasonCode.IMAGE_FACE_INCONCLUSIVE: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.NONE, Strength.WEAK, _ML
+    ),
+    ReasonCode.IMAGE_FACE_LIKELY_SYNTHETIC: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.PLUS_ONE, Strength.STRONG, _ML
+    ),
     # --- ask (C5, deterministic) ---
     ReasonCode.ASK_NEW_ACCOUNT: SignalSpec(SignalGroup.ASK, TargetRule.VERIFY, Strength.WEAK, _DET),
     ReasonCode.ASK_CREDENTIAL: SignalSpec(SignalGroup.ASK, TargetRule.HOLD, Strength.STRONG, _DET),

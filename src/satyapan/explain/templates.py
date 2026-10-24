@@ -174,6 +174,26 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.HI: "वीडियो में दिख रहा चेहरा लगातार दो हिस्सों में बदला हुआ या AI से बना लगता है। "
         "इस कॉल पर कार्रवाई न करें; OOB-Confirm या दर्ज नंबर पर कॉल-बैक के ज़रिए पुष्टि करें।",
     },
+    # --- still image (face) ---
+    ReasonCode.IMAGE_FACE_NO_SIGNS: {
+        Lang.EN: "The face check found no signs of a swapped or generated face in this image. "
+        "A photo proves nothing about who sent it; confirm the request out of band.",
+        Lang.HI: "चेहरे की जाँच में इस तस्वीर में बदले हुए या AI से बने चेहरे के संकेत नहीं मिले। "
+        "तस्वीर से यह साबित नहीं होता कि भेजने वाला कौन है; दूसरे चैनल से पुष्टि करें।",
+    },
+    ReasonCode.IMAGE_FACE_INCONCLUSIVE: {
+        Lang.EN: "The face check could not decide on this image, or no face was large enough "
+        "to check. Treat it as undecided and confirm the request out of band.",
+        Lang.HI: "चेहरे की जाँच इस तस्वीर पर तय नहीं कर पाई, या कोई चेहरा जाँच के लिए काफ़ी बड़ा "
+        "नहीं था। इसे अनिर्णित मानें और दूसरे चैनल से पुष्टि करें।",
+    },
+    ReasonCode.IMAGE_FACE_LIKELY_SYNTHETIC: {
+        Lang.EN: "The face in this image shows signs of being swapped or AI-generated. Do not "
+        "trust the photo as proof of identity; confirm through OOB-Confirm or a callback on "
+        "the number on file.",
+        Lang.HI: "इस तस्वीर का चेहरा बदला हुआ या AI से बना लगता है। इसे पहचान का सबूत न मानें; "
+        "OOB-Confirm या दर्ज नंबर पर कॉल-बैक के ज़रिए पुष्टि करें।",
+    },
     # --- asks ---
     ReasonCode.ASK_NEW_ACCOUNT: {
         Lang.EN: "The message asks you to pay a new or changed bank account. Do not update the "

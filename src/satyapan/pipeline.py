@@ -47,6 +47,8 @@ class PipelineContext:
     # Scam-text model (docs/TEXT_BENCHMARK.md): a TextRiskModel, or None. Research runs keep
     # None so the frozen-lexicon numbers reproduce.
     text_model: Any = None
+    # Still images: an ImageFaceChecker (face CNN on one crop), or None if unavailable.
+    image: Any = None
 
 
 def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> DetectorOutput:
@@ -211,6 +213,37 @@ def _video(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detec
     return out
 
 
+def _image(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
+    """A photo or screenshot: is the face swapped/generated, and what does the text in it ask?
+
+    Either half may be unavailable on a laptop (no face model, no OCR); that is reported in
+    the artifacts as "not_analysed", an abstention and never a pass. ValueError (not an
+    image) becomes a grey PARSE_FAILURE in _run."""
+    from satyapan.imagecheck.face import decode_image
+
+    rgb = decode_image(data)
+    out = DetectorOutput(detector="image", version="0.1.0", evidence_id=ev.id)
+    out.artifacts["size"] = [int(rgb.shape[1]), int(rgb.shape[0])]
+    if ctx.image is not None:
+        from satyapan.imagecheck.face import image_face_signal
+
+        verdict = ctx.image.check(rgb)
+        out.signals.append(image_face_signal(verdict, ctx.image, ev.id))
+        out.artifacts["face_label"] = verdict.code.value
+        out.artifacts["face_problem"] = verdict.problem
+    else:
+        out.artifacts["face_label"] = "not_analysed"
+    from satyapan.imagecheck.ocr import OcrUnavailable, read_text
+
+    try:
+        text = read_text(rgb)
+    except OcrUnavailable as exc:
+        out.artifacts["ocr"] = str(exc)
+        return out
+    out.artifacts["ocr_text"] = text[:2000]
+    return _asks(text, ev.id, ctx, out) if text.strip() else out
+
+
 def _text(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:
     text = data.decode("utf-8", errors="replace")
     out = DetectorOutput(detector="ask_extractor", version="see lexicon", evidence_id=ev.id)
@@ -223,6 +256,7 @@ _DISPATCH: dict[Channel, Callable[[bytes, Evidence, Case, PipelineContext], Dete
     Channel.VOICE_NOTE: _voice,
     Channel.CALL_RECORDING: _voice,
     Channel.VIDEO: _video,
+    Channel.IMAGE: _image,
     Channel.WHATSAPP_TEXT: _text,
     Channel.MANUAL: _text,
 }

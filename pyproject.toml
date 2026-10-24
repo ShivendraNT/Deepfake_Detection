@@ -37,6 +37,9 @@ video = [
   "mediapipe>=0.10.21; (sys_platform != 'darwin' or platform_machine != 'x86_64') and (sys_platform != 'win32' or platform_machine != 'ARM64')",
   "mediapipe==0.10.21; sys_platform == 'darwin' and platform_machine == 'x86_64' and python_version < '3.13'",
 ]
+# Text inside photos / screenshots (src/satyapan/imagecheck/ocr.py): RapidOCR, Apache-2.0, ONNX
+# models bundled, CPU, any OS. Optional: without it images are still face-checked.
+ocr = ["rapidocr-onnxruntime>=1.4"]
 # Video research (research/video/): training the blend CNN, CV, the benchmark. CPU is enough
 # (CPU torch: `uv pip install torch --index-url https://download.pytorch.org/whl/cpu`).
 video-research = ["torch>=2.3", "timm>=1.0", "onnx>=1.16", "scikit-learn>=1.4", "pandas>=2.1"]
