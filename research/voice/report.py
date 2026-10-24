@@ -58,8 +58,8 @@ def render(r: dict[str, Any]) -> str:
             f"## {name}" + (" (shipped)" if name == sel["decision"] else ""),
             "",
             "| Set / channel | n bonafide / spoof | AUC | EER | spoof caught @ tau_hi "
-            "| bonafide flagged @ tau_hi |",
-            "|---|---|---|---|---|---|",
+            "| bonafide flagged @ tau_hi | spoof @ tau_lo | bonafide @ tau_lo |",
+            "|---|---|---|---|---|---|---|---|",
         ]
         for key, b in res.items():
             if key == "per_attack":
@@ -67,7 +67,8 @@ def render(r: dict[str, Any]) -> str:
             out.append(
                 f"| {key} | {b['n_bonafide']} / {b['n_spoof']} | {_ci(b['auc'])} | "
                 f"{_ci(b['eer'])} | "
-                f"{_rate(b.get('tpr@tau_hi'))} | {_rate(b.get('fpr@tau_hi'))} |"
+                f"{_rate(b.get('tpr@tau_hi'))} | {_rate(b.get('fpr@tau_hi'))} | "
+                f"{_rate(b.get('tpr@tau_lo'))} | {_rate(b.get('fpr@tau_lo'))} |"
             )
         if "per_attack" in res:
             out += ["", "ASVspoof 2019 eval, AUC per attack (vs all bonafide): " + ", ".join(
