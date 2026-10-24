@@ -225,7 +225,19 @@ named rule. Never a bare score.
 - consent per call; never the microphone;
 - transcripts never leave the call session.
 
+**Errors by language** (whole consumer path, held-out texts, `results/consumer_text_eval.md`):
+
+| Language | Genuine texts flagged |
+|---|---|
+| English | 3.2 % (n = 3,375) |
+| English/Hindi SMS | 0.6 % (n = 711) |
+| Hindi | 0 % (n = 35) |
+| Hinglish | **6.2 %** (n = 64): the worst; the text model learned Hinglish mostly from scam calls |
+| Other Indian languages | 0.6 % (n = 178) |
+
+Scams are flagged at 96–100 % in each language.
+
 **Known gaps:**
-- English and Hindi only; Devanagari asks are the weakest (recall 0.15).
+- Explanations are in English and Hindi only; Devanagari asks are the weakest (recall 0.15).
 - Face thresholds come from FF++ broadcast video, not webcams (`calibrated: false`).
 - No per-demographic error audit yet.
