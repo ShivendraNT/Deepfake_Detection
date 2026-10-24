@@ -68,8 +68,8 @@ videos, seeded, with a sha256 manifest (`results/kit_manifest.json`). The result
 | **All** | **68 / 96** | **87 / 88** |
 
 Satya is built to keep false alarms rare, and accepts misses to do so. Of the 28 misses:
-- 17 are faces, mostly unseen or expression-only methods (FaceShifter, NeuralTextures), which
-  the benchmarks name;
+- 21 are faces (12 photos, 9 videos, 2 of those videos with no usable face), mostly unseen
+  or expression-only methods (FaceShifter, NeuralTextures), which the benchmarks name;
 - 5 are cloned voices scored under τ_lo;
 - 2 are scam texts with no ask and no scam wording.
 
