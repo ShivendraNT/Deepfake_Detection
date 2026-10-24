@@ -1,0 +1,1109 @@
+{
+ "seed": 20261024,
+ "files": [
+  {
+   "file": "scam_text_clair_fraud_00.txt",
+   "source": "text/clair_fraud/test",
+   "label": 1,
+   "sha256": "b8822a0cbbeb5d07691b6b4eb0457fc93b59437c7bfd6a2422f125b7dbc526ca"
+  },
+  {
+   "file": "scam_text_hinglish_calls_01.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 1,
+   "sha256": "44c0dbd92673e419412316ea0b98aeeddbd08faa66fd48a7f910bbb28ffe4bb7"
+  },
+  {
+   "file": "scam_text_india_14lang_02.txt",
+   "source": "text/india_14lang/test",
+   "label": 1,
+   "sha256": "6b9160f8c98f37b968a922796df639767b278e1912fdd9913c9e950d5f2abadf"
+  },
+  {
+   "file": "scam_text_india_sms_03.txt",
+   "source": "text/india_sms/test",
+   "label": 1,
+   "sha256": "bf35a526d1a9c964741e0a52f5ad63ef808a2077601eb79cbd7be692ca185880"
+  },
+  {
+   "file": "scam_text_phish_email_04.txt",
+   "source": "text/phish_email/test",
+   "label": 1,
+   "sha256": "e01d9fbf43008906b0a7e9ad86a4cd17e4e4ea9361de8f5326382a2a6299fda6"
+  },
+  {
+   "file": "scam_text_scam_dialogue_05.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 1,
+   "sha256": "1baf85f5240b27bc48e1708a5d305ecb75af4b3192a4cea50563301e7d47b45c"
+  },
+  {
+   "file": "scam_text_uci_sms_06.txt",
+   "source": "text/uci_sms/test",
+   "label": 1,
+   "sha256": "d19743f12c33851842ebcc44814c575b59cca18cd6a760012b1428392d574a3f"
+  },
+  {
+   "file": "scam_text_clair_fraud_07.txt",
+   "source": "text/clair_fraud/test",
+   "label": 1,
+   "sha256": "813200b67999cd83dba164098c2b400bc6a433a805b908b8ee021da8da0228a8"
+  },
+  {
+   "file": "scam_text_hinglish_calls_08.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 1,
+   "sha256": "244eaafb7fc2117ca581bab2a09af49c2fb96f1a2f1be44468d0d7dafbe5128d"
+  },
+  {
+   "file": "scam_text_india_14lang_09.txt",
+   "source": "text/india_14lang/test",
+   "label": 1,
+   "sha256": "0da51459ea465f9d92c544ba9a0a9af0685f85710dece7b72675c903d4c9850f"
+  },
+  {
+   "file": "scam_text_india_sms_10.txt",
+   "source": "text/india_sms/test",
+   "label": 1,
+   "sha256": "e639e0295778bce365bada10ff9d0b7d2c67bf79c1906693820d5a132ec72be1"
+  },
+  {
+   "file": "scam_text_phish_email_11.txt",
+   "source": "text/phish_email/test",
+   "label": 1,
+   "sha256": "a6fa8e23f4cb14977ebeb20704bfff53cf95f9c67c18dc16b0886020af6888f2"
+  },
+  {
+   "file": "scam_text_scam_dialogue_12.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 1,
+   "sha256": "1a1cf182075451b30d655e055706e48164e61fd3ef632bfc5891e2965bbee99c"
+  },
+  {
+   "file": "scam_text_uci_sms_13.txt",
+   "source": "text/uci_sms/test",
+   "label": 1,
+   "sha256": "a2bda8b7818b55ed5a92690e367d16b0dc3650ccd972e73747dc320ba565bf62"
+  },
+  {
+   "file": "scam_text_clair_fraud_14.txt",
+   "source": "text/clair_fraud/test",
+   "label": 1,
+   "sha256": "2ca332bc3ac3f16b3626e57f4f8c4ebde4740d851c3c22d0e45332f20aa97a41"
+  },
+  {
+   "file": "scam_text_hinglish_calls_15.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 1,
+   "sha256": "c60d2250cb3b9b68bfee0a611237ddd8e9e34b5dc5cf22ef1904a50776d3a2a1"
+  },
+  {
+   "file": "scam_text_india_14lang_16.txt",
+   "source": "text/india_14lang/test",
+   "label": 1,
+   "sha256": "398fc89589607b706b13856edd525944cc9eaca9450dc3040192640693c6cb67"
+  },
+  {
+   "file": "scam_text_india_sms_17.txt",
+   "source": "text/india_sms/test",
+   "label": 1,
+   "sha256": "cb8349d1fe7b82fa0d34385462eb40a134cb9d35a58b15318cbb42594118a125"
+  },
+  {
+   "file": "scam_text_phish_email_18.txt",
+   "source": "text/phish_email/test",
+   "label": 1,
+   "sha256": "6debc9ef072150f145dc85e065c6b862916ed13a558ae4952b1f123b84c13135"
+  },
+  {
+   "file": "scam_text_scam_dialogue_19.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 1,
+   "sha256": "eeb9599c2c4f532144c0aa92a6fc7423be975bc30c482eae8c9e55b001edd23d"
+  },
+  {
+   "file": "scam_text_uci_sms_20.txt",
+   "source": "text/uci_sms/test",
+   "label": 1,
+   "sha256": "738ff48acba230c4b123853c3184d2db673896f7003c1243bf41c81331023e02"
+  },
+  {
+   "file": "scam_text_clair_fraud_21.txt",
+   "source": "text/clair_fraud/test",
+   "label": 1,
+   "sha256": "8c99ebbaf1f78af91a2f918eee3e42372eb2972615b4fd98dadc4974144ee8e3"
+  },
+  {
+   "file": "scam_text_hinglish_calls_22.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 1,
+   "sha256": "6f2a9f3bcc700ca0b18ec3d9a73a5e1736a372b03c5ef024c0428156513ebd29"
+  },
+  {
+   "file": "scam_text_india_14lang_23.txt",
+   "source": "text/india_14lang/test",
+   "label": 1,
+   "sha256": "21bb9dff9582bc1bed6c75dba9c003783875426cee678c5cd5e1d60ecdc0a41c"
+  },
+  {
+   "file": "scam_text_india_sms_24.txt",
+   "source": "text/india_sms/test",
+   "label": 1,
+   "sha256": "b7351eb43a03bde54d3656104d15b4684db66f0ad916db2f20a3ef445c326113"
+  },
+  {
+   "file": "scam_text_phish_email_25.txt",
+   "source": "text/phish_email/test",
+   "label": 1,
+   "sha256": "f43f128f1b6d8ba12e2b8725fe6ae9de8ef8bfffb4ab80ffb6174c957ecf59fb"
+  },
+  {
+   "file": "scam_text_scam_dialogue_26.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 1,
+   "sha256": "5c1903bb67f99e7d950c4d13bdbf948e90aac965d387f11319694f724c980ec1"
+  },
+  {
+   "file": "scam_text_uci_sms_27.txt",
+   "source": "text/uci_sms/test",
+   "label": 1,
+   "sha256": "db052adc0108de6ae384cfac52ccf6ff0fba4eaa8f04b13ec3bcce847dd81be7"
+  },
+  {
+   "file": "scam_text_clair_fraud_28.txt",
+   "source": "text/clair_fraud/test",
+   "label": 1,
+   "sha256": "64f7c3026a3d37f525630482189549c6c4d0f1c04c94016d7b0e2df0924ef18f"
+  },
+  {
+   "file": "scam_text_hinglish_calls_29.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 1,
+   "sha256": "55df4a87425f8d04a0687422d29b9592fb104de0a0c3ac44a6c87e3aef92d222"
+  },
+  {
+   "file": "scam_text_india_14lang_30.txt",
+   "source": "text/india_14lang/test",
+   "label": 1,
+   "sha256": "bc7785ea96da5fb246cef1b49ac844cdead897b0584e2c523e3d9e04384ca8e9"
+  },
+  {
+   "file": "scam_text_india_sms_31.txt",
+   "source": "text/india_sms/test",
+   "label": 1,
+   "sha256": "8754ab845a161d9582aafe9c5dbbc7c911183de21be1158974cb60ee7a8f9df5"
+  },
+  {
+   "file": "scam_text_phish_email_32.txt",
+   "source": "text/phish_email/test",
+   "label": 1,
+   "sha256": "4f1d456c958c862244502735d36fd7816d023ac31edfe669e897c8ed970bc6d0"
+  },
+  {
+   "file": "scam_text_scam_dialogue_33.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 1,
+   "sha256": "86a0963ecd64360c3a8ce193689228608431b32104b6f5d3b47c1f692dca4363"
+  },
+  {
+   "file": "scam_text_uci_sms_34.txt",
+   "source": "text/uci_sms/test",
+   "label": 1,
+   "sha256": "9646238d614953b112326ddc8efe215ded80a7efa612c22c1097e4462f6e4812"
+  },
+  {
+   "file": "scam_text_clair_fraud_35.txt",
+   "source": "text/clair_fraud/test",
+   "label": 1,
+   "sha256": "72b02ca3a06fe378a2c2a7757106dca18528c97fa0cf126a5f91f54f072b603a"
+  },
+  {
+   "file": "scam_text_hinglish_calls_36.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 1,
+   "sha256": "1b38550c788c50fa6dae0c28c5b68b40a5a131d67a46dee9e8f4ad1b0dfee1a7"
+  },
+  {
+   "file": "scam_text_india_14lang_37.txt",
+   "source": "text/india_14lang/test",
+   "label": 1,
+   "sha256": "d56c6a0fe45093b058bfe0ad5e6a0921b8d6328cd3f2e0fe6f6798c77a85b37e"
+  },
+  {
+   "file": "scam_text_india_sms_38.txt",
+   "source": "text/india_sms/test",
+   "label": 1,
+   "sha256": "88981ec438165d4b6535ca1be8fb2a567e0ce53aee2c496270c40258a84822e9"
+  },
+  {
+   "file": "scam_text_phish_email_39.txt",
+   "source": "text/phish_email/test",
+   "label": 1,
+   "sha256": "16692ac3a18d96cef6747ce0389c95e11b5862ac5a18224366bfb320b94ad30d"
+  },
+  {
+   "file": "real_text_clair_fraud_00.txt",
+   "source": "text/clair_fraud/test",
+   "label": 0,
+   "sha256": "c5423d3c736372cd1a45f7f103743df3bf9a7e10f358383f09fc02162dd9256a"
+  },
+  {
+   "file": "real_text_hinglish_calls_01.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 0,
+   "sha256": "d4f910aee2db6cd87e0a3af8da43cc29b935616f88a8b5663c68af5524d22e60"
+  },
+  {
+   "file": "real_text_india_14lang_02.txt",
+   "source": "text/india_14lang/test",
+   "label": 0,
+   "sha256": "ff142b708ae3c3ba3981780936a8d2d848da86e7e52d3d8e8cc8e3b6da0d70eb"
+  },
+  {
+   "file": "real_text_india_sms_03.txt",
+   "source": "text/india_sms/test",
+   "label": 0,
+   "sha256": "6957de69e92862877bcd55737c1164fa0a05243574ff9e710326e179b8e329bf"
+  },
+  {
+   "file": "real_text_phish_email_04.txt",
+   "source": "text/phish_email/test",
+   "label": 0,
+   "sha256": "9345f1db17b1be144ccd4e59421e19153abc5efeb77728fda7ce4583b45a5dc8"
+  },
+  {
+   "file": "real_text_scam_dialogue_05.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 0,
+   "sha256": "38d62dd302c51a0530d1a79e0cd984ec6348734a10d15f75cc567df9b2b05431"
+  },
+  {
+   "file": "real_text_uci_sms_06.txt",
+   "source": "text/uci_sms/test",
+   "label": 0,
+   "sha256": "55069f96b3fd8a0115533b2cf65fee65b61c97e351ebef56765361a8486a580c"
+  },
+  {
+   "file": "real_text_clair_fraud_07.txt",
+   "source": "text/clair_fraud/test",
+   "label": 0,
+   "sha256": "57e5eaef3cb6b3460bfd90c9340f21fe4ef79dfc631cf0efc56825c0f9edb7d3"
+  },
+  {
+   "file": "real_text_hinglish_calls_08.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 0,
+   "sha256": "596480f9e0f5d6b530d618d0c1f211b325a8dbc4d0579ff9ddd69c667308a3f4"
+  },
+  {
+   "file": "real_text_india_14lang_09.txt",
+   "source": "text/india_14lang/test",
+   "label": 0,
+   "sha256": "250ced8c29830152ef5e2a369525e73866f6b6f9e6419f132140062f0dcdb606"
+  },
+  {
+   "file": "real_text_india_sms_10.txt",
+   "source": "text/india_sms/test",
+   "label": 0,
+   "sha256": "c32765bff2dffb153ee284d9ff318a487b34c8882fe8ca91e726cf2c71db5bc9"
+  },
+  {
+   "file": "real_text_phish_email_11.txt",
+   "source": "text/phish_email/test",
+   "label": 0,
+   "sha256": "043fa742d83ea0bc21fde874062d6d81d0f569a30331bc3a911128c825ddf727"
+  },
+  {
+   "file": "real_text_scam_dialogue_12.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 0,
+   "sha256": "8c46cb31a7f2af2b5c7edf644fd2bd5dfbcb984a318e08e752b0b7b938a213d7"
+  },
+  {
+   "file": "real_text_uci_sms_13.txt",
+   "source": "text/uci_sms/test",
+   "label": 0,
+   "sha256": "6abcdccf8f76b2e69bd144ab619e97f43a8b035c5f383195a1f166338657066c"
+  },
+  {
+   "file": "real_text_clair_fraud_14.txt",
+   "source": "text/clair_fraud/test",
+   "label": 0,
+   "sha256": "4d517fee267678cf8e32cde5afaab9d2ce77623739f56108662df2f09c667ff4"
+  },
+  {
+   "file": "real_text_hinglish_calls_15.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 0,
+   "sha256": "6689be05b3e3f2b259592460853bba9f7961cc3696b8206d5439d3dcacdbb0cc"
+  },
+  {
+   "file": "real_text_india_14lang_16.txt",
+   "source": "text/india_14lang/test",
+   "label": 0,
+   "sha256": "a5655a08338f5cfdf6651f52cd1b2b9b3003a87b28703ce5e2a64b8263076dba"
+  },
+  {
+   "file": "real_text_india_sms_17.txt",
+   "source": "text/india_sms/test",
+   "label": 0,
+   "sha256": "77a10cf865729f35c2cda6a1ca6751b8afc4d1d4ca1c8a82af157214d6d080e5"
+  },
+  {
+   "file": "real_text_phish_email_18.txt",
+   "source": "text/phish_email/test",
+   "label": 0,
+   "sha256": "804178f3f0bef154c9f1eef4330a95e53867484996bbaa21976a68faa2827cd8"
+  },
+  {
+   "file": "real_text_scam_dialogue_19.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 0,
+   "sha256": "352c6fba808668d471f32e5aeef2c99161c198314c8d7097ed1e3fc45daf3b2c"
+  },
+  {
+   "file": "real_text_uci_sms_20.txt",
+   "source": "text/uci_sms/test",
+   "label": 0,
+   "sha256": "846ca5b51dba86e33a3d2d01c4394739635f83af0cfac9bb5edc277aa68f07ab"
+  },
+  {
+   "file": "real_text_clair_fraud_21.txt",
+   "source": "text/clair_fraud/test",
+   "label": 0,
+   "sha256": "adac5dc672d7a2b4cfcb2e11a0a9131f3ef3771f69fcf329b7cfbc343ad598ba"
+  },
+  {
+   "file": "real_text_hinglish_calls_22.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 0,
+   "sha256": "d544b43366b73c35840f78e76e8a5eb730f0401a03776f44904b9fe771015053"
+  },
+  {
+   "file": "real_text_india_14lang_23.txt",
+   "source": "text/india_14lang/test",
+   "label": 0,
+   "sha256": "c4d90959c8657578730a851a24b7e55704f0910bba98339380ed80911a6f78d4"
+  },
+  {
+   "file": "real_text_india_sms_24.txt",
+   "source": "text/india_sms/test",
+   "label": 0,
+   "sha256": "8ea0524964aa97b05612b7de820a6bb2a1e10a2eaaf91abc3c39ebdfd4db8c7c"
+  },
+  {
+   "file": "real_text_phish_email_25.txt",
+   "source": "text/phish_email/test",
+   "label": 0,
+   "sha256": "1a355d75141142a2b49421802ea53d30060d082497474c73e93d6c40d2a8bace"
+  },
+  {
+   "file": "real_text_scam_dialogue_26.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 0,
+   "sha256": "37679d29db61f0edd2b2e103380fce759eadd498a57354bb867dcd9151e9d779"
+  },
+  {
+   "file": "real_text_uci_sms_27.txt",
+   "source": "text/uci_sms/test",
+   "label": 0,
+   "sha256": "f1cea21966dd8c3046f43e9388a541a5c63544f37f30e7d266a65cff66b90fea"
+  },
+  {
+   "file": "real_text_clair_fraud_28.txt",
+   "source": "text/clair_fraud/test",
+   "label": 0,
+   "sha256": "e4dd42c1384f4f5f52f232828721e0a7bbf3bd8eb6857fecf5c310938bd8ae54"
+  },
+  {
+   "file": "real_text_hinglish_calls_29.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 0,
+   "sha256": "ee5dfb284b619dba3722000970b87d1f0521c1327f2599ea8e41aea05e349586"
+  },
+  {
+   "file": "real_text_india_14lang_30.txt",
+   "source": "text/india_14lang/test",
+   "label": 0,
+   "sha256": "9f444ff178e4b1025ad391dc14a399b53f26f07da0cb62e38f6c517e3c7a527d"
+  },
+  {
+   "file": "real_text_india_sms_31.txt",
+   "source": "text/india_sms/test",
+   "label": 0,
+   "sha256": "3808c17f6c775b10ba88a29d476fd2db224835bc20f6bcbeed3b46d4fb9a8dc8"
+  },
+  {
+   "file": "real_text_phish_email_32.txt",
+   "source": "text/phish_email/test",
+   "label": 0,
+   "sha256": "3a29866558d5be9fabe2933b8ea33b2257743ade52d0c72d452c22cf38f7b6a4"
+  },
+  {
+   "file": "real_text_scam_dialogue_33.txt",
+   "source": "text/scam_dialogue/test",
+   "label": 0,
+   "sha256": "77ca7857132ca0a897d57313dd75067b77d825501b3615c9bb8fe543fc9e908a"
+  },
+  {
+   "file": "real_text_uci_sms_34.txt",
+   "source": "text/uci_sms/test",
+   "label": 0,
+   "sha256": "4f2159b47a9c0efe29a718483c2d7f6f6df3478f20a5e4dab1a7d21db08e167c"
+  },
+  {
+   "file": "real_text_clair_fraud_35.txt",
+   "source": "text/clair_fraud/test",
+   "label": 0,
+   "sha256": "5c24cb314655f9d64e57a225501c7755d25ff760dac6d01a92b8bbaee7a32f77"
+  },
+  {
+   "file": "real_text_hinglish_calls_36.txt",
+   "source": "text/hinglish_calls/test",
+   "label": 0,
+   "sha256": "2855f9c4471a02f18bf89dab40263a3f47e1cc84da2ba992c7dd9a868c86084f"
+  },
+  {
+   "file": "real_text_india_14lang_37.txt",
+   "source": "text/india_14lang/test",
+   "label": 0,
+   "sha256": "71fdd3a19dc6000ef9e83f4e3000618d3b9ca5906c69df775425cc6a807152a2"
+  },
+  {
+   "file": "real_text_india_sms_38.txt",
+   "source": "text/india_sms/test",
+   "label": 0,
+   "sha256": "215b873d982dec40528ba695e1992a21bb64fed6e146871951aff20a321237fc"
+  },
+  {
+   "file": "real_text_phish_email_39.txt",
+   "source": "text/phish_email/test",
+   "label": 0,
+   "sha256": "ec7dc829ff97bb70cae35fa26f49095c5f603a81e7ea750e7d5dc4339778986e"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceSwap_682_669.jpg",
+   "source": "video/ffpp/FaceSwap/682_669 (test, frame)",
+   "label": 1,
+   "sha256": "963cdd0165ea749fc2b995beba34c664ce2a7d11288dced42be98a5d42a66aa2"
+  },
+  {
+   "file": "fake_photo_ffpp_NeuralTextures_847_906.jpg",
+   "source": "video/ffpp/NeuralTextures/847_906 (test, frame)",
+   "label": 1,
+   "sha256": "16cbbfa09b3f0e9f4f1a65bb4be4724a7ab05224ad7aaa407038048b5e3ea0f8"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceShifter_812_821.jpg",
+   "source": "video/ffpp/FaceShifter/812_821 (test, frame)",
+   "label": 1,
+   "sha256": "41abd7d68dcd43c69925d2c48955acb4eaf3e89793c92dace9b443e38b9741cc"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceSwap_759_755.jpg",
+   "source": "video/ffpp/FaceSwap/759_755 (test, frame)",
+   "label": 1,
+   "sha256": "3ec7bd4b65932ac6be2e21ea6fd0253ab10eb1c5afe8c58510032975d9bcd685"
+  },
+  {
+   "file": "fake_photo_ffpp_NeuralTextures_376_381.jpg",
+   "source": "video/ffpp/NeuralTextures/376_381 (test, frame)",
+   "label": 1,
+   "sha256": "5ee6e9b08e54c0af500c5a62ac3a8008f594563a069e3df0fd205c065be67482"
+  },
+  {
+   "file": "fake_photo_ffpp_Face2Face_868_949.jpg",
+   "source": "video/ffpp/Face2Face/868_949 (test, frame)",
+   "label": 1,
+   "sha256": "1cae0a177f74a0e3ae0121600f01ad579b6120f21243819dd4ccd06a2a1ca773"
+  },
+  {
+   "file": "fake_photo_ffpp_NeuralTextures_732_691.jpg",
+   "source": "video/ffpp/NeuralTextures/732_691 (test, frame)",
+   "label": 1,
+   "sha256": "0f68a24219f955da5572421c1894355775138e069d961efff32d9498b3d24d2e"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceShifter_847_906.jpg",
+   "source": "video/ffpp/FaceShifter/847_906 (test, frame)",
+   "label": 1,
+   "sha256": "773558fc7c38897b8ba0be3e65a151b418ecea6f3090083d85ba36f647a3dea3"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceShifter_306_278.jpg",
+   "source": "video/ffpp/FaceShifter/306_278 (test, frame)",
+   "label": 1,
+   "sha256": "f55b4a853fcf554bbe8e19ad2fc6d624b07b94187f727151e84961cbf900243a"
+  },
+  {
+   "file": "fake_photo_ffpp_NeuralTextures_399_488.jpg",
+   "source": "video/ffpp/NeuralTextures/399_488 (test, frame)",
+   "label": 1,
+   "sha256": "80c9ecdb7928f154eff278d8ba8777198c0f96dbeac83f07111edcf2d62c074b"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceShifter_233_995.jpg",
+   "source": "video/ffpp/FaceShifter/233_995 (test, frame)",
+   "label": 1,
+   "sha256": "00dfe74d7dc080463a560ee35779323b5e12d782d7b7a382a9ef9ca9d7dc0c72"
+  },
+  {
+   "file": "fake_photo_ffpp_NeuralTextures_308_388.jpg",
+   "source": "video/ffpp/NeuralTextures/308_388 (test, frame)",
+   "label": 1,
+   "sha256": "999cfe8615cbd692b227a119af2f19b392510c6cc1d96d41651c534e43905aea"
+  },
+  {
+   "file": "fake_photo_ffpp_NeuralTextures_865_739.jpg",
+   "source": "video/ffpp/NeuralTextures/865_739 (test, frame)",
+   "label": 1,
+   "sha256": "ed225b6570b7d40edbe794740b4c69d3d781c10e7a705063e58b26336b38b87f"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceShifter_480_389.jpg",
+   "source": "video/ffpp/FaceShifter/480_389 (test, frame)",
+   "label": 1,
+   "sha256": "01a4009381a7220ee1c0018b56deb42db9b840ae005743ac6dcdca67b37ea1ef"
+  },
+  {
+   "file": "fake_photo_ffpp_Face2Face_190_176.jpg",
+   "source": "video/ffpp/Face2Face/190_176 (test, frame)",
+   "label": 1,
+   "sha256": "214185e123a52f6c0cdfb376bc9fe40a9668a54a0433560f01ebf9caf86d6d62"
+  },
+  {
+   "file": "fake_photo_ffpp_NeuralTextures_367_371.jpg",
+   "source": "video/ffpp/NeuralTextures/367_371 (test, frame)",
+   "label": 1,
+   "sha256": "0a07982ce0eb51ef8e019ffc79094242f229f908f7f1db884e6ef8f2749b9a42"
+  },
+  {
+   "file": "fake_photo_ffpp_Deepfakes_706_479.jpg",
+   "source": "video/ffpp/Deepfakes/706_479 (test, frame)",
+   "label": 1,
+   "sha256": "c438bea2c91af21eafbd8ec4c352210f39c3f48854e0bea3b9b226972e5fb671"
+  },
+  {
+   "file": "fake_photo_ffpp_Face2Face_970_973.jpg",
+   "source": "video/ffpp/Face2Face/970_973 (test, frame)",
+   "label": 1,
+   "sha256": "88ccc651ccf011763c87a1c54e9f18deb4d4df204b3abdf29bc4c99c904f981b"
+  },
+  {
+   "file": "fake_photo_ffpp_FaceShifter_214_255.jpg",
+   "source": "video/ffpp/FaceShifter/214_255 (test, frame)",
+   "label": 1,
+   "sha256": "cae0f1e5feee53bfcc01fce185210f365474c6e76cdd9a191e23f421b95517a6"
+  },
+  {
+   "file": "fake_photo_ffpp_Deepfakes_421_423.jpg",
+   "source": "video/ffpp/Deepfakes/421_423 (test, frame)",
+   "label": 1,
+   "sha256": "ad62e6f2cd4067b3848f89981083e0e7b95771489b56209eb0c7ba14af16d3f9"
+  },
+  {
+   "file": "real_photo_ffpp_original_480.jpg",
+   "source": "video/ffpp/original/480 (test, frame)",
+   "label": 0,
+   "sha256": "0e1519c3c2af8e9787bae7b885327b92106f89cb2fa49658c364717a2533958a"
+  },
+  {
+   "file": "real_photo_ffpp_original_759.jpg",
+   "source": "video/ffpp/original/759 (test, frame)",
+   "label": 0,
+   "sha256": "a9ce0e073aae785786fe2872320c63b41b3d6a6e2b7477b5294ec0ad5b78abca"
+  },
+  {
+   "file": "real_photo_ffpp_original_670.jpg",
+   "source": "video/ffpp/original/670 (test, frame)",
+   "label": 0,
+   "sha256": "fca4082396ecdb48fdd334075431bf8fa407af79aed65bd2d89cdeee67c0ca0f"
+  },
+  {
+   "file": "real_photo_ffpp_original_485.jpg",
+   "source": "video/ffpp/original/485 (test, frame)",
+   "label": 0,
+   "sha256": "3ec7d933d6f33617039a03d77c34b7e80844b2396dd59ebfa5e6afda7231ee45"
+  },
+  {
+   "file": "real_photo_ffpp_original_608.jpg",
+   "source": "video/ffpp/original/608 (test, frame)",
+   "label": 0,
+   "sha256": "ff779106c8138a51bc9bd989f43d9c28453ee14cd0b3e268b0e7c11630640dfd"
+  },
+  {
+   "file": "real_photo_ffpp_original_249.jpg",
+   "source": "video/ffpp/original/249 (test, frame)",
+   "label": 0,
+   "sha256": "757e25893da6e51282107d6f150f8a1456cc4a007b1a706b3e54f80db4f6aea0"
+  },
+  {
+   "file": "real_photo_ffpp_original_932.jpg",
+   "source": "video/ffpp/original/932 (test, frame)",
+   "label": 0,
+   "sha256": "f28f023abd0a72e561701d7ba6a62c0e73c000481ccf501581b397ccc0091989"
+  },
+  {
+   "file": "real_photo_ffpp_original_219.jpg",
+   "source": "video/ffpp/original/219 (test, frame)",
+   "label": 0,
+   "sha256": "ec3ffe89fa3f7536b54b04dc1815d063a18258a596da2733c96d109e000af23a"
+  },
+  {
+   "file": "real_photo_ffpp_original_073.jpg",
+   "source": "video/ffpp/original/073 (test, frame)",
+   "label": 0,
+   "sha256": "06f39a50de82cc7396c54cd322f11196d6edf7cf5dbdac2e67997075c91f6ddb"
+  },
+  {
+   "file": "real_photo_ffpp_original_842.jpg",
+   "source": "video/ffpp/original/842 (test, frame)",
+   "label": 0,
+   "sha256": "9d49aace0308fae19a030c510a5703c51e9f7c2a6628b1af1166a376117af9bc"
+  },
+  {
+   "file": "real_photo_ffpp_original_660.jpg",
+   "source": "video/ffpp/original/660 (test, frame)",
+   "label": 0,
+   "sha256": "9d6106bb49cad966b5b9dea55bb301ef45d5e12a7f6059e034d57de12b6566ea"
+  },
+  {
+   "file": "real_photo_ffpp_original_227.jpg",
+   "source": "video/ffpp/original/227 (test, frame)",
+   "label": 0,
+   "sha256": "0f41d8be1892b4398bfe292b23510b5cbe72868c944ef7133e22d4f23bee649e"
+  },
+  {
+   "file": "real_photo_ffpp_original_102.jpg",
+   "source": "video/ffpp/original/102 (test, frame)",
+   "label": 0,
+   "sha256": "15b318435053550df1ea204feef299be3c69acbd3fe137fcf3342e9bc69d3c3d"
+  },
+  {
+   "file": "real_photo_ffpp_original_634.jpg",
+   "source": "video/ffpp/original/634 (test, frame)",
+   "label": 0,
+   "sha256": "a1bd6d1b5f1989cc48a4970435658cbd458eb59b12e09be66a43444d860445b9"
+  },
+  {
+   "file": "real_photo_ffpp_original_176.jpg",
+   "source": "video/ffpp/original/176 (test, frame)",
+   "label": 0,
+   "sha256": "0039248ae24fc6f87ea1dd3968ca72d63e6a826417150dd69845562875d20d4d"
+  },
+  {
+   "file": "real_photo_ffpp_original_000.jpg",
+   "source": "video/ffpp/original/000 (test, frame)",
+   "label": 0,
+   "sha256": "de5c617b1ac1a80249f4e10990bfe9c3f8dfe2be281f0beb258f3ae5a95782cb"
+  },
+  {
+   "file": "real_photo_ffpp_original_321.jpg",
+   "source": "video/ffpp/original/321 (test, frame)",
+   "label": 0,
+   "sha256": "69e296bdd0a415b91d00134a368666782a99db5014444dcfd9b2fcc2918079fa"
+  },
+  {
+   "file": "real_photo_ffpp_original_724.jpg",
+   "source": "video/ffpp/original/724 (test, frame)",
+   "label": 0,
+   "sha256": "8561d21726130084df13041ea59f6909eb880aff3a81a4e2f4f3f9c8ab237d22"
+  },
+  {
+   "file": "real_photo_ffpp_original_906.jpg",
+   "source": "video/ffpp/original/906 (test, frame)",
+   "label": 0,
+   "sha256": "5155626bb940342fe70ac8411740c80b657d053cfbf9f349eadc5e24582eeee7"
+  },
+  {
+   "file": "real_photo_ffpp_original_233.jpg",
+   "source": "video/ffpp/original/233 (test, frame)",
+   "label": 0,
+   "sha256": "6e7e81686b2d52e48d4ba0c003802b437eddf8c6f56edb863391b87c60eff574"
+  },
+  {
+   "file": "fake_voice_itw_00.wav",
+   "source": "voice/in_the_wild/ITW_495",
+   "label": 1,
+   "sha256": "96e850c4cd57c7fab7388035fb87369772c8cae1120bc82ccbec8d596c6886e3"
+  },
+  {
+   "file": "fake_voice_itw_01.wav",
+   "source": "voice/in_the_wild/ITW_17666",
+   "label": 1,
+   "sha256": "12a206bb1bc2cc791c18787725f0c8cfe548ef376067c9ec088405b089726b79"
+  },
+  {
+   "file": "fake_voice_itw_02.wav",
+   "source": "voice/in_the_wild/ITW_14917",
+   "label": 1,
+   "sha256": "749fd06554bfbff2a0256dfe5813b75ad67006a52400f06ecfd9fe32c1bf6115"
+  },
+  {
+   "file": "fake_voice_itw_03.wav",
+   "source": "voice/in_the_wild/ITW_25368",
+   "label": 1,
+   "sha256": "ef972a8807d42e677590f62cf39c8e28a5b6298727d38fd3c11574dd1931756e"
+  },
+  {
+   "file": "fake_voice_itw_04.wav",
+   "source": "voice/in_the_wild/ITW_30354",
+   "label": 1,
+   "sha256": "d66854aa7606eaaeac4f3b2761d11dd667d72e7fa17634394a90a64e3d0ac81e"
+  },
+  {
+   "file": "fake_voice_itw_05.wav",
+   "source": "voice/in_the_wild/ITW_15662",
+   "label": 1,
+   "sha256": "10a6a5c231a18749d3d09178bd8509919f8ce9dc9b0212fd15d91ab7a4036e62"
+  },
+  {
+   "file": "fake_voice_itw_06.wav",
+   "source": "voice/in_the_wild/ITW_13679",
+   "label": 1,
+   "sha256": "0c3a28a489bfb1522f559c64199e15a455706d69291e2791572b609b329f8158"
+  },
+  {
+   "file": "fake_voice_itw_07.wav",
+   "source": "voice/in_the_wild/ITW_2327",
+   "label": 1,
+   "sha256": "a63468ebd253143151b0e75dc84eaa58ad30353ce3cbedb533000547d642b4d6"
+  },
+  {
+   "file": "fake_voice_itw_08.wav",
+   "source": "voice/in_the_wild/ITW_25525",
+   "label": 1,
+   "sha256": "0607e77f275047f4e788e81052ffdc41985a628aa21adfd5ddc56bf6f97534f4"
+  },
+  {
+   "file": "fake_voice_itw_09.wav",
+   "source": "voice/in_the_wild/ITW_21659",
+   "label": 1,
+   "sha256": "63311ff978bf29638f1c4d5db5e91a0a8f4ee40aba22f19857086cf72a19fe18"
+  },
+  {
+   "file": "fake_voice_itw_10.wav",
+   "source": "voice/in_the_wild/ITW_20921",
+   "label": 1,
+   "sha256": "e2b2b29d7f7203543221a398b34663291f80841a3de107b7afcda0e8a234f594"
+  },
+  {
+   "file": "fake_voice_itw_11.wav",
+   "source": "voice/in_the_wild/ITW_14683",
+   "label": 1,
+   "sha256": "fd1b37cef02ce43688500ad7b5af731f284382b621ffb1b2cdab9e03ea3a965b"
+  },
+  {
+   "file": "fake_voice_itw_12.wav",
+   "source": "voice/in_the_wild/ITW_16404",
+   "label": 1,
+   "sha256": "8a3510cd8943cf455579b333fc610701e7ee982c6527dca9bbe3cfa3087a66a2"
+  },
+  {
+   "file": "fake_voice_itw_13.wav",
+   "source": "voice/in_the_wild/ITW_13342",
+   "label": 1,
+   "sha256": "7b0c204b0f37caf8e8a873d05df6cba60219404498c4ebeee83619c3c7084670"
+  },
+  {
+   "file": "fake_voice_itw_14.wav",
+   "source": "voice/in_the_wild/ITW_29325",
+   "label": 1,
+   "sha256": "989f7452f4d91dece388b3198ecd3da356d87c79825f8cf580402d6c784b78b1"
+  },
+  {
+   "file": "fake_voice_itw_15.wav",
+   "source": "voice/in_the_wild/ITW_22682",
+   "label": 1,
+   "sha256": "4675799b9f17ced1fde9a0d1af9378b058c7f4a3d9e137e0100e28e6a4ea5dfc"
+  },
+  {
+   "file": "fake_voice_itw_16.wav",
+   "source": "voice/in_the_wild/ITW_25301",
+   "label": 1,
+   "sha256": "0ed9606abe6158719589e5a2d45271be8f4cef19dda44e45f7801dd99398d3e2"
+  },
+  {
+   "file": "fake_voice_itw_17.wav",
+   "source": "voice/in_the_wild/ITW_13927",
+   "label": 1,
+   "sha256": "92f1d5c4277a65bb5c181d45dad957b7e53a9007ebf72f2b2259a46aa2420c97"
+  },
+  {
+   "file": "fake_voice_itw_18.wav",
+   "source": "voice/in_the_wild/ITW_11711",
+   "label": 1,
+   "sha256": "8c4c40d27db5729fb2a7111a8fa74ae6aa889187d483ac02bc3d27b25854c3a7"
+  },
+  {
+   "file": "fake_voice_itw_19.wav",
+   "source": "voice/in_the_wild/ITW_13434",
+   "label": 1,
+   "sha256": "045f9a0579a495b335994c9172848b1cd36362221f316aea370838dc849e5a79"
+  },
+  {
+   "file": "real_voice_itw_00.wav",
+   "source": "voice/in_the_wild/ITW_31415",
+   "label": 0,
+   "sha256": "7a48583e0f1c971d3ef2dbd5cc25d4ee8a36801d16299dd9c5d57edf1847f8b1"
+  },
+  {
+   "file": "real_voice_itw_01.wav",
+   "source": "voice/in_the_wild/ITW_12312",
+   "label": 0,
+   "sha256": "4ab0ebe5fd5da0bff7a85f4ddb6f3527bb3216d5772801c270ae45097afd149b"
+  },
+  {
+   "file": "real_voice_itw_02.wav",
+   "source": "voice/in_the_wild/ITW_4849",
+   "label": 0,
+   "sha256": "40e3de33bcba561882f5ea992f40455a0fc9098c4e990b5953febc29077ec4eb"
+  },
+  {
+   "file": "real_voice_itw_03.wav",
+   "source": "voice/in_the_wild/ITW_13913",
+   "label": 0,
+   "sha256": "14af958249e4ba5dd9dbc789a9cf77c0c13a304cab0d464e456d2794a1c86180"
+  },
+  {
+   "file": "real_voice_itw_04.wav",
+   "source": "voice/in_the_wild/ITW_25577",
+   "label": 0,
+   "sha256": "7492a282256c9be554d117bf27fd5d065a2852b2429c53c40414a0276b674942"
+  },
+  {
+   "file": "real_voice_itw_05.wav",
+   "source": "voice/in_the_wild/ITW_22469",
+   "label": 0,
+   "sha256": "b937f1ace842b6843c98c55a7cb4e95c7e5d47b97ed08e15ba0e20b57e8064be"
+  },
+  {
+   "file": "real_voice_itw_06.wav",
+   "source": "voice/in_the_wild/ITW_15708",
+   "label": 0,
+   "sha256": "fdaaf687aea5aa2a27bbbdf39f48275448b51866a64b9afffe2015053fc1aeba"
+  },
+  {
+   "file": "real_voice_itw_07.wav",
+   "source": "voice/in_the_wild/ITW_21976",
+   "label": 0,
+   "sha256": "3e68ee111243ad5a5b6e33211b447637d0467cd050dff19a3398dc3e6df00b17"
+  },
+  {
+   "file": "real_voice_itw_08.wav",
+   "source": "voice/in_the_wild/ITW_5812",
+   "label": 0,
+   "sha256": "4549924f8fabfc59d0f75f55d6b9bc0369ecd04078f86daf503be6314f49feca"
+  },
+  {
+   "file": "real_voice_itw_09.wav",
+   "source": "voice/in_the_wild/ITW_27834",
+   "label": 0,
+   "sha256": "4d9f1dd594f60de9bd2992a28bf231c4c6824d229dbd76d07376d4e4b6686805"
+  },
+  {
+   "file": "real_voice_itw_10.wav",
+   "source": "voice/in_the_wild/ITW_20066",
+   "label": 0,
+   "sha256": "bd716c8fc3d8bbfa3e0746f4bcc8f7d4a947582d2a771727fda0f8642ffccc34"
+  },
+  {
+   "file": "real_voice_itw_11.wav",
+   "source": "voice/in_the_wild/ITW_25886",
+   "label": 0,
+   "sha256": "9a3387dddd4aec919e1cc56cafb3a1f6528a3a6422472a9cbda62447a1569089"
+  },
+  {
+   "file": "real_voice_itw_12.wav",
+   "source": "voice/in_the_wild/ITW_13548",
+   "label": 0,
+   "sha256": "6b86f546553ee1a6fb617510ddeac1908f814a93083934f3e3c799982165712a"
+  },
+  {
+   "file": "real_voice_itw_13.wav",
+   "source": "voice/in_the_wild/ITW_27653",
+   "label": 0,
+   "sha256": "8bcacc72fcddac430e1b80158f0bd128a4df823b9d7019390f713831c57e32c8"
+  },
+  {
+   "file": "real_voice_itw_14.wav",
+   "source": "voice/in_the_wild/ITW_9403",
+   "label": 0,
+   "sha256": "83a71d20a8a70c19e0db145538ddf3e1f6d133f0a3cbd2c0bf430be4d29b286f"
+  },
+  {
+   "file": "real_voice_itw_15.wav",
+   "source": "voice/in_the_wild/ITW_24362",
+   "label": 0,
+   "sha256": "76ad72090eb810d7e7cadc747234a5f26e6109133542cdbc611808196593aa59"
+  },
+  {
+   "file": "real_voice_itw_16.wav",
+   "source": "voice/in_the_wild/ITW_16966",
+   "label": 0,
+   "sha256": "16041d61ffc421b8a3cdd455510c25947834df4f32634a8063bbd973bc71fb47"
+  },
+  {
+   "file": "real_voice_itw_17.wav",
+   "source": "voice/in_the_wild/ITW_12619",
+   "label": 0,
+   "sha256": "c1758a8241339c086a96c29ec8ae3176401fbf0d11ef623562830d8c80555cd7"
+  },
+  {
+   "file": "real_voice_itw_18.wav",
+   "source": "voice/in_the_wild/ITW_14233",
+   "label": 0,
+   "sha256": "9795e86e0a7f9e4a3ebda18ae63ddcf3669d408298bf118d7eb90b3104db7154"
+  },
+  {
+   "file": "real_voice_itw_19.wav",
+   "source": "voice/in_the_wild/ITW_21047",
+   "label": 0,
+   "sha256": "b220a0e02fee27b7f5b1ebc77e0c267d57bfb562f28950c1cb30fd3752a287f8"
+  },
+  {
+   "file": "fake_video_adftmlvzfs.mp4",
+   "source": "video/fake_adftmlvzfs",
+   "label": 1,
+   "sha256": "a2ad15b5b45b2b5ab2b12e44ca70a3f9671c7463eaf9a520a97c4e41bee63ae9"
+  },
+  {
+   "file": "fake_video_ansbtntiqu.mp4",
+   "source": "video/fake_ansbtntiqu",
+   "label": 1,
+   "sha256": "4365ae78339921ebaffcdf795269ad045f4ed099f91d434aca32e73894a9037a"
+  },
+  {
+   "file": "fake_video_apmzxocjio.mp4",
+   "source": "video/fake_apmzxocjio",
+   "label": 1,
+   "sha256": "cab553a4168e39ff43f1a68268fa92fba0715a16f2c5c0e2dbaf273e2312c11a"
+  },
+  {
+   "file": "fake_video_atrteuctxr.mp4",
+   "source": "video/fake_atrteuctxr",
+   "label": 1,
+   "sha256": "7258e11fcd95be0dbce7a2df53b46dea6fba4961fefea7fd443433a98800281c"
+  },
+  {
+   "file": "fake_video_birmbtezni.mp4",
+   "source": "video/fake_birmbtezni",
+   "label": 1,
+   "sha256": "6730ca1c4e395c6d1bf497d033a4ddefbf781d8020269c1260e53d64ac34388a"
+  },
+  {
+   "file": "fake_video_bxdhnnffvw.mp4",
+   "source": "video/fake_bxdhnnffvw",
+   "label": 1,
+   "sha256": "04e8c3aaf6ca4f57c04a96cd8c5f77d5257fdba09649573c61994c014b2b54bc"
+  },
+  {
+   "file": "fake_video_ffpp_Deepfakes_953_974.mp4",
+   "source": "video/ffpp_Deepfakes_953_974",
+   "label": 1,
+   "sha256": "c435a7e1a2a5d1e013eebe2bac30d8bce5eb8f24e535817069c98c8f52b1e842"
+  },
+  {
+   "file": "fake_video_ffpp_Deepfakes_974_953.mp4",
+   "source": "video/ffpp_Deepfakes_974_953",
+   "label": 1,
+   "sha256": "c19150c9ed628bb8414f3d1decc4e7c718de7b0839d5a6b0dd16296aabe02019"
+  },
+  {
+   "file": "fake_video_ffpp_Face2Face_953_974.mp4",
+   "source": "video/ffpp_Face2Face_953_974",
+   "label": 1,
+   "sha256": "e87f84246eb34c7a52725c84eb5bc239440f17c5d70343c388f4ff362c1f940b"
+  },
+  {
+   "file": "fake_video_ffpp_Face2Face_974_953.mp4",
+   "source": "video/ffpp_Face2Face_974_953",
+   "label": 1,
+   "sha256": "69d77cdcadfc956db058c8ebe4e9b60fa58b00aa6705d4ceb865cc45bb5c9301"
+  },
+  {
+   "file": "fake_video_ffpp_FaceShifter_953_974.mp4",
+   "source": "video/ffpp_FaceShifter_953_974",
+   "label": 1,
+   "sha256": "b7ce236068108eb8d56581cf6515752289bfcbc9663acc38d098eca4f09323c8"
+  },
+  {
+   "file": "fake_video_ffpp_FaceShifter_974_953.mp4",
+   "source": "video/ffpp_FaceShifter_974_953",
+   "label": 1,
+   "sha256": "0c5483bf8aedf3d56ad8401670c4addcd1705edf8822effe11410dadf370c0bb"
+  },
+  {
+   "file": "fake_video_ffpp_FaceSwap_953_974.mp4",
+   "source": "video/ffpp_FaceSwap_953_974",
+   "label": 1,
+   "sha256": "ceaf25b53243f63298f5c4ebbd72ed80fc15b69d023f2d626e1b472279bda157"
+  },
+  {
+   "file": "fake_video_ffpp_FaceSwap_974_953.mp4",
+   "source": "video/ffpp_FaceSwap_974_953",
+   "label": 1,
+   "sha256": "ba467fab0025cc39e539d70f5e76a7aca144756a67ddd77530c63089e2ec71e9"
+  },
+  {
+   "file": "fake_video_ffpp_NeuralTextures_953_974.mp4",
+   "source": "video/ffpp_NeuralTextures_953_974",
+   "label": 1,
+   "sha256": "4b9cabb2f033178ddd0de854ea0f23cb7b03947e20f5d59e1c349b4392c4f65e"
+  },
+  {
+   "file": "fake_video_ffpp_NeuralTextures_974_953.mp4",
+   "source": "video/ffpp_NeuralTextures_974_953",
+   "label": 1,
+   "sha256": "f2251725bffd6a8da310ed972d91e625b6cd3d83811bf2ba12bc37e636984304"
+  },
+  {
+   "file": "real_video_ffpp_real_953.mp4",
+   "source": "video/ffpp_real_953",
+   "label": 0,
+   "sha256": "cc92d69ef4aae8eca9135093fe19733cb73d340eee7820fdb21b20e85e69ae60"
+  },
+  {
+   "file": "real_video_ffpp_real_974.mp4",
+   "source": "video/ffpp_real_974",
+   "label": 0,
+   "sha256": "ad272c96ffcd6d78bb29c41ba932dc8b592a1431cc69e512ac545cb858221094"
+  },
+  {
+   "file": "real_video_aayrffkzxn.mp4",
+   "source": "video/real_aayrffkzxn",
+   "label": 0,
+   "sha256": "aa3a01923fdfe38abc7b12b436c0e631575b6337fcde90cb9017e8dd5b733db0"
+  },
+  {
+   "file": "real_video_apedduehoy.mp4",
+   "source": "video/real_apedduehoy",
+   "label": 0,
+   "sha256": "354d3054088cdaff38a77b6f715be1d41d399d805b3349e7f36a1f880846580b"
+  },
+  {
+   "file": "real_video_apvzjkvnwn.mp4",
+   "source": "video/real_apvzjkvnwn",
+   "label": 0,
+   "sha256": "c1d5eb63db59e8cf3bbe1b4b8cc9e31c3c4087f29288e9a3ab4a4e9d0c60080d"
+  },
+  {
+   "file": "real_video_chqqxfuuzi.mp4",
+   "source": "video/real_chqqxfuuzi",
+   "label": 0,
+   "sha256": "5f883627c611764a256aa9279dab6a7c2ea8517c8a4d5b9bc76ff9986baa5c96"
+  },
+  {
+   "file": "real_video_ddtbarpcgo.mp4",
+   "source": "video/real_ddtbarpcgo",
+   "label": 0,
+   "sha256": "ae380f9973d1e594306dfa2fa1ade4df2adc4ad35f561d12b0d70d78681992df"
+  },
+  {
+   "file": "real_video_dhjnjkzuhq.mp4",
+   "source": "video/real_dhjnjkzuhq",
+   "label": 0,
+   "sha256": "1a8e73a0a2fbc56f1bcbb94520b00bda7f600c142c3b3b716dcd3ea489db6239"
+  }
+ ]
+}

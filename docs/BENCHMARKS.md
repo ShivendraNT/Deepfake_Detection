@@ -87,6 +87,17 @@ flagged in `research/text/data.py` and reported separately, never pooled into a 
 | Voice clone | In-the-Wild test (real-world deepfakes, speakers never seen) | AUC 0.921 (clean) / 0.909 (Opus); with ≥ 3 s of speech 0.952, 64–67 % of fakes flagged for a call-back | 0.6 % of genuine voices with ≥ 3 s of speech (1.6–1.8 % of all clips) | clips under 3 s of speech: "too short to judge"; ASVspoof eval (0.999) may be in the model's training data |
 | Asks (OTP, new account, secrecy…) | S-HO held-out texts (test split) | recall 0.33 [0.24, 0.42], precision 0.60 | 11.5 % of benign texts get a false ask | paraphrased asks are mostly missed: the text model and the call-back step carry them |
 
+**The whole product on a mixed kit** built from the same test sets (`python -m research.run_all
+kit`, 184 files, `results/kit_scan.md`):
+
+| Channel | Fakes / scams flagged | Genuine passed |
+|---|---|---|
+| Texts | 38 / 40 | 40 / 40 |
+| Voice notes | 15 / 20 | 19 / 20 |
+| Videos | 7 / 16 | 8 / 8 |
+| Photos | 8 / 20 | 20 / 20 |
+| **All** | **68 / 96** | **87 / 88** |
+
 Video numbers: `docs/VIDEO_DEEPFAKE.md` §6/§8. Text: `docs/TEXT_BENCHMARK.md`. Any kit of files:
 `uv run python scripts/satya.py scan KIT/` prints the band, why, and what could not be checked
 for every file, and grades files whose names start with `fake…`/`real…`.
