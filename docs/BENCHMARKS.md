@@ -28,9 +28,10 @@ resumable (`--from <stage>`).
 
 | Satya component | Decides | Benchmark (open data) | Split / selection | Result file | Status |
 |---|---|---|---|---|---|
-| Video face check (shipped): GenD crop CNN + 2-window rule | `VIDEO_LIKELY_SYNTHETIC` (ML, capped) | FF++ c23 (official splits), FaceShifter (unseen method), DFDC (unseen dataset); orig + 2 simulated call channels | chosen on val by a rule fixed in advance (`results/video_selection.json`); τ on val reals; test once | `results/video_benchmark.md` | see file |
+| Video face check (shipped): GenD crop CNN + 2-window rule | `VIDEO_LIKELY_SYNTHETIC` (ML, capped) | FF++ c23 (official splits), FaceShifter (unseen method), DFDC (unseen dataset); orig + 2 simulated call channels | chosen on val by a rule fixed in advance (`results/video_selection.json`); τ on val reals; test once | `results/video_benchmark.md` | measured |
 | Video face check (fallback): our SBI CNN + fusion | same | same | CNN on train reals only; fusion by identity-grouped 5-fold CV + 1-SE rule; τ on val reals; test once | `results/video_benchmark__blend.md` | measured |
-| Off-the-shelf video detectors (Hugging Face): GenD, MS-EffGCViT, 2 popular ViT "deepfake" classifiers, CommunityForensics | baselines / candidates for the CNN slot | same videos and crops as above | rule fixed before scoring (`docs/VIDEO_DEEPFAKE.md` §5b) | `results/video_external.md` | see file |
+| Off-the-shelf video detectors (Hugging Face): GenD, MS-EffGCViT, 2 popular ViT "deepfake" classifiers, CommunityForensics | baselines / candidates for the CNN slot | same videos and crops as above | rule fixed before scoring (`docs/VIDEO_DEEPFAKE.md` §5b) | `results/video_external.md` | measured |
+| Photo face check (one GenD crop) | `IMAGE_FACE_*` (ML; SUSPICIOUS → VERIFY) | FF++ c23 test, DFDC: one crop = one photo | τ on single val real crops; test once | `results/image_face_benchmark.md` | measured |
 | Lip-sync cue | part of the face check | DFDC reals with own / swapped / TTS / 1 s-delayed audio | zero parameters | `results/video_lipsync.json` | measured |
 | Scam-text classifier | `TEXT_SCAM_LIKELY` (STYLE, capped at VERIFY) | 7 open sets: phishing e-mail, CLAIR fraud, UCI SMS, Indian SMS, 14-language Indian scam/ham, Hinglish scam calls, scam dialogues | template-dedup + group splits; C by GroupKFold CV; τ on val; test once; leave-one-dataset-out | `results/text_benchmark.md`, `results/text_neardup.md` | measured |
 | Text evasion robustness | same | the fraud test texts after 5 code-generated attacks | frozen model and τ | `results/text_benchmark.md` §robustness | measured |
@@ -39,7 +40,8 @@ resumable (`--from <stage>`).
 | Policy engine (bands) | PASS / VERIFY / HOLD | S-AB synthetic payment cases through the real decision path | — | `results/alert_budget.json` | measured |
 | Safety invariants (raise-only, LLM cap, floor isolation) | — | property tests, 200 examples each | — | `tests/invariants/` | measured |
 | Satyapan Seal | caller authenticity | SYN-V synthetic voices through 14 codec chains + Chrome WebRTC | — | `results/seal_*.json` | measured (illustrative) |
-| Voice-clone detector | `VOICE_*` | needs licensed real voices + consented Meet audio | — | — | **pending** (ledger §6) |
+| Voice-clone detector: XLS-R layers 1–7 + LR (ours) vs 4 Hugging Face models | `VOICE_*` | ASVspoof 2019 LA train → In-the-Wild (speaker-disjoint val/test) + ASVspoof 2019 eval (13 attacks); clean, Opus 16 kbps, GSM | gate + selection on val (rule fixed first, `docs/VOICE_DEEPFAKE.md` §4); τ on val bonafide; test once | `results/voice_benchmark.md` | running (24 Oct) |
+| Whole product on any files (the judges' kit) | band per file | any folder of files; names starting `fake…`/`real…` are graded | nothing fitted | `satya scan KIT/` → `<out>.csv/.md` | runner |
 
 ## 3. Synthetic data: what we generated and the code that generates it
 
@@ -72,7 +74,16 @@ flagged in `research/text/data.py` and reported separately, never pooled into a 
    (`tests/harness/test_results_provenance.py`); no media or message text is committed
    (`tests/contracts/test_fixtures.py::test_no_media_files_in_repo`).
 
-## 5. Headline numbers
+## 5. Headline numbers (held-out test sets, scored once; full rows in `results/EVIDENCE_LEDGER.md`)
 
-Filled from the result files after the frozen runs; see §6 of `docs/VIDEO_DEEPFAKE.md` and
-`docs/TEXT_BENCHMARK.md`.
+| Channel | Test (never used to fit) | Catches | False alarms on genuine items | Named failure case |
+|---|---|---|---|---|
+| Scam text (messages, e-mails, transcripts, OCR) | 7 open sets; leave-one-dataset-out | AUC 0.989–1.000 in-domain; 96.2 % of fraud texts under a combined obfuscation attack | 0.0–2.6 % per set at τ_hi | a never-seen source drops to AUC 0.69 (phishing e-mail) |
+| Face in a video | FF++ c23 test, DFDC (unseen) | 74.7 % / 24.8 % of fakes flagged for a call-back | 0 of 563 real videos called synthetic; 1.2 % flagged for a call-back | unseen method FaceShifter 32 %; small faces at 360p → "couldn't check" |
+| Face in a photo | same, one crop each | AUC 0.923 / 0.747 | 0.4 % / 0.0 % of real crops over τ_hi | expression-only edits (NeuralTextures) |
+| Voice clone | In-the-Wild test, ASVspoof 2019 eval | running | running | see `docs/VOICE_DEEPFAKE.md` §5 |
+| Asks (OTP, new account, secrecy…) | S-HO held-out texts (test split) | recall 0.33 [0.24, 0.42], precision 0.60 | 11.5 % of benign texts get a false ask | paraphrased asks are mostly missed: the text model and the call-back step carry them |
+
+Video numbers: `docs/VIDEO_DEEPFAKE.md` §6/§8. Text: `docs/TEXT_BENCHMARK.md`. Any kit of files:
+`uv run python scripts/satya.py scan KIT/` prints the band, why, and what could not be checked
+for every file, and grades files whose names start with `fake…`/`real…`.
