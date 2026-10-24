@@ -1646,6 +1646,1225 @@
     "xtest": 0.9095
    }
   },
+  "call720": {
+   "sets": {
+    "ffpp_test_all": {
+     "fusion:shipped": {
+      "n_real": 135,
+      "n_fake": 675,
+      "auc": {
+       "value": 0.913,
+       "low": 0.8951,
+       "high": 0.9307,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.1763,
+       "low": 0.1412,
+       "high": 0.2,
+       "n_boot": 2000
+      },
+      "abstained_videos": 24,
+      "rule": {
+       "fake": {
+        "likely_synthetic": {
+         "k": 160,
+         "n": 695,
+         "value": 0.2302,
+         "ci95": [
+          0.2005,
+          0.2629
+         ]
+        },
+        "suspicious": {
+         "k": 249,
+         "n": 695,
+         "value": 0.3583,
+         "ci95": [
+          0.3235,
+          0.3946
+         ]
+        },
+        "could_not_check": {
+         "k": 20,
+         "n": 695,
+         "value": 0.0288,
+         "ci95": [
+          0.0187,
+          0.044
+         ]
+        },
+        "no_signs": {
+         "k": 266,
+         "n": 695,
+         "value": 0.3827,
+         "ci95": [
+          0.3473,
+          0.4194
+         ]
+        },
+        "flagged": {
+         "k": 409,
+         "n": 695,
+         "value": 0.5885,
+         "ci95": [
+          0.5515,
+          0.6245
+         ]
+        }
+       },
+       "real": {
+        "likely_synthetic": {
+         "k": 0,
+         "n": 139,
+         "value": 0.0,
+         "ci95": [
+          0.0,
+          0.0269
+         ]
+        },
+        "suspicious": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 132,
+         "n": 139,
+         "value": 0.9496,
+         "ci95": [
+          0.8997,
+          0.9754
+         ]
+        },
+        "flagged": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        }
+       }
+      }
+     },
+     "cnn_raw": {
+      "n_real": 135,
+      "n_fake": 675,
+      "auc": {
+       "value": 0.9138,
+       "low": 0.8959,
+       "high": 0.9312,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.1733,
+       "low": 0.1407,
+       "high": 0.1985,
+       "n_boot": 2000
+      },
+      "abstained_videos": 24
+     },
+     "shortcut:face_px": {
+      "n_real": 135,
+      "n_fake": 675,
+      "auc": {
+       "value": 0.5003,
+       "low": 0.4957,
+       "high": 0.505,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4963,
+       "low": 0.4867,
+       "high": 0.5111,
+       "n_boot": 2000
+      },
+      "abstained_videos": 24
+     },
+     "shortcut:luma": {
+      "n_real": 135,
+      "n_fake": 675,
+      "auc": {
+       "value": 0.4912,
+       "low": 0.4815,
+       "high": 0.4993,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.5037,
+       "low": 0.4903,
+       "high": 0.5191,
+       "n_boot": 2000
+      },
+      "abstained_videos": 24
+     },
+     "delta_auc_shipped_minus_cnn_raw": {
+      "value": -0.0007,
+      "low": -0.0016,
+      "high": 0.0002,
+      "se": 0.0005,
+      "n_boot": 2000
+     }
+    },
+    "ffpp_test_seen4": {
+     "fusion:shipped": {
+      "n_real": 135,
+      "n_fake": 540,
+      "auc": {
+       "value": 0.9432,
+       "low": 0.9271,
+       "high": 0.9584,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.1333,
+       "low": 0.1029,
+       "high": 0.1562,
+       "n_boot": 2000
+      },
+      "abstained_videos": 20,
+      "rule": {
+       "fake": {
+        "likely_synthetic": {
+         "k": 157,
+         "n": 556,
+         "value": 0.2824,
+         "ci95": [
+          0.2465,
+          0.3212
+         ]
+        },
+        "suspicious": {
+         "k": 224,
+         "n": 556,
+         "value": 0.4029,
+         "ci95": [
+          0.3629,
+          0.4442
+         ]
+        },
+        "could_not_check": {
+         "k": 16,
+         "n": 556,
+         "value": 0.0288,
+         "ci95": [
+          0.0178,
+          0.0462
+         ]
+        },
+        "no_signs": {
+         "k": 159,
+         "n": 556,
+         "value": 0.286,
+         "ci95": [
+          0.25,
+          0.3249
+         ]
+        },
+        "flagged": {
+         "k": 381,
+         "n": 556,
+         "value": 0.6853,
+         "ci95": [
+          0.6455,
+          0.7225
+         ]
+        }
+       },
+       "real": {
+        "likely_synthetic": {
+         "k": 0,
+         "n": 139,
+         "value": 0.0,
+         "ci95": [
+          0.0,
+          0.0269
+         ]
+        },
+        "suspicious": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 132,
+         "n": 139,
+         "value": 0.9496,
+         "ci95": [
+          0.8997,
+          0.9754
+         ]
+        },
+        "flagged": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        }
+       }
+      }
+     },
+     "cnn_raw": {
+      "n_real": 135,
+      "n_fake": 540,
+      "auc": {
+       "value": 0.944,
+       "low": 0.9282,
+       "high": 0.9589,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.1315,
+       "low": 0.1026,
+       "high": 0.1544,
+       "n_boot": 2000
+      },
+      "abstained_videos": 20
+     },
+     "shortcut:face_px": {
+      "n_real": 135,
+      "n_fake": 540,
+      "auc": {
+       "value": 0.4994,
+       "low": 0.4937,
+       "high": 0.5049,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4963,
+       "low": 0.487,
+       "high": 0.513,
+       "n_boot": 2000
+      },
+      "abstained_videos": 20
+     },
+     "shortcut:luma": {
+      "n_real": 135,
+      "n_fake": 540,
+      "auc": {
+       "value": 0.4957,
+       "low": 0.4849,
+       "high": 0.5059,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.5037,
+       "low": 0.4871,
+       "high": 0.5171,
+       "n_boot": 2000
+      },
+      "abstained_videos": 20
+     },
+     "delta_auc_shipped_minus_cnn_raw": {
+      "value": -0.0008,
+      "low": -0.0017,
+      "high": 0.0001,
+      "se": 0.0005,
+      "n_boot": 2000
+     }
+    },
+    "ffpp_test_Deepfakes": {
+     "fusion:shipped": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.9873,
+       "low": 0.9764,
+       "high": 0.996,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.0444,
+       "low": 0.0221,
+       "high": 0.0809,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8,
+      "rule": {
+       "fake": {
+        "likely_synthetic": {
+         "k": 69,
+         "n": 139,
+         "value": 0.4964,
+         "ci95": [
+          0.4145,
+          0.5785
+         ]
+        },
+        "suspicious": {
+         "k": 56,
+         "n": 139,
+         "value": 0.4029,
+         "ci95": [
+          0.325,
+          0.486
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 10,
+         "n": 139,
+         "value": 0.0719,
+         "ci95": [
+          0.0395,
+          0.1274
+         ]
+        },
+        "flagged": {
+         "k": 125,
+         "n": 139,
+         "value": 0.8993,
+         "ci95": [
+          0.838,
+          0.9391
+         ]
+        }
+       },
+       "real": {
+        "likely_synthetic": {
+         "k": 0,
+         "n": 139,
+         "value": 0.0,
+         "ci95": [
+          0.0,
+          0.0269
+         ]
+        },
+        "suspicious": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 132,
+         "n": 139,
+         "value": 0.9496,
+         "ci95": [
+          0.8997,
+          0.9754
+         ]
+        },
+        "flagged": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        }
+       }
+      }
+     },
+     "cnn_raw": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.9879,
+       "low": 0.977,
+       "high": 0.9965,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.0444,
+       "low": 0.0221,
+       "high": 0.0809,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:face_px": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.4977,
+       "low": 0.4905,
+       "high": 0.5042,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4963,
+       "low": 0.4851,
+       "high": 0.5221,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:luma": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.4832,
+       "low": 0.4593,
+       "high": 0.5043,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.5111,
+       "low": 0.4776,
+       "high": 0.5373,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "delta_auc_shipped_minus_cnn_raw": {
+      "value": -0.0006,
+      "low": -0.0017,
+      "high": 0.0001,
+      "se": 0.0005,
+      "n_boot": 2000
+     }
+    },
+    "ffpp_test_Face2Face": {
+     "fusion:shipped": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.9583,
+       "low": 0.9355,
+       "high": 0.9779,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.0963,
+       "low": 0.0662,
+       "high": 0.1397,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8,
+      "rule": {
+       "fake": {
+        "likely_synthetic": {
+         "k": 27,
+         "n": 139,
+         "value": 0.1942,
+         "ci95": [
+          0.1371,
+          0.2679
+         ]
+        },
+        "suspicious": {
+         "k": 72,
+         "n": 139,
+         "value": 0.518,
+         "ci95": [
+          0.4356,
+          0.5994
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 36,
+         "n": 139,
+         "value": 0.259,
+         "ci95": [
+          0.1933,
+          0.3376
+         ]
+        },
+        "flagged": {
+         "k": 99,
+         "n": 139,
+         "value": 0.7122,
+         "ci95": [
+          0.6321,
+          0.781
+         ]
+        }
+       },
+       "real": {
+        "likely_synthetic": {
+         "k": 0,
+         "n": 139,
+         "value": 0.0,
+         "ci95": [
+          0.0,
+          0.0269
+         ]
+        },
+        "suspicious": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 132,
+         "n": 139,
+         "value": 0.9496,
+         "ci95": [
+          0.8997,
+          0.9754
+         ]
+        },
+        "flagged": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        }
+       }
+      }
+     },
+     "cnn_raw": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.9592,
+       "low": 0.9369,
+       "high": 0.9784,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.0963,
+       "low": 0.0597,
+       "high": 0.1397,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:face_px": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.4991,
+       "low": 0.4925,
+       "high": 0.5045,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4963,
+       "low": 0.4776,
+       "high": 0.5114,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:luma": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.5072,
+       "low": 0.4991,
+       "high": 0.5179,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4889,
+       "low": 0.4779,
+       "high": 0.5147,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "delta_auc_shipped_minus_cnn_raw": {
+      "value": -0.0009,
+      "low": -0.0025,
+      "high": 0.0003,
+      "se": 0.0007,
+      "n_boot": 2000
+     }
+    },
+    "ffpp_test_FaceSwap": {
+     "fusion:shipped": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.9802,
+       "low": 0.9642,
+       "high": 0.994,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.0444,
+       "low": 0.0221,
+       "high": 0.0815,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8,
+      "rule": {
+       "fake": {
+        "likely_synthetic": {
+         "k": 57,
+         "n": 139,
+         "value": 0.4101,
+         "ci95": [
+          0.3318,
+          0.4932
+         ]
+        },
+        "suspicious": {
+         "k": 62,
+         "n": 139,
+         "value": 0.446,
+         "ci95": [
+          0.366,
+          0.529
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 16,
+         "n": 139,
+         "value": 0.1151,
+         "ci95": [
+          0.0721,
+          0.1788
+         ]
+        },
+        "flagged": {
+         "k": 119,
+         "n": 139,
+         "value": 0.8561,
+         "ci95": [
+          0.7882,
+          0.9049
+         ]
+        }
+       },
+       "real": {
+        "likely_synthetic": {
+         "k": 0,
+         "n": 139,
+         "value": 0.0,
+         "ci95": [
+          0.0,
+          0.0269
+         ]
+        },
+        "suspicious": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 132,
+         "n": 139,
+         "value": 0.9496,
+         "ci95": [
+          0.8997,
+          0.9754
+         ]
+        },
+        "flagged": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        }
+       }
+      }
+     },
+     "cnn_raw": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.9806,
+       "low": 0.9649,
+       "high": 0.994,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.0444,
+       "low": 0.0222,
+       "high": 0.0815,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:face_px": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.5007,
+       "low": 0.4948,
+       "high": 0.507,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4963,
+       "low": 0.4853,
+       "high": 0.5147,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:luma": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.4951,
+       "low": 0.4822,
+       "high": 0.5065,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.5037,
+       "low": 0.4741,
+       "high": 0.5221,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "delta_auc_shipped_minus_cnn_raw": {
+      "value": -0.0004,
+      "low": -0.0014,
+      "high": 0.0004,
+      "se": 0.0004,
+      "n_boot": 2000
+     }
+    },
+    "ffpp_test_NeuralTextures": {
+     "fusion:shipped": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.847,
+       "low": 0.8123,
+       "high": 0.8844,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.2222,
+       "low": 0.1838,
+       "high": 0.2721,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8,
+      "rule": {
+       "fake": {
+        "likely_synthetic": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "suspicious": {
+         "k": 34,
+         "n": 139,
+         "value": 0.2446,
+         "ci95": [
+          0.1806,
+          0.3223
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 97,
+         "n": 139,
+         "value": 0.6978,
+         "ci95": [
+          0.617,
+          0.768
+         ]
+        },
+        "flagged": {
+         "k": 38,
+         "n": 139,
+         "value": 0.2734,
+         "ci95": [
+          0.2061,
+          0.3528
+         ]
+        }
+       },
+       "real": {
+        "likely_synthetic": {
+         "k": 0,
+         "n": 139,
+         "value": 0.0,
+         "ci95": [
+          0.0,
+          0.0269
+         ]
+        },
+        "suspicious": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 132,
+         "n": 139,
+         "value": 0.9496,
+         "ci95": [
+          0.8997,
+          0.9754
+         ]
+        },
+        "flagged": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        }
+       }
+      }
+     },
+     "cnn_raw": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.8482,
+       "low": 0.8139,
+       "high": 0.8852,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.2222,
+       "low": 0.1805,
+       "high": 0.2721,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:face_px": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.5001,
+       "low": 0.4947,
+       "high": 0.5062,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4963,
+       "low": 0.4887,
+       "high": 0.5147,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:luma": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.4973,
+       "low": 0.4872,
+       "high": 0.506,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.5037,
+       "low": 0.4889,
+       "high": 0.5264,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "delta_auc_shipped_minus_cnn_raw": {
+      "value": -0.0012,
+      "low": -0.003,
+      "high": 0.0005,
+      "se": 0.0009,
+      "n_boot": 2000
+     }
+    },
+    "ffpp_test_FaceShifter": {
+     "fusion:shipped": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.7924,
+       "low": 0.7512,
+       "high": 0.8349,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.3037,
+       "low": 0.2593,
+       "high": 0.3556,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8,
+      "rule": {
+       "fake": {
+        "likely_synthetic": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "suspicious": {
+         "k": 25,
+         "n": 139,
+         "value": 0.1799,
+         "ci95": [
+          0.1249,
+          0.252
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 107,
+         "n": 139,
+         "value": 0.7698,
+         "ci95": [
+          0.6931,
+          0.8319
+         ]
+        },
+        "flagged": {
+         "k": 28,
+         "n": 139,
+         "value": 0.2014,
+         "ci95": [
+          0.1432,
+          0.2757
+         ]
+        }
+       },
+       "real": {
+        "likely_synthetic": {
+         "k": 0,
+         "n": 139,
+         "value": 0.0,
+         "ci95": [
+          0.0,
+          0.0269
+         ]
+        },
+        "suspicious": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        },
+        "could_not_check": {
+         "k": 4,
+         "n": 139,
+         "value": 0.0288,
+         "ci95": [
+          0.0112,
+          0.0717
+         ]
+        },
+        "no_signs": {
+         "k": 132,
+         "n": 139,
+         "value": 0.9496,
+         "ci95": [
+          0.8997,
+          0.9754
+         ]
+        },
+        "flagged": {
+         "k": 3,
+         "n": 139,
+         "value": 0.0216,
+         "ci95": [
+          0.0074,
+          0.0615
+         ]
+        }
+       }
+      }
+     },
+     "cnn_raw": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.7929,
+       "low": 0.7514,
+       "high": 0.8357,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.3037,
+       "low": 0.2593,
+       "high": 0.3556,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:face_px": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.5041,
+       "low": 0.5002,
+       "high": 0.5094,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.4963,
+       "low": 0.4815,
+       "high": 0.5185,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "shortcut:luma": {
+      "n_real": 135,
+      "n_fake": 135,
+      "auc": {
+       "value": 0.4733,
+       "low": 0.4632,
+       "high": 0.4787,
+       "n_boot": 2000
+      },
+      "eer": {
+       "value": 0.5111,
+       "low": 0.4963,
+       "high": 0.5407,
+       "n_boot": 2000
+      },
+      "abstained_videos": 8
+     },
+     "delta_auc_shipped_minus_cnn_raw": {
+      "value": -0.0005,
+      "low": -0.0026,
+      "high": 0.0016,
+      "se": 0.001,
+      "n_boot": 2000
+     }
+    }
+   },
+   "usable_window_fraction": {
+    "test": 0.9711,
+    "val": 1.0
+   }
+  },
   "call360": {
    "sets": {
     "ffpp_test_all": {

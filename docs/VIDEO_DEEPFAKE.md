@@ -147,6 +147,7 @@ What the product does per video, held-out sets scored once (Wilson 95 % in the r
 | FF++ test, 4 seen methods | orig | 0.975 [0.963, 0.985] | 85.4 % (475/556) | 2.9 % (4/139) | 0 / 139 |
 | FF++ test, FaceShifter (method unseen) | orig | 0.832 [0.791, 0.870] | 31.7 % (44/139) | 2.9 % | 0 / 139 |
 | DFDC (dataset unseen) | orig | 0.778 [0.734, 0.823] | 24.8 % (62/250) | 0.7 % (3/424) | 0 / 424 |
+| FF++ test, all 5 methods | call720 (VP8 1.2 Mbit/s + JPEG) | 0.913 [0.895, 0.931] | 58.8 % (409/695) | 2.2 % (3/139) | 0 / 139 |
 | FF++ test, all 5 methods | call360 (VP8 0.4 Mbit/s + JPEG) | 0.877 [0.854, 0.900] | 50.6 % (352/695) | 5.0 % (7/139) | 0 / 139 |
 | DFDC | call360 | 0.728 [0.653, 0.805]\* | 4.4 % (11/250) | 0.5 % (2/424) | 0 / 424 |
 
@@ -201,8 +202,8 @@ face-centred crop) and re-ran every extraction, so the numbers describe the ship
   quality before any test number existed; our CNN stays as the automatic fallback.
 - **Latency:** ≈ 1.3 s per GenD crop on 2 CPU threads while other jobs ran (benchmark logs);
   the product scores one crop per 2.25 s of call, so a 4-core laptop keeps up.
-- 720p (`call720`) GenD scoring was stopped at 141 of 980 videos to free the CPU for the voice
-  benchmark; reports leave partial splits out rather than print them.
+- **Call quality:** FF++ test AUC 0.946 (original) → 0.913 (720p call) → 0.877 (360p call);
+  0 real videos called synthetic in any condition. Photo check at 720p: AUC 0.867.
 
 ## 9. Laptops (any OS, any CPU)
 
