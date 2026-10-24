@@ -67,4 +67,29 @@ benchmark machine, so GSM stands in for AMR-NB.
 
 ## 5. Results
 
-Filled from `results/voice_benchmark.md` after the frozen run.
+**Gate** (val, clean, the same seeded 500 clips for every model; ≥ 0.70 to go on):
+
+| Model | Gate AUC | Verdict |
+|---|---|---|
+| `gustking_xlsr` | 0.964 | passes |
+| `satya_xlsr_l7` (ours) | 0.847 | passes |
+| `melody_w2v2` | 0.501 | fails (and not eligible: undocumented training data) |
+| `garystafford_xlsr` | 0.467 | fails |
+| `ast_asvspoof5` | 0.378 | fails (below chance: ASVspoof5 does not transfer to In-the-Wild) |
+
+**Selection** (val, Opus 16 kbps, full 1,457 clips, paired speaker bootstrap; decided 24 Oct
+17:51 UTC, before any test score of either model existed):
+
+| | val AUC under Opus |
+|---|---|
+| gustking | 0.949 |
+| ours | 0.791 |
+| gustking − ours | +0.157 [0.026, 0.244], SE 0.054 |
+
+The gain exceeds one SE, so by rule 2 **`gustking_xlsr` ships**. Our re-training of the
+published recipe on 3,000 licensed clips is in-domain perfect (speaker-grouped CV AUC 1.000 on
+ASVspoof train) but generalises worse to real-world deepfakes than a model fine-tuned on all of
+ASVspoof 2019. That is the out-of-domain gap Pascu et al. describe, and the reason the rule
+compares on In-the-Wild, not on ASVspoof.
+
+Test results (gustking, seeded test subsets per amendment 2): `results/voice_benchmark.md`.
