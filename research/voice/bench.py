@@ -87,12 +87,13 @@ def features(split: str, cond: str, embed=None) -> np.ndarray:
     return np.load(f)
 
 
-def hf_scores(name: str, split: str, cond: str) -> np.ndarray:
-    f = SCORES / name / f"{split}__{cond}.npy"
+def hf_scores(name: str, split: str, cond: str, idx: np.ndarray | None = None) -> np.ndarray:
+    f = SCORES / name / (f"{split}__{cond}.npy" if idx is None else f"{split}_sub__{cond}.npy")
     if not f.exists():
         fn = hf_classifier(name)
         t0 = time.time()
         clips = audio_for(split, cond)
+        clips = clips if idx is None else [clips[i] for i in idx]
         out = np.array([fn(x) for x in clips], np.float32)
         f.parent.mkdir(parents=True, exist_ok=True)
         np.save(f, out)
@@ -155,8 +156,33 @@ def ours_scores(split: str, cond: str, head: dict) -> np.ndarray:
     return z @ np.array(head["coef"]) + head["intercept"]
 
 
-def scores(name: str, split: str, cond: str, head: dict) -> np.ndarray:
-    return ours_scores(split, cond, head) if name == OURS else hf_scores(name, split, cond)
+def scores(name: str, split: str, cond: str, head: dict, idx: np.ndarray | None = None):
+    if name == OURS:
+        s = ours_scores(split, cond, head)
+        return s if idx is None else s[idx]
+    return hf_scores(name, split, cond, idx)
+
+
+def test_subset(split: str, sp: Split) -> np.ndarray:
+    """Seeded test subset for a shipped off-the-shelf model (amendment 2, CPU): 1,000
+    In-the-Wild clips; 300 bonafide + 30 per attack of ASVspoof eval."""
+    rng = np.random.default_rng(SEED + 1)
+    if split == "test_itw":
+        return np.sort(rng.choice(len(sp.labels), size=min(1000, len(sp.labels)), replace=False))
+    groups = [np.flatnonzero(sp.labels == 0)] + [
+        np.flatnonzero(sp.attacks == a) for a in sorted(set(sp.attacks.tolist()) - {"-"})
+    ]
+    sizes = [300] + [30] * (len(groups) - 1)
+    picked = [
+        rng.choice(g, size=min(n, len(g)), replace=False)
+        for g, n in zip(groups, sizes, strict=True)
+    ]
+    return np.sort(np.concatenate(picked))
+
+
+def subset(sp: Split, idx: np.ndarray) -> Split:
+    return Split(sp.ids[idx], sp.labels[idx], sp.speakers[idx], sp.attacks[idx],
+                 [sp.audio[i] for i in idx])  # fmt: skip
 
 
 # ----------------------------------------------------------------------------- metrics
@@ -253,14 +279,24 @@ def main() -> None:
     # 4. test once
     report["selection"] = sel
     report["results"] = {}
+    # Amendment 2 (CPU): test sets for the shipped model only; other gate-passers report the
+    # selection condition on val. A shipped off-the-shelf model is tested on seeded subsets.
     for name in passed:
         r = {}
-        tau_m = tau if name == chosen else None
-        for split in EVAL_SPLITS:
+        shipped = name == chosen
+        for split in EVAL_SPLITS if shipped else ("val",):
             sp = load(split)
-            for cond in CONDITIONS if name == chosen or split == "val" else TEST_CONDITIONS:
-                s = scores(name, split, cond, head)
-                r[f"{split}/{cond}"] = block(sp, s, tau_m)
+            idx = test_subset(split, sp) if shipped and name != OURS and split != "val" else None
+            sp = sp if idx is None else subset(sp, idx)
+            if not shipped:
+                conds: tuple[str, ...] = (SELECT_CONDITION,)
+            elif name == OURS or split == "val":
+                conds = CONDITIONS
+            else:
+                conds = TEST_CONDITIONS
+            for cond in conds:
+                s = scores(name, split, cond, head, idx)
+                r[f"{split}/{cond}"] = block(sp, s, tau if shipped else None)
                 if split == "test_asv" and cond == "clean":
                     per_attack = {}
                     for a in sorted(set(sp.attacks.tolist()) - {"-"}):

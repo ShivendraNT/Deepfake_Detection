@@ -42,7 +42,14 @@ benchmark machine, so GSM stands in for AMR-NB.
    candidates with gate AUC ≥ 0.70 go further: full `val` (all channels) and the test sets under
    `clean` and `opus16`; the shipped model also under `gsm`. *(Amended 24 Oct, before any
    candidate was scored: on this CPU the large models take 2.5–3.3 s per clip, so the full grid
-   would not finish in the event.)*
+   would not finish in the event.)* *(Amendment 2, 24 Oct 16:55 UTC, after the gate and before
+   any `opus16` or test score of any model: measured 4.75 s per clip for the 315 M models with
+   the video jobs sharing the CPU, the grid above is ≈ 19 CPU-hours per large model. Now: every
+   gate-passer is scored on the full `val` under `opus16` (the selection condition, unchanged);
+   the full `val` grid and the test sets are scored for the **shipped** model only. If an
+   off-the-shelf model is shipped, its test sets are seeded subsets (1,000 In-the-Wild clips;
+   300 bonafide + 30 per attack of ASVspoof eval) under `clean` and `opus16`.
+   `research/voice/bench.py::test_subset`.)*
 2. **Selection for the product:** eligible = licence allows redistribution + documented training
    data that does not include In-the-Wild. Among eligible gate-passers, an off-the-shelf model
    replaces ours only if its `val` AUC under `opus16` exceeds ours by more than one bootstrap SE
