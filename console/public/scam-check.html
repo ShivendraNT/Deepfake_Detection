@@ -805,7 +805,9 @@
           speak($("action").textContent);
         });
         renderStatic();
-        if (location.hash === "#money") { $("ms").open = true; $("ms").scrollIntoView(); }
+        function openMoney() { if (location.hash === "#money") { $("ms").open = true; $("ms").scrollIntoView(); } }
+        window.addEventListener("hashchange", openMoney);
+        openMoney();
         if ("speechSynthesis" in window) window.speechSynthesis.getVoices();
       })();
     </script>

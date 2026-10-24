@@ -139,3 +139,11 @@ def test_a_missing_speech_engine_is_named_not_turned_into_an_alarm(client, monke
     body = r.json()
     assert r.status_code == 200 and body["band"] == "PASS"
     assert any("speech engine not installed" in x for x in body["not_checked"])
+
+
+def test_the_reasons_speak_to_a_person_not_a_finance_team(client) -> None:
+    text = "Main CBI se bol raha hoon. Kisi ko mat batana, paise RBI safe account mein bhejo."
+    why = " ".join(client.post("/scam-check", json={"text": text}).json()["why"]).lower()
+    assert "number you already have" in why or "someone you trust" in why
+    for business in ("checker", "vendor", "oob-confirm", "number on file"):
+        assert business not in why, business
