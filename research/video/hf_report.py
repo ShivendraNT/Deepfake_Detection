@@ -187,7 +187,17 @@ def render(r: dict) -> str:
         "candidates fixed before scoring: docs/VIDEO_DEEPFAKE.md 5b. FF++ rows of models "
         "marked * may include videos they were trained on (training lists unpublished).",
         "",
+        "| Model | Hub id @ revision | Licence | Params (M) | Trained on |",
+        "|---|---|---|---|---|",
+        "| satya_sbi | ours (`research/video/train_sbi.py`) | FF++ terms | 4.0 "
+        "| FF++ train **reals** + self-blended pseudo-fakes |",
     ]
+    for name, m in r["models"].items():
+        out.append(
+            f"| {name} | `{m['repo']}` @ {m['revision'][:7]} | {m['licence']} | "
+            f"{m['params_m']:g} | {m['trained_on']} |"
+        )
+    out.append("")
     for cond, block in r["conditions"].items():
         out += [
             f"## Condition `{cond}`",
