@@ -18,13 +18,14 @@ phone). That was our Round 1 scope and it still works, but this guide follows th
 make sync                      # Python deps (uv); no uv/make: README "pip fallback" / scripts/satya.py
 make video                     # face check + reading text in screenshots; verifies model hashes
 make asr                       # on-device speech (voice notes, live calls)
+make voice                     # voice-clone model: built from its pinned licensed source (torch once)
 make live                      # the engine on :8000 (0.0.0.0, so a phone on the same Wi-Fi works)
 #   laptop:  http://127.0.0.1:8000/check        phone: http://<laptop-ip>:8000/check
 make scan F=path/to/your/kit   # every file -> band, why, what could not be checked; CSV + MD report
 cd desktop && npm install && npm run dev     # Satya on a live call (asleep until you consent)
 ```
 
-Windows without `make`: `uv run python scripts/satya.py live | scan <folder> | video`. A laptop
+Windows without `make`: `uv run python scripts/satya.py live | scan <folder> | video | voice`. A laptop
 without a model file still runs; the answer then lists what it could **not** check (for example
 "voice clone (voice model not installed)") instead of pretending.
 
