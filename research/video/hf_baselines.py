@@ -263,7 +263,9 @@ def cache_path(model: str, condition: str, item: Item) -> Path:
 _THREADS = 2
 
 
-def score_all(model: str, conditions: tuple[str, ...], threads: int) -> None:
+def score_all(
+    model: str, conditions: tuple[str, ...], threads: int, splits: tuple[str, ...] = SPLITS
+) -> None:
     import torch
 
     global _THREADS
@@ -271,7 +273,9 @@ def score_all(model: str, conditions: tuple[str, ...], threads: int) -> None:
     torch.set_num_threads(threads)
     fn = LOADERS[model]()
     for cond in conditions:
-        todo = [it for it in items() if not cache_path(model, cond, it).exists()]
+        todo = [
+            it for it in items() if it.split in splits and not cache_path(model, cond, it).exists()
+        ]
         t0, done, crops_done = time.time(), 0, 0
         for it in todo:
             npz, jpg = out_paths(it, cond)
@@ -324,18 +328,33 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--score", action="store_true")
     ap.add_argument("--report", action="store_true")
+    ap.add_argument("--gate", action="store_true", help="print models that pass the call gate")
+    ap.add_argument(
+        "--gated", action="store_true", help="score only models that pass the call gate"
+    )
     ap.add_argument("--latency", action="store_true")
     ap.add_argument("--models", nargs="+", default=[e.name for e in EXTERNAL])
     ap.add_argument("--conditions", nargs="+", default=list(CONDITIONS))
     ap.add_argument("--threads", type=int, default=2)
+    ap.add_argument("--splits", nargs="+", default=list(SPLITS))
     a = ap.parse_args()
+    if a.gated:
+        from research.video.hf_report import call_gate
+
+        passed = call_gate()
+        a.models = [m for m in a.models if m in passed]
+        print("call gate passed:", a.models, flush=True)
     if a.score:
         for m in a.models:
-            score_all(m, tuple(a.conditions), a.threads)
+            score_all(m, tuple(a.conditions), a.threads, tuple(a.splits))
     if a.latency:
         out = {m: round(latency(m, a.threads), 1) for m in [*a.models, "satya_sbi"]}
         (HF_LOGITS / "latency.json").write_text(json.dumps(out, indent=2))
         print(out)
+    if a.gate:
+        from research.video.hf_report import call_gate
+
+        print(" ".join(call_gate()))
     if a.report:
         from research.video.hf_report import main as report
 

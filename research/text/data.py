@@ -330,9 +330,29 @@ def save_table(rows: list[dict[str, object]]) -> Path:
 
 
 def main() -> None:
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument(
+        "--manifest-only",
+        action="store_true",
+        help="keep the existing table; rebuild it in memory and check it is byte-identical",
+    )
+    a = ap.parse_args()
     hashes = download_all()
     rows, stats = build_all()
-    path = save_table(rows)
+    path = DATA / "table.parquet"
+    rebuild_identical = None
+    if a.manifest_only and path.exists():
+        import pandas as pd
+
+        tmp = DATA / "table.rebuild.parquet"
+        pd.DataFrame(rows).to_parquet(tmp, index=False)
+        old_df = pd.read_parquet(path)
+        rebuild_identical = bool(pd.read_parquet(tmp).equals(old_df))
+        tmp.unlink()
+    else:
+        path = save_table(rows)
     manifest = {
         "seed": SEED,
         "sources": [
@@ -350,6 +370,7 @@ def main() -> None:
         "files_sha256": hashes,
         "split_stats": stats,
         "table_sha256": hashlib.sha256(path.read_bytes()).hexdigest(),
+        "table_rebuild_identical": rebuild_identical,
     }
     (ROOT / "results" / "text_eval_manifest.json").write_text(json.dumps(manifest, indent=1) + "\n")
     print(json.dumps(stats, indent=1))

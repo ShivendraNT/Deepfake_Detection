@@ -39,6 +39,10 @@ real ever goes into a free AI model.**
 | Piper TTS `en_US-ryan-medium` | public synthetic voice (MIT/CC per rhasspy/piper-voices) | the "real face + synthetic voice" lip-sync test | — |
 | MediaPipe Face Landmarker (`face_landmarker.task`) | Apache-2.0 | face tracking in the product and the benchmark | — |
 | SSL_Anti-spoofing (backup) | *verify license* | — | — |
+| Text benchmark sets (research/text/data.py, sha256 in `results/text_eval_manifest.json`): `zefang-liu/phishing-email-dataset` (LGPL-3.0), `tasksource/CLAIR_email_fraud` (CC-BY-3.0), `codesignal/sms-spam-collection` (UCI, CC-BY-4.0), `CloveAI/india-spam-sms` (MIT), `anmolshrivastav/scam_ham_india_14_languages` (MIT), `ysangam/Indian_Cyber_Scam_PhoneCall_Hinglish_Dataset` (Apache-2.0, synthetic), `BothBosu/scam-dialogue` (Apache-2.0, synthetic) | as listed | train/evaluate the scam-text classifier; ship its weights (`config/text_model.npz`: hashed n-gram weights, no text) with attribution | commit any message text; paste messages into prompts |
+| GenD CLIP ViT-L/14 (`yermandy/GenD_CLIP_L_14`, WACV 2026) | MIT (backbone: OpenAI CLIP, MIT) | evaluate; export to ONNX; redistribute with the MIT notice | — |
+| MS-EffGCViT-b0 (`KoreaPeter/ms-eff-gcvit-deepfake-b0-ff-plus-plus`), CommunityForensics ViT-S (`buildborderless/...`) | MIT | evaluate as external baselines | ship without stating the unpublished training lists |
+| `dima806/deepfake_vs_real_image_detection`, `prithivMLmods/Deep-Fake-Detector-v2-Model` | Apache-2.0 | evaluate as external baselines | — |
 
 ## 4. DPDP Act 2023 data-flow table (lawful basis to confirm with counsel)
 
