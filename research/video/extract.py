@@ -46,11 +46,15 @@ def transcode(src: Path, cond: dict[str, int], dst: Path) -> None:
         "decrease,scale=trunc(iw/2)*2:trunc(ih/2)*2"
     )
     k = cond["kbps"]
-    cmd = ["ffmpeg", "-v", "error", "-y", "-t", str(MAX_SECONDS + 0.5), "-i", str(src),
-           "-vf", vf, "-c:v", "libvpx", "-b:v", f"{k}k", "-minrate", f"{k}k",
-           "-maxrate", f"{k}k", "-bufsize", f"{k // 2}k", "-deadline", "realtime",
-           "-cpu-used", "8", "-lag-in-frames", "0", "-error-resilient", "1",
-           "-c:a", "libopus", "-b:a", "32k", "-ar", "48000", "-ac", "1", str(dst)]  # fmt: skip
+    # -threads 1: parallel workers already use every core; threaded libvpx thrashes (7x slower).
+    cmd = [
+        "ffmpeg", "-v", "error", "-y", "-threads", "1", "-t", str(MAX_SECONDS + 0.5),
+        "-i", str(src), "-vf", vf,
+        "-c:v", "libvpx", "-threads", "1", "-b:v", f"{k}k", "-minrate", f"{k}k",
+        "-maxrate", f"{k}k", "-bufsize", f"{k // 2}k", "-deadline", "realtime",
+        "-cpu-used", "8", "-lag-in-frames", "0", "-error-resilient", "1",
+        "-c:a", "libopus", "-b:a", "32k", "-ar", "48000", "-ac", "1", str(dst),
+    ]  # fmt: skip
     subprocess.run(cmd, check=True, capture_output=True)
 
 
