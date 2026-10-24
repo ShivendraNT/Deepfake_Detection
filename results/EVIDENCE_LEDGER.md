@@ -114,13 +114,14 @@ defences are structural (LLM never sets the band, template fallback).
 
 | Claim | Owner task | What is needed |
 |---|---|---|
-| Voice detector EER through clean / Opus / AMR-NB / G.711, with speaker-bootstrap CI | T18 (+T17 model) | real audio + `results/audio_eval_manifest.json` (sha256 per file) |
+| Voice detector through AMR-NB / G.711 (clean and Opus 16 kbps are measured on public data: §12) | T18 | sox AMR-NB encoder; the GSM condition is measured on val only |
 | Meet-captured bonafide false-positive rate at tau; per-speaker FPR (bias) | T18 | consented team windows |
 | Consented clone catch rate through a real Meet call | T18 / T22 | x/N with Wilson CI |
 | Spoken ask → side-panel chip latency; ms per window in Chrome | T11 / T07 step 8 | `results/t11_latency.csv` has a header only |
 | LLM echo/obey rate before vs after the faithfulness checker | T15 | run `scripts/redteam.py` with Ollama |
 | Paraphrase robustness ("money figure") | T19-T21 | not run; pre-registered plan only |
-| Email / invoice checker detection rates | T03, T04, T08 | not built |
+| Email / invoice checker detection rates | T03, T04, T08 | checkers are built; no labelled open e-mail/invoice set measured yet (scam-text model on e-mail is measured: §10) |
+| Fully AI-generated portraits (GAN / diffusion, no swap) through the photo check | finale | a licensed generated-face test set |
 | Cost per case (≈ ₹1), per live minute (≈ ₹2) | design §7 | estimate only; recompute from current ap-south-1 prices |
 
 ## 7. Invalidated (never show)
