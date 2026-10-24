@@ -43,6 +43,9 @@ ocr = ["rapidocr-onnxruntime>=1.4"]
 # Video research (research/video/): training the blend CNN, CV, the benchmark. CPU is enough
 # (CPU torch: `uv pip install torch --index-url https://download.pytorch.org/whl/cpu`).
 video-research = ["torch>=2.3", "timm>=1.0", "onnx>=1.16", "scikit-learn>=1.4", "pandas>=2.1"]
+# Building the voice-clone model once (docs/VOICE_DEEPFAKE.md): XLS-R layers 1-7 from the
+# pinned Hugging Face revision -> ONNX, plus the committed head (config/voice_head.json).
+voice-build = ["torch>=2.3", "transformers>=4.44", "onnx>=1.16", "onnxruntime>=1.18"]
 # Satyapan Seal (docs/SEAL.md): Voice Seal DSP + Intent Seal passkey verification.
 seal = ["numpy>=1.26", "scipy>=1.11", "webauthn>=2.2"]
 # AWS adapters (T09, T12, T15, T17). The app works without them (local fallbacks).
