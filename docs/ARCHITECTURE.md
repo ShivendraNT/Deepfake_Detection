@@ -107,7 +107,8 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/workflows/watchlist.py` | C10 (R4) | T13 | todo |
 | `src/satyapan/report/pack.py` | C12 | T16 | todo |
 | `src/satyapan/report/pack_v2.py` | C12 golden-hour report copilot (5 drafts) | F11 | done |
-| `src/satyapan/citizen/rules.py` | stretch S1 | T24 | todo |
+| `src/satyapan/citizen/rules.py` | impossible-claim rules for the citizen page (OTP, digital arrest, KYC, …) | T24 | done |
+| `src/satyapan/citizen/check.py` | citizen Scam Check of any file or message: quick check + the T24 rules, higher band wins (raise-only), plain why, what was and was not checked | finale (lead) | done |
 | `src/satyapan/seal/` | C14 Satyapan Seal: Voice Seal + Intent Seal (docs/SEAL.md) | SEAL (lead) | done (R1 prototype) |
 | `src/satyapan/video/` | C15 video deepfake check: face tracking, blend CNN, pulse, lighting, lip-sync, fusion, rule (docs/VIDEO_DEEPFAKE.md) | finale (lead) | done (prototype) |
 | `src/satyapan/textrisk/` | scam-text classifier: de-obfuscation, hashed TF-IDF + logistic regression trained on open datasets; STYLE evidence capped at VERIFY (docs/TEXT_BENCHMARK.md) | finale (lead) | done (prototype) |
@@ -299,6 +300,7 @@ Endpoints whose task is not done return **HTTP 501** `{"detail":"not implemented
 | `POST /live/{call_id}/voice` (JSON list of `VoiceWindowResult`) | T11 | on-device voice scores |
 | `GET /live/{call_id}/events` | T11 | server-sent events (`LiveEvent`) |
 | `POST /scam-check` | T24 | citizen page: band + action only |
+| `POST /scam-check/file` | finale | citizen page, any file (screenshot, voice note, photo, video, PDF): band + action + why + checked / not checked; nothing kept |
 | `GET /vendors`, `GET /employees` | T01 | master data for the console |
 
 There is deliberately **no** endpoint that submits anything to 1930, NCRP or a bank.

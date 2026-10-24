@@ -38,6 +38,7 @@ MODELS = [
     "Explanation",
     "EvidenceItemForLLM",
     "CitizenResult",
+    "CitizenFileResult",
     "VoiceWindowResult",
     "SealSession",
     "SealMeetingView",

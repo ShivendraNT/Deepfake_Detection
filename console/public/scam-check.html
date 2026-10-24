@@ -4,7 +4,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0b0f19" />
-    <title>Satyapan — Citizen Scam Shield | साइबर सुरक्षा कवच</title>
+    <title>Satya Scam Check | सत्य स्कैम चेक</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet">
@@ -411,6 +411,18 @@
         text-align: center;
       }
       .note strong { color: #94a3b8; }
+      .file-pick { display: flex; align-items: center; gap: .6rem; margin: .75rem 0 0; padding: .8rem 1rem;
+        border: 1px dashed rgba(255,255,255,.25); border-radius: 12px; cursor: pointer; color: var(--text-muted); }
+      .file-pick input { display: none; }
+      .file-pick strong { color: var(--text); }
+      #fileName { margin-left: auto; font-size: .8rem; color: var(--cyan); }
+      .why-list { margin: .9rem 0 .2rem 1.1rem; display: grid; gap: .35rem; font-size: .92rem; line-height: 1.45; }
+      .meta { font-size: .8rem; color: var(--text-muted); margin-top: .5rem; line-height: 1.5; }
+      details.read { margin-top: .6rem; font-size: .85rem; color: var(--text-muted); }
+      details.read p { margin-top: .4rem; color: var(--text); white-space: pre-wrap; }
+      .fp-box { margin-top: 1rem; padding: .8rem 1rem; border-radius: 12px; background: rgba(255,255,255,.04);
+        font-size: .85rem; line-height: 1.5; color: var(--text-muted); }
+      .fp-box strong { color: var(--text); }
     </style>
   </head>
   <body>
@@ -419,8 +431,8 @@
         <div class="brand">
           <div class="brand-icon">🛡️</div>
           <div>
-            <h1 class="brand-title" data-i18n="title">SATYAPAN SCAM-SHIELD</h1>
-            <span class="brand-badge">IIT DELHI CITIZEN DEFENSE</span>
+            <h1 class="brand-title" data-i18n="title">SATYA SCAM CHECK</h1>
+            <span class="brand-badge" data-i18n="badge">Checked on this device</span>
           </div>
         </div>
         <button id="langBtn" type="button" aria-pressed="false">
@@ -430,7 +442,7 @@
 
       <div class="card">
         <p class="intro-text" data-i18n="intro">
-          Received a suspicious WhatsApp message, fake CBI call notice, or OTP demand? Scan it below against our real-time Multi-Modal Anti-Fraud Grid.
+          Got a message, voice note, photo or video that asks for money, an OTP or a quick decision? Forward it here before you act.
         </p>
 
         <div class="chips-label">⚡ 1-Click Test Scenarios / टेस्ट करने के लिए क्लिक करें:</div>
@@ -444,8 +456,14 @@
         <label for="msg" data-i18n="label">Paste suspicious message or call transcript / संदिग्ध संदेश यहाँ पेस्ट करें:</label>
         <textarea id="msg" placeholder="e.g. CBI officer on video call says your Aadhaar is linked to money laundering, transfer money immediately..." spellcheck="false"></textarea>
 
+        <label class="file-pick" for="file">
+          <input id="file" type="file" accept="image/*,audio/*,video/*,.eml,.pdf,.txt" />
+          <span>📎</span> <strong data-i18n="file">Or add a screenshot, voice note, photo or video</strong>
+          <span id="fileName"></span>
+        </label>
+
         <button id="checkBtn" class="primary-btn" type="button">
-          <span>⚡</span> <span data-i18n="check">Scan Message With Satyapan Grid</span>
+          <span>🔍</span> <span data-i18n="check">Check it</span>
         </button>
 
         <p id="status" role="alert"></p>
@@ -460,6 +478,10 @@
             </div>
             
             <p id="action"></p>
+            <ul id="why" class="why-list"></ul>
+            <p id="checked" class="meta"></p>
+            <p id="notChecked" class="meta"></p>
+            <details id="readBox" class="read"><summary data-i18n="read">What Satya read / heard</summary><p id="read"></p></details>
 
             <div class="action-grid">
               <a class="action-link btn-danger" id="call1930" href="tel:1930">
@@ -479,16 +501,17 @@
               </a>
             </div>
           </div>
+          <div id="fpBox" class="fp-box"></div>
         </section>
 
         <div class="shield-footer">
           <div class="trust-badges">
-            <div class="badge-item"><span>🔒</span> 100% Privacy Preserving</div>
-            <div class="badge-item"><span>🏛️</span> I4C 1930 Compliant</div>
-            <div class="badge-item"><span>⚡</span> Sub-5s Latency</div>
+            <div class="badge-item"><span>🔒</span> <span data-i18n="b1">Runs on this device</span></div>
+            <div class="badge-item"><span>🗑️</span> <span data-i18n="b2">Nothing is stored</span></div>
+            <div class="badge-item"><span>🙋</span> <span data-i18n="b3">Never blocks: you decide</span></div>
           </div>
           <p class="note" data-i18n="note">
-            This page analyzes <strong>written text & communication asks</strong>. Official agencies, banks, or police will <strong>NEVER</strong> conduct arrest procedures over video calls or ask for OTPs / account transfers.
+            Satya checks the words, the voice and the face. It can be wrong: a "PASS" is not proof that a message is genuine. Banks, police and government offices <strong>never</strong> ask for an OTP, a "safe account" transfer or an arrest over a video call.
           </p>
         </div>
       </div>
@@ -507,30 +530,52 @@
 
         var TEXT = {
           en: {
-            title: "SATYAPAN SCAM-SHIELD",
-            intro: "Received a suspicious WhatsApp message, fake CBI call notice, or OTP demand? Scan it below against our real-time Multi-Modal Anti-Fraud Grid.",
-            label: "Paste suspicious message or call transcript:",
-            check: "Scan Message With Satyapan Grid",
-            checking: "Scanning across 4 Sensory Detectors & Policy Floor…",
-            empty: "Please paste a message first.",
+            title: "SATYA SCAM CHECK",
+            badge: "Checked on this device",
+            intro: "Got a message, voice note, photo or video that asks for money, an OTP or a quick decision? Forward it here before you act.",
+            label: "Paste the message:",
+            file: "Or add a screenshot, voice note, photo or video",
+            check: "Check it",
+            checking: "Checking the words, the voice and the face…",
+            empty: "Paste a message or add a file first.",
+            read: "What Satya read / heard",
+            checkedP: "Checked: ",
+            notCheckedP: "Could not check here: ",
+            b1: "Runs on this device", b2: "Nothing is stored", b3: "Never blocks: you decide",
+            fp: {
+              HOLD: "<strong>Think this is a mistake?</strong> Call the person or company back on a number you already have (saved contact, back of your card, official app), not one from this message. If they confirm, go ahead. Satya never blocks anything.",
+              VERIFY: "<strong>Not sure?</strong> One call settles it: phone the sender on a number you already have, or ask a question only the real person would know. If they confirm, go ahead.",
+              PASS: "<strong>Still unsure?</strong> PASS means no known scam pattern was found, not that it is genuine. Never share an OTP, PIN or password with anyone.",
+            },
             error: "Could not connect to Satyapan backend. Make sure uvicorn is running on port 8000.",
             call: "Emergency Call 1930",
             speak: "Listen to Advice",
             share: "Share Warning on WhatsApp",
-            note: "This page analyzes <strong>written text & communication asks</strong>. Official agencies, banks, or police will <strong>NEVER</strong> conduct arrest procedures over video calls or ask for OTPs / account transfers.",
+            note: "Satya checks <strong>the words, the voice and the face</strong> on this device and tells you why; it can be wrong, so the call-back step decides. Official agencies, banks, or police will <strong>NEVER</strong> conduct arrest procedures over video calls or ask for OTPs / account transfers.",
           },
           hi: {
-            title: "सत्यापन साइबर सुरक्षा कवच",
-            intro: "क्या आपको कोई संदिग्ध व्हाट्सएप संदेश, फर्जी सीबीआई कॉल या ओटीपी की मांग मिली है? नीचे हमारे रियल-टाइम एंटी-फ्रॉड ग्रिड से इसकी तुरंत जांच करें।",
-            label: "संदिग्ध संदेश या कॉल की बातचीत यहाँ पेस्ट करें:",
-            check: "सत्यापन ग्रिड से संदेश की जाँच करें",
-            checking: "डिटेक्टर्स और पॉलिसी इंजन द्वारा संदेश की जाँच जारी है…",
-            empty: "कृपया पहले कोई संदेश पेस्ट करें।",
+            title: "सत्य स्कैम चेक",
+            badge: "इसी डिवाइस पर जाँच",
+            intro: "कोई संदेश, वॉइस नोट, फ़ोटो या वीडियो पैसे, ओटीपी या जल्दी फ़ैसला माँग रहा है? कुछ भी करने से पहले उसे यहाँ भेजिए।",
+            label: "संदेश यहाँ पेस्ट करें:",
+            file: "या स्क्रीनशॉट, वॉइस नोट, फ़ोटो या वीडियो जोड़ें",
+            check: "जाँच करें",
+            checking: "शब्द, आवाज़ और चेहरा जाँचे जा रहे हैं…",
+            empty: "पहले संदेश पेस्ट करें या फ़ाइल जोड़ें।",
+            read: "सत्य ने क्या पढ़ा / सुना",
+            checkedP: "जाँचा गया: ",
+            notCheckedP: "यहाँ जाँच नहीं हो सकी: ",
+            b1: "इसी डिवाइस पर", b2: "कुछ भी सेव नहीं होता", b3: "कभी रोकता नहीं: फ़ैसला आपका",
+            fp: {
+              HOLD: "<strong>लगता है गलती हुई?</strong> उस व्यक्ति या कंपनी को अपने पास पहले से मौजूद नंबर पर कॉल कीजिए (सेव किया नंबर, कार्ड के पीछे का नंबर, आधिकारिक ऐप) — इस संदेश वाले नंबर पर नहीं। वे पुष्टि करें तो आगे बढ़िए। सत्य कुछ भी रोकता नहीं।",
+              VERIFY: "<strong>पक्का नहीं?</strong> एक कॉल से तय हो जाएगा: भेजने वाले को अपने पास मौजूद नंबर पर फ़ोन कीजिए, या ऐसा सवाल पूछिए जो असली व्यक्ति ही जानता हो।",
+              PASS: "<strong>फिर भी शक है?</strong> PASS का मतलब सिर्फ़ इतना है कि कोई जाना-पहचाना ठगी पैटर्न नहीं मिला। ओटीपी, पिन या पासवर्ड किसी को न बताइए।",
+            },
             error: "सर्वर से संपर्क नहीं हो सका। कृपया सुनिश्चित करें कि uvicorn बैकएंड चालू है।",
             call: "1930 हेल्पलाइन पर कॉल करें",
             speak: "यह सलाह सुनें",
             share: "परिवार के साथ व्हाट्सएप पर साझा करें",
-            note: "यह सुरक्षा ग्रिड <strong>संदेशों और धोखाधड़ी की मांगों</strong> का विश्लेषण करता है। पुलिस, सीबीआई या बैंक कभी भी वीडियो कॉल पर गिरफ़्तारी नहीं करते और न ही कभी ओटीपी या पैसे ट्रांसफर करने को कहते हैं।",
+            note: "सत्य <strong>शब्द, आवाज़ और चेहरा</strong> इसी डिवाइस पर जाँचता है और कारण बताता है; वह ग़लत भी हो सकता है, इसलिए फ़ैसला वापस कॉल करके ही करें। पुलिस, सीबीआई या बैंक कभी भी वीडियो कॉल पर गिरफ़्तारी नहीं करते और न ही कभी ओटीपी या पैसे ट्रांसफर करने को कहते हैं।",
           },
         };
 
@@ -575,26 +620,45 @@
           $("ncrp").href = (result.links && result.links.ncrp) || "https://cybercrime.gov.in/";
           $("chakshu").href = (result.links && result.links.chakshu) || "https://sancharsaathi.gov.in/sfc/";
           $("share").href = (result.links && result.links.share) || "#";
+          var why = $("why"); why.innerHTML = "";
+          (result.why || []).forEach(function (line) {
+            var li = document.createElement("li"); li.textContent = line; why.appendChild(li);
+          });
+          $("checked").textContent = (result.checked && result.checked.length) ? t("checkedP") + result.checked.join(", ") : "";
+          $("notChecked").textContent = (result.not_checked && result.not_checked.length) ? t("notCheckedP") + result.not_checked.join(", ") : "";
+          $("readBox").style.display = result.heard_or_read ? "block" : "none";
+          $("read").textContent = result.heard_or_read || "";
+          $("fpBox").innerHTML = (TEXT[lang].fp || {})[result.band] || "";
           $("result").style.display = "block";
         }
 
         async function check() {
           var text = $("msg").value.trim();
+          var file = $("file").files && $("file").files[0];
           var status = $("status");
-          if (!text) { status.textContent = t("empty"); return; }
+          if (!text && !file) { status.textContent = t("empty"); return; }
           status.textContent = t("checking");
           $("checkBtn").disabled = true;
-          var body = JSON.stringify({ text: text, lang: lang === "hi" ? "hi" : "en" });
-          var opts = {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: body,
-          };
+          var langCode = lang === "hi" ? "hi" : "en";
+          var urls = ENDPOINTS;
+          var makeOpts;
+          if (file) {
+            urls = ENDPOINTS.map(function (u) { return u + "/file"; });
+            makeOpts = function () {
+              var fd = new FormData(); fd.append("file", file); fd.append("lang", langCode);
+              return { method: "POST", body: fd };
+            };
+          } else {
+            makeOpts = function () {
+              return { method: "POST", headers: { "Content-Type": "application/json" },
+                       body: JSON.stringify({ text: text, lang: langCode }) };
+            };
+          }
           try {
             var res = null;
-            for (var i = 0; i < ENDPOINTS.length; i++) {
+            for (var i = 0; i < urls.length; i++) {
               try {
-                var r = await fetch(ENDPOINTS[i], opts);
+                var r = await fetch(urls[i], makeOpts());
                 if (r.ok) { res = await r.json(); break; }
               } catch (e) { /* try next endpoint */ }
             }
@@ -625,6 +689,10 @@
           renderStatic();
         });
         $("checkBtn").addEventListener("click", check);
+        $("file").addEventListener("change", function () {
+          var f = $("file").files && $("file").files[0];
+          $("fileName").textContent = f ? f.name : "";
+        });
         $("speak").addEventListener("click", function (ev) {
           ev.preventDefault();
           speak($("action").textContent);

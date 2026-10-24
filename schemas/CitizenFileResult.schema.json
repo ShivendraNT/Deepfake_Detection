@@ -1,0 +1,83 @@
+{
+  "$defs": {
+    "Band": {
+      "description": "Risk band. Ordered PASS < VERIFY < HOLD. Use satyapan.policy.bands to compare.",
+      "enum": [
+        "PASS",
+        "VERIFY",
+        "HOLD"
+      ],
+      "title": "Band",
+      "type": "string"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Citizen check of any message or file (finale): band + action + plain reasons; never\nscores. `checked` / `not_checked` say what this device could and could not look at.",
+  "properties": {
+    "band": {
+      "$ref": "#/$defs/Band"
+    },
+    "action_text": {
+      "title": "Action Text",
+      "type": "string"
+    },
+    "rule_hits": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Rule Hits",
+      "type": "array"
+    },
+    "links": {
+      "additionalProperties": {
+        "type": "string"
+      },
+      "title": "Links",
+      "type": "object"
+    },
+    "why": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Why",
+      "type": "array"
+    },
+    "checked": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Checked",
+      "type": "array"
+    },
+    "not_checked": {
+      "items": {
+        "type": "string"
+      },
+      "title": "Not Checked",
+      "type": "array"
+    },
+    "heard_or_read": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Heard Or Read"
+    },
+    "seconds": {
+      "default": 0.0,
+      "title": "Seconds",
+      "type": "number"
+    }
+  },
+  "required": [
+    "band",
+    "action_text"
+  ],
+  "title": "CitizenFileResult",
+  "type": "object"
+}
