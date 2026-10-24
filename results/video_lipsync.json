@@ -1,0 +1,60 @@
+{
+ "videos": 424,
+ "score": "-av_corr (no fitting)",
+ "comparisons": {
+  "matched_vs_swapped": {
+   "n_real": 412,
+   "n_fake": 412,
+   "auc": {
+    "value": 0.6245,
+    "low": 0.5865,
+    "high": 0.6607,
+    "n_boot": 2000
+   },
+   "eer": {
+    "value": 0.4102,
+    "low": 0.3801,
+    "high": 0.4466,
+    "n_boot": 2000
+   }
+  },
+  "matched_vs_tts": {
+   "n_real": 412,
+   "n_fake": 421,
+   "auc": {
+    "value": 0.6644,
+    "low": 0.6283,
+    "high": 0.6988,
+    "n_boot": 2000
+   },
+   "eer": {
+    "value": 0.3824,
+    "low": 0.3468,
+    "high": 0.4106,
+    "n_boot": 2000
+   }
+  },
+  "matched_vs_desync": {
+   "n_real": 412,
+   "n_fake": 423,
+   "auc": {
+    "value": 0.6713,
+    "low": 0.6332,
+    "high": 0.705,
+    "n_boot": 2000
+   },
+   "eer": {
+    "value": 0.3712,
+    "low": 0.3404,
+    "high": 0.4066,
+    "n_boot": 2000
+   }
+  }
+ },
+ "abstained_window_fraction": {
+  "matched": 0.0354,
+  "swapped": 0.0354,
+  "tts": 0.5035,
+  "desync": 0.0212
+ }
+}
