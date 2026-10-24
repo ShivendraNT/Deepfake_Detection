@@ -224,6 +224,7 @@ def _image(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detec
     rgb = decode_image(data)
     out = DetectorOutput(detector="image", version="0.1.0", evidence_id=ev.id)
     out.artifacts["size"] = [int(rgb.shape[1]), int(rgb.shape[0])]
+    photo_of_a_person = False
     if ctx.image is not None:
         from satyapan.imagecheck.face import image_face_signal
 
@@ -231,6 +232,7 @@ def _image(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detec
         out.signals.append(image_face_signal(verdict, ctx.image, ev.id))
         out.artifacts["face_label"] = verdict.code.value
         out.artifacts["face_problem"] = verdict.problem
+        photo_of_a_person = verdict.problem is None
     else:
         out.artifacts["face_label"] = "not_analysed"
     from satyapan.imagecheck.ocr import OcrUnavailable, read_text
@@ -241,7 +243,16 @@ def _image(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> Detec
         out.artifacts["ocr"] = str(exc)
         return out
     out.artifacts["ocr_text"] = text[:2000]
-    return _asks(text, ev.id, ctx, out) if text.strip() else out
+    if not text.strip():
+        return out
+    if photo_of_a_person:
+        # A photo of a person is judged by its face. Captions, tickers and signs in it are
+        # not messages: only explicit asks count there, not the message-trained text model.
+        from dataclasses import replace
+
+        out.artifacts["text_model"] = "skipped: photo of a person (captions are not messages)"
+        return _asks(text, ev.id, replace(ctx, text_model=None), out)
+    return _asks(text, ev.id, ctx, out)
 
 
 def _text(data: bytes, ev: Evidence, case: Case, ctx: PipelineContext) -> DetectorOutput:

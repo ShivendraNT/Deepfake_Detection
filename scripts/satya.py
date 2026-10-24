@@ -142,10 +142,19 @@ TASKS: dict[str, tuple[str, Callable[[], None]]] = {
     "run": ("API with auto-reload on http://127.0.0.1:8000", lambda: serve(False)),
     "live": ("API for a live demo (no reload, speech engine warmed up)", lambda: serve(True)),
     "desktop": ("the Electron app (installs node modules on first run)", desktop),
+    "scan": ("scan FILES/FOLDERS: verdict for each file, offline, nothing kept", lambda: None),
 }
 
 
+def scan() -> None:
+    """`satya.py scan FILES_OR_FOLDERS...`: check any files offline (the judges' kit)."""
+    run("uv", "run", "python", "-m", "satyapan.check_cli", *sys.argv[2:])
+
+
 def main() -> None:
+    if len(sys.argv) > 2 and sys.argv[1] == "scan":
+        scan()
+        return
     if len(sys.argv) != 2 or sys.argv[1] not in TASKS:
         print(__doc__)
         for name, (doc, _) in TASKS.items():

@@ -229,10 +229,12 @@ class ReasonCode(StrEnum):
     VIDEO_NO_SIGNS = "VIDEO_NO_SIGNS"
     VIDEO_INCONCLUSIVE = "VIDEO_INCONCLUSIVE"  # also: no usable face (camera off, too small)
     VIDEO_LIKELY_SYNTHETIC = "VIDEO_LIKELY_SYNTHETIC"
+    VIDEO_SUSPICIOUS = "VIDEO_SUSPICIOUS"  # usable face scored between tau_lo and tau_hi
     # Still image (photo / profile picture): the same face CNN on one face crop
     IMAGE_FACE_NO_SIGNS = "IMAGE_FACE_NO_SIGNS"
     IMAGE_FACE_INCONCLUSIVE = "IMAGE_FACE_INCONCLUSIVE"  # also: no usable face in the image
     IMAGE_FACE_LIKELY_SYNTHETIC = "IMAGE_FACE_LIKELY_SYNTHETIC"
+    IMAGE_FACE_SUSPICIOUS = "IMAGE_FACE_SUSPICIOUS"  # scored between tau_lo and tau_hi
     # Asks (C5)
     ASK_NEW_ACCOUNT = "ASK_NEW_ACCOUNT"
     ASK_CREDENTIAL = "ASK_CREDENTIAL"

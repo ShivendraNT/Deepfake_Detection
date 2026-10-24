@@ -81,6 +81,11 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
     ReasonCode.VIDEO_LIKELY_SYNTHETIC: SignalSpec(
         SignalGroup.MEDIA, TargetRule.PLUS_ONE, Strength.STRONG, _ML
     ),
+    # A usable face that scored over the 5%-FPR line (but not 1% twice): "confirm another way
+    # before acting" (VERIFY), never HOLD. "Could not check" stays INCONCLUSIVE (no effect).
+    ReasonCode.VIDEO_SUSPICIOUS: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.VERIFY, Strength.WEAK, _ML
+    ),
     # --- media: still image (same face CNN, one crop; ML) ---
     ReasonCode.IMAGE_FACE_NO_SIGNS: SignalSpec(
         SignalGroup.MEDIA, TargetRule.NONE, Strength.WEAK, _ML
@@ -90,6 +95,9 @@ SIGNAL_TABLE: dict[ReasonCode, SignalSpec] = {
     ),
     ReasonCode.IMAGE_FACE_LIKELY_SYNTHETIC: SignalSpec(
         SignalGroup.MEDIA, TargetRule.PLUS_ONE, Strength.STRONG, _ML
+    ),
+    ReasonCode.IMAGE_FACE_SUSPICIOUS: SignalSpec(
+        SignalGroup.MEDIA, TargetRule.VERIFY, Strength.WEAK, _ML
     ),
     # --- ask (C5, deterministic) ---
     ReasonCode.ASK_NEW_ACCOUNT: SignalSpec(SignalGroup.ASK, TargetRule.VERIFY, Strength.WEAK, _DET),

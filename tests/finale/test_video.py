@@ -538,3 +538,14 @@ def test_missing_shipped_cnn_falls_back_to_its_own_sbi_config(tmp_path: Path, mo
     (models / "gend_clip_l14.onnx").unlink()
     with pytest.raises(VideoUnavailable, match="make video-models"):
         an.VideoAnalyzer.load()
+
+
+def test_an_unusual_face_asks_to_verify_but_no_face_changes_nothing() -> None:
+    from satyapan.video.rules import VideoVerdict, reason_code
+
+    unusual = VideoVerdict(VideoLabel.INCONCLUSIVE, 1, 3, 3, 0.95)
+    unseen = VideoVerdict(VideoLabel.INCONCLUSIVE, 0, 3, 0, 0.0, problem="no_face")
+    assert reason_code(unusual) == ReasonCode.VIDEO_SUSPICIOUS
+    assert reason_code(unseen) == ReasonCode.VIDEO_INCONCLUSIVE
+    assert SIGNAL_TABLE[ReasonCode.VIDEO_SUSPICIOUS].target.value == "VERIFY"
+    assert SIGNAL_TABLE[ReasonCode.VIDEO_INCONCLUSIVE].target.value == "NONE"

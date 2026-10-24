@@ -94,7 +94,15 @@ _LABEL_TO_CODE = {
     VideoLabel.INCONCLUSIVE: ReasonCode.VIDEO_INCONCLUSIVE,
     VideoLabel.NO_SIGNS: ReasonCode.VIDEO_NO_SIGNS,
 }
-VIDEO_CODES = frozenset(_LABEL_TO_CODE.values())
+VIDEO_CODES = frozenset({*_LABEL_TO_CODE.values(), ReasonCode.VIDEO_SUSPICIOUS})
+
+
+def reason_code(verdict: VideoVerdict) -> ReasonCode:
+    """INCONCLUSIVE with a usable face means a score over tau_lo: SUSPICIOUS (VERIFY).
+    INCONCLUSIVE without one means "could not check": no band effect."""
+    if verdict.label == VideoLabel.INCONCLUSIVE and verdict.usable_windows > 0:
+        return ReasonCode.VIDEO_SUSPICIOUS
+    return _LABEL_TO_CODE[verdict.label]
 
 
 def video_signal(
@@ -105,7 +113,7 @@ def video_signal(
     detector: str = "video_fusion",
 ) -> Signal:
     return Signal.make(
-        _LABEL_TO_CODE[verdict.label],
+        reason_code(verdict),
         source=SignalSource.ML,
         evidence_ids=evidence_ids,
         detector=f"{detector}@{thresholds.model_version}",

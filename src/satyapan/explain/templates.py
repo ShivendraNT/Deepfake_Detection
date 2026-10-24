@@ -174,6 +174,12 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.HI: "वीडियो में दिख रहा चेहरा लगातार दो हिस्सों में बदला हुआ या AI से बना लगता है। "
         "इस कॉल पर कार्रवाई न करें; OOB-Confirm या दर्ज नंबर पर कॉल-बैक के ज़रिए पुष्टि करें।",
     },
+    ReasonCode.VIDEO_SUSPICIOUS: {
+        Lang.EN: "The face on the video looked unusual to the face check (not sure enough to "
+        "call it fake). Do not act on this call alone; confirm the request another way.",
+        Lang.HI: "चेहरे की जाँच को वीडियो का चेहरा असामान्य लगा (नकली कहने लायक पक्का नहीं)। "
+        "सिर्फ़ इस कॉल पर कार्रवाई न करें; दूसरे तरीके से पुष्टि करें।",
+    },
     # --- still image (face) ---
     ReasonCode.IMAGE_FACE_NO_SIGNS: {
         Lang.EN: "The face check found no signs of a swapped or generated face in this image. "
@@ -193,6 +199,12 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         "the number on file.",
         Lang.HI: "इस तस्वीर का चेहरा बदला हुआ या AI से बना लगता है। इसे पहचान का सबूत न मानें; "
         "OOB-Confirm या दर्ज नंबर पर कॉल-बैक के ज़रिए पुष्टि करें।",
+    },
+    ReasonCode.IMAGE_FACE_SUSPICIOUS: {
+        Lang.EN: "The face in this image looked unusual to the face check (not sure enough to "
+        "call it fake). Do not trust the photo as proof of identity; confirm another way.",
+        Lang.HI: "चेहरे की जाँच को इस तस्वीर का चेहरा असामान्य लगा (नकली कहने लायक पक्का नहीं)। "
+        "इसे पहचान का सबूत न मानें; दूसरे तरीके से पुष्टि करें।",
     },
     # --- asks ---
     ReasonCode.ASK_NEW_ACCOUNT: {
