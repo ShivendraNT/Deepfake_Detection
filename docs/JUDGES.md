@@ -180,7 +180,7 @@ depends on reporting the UTR within hours, which is why the report step starts w
 
 | Who runs it | How | Cost per check (estimate, pilot to confirm) |
 |---|---|---|
-| A bank or UPI app | a "Check before you pay" share target. Text, asks, OCR and the rules are small enough for a phone. Photo, video and voice models (GenD 1.2 GB, XLS-R trunk 405 MB) run on the bank's own servers in India, only on an explicit share, deleted after scoring. | text ≈ 12 ms of CPU; a photo or a 30 s video takes seconds to a minute or two of a 4-core CPU (measured wall times above), i.e. well under ₹1 per check at on-demand cloud prices |
+| A bank or UPI app | a "Check before you pay" share target. Text, asks, OCR and the rules are small enough for a phone. Photo, video and voice models (GenD 1.2 GB, voice model 1.3 GB) run on the bank's own servers in India, only on an explicit share, deleted after scoring. | text ≈ 12 ms of CPU; a photo or a 30 s video takes seconds to a minute or two of a 4-core CPU (measured wall times above), i.e. well under ₹1 per check at on-demand cloud prices |
 | A cyber cell or the 1930 desk | `satya scan` on a complaint's files, offline; the money-sent draft lists the facts the portal and the 1930 call ask for, UTR first | a laptop |
 | Anyone | the desktop app or `http://<laptop>:8000/check` on a phone on the same Wi-Fi | free; nothing leaves the device |
 
@@ -205,8 +205,8 @@ This page, [`README.md`](../README.md), and the live script in
 1. **Attack.** A juror calls the laptop (WhatsApp, Meet, any app) and says, in English or
    Hinglish: *"This is CBI. Your Aadhaar is linked to money laundering. You are under digital
    arrest. Don't tell anyone. Transfer ₹50,000 to the RBI safe account and read me the OTP."*
-2. **Alert**, a few seconds after the sentence (captions about 1 s behind speech). The alert reads *"Stop: don't pay or share any
-   code on this call."* It quotes the exact words (new / "safe" account, secrecy, OTP) and says
+2. **Alert**, a few seconds after the sentence (captions about 1 s behind speech). The alert
+   reads *"Stop: don't pay or share any code on this call."* It quotes the exact words (new / "safe" account, secrecy, OTP) and says
    why: *real police, banks and officials never ask for money, a code or secrecy on a call.*
 3. **Action.**
    - *Copy a safe reply, then hang up*;
