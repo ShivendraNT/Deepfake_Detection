@@ -126,8 +126,11 @@ def window_features(
     blend = [float(x) for x in (crop_logits or []) if np.isfinite(x)]
     feats["blend"] = float(np.mean(blend)) if blend else float("nan")
     feats.update(pulse_features(t, traces, ANALYSIS_FPS))
+    found = np.array([r.found for r in records], dtype=bool)
     spec = np.array([r.spec for r in records if r.found], dtype=float).reshape(-1, 4)
-    found_traces = {k: v[np.isfinite(v).all(axis=1)] for k, v in traces.items()}
+    # Keep the patch traces aligned frame by frame (a patch that left the frame is NaN for that
+    # frame only); the lighting cue masks all patches jointly.
+    found_traces = {k: v[found] for k, v in traces.items()}
     feats.update(lighting_features(found_traces, spec))
     mouth = np.array([r.mouth if r.found else np.nan for r in records], dtype=float)
     lip = lipsync_features(t - audio_t0, mouth, audio, sr, ANALYSIS_FPS)
