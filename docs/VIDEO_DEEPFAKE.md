@@ -94,6 +94,39 @@ product rule's alert rates on reals (false alarms) and fakes (detections) with W
 (`SEED = 20261024`); `tests/harness/test_results_provenance.py` checks that nothing writing to
 `results/` uses an unseeded RNG.
 
+### 5b. Off-the-shelf detectors from Hugging Face (rule fixed 24 Oct 2026, before scoring)
+
+"Why not just download a model?" We did, and put every candidate through the protocol above
+(`research/video/hf_baselines.py`, revisions pinned, licences recorded):
+
+| Model (Hub id @ pinned rev) | Licence | Params | Trained on | Our FF++ val/test unseen by it? |
+|---|---|---|---|---|
+| GenD CLIP ViT-L/14 (`yermandy/GenD_CLIP_L_14`, WACV 2026) | MIT | 304 M | FF++ c23 **official** train: 720 reals + 4 × 720 fakes (paper §4) | **yes** (official split) |
+| MS-EffGCViT-b0 (`KoreaPeter/ms-eff-gcvit-deepfake-b0-ff-plus-plus`) | MIT | 8.7 M | FF++ c23, the authors' own unpublished lists | unknown: FF++ rows flagged |
+| ViT-B/16 (`dima806/deepfake_vs_real_image_detection`) | Apache-2.0 | 86 M | undocumented face images | unknown |
+| ViT-B/16 (`prithivMLmods/Deep-Fake-Detector-v2-Model`) | Apache-2.0 | 86 M | undocumented | unknown |
+| ViT-S/16 (`buildborderless/CommunityForensics-DeepfakeDet-ViT`, CVPR 2025) | MIT | 22 M | 2.7 M AI-generated images, 4,803 generators, no face swaps | n/a |
+
+DFDC is unseen by all of them. Not evaluated: the VideoMAE "deepfake" checkpoints on the Hub
+(CC-BY-NC, or an undocumented FF++ subset with 16-frame clips we do not store; best
+self-reported AUC 0.84 in-distribution).
+
+**Matched protocol.** Every model, and our SBI CNN, sees the same stored crops: K = 4 evenly
+spaced 224 px crops per 9.2 s clip (two per analysis window, which is what a ViT-L can afford
+live on a laptop CPU); a video's score is the mean fake-logit; same videos, identity clusters,
+bootstrap and conditions as §5; τ = 1 % FPR on the val reals of the same condition. All models
+are scored on `orig`; the call conditions are scored for every model whose `orig` val AUC is
+≥ 0.70.
+
+**Selection rule for the product's CNN slot.** Eligible: a licence that allows redistribution, a
+documented training split disjoint from our val/test, and an ONNX export that matches the
+reference model to 1e-3 (today: GenD only; int8 quantisation was rejected because its logits
+correlated only r = 0.92 with fp32). GenD replaces the SBI CNN **only if** its FF++ val AUC under
+`call360` exceeds the SBI CNN's by more than one bootstrap SE of the paired difference (the
+cheaper model wins ties). If it does, the product pipeline is re-fitted with GenD logits exactly
+as in §5 (1-D fusion on `fusion_train`, τ on val reals, two crops per window) and the frozen
+benchmark runs once. Both rows are reported whatever happens; test sets never select anything.
+
 ## 6. Results
 
 See §8 (filled from `results/video_benchmark.md` by the benchmark run).

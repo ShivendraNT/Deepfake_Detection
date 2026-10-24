@@ -824,6 +824,7 @@ class CompanionService:
                 transcriber=state.transcriber(),
                 live_phrasebook=True,
                 video=state.video() if channel == Channel.VIDEO else None,
+                text_model=state.text_model(),
             )
             out = analyze_evidence(data, ev, case, ctx)
             case = recompute(merge_output(case, ev, out), state.master)

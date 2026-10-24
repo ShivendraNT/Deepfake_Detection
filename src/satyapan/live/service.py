@@ -57,6 +57,7 @@ class LiveSession:
     video_stream: Any = None
     video_windows: list[Any] = field(default_factory=list)
     video_unavailable_sent: bool = False
+    text_flagged: bool = False  # scam-text model fired on the transcript so far (kept once raised)
     # Routes run handle_chunk/handle_voice in worker threads; one call's updates never interleave.
     lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
 
@@ -118,6 +119,8 @@ class LiveService:
     context_filter: bool = True
     # Finale: returns the VideoAnalyzer, or None when the video check is unavailable here.
     video_factory: Callable[[], Any] | None = None
+    # Returns the scam-text model (TextRiskModel), or None.
+    text_factory: Callable[[], Any] | None = None
 
     def start(self, call_id: str, maker_id: str) -> LiveSession:
         """Create a LIVE_CALL Case (id f"case_live_{call_id}") and a session."""
@@ -218,6 +221,7 @@ class LiveService:
         others = [s for s in session.case.signals if s.detector != DETECTOR_NAME]
         new_asks = ask_signals(session.asks, evidence_id=f"ev_live_{call_id}")
         session.case = session.case.model_copy(update={"signals": others + new_asks})
+        self._score_transcript(session)
 
         events += self._redecide(session)
         return self._publish(call_id, events)
@@ -319,6 +323,23 @@ class LiveService:
         ]
         events += self._redecide(session)
         return self._publish(call_id, events)
+
+    def _score_transcript(self, session: LiveSession) -> None:
+        """Scam-text model on the whole call so far. Raise-only: once it fires it stays."""
+        if session.text_flagged or self.text_factory is None:
+            return
+        model = self.text_factory()
+        if model is None:
+            return
+        from satyapan.textrisk.rules import text_signal
+
+        text = " ".join(session.transcript)
+        if len(text.split()) < 30:
+            return
+        sig = text_signal(model, text, [f"ev_live_{session.call_id}"])
+        if sig is not None:
+            session.text_flagged = True
+            session.case = session.case.model_copy(update={"signals": [*session.case.signals, sig]})
 
     @staticmethod
     def _feed_video_audio(session: LiveSession, audio: bytes, start_s: float) -> None:

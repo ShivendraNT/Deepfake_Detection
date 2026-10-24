@@ -44,6 +44,9 @@ class PipelineContext:
     live_phrasebook: bool = False
     # Finale video check (docs/VIDEO_DEEPFAKE.md): a VideoAnalyzer, or None if unavailable.
     video: Any = None
+    # Scam-text model (docs/TEXT_BENCHMARK.md): a TextRiskModel, or None. Research runs keep
+    # None so the frozen-lexicon numbers reproduce.
+    text_model: Any = None
 
 
 def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> DetectorOutput:
@@ -52,6 +55,14 @@ def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> D
     from satyapan.asks.extractor import ask_signals, extract_asks
     from satyapan.context import strip_context
 
+    if ctx.text_model is not None:
+        from satyapan.textrisk.rules import text_signal
+
+        sig = text_signal(ctx.text_model, text, [ev_id])
+        out.artifacts["text_risk"] = {"flagged": sig is not None,
+                                      "model": ctx.text_model.version}  # fmt: skip
+        if sig is not None:
+            out.signals.append(sig)
     if ctx.context_filter:
         res = strip_context(text)
         text = res.cleaned

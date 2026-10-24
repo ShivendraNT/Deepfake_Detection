@@ -33,6 +33,7 @@ class AppState:
     _video: Any = None  # finale: VideoAnalyzer, or False when unavailable on this machine
     _video_error: str | None = None
     video_override: Any = None  # tests inject a fake analyzer here
+    _text_model: Any = None  # scam-text model, or False when config/text_model.* are missing
 
     @classmethod
     def build(cls, settings: Settings) -> AppState:
@@ -123,6 +124,17 @@ class AppState:
                 self._video_error = str(exc)[:300]
         return self._video or None
 
+    def text_model(self) -> Any:
+        """The shipped scam-text model (config/text_model.npz), or None if not present."""
+        if self._text_model is None:
+            try:
+                from satyapan.textrisk.model import TextRiskModel
+
+                self._text_model = TextRiskModel.load()
+            except (FileNotFoundError, KeyError, ValueError):
+                self._text_model = False
+        return self._text_model or None
+
     def video_status(self) -> dict[str, Any]:
         analyzer = self.video()
         if analyzer is None:
@@ -144,6 +156,7 @@ class AppState:
                 transcriber=self.transcriber(),
                 thresholds=self.thresholds,
                 video_factory=self.video,
+                text_factory=self.text_model,
             )
         return self._live
 
