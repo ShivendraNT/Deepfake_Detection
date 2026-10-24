@@ -240,6 +240,40 @@ def install(name: str) -> None:
                 "trained_on": c.trained_on})  # fmt: skip
     HEAD_CONFIG.write_text(json.dumps(out) + "\n")
     print(f"installed {name} in {MODEL_DIR}; head -> {HEAD_CONFIG}")
+    if SELECTION.exists():
+        write_thresholds(name, c.revision)
+
+
+def write_thresholds(name: str, revision: str) -> None:
+    """config/voice_thresholds.json from the frozen selection: the scorers output
+    P(synthetic) = sigmoid(logit), so tau = sigmoid(tau_logit). Then the extension's copy."""
+    import subprocess
+
+    sel = json.loads(SELECTION.read_text())
+    if sel["model"] != name:
+        raise SystemExit(f"selection chose {sel['model']}, not {name}: thresholds not written")
+
+    def sig(z: float) -> float:
+        return round(1.0 / (1.0 + float(np.exp(-z))), 6)
+
+    cfg = {
+        "tau_hi": sig(sel["thresholds_logit"]["tau_hi"]),
+        "tau_lo": sig(sel["thresholds_logit"]["tau_lo"]),
+        "model_version": f"{name}@{revision[:7]}",
+        "calibration_set_sha256": None,
+        "calibrated": False,
+        "note": "tau_hi / tau_lo = 1 % / 5 % FPR on In-the-Wild val BONAFIDE 5 s clips (public "
+        "recordings, speakers disjoint from test), max over clean / Opus 16 kbps / GSM; "
+        "research/voice/bench.py, results/voice_selection.json. Not fitted on our own calls: "
+        "calibrated=false until consented Meet audio exists (T18).",
+    }
+    path = ROOT / "config" / "voice_thresholds.json"
+    path.write_text(json.dumps(cfg, indent=1) + "\n")
+    print(f"thresholds -> {path}: tau_hi {cfg['tau_hi']}, tau_lo {cfg['tau_lo']}")
+    try:
+        subprocess.run(["node", "scripts/sync_ext_thresholds.mjs"], cwd=ROOT, check=True)
+    except (OSError, subprocess.CalledProcessError) as exc:
+        print(f"extension thresholds not synced ({exc}): run node scripts/sync_ext_thresholds.mjs")
 
 
 def main() -> None:
