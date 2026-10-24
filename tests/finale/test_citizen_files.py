@@ -119,3 +119,23 @@ def test_an_awareness_message_is_not_a_scam_but_the_scam_script_is() -> None:
         assert scam_check(advisory).rule_hits == [], advisory
     scam = "Main CBI se bol raha hoon, aap digital arrest mein ho, video call band mat karna"
     assert scam_check(scam).rule_hits == ["police_video_arrest"]
+
+
+def test_a_missing_speech_engine_is_named_not_turned_into_an_alarm(client, monkeypatch) -> None:
+    """No `make asr` on this laptop: a voice note is not a detector failure (no GREY ->
+    VERIFY on every genuine note); the answer says what could not be checked."""
+    import io
+    import wave
+
+    from satyapan.adapters.transcribe_local import UnavailableTranscriber
+
+    state = client.app.state.satyapan
+    monkeypatch.setattr(state, "transcriber_override", UnavailableTranscriber())
+    buf = io.BytesIO()
+    with wave.open(buf, "wb") as w:
+        w.setnchannels(1), w.setsampwidth(2), w.setframerate(16000)
+        w.writeframes(b"\\x00\\x00" * 16000 * 4)
+    r = client.post("/scam-check/file", files={"file": ("note.wav", buf.getvalue(), "audio/wav")})
+    body = r.json()
+    assert r.status_code == 200 and body["band"] == "PASS"
+    assert any("speech engine not installed" in x for x in body["not_checked"])

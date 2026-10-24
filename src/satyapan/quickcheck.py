@@ -40,11 +40,14 @@ class QuickResult:
 
 
 def _context(state: Any, channel: Channel) -> PipelineContext:
+    transcriber = state.transcriber()
+    if getattr(getattr(transcriber, "status", None), "engine", "") == "none":
+        transcriber = None  # no speech engine installed: say so, don't fail the whole file
     return PipelineContext(
         master=state.master,
         settings=state.settings,
         thresholds=state.thresholds,
-        transcriber=state.transcriber(),
+        transcriber=transcriber,
         live_phrasebook=True,
         text_model=state.text_model(),
         scorer=state.voice_scorer(),
@@ -57,6 +60,9 @@ def _findings(channel: Channel, out: Any, ctx: PipelineContext) -> tuple[dict[st
     a = out.artifacts
     found: dict[str, str] = {}
     missing: list[str] = []
+    spoken = (Channel.VOICE_NOTE, Channel.CALL_RECORDING, Channel.VIDEO)
+    if channel in spoken and ctx.transcriber is None:
+        missing.append("what was said (speech engine not installed: make asr)")
     if channel in (Channel.VOICE_NOTE, Channel.CALL_RECORDING):
         if ctx.scorer is None:
             missing.append("voice clone (voice model not installed)")
