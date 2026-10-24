@@ -94,9 +94,14 @@ class FaceTracker:
         """ROI (cx, cy, side) around the largest YuNet face, or None."""
         h, w = frame.shape[:2]
         scale = min(1.0, DETECT_SIDE / max(h, w))
-        small = frame if scale == 1.0 else self._cv2.resize(
-            frame, (max(1, round(w * scale)), max(1, round(h * scale))),
-            interpolation=self._cv2.INTER_AREA,
+        small = (
+            frame
+            if scale == 1.0
+            else self._cv2.resize(
+                frame,
+                (max(1, round(w * scale)), max(1, round(h * scale))),
+                interpolation=self._cv2.INTER_AREA,
+            )
         )
         sh, sw = small.shape[:2]
         self._yunet.setInputSize((sw, sh))
@@ -110,12 +115,19 @@ class FaceTracker:
         cx, cy, side = roi
         size = int(min(CROP_MAX, max(64.0, side)))
         k = size / side
-        m = np.array([[k, 0.0, -(cx - side / 2) * k], [0.0, k, -(cy - side / 2) * k]],
-                     dtype=np.float32)
-        crop = self._cv2.warpAffine(frame, m, (size, size), flags=self._cv2.INTER_LINEAR,
-                                    borderMode=self._cv2.BORDER_CONSTANT)
-        image = self._mp.Image(image_format=self._mp.ImageFormat.SRGB,
-                               data=np.ascontiguousarray(crop))
+        m = np.array(
+            [[k, 0.0, -(cx - side / 2) * k], [0.0, k, -(cy - side / 2) * k]], dtype=np.float32
+        )
+        crop = self._cv2.warpAffine(
+            frame,
+            m,
+            (size, size),
+            flags=self._cv2.INTER_LINEAR,
+            borderMode=self._cv2.BORDER_CONSTANT,
+        )
+        image = self._mp.Image(
+            image_format=self._mp.ImageFormat.SRGB, data=np.ascontiguousarray(crop)
+        )
         result = self._landmarker.detect(image)
         if not result.face_landmarks:
             return None
@@ -144,8 +156,11 @@ class FaceTracker:
                 return None
         x0, y0 = obs.pts.min(axis=0)
         x1, y1 = obs.pts.max(axis=0)
-        self._roi = (float(x0 + x1) / 2, float(y0 + y1) / 2,
-                     float(max(x1 - x0, y1 - y0) * ROI_FROM_LANDMARKS))
+        self._roi = (
+            float(x0 + x1) / 2,
+            float(y0 + y1) / 2,
+            float(max(x1 - x0, y1 - y0) * ROI_FROM_LANDMARKS),
+        )
         return obs
 
     def close(self) -> None:
