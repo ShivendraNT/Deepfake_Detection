@@ -24,6 +24,7 @@ const LABELS: Record<string, string> = {
   IMAGE_FACE_LIKELY_SYNTHETIC: 'Photo face check: swapped or AI-made face',
   IMAGE_FACE_SUSPICIOUS: 'Photo face check: face looks unusual, confirm another way',
   VIDEO_SUSPICIOUS: 'Face check: face looks unusual, confirm another way',
+  VOICE_SUSPICIOUS: 'Voice check: voice sounds unusual, call back on a known number',
   IMAGE_FACE_NO_SIGNS: 'Photo face check: no deepfake signs (not proof)',
   VOICE_UNSEALED_CLAIMED_EXEC: 'VoiceSeal Missing: Executive voice lacks authentic cryptographic hardware key',
   ASK_NEW_ACCOUNT: 'Asked to pay a new account',

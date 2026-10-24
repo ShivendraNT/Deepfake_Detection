@@ -146,6 +146,12 @@ REASON_TEXT: dict[ReasonCode, dict[Lang, str]] = {
         Lang.HI: "आवाज़ मॉडल तय नहीं कर पाया कि यह आवाज़ इंसान की है या मशीन की। इसे अनिर्णित मानें "
         "और कार्रवाई से पहले दूसरे चैनल से पुष्टि करें।",
     },
+    ReasonCode.VOICE_SUSPICIOUS: {
+        Lang.EN: "The voice sounded unusual to the voice-clone check (not sure enough to call it "
+        "fake). Do not act on this voice alone; call the person back on a number you already have.",
+        Lang.HI: "आवाज़ की जाँच को यह आवाज़ असामान्य लगी (नकली कहने लायक पक्का नहीं)। सिर्फ़ इस आवाज़ "
+        "पर कार्रवाई न करें; उस व्यक्ति को अपने पास पहले से मौजूद नंबर पर वापस कॉल करें।",
+    },
     ReasonCode.VOICE_LIKELY_SYNTHETIC: {
         Lang.EN: "The caller's voice shows signs of being AI-generated in two windows in a row. "
         "Do not act on this call; confirm through OOB-Confirm or a callback on the number on "

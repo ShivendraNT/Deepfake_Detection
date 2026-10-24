@@ -128,6 +128,10 @@ export type SignalGroup =
 // NO_SIGNS / INCONCLUSIVE are info only and never lower a band.
 export type VideoReasonCode =
   | "VIDEO_NO_SIGNS" | "VIDEO_INCONCLUSIVE" | "VIDEO_SUSPICIOUS" | "VIDEO_LIKELY_SYNTHETIC";
+// Voice-clone check (docs/VOICE_DEEPFAKE.md, media group, ML): LIKELY_SYNTHETIC raises (+1
+// band), SUSPICIOUS (enough speech, a window over tau_lo) -> VERIFY; the others are info only.
+export type VoiceReasonCode =
+  | "VOICE_NO_SIGNS" | "VOICE_INCONCLUSIVE" | "VOICE_SUSPICIOUS" | "VOICE_LIKELY_SYNTHETIC";
 // Still-image face check (same face CNN, one crop): only LIKELY_SYNTHETIC raises (+1 band).
 export type ImageReasonCode =
   | "IMAGE_FACE_NO_SIGNS" | "IMAGE_FACE_INCONCLUSIVE" | "IMAGE_FACE_SUSPICIOUS"

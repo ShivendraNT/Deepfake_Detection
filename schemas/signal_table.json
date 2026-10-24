@@ -95,6 +95,14 @@
       "ml"
     ]
   },
+  "VOICE_SUSPICIOUS": {
+    "group": "media",
+    "target": "VERIFY",
+    "strength": "weak",
+    "allowed_sources": [
+      "ml"
+    ]
+  },
   "VIDEO_NO_SIGNS": {
     "group": "media",
     "target": "NONE",
