@@ -112,14 +112,19 @@ crops. That is why every model went through one protocol before it could ship
    - our own blend CNN, trained on real faces only;
    - the call-codec simulation;
    - a pre-registered protocol that compared six models.
-5. The voice model: a published recipe re-trained on licensed data and exported to ONNX for the
-   product.
+5. The voice protocol:
+   - a published recipe re-trained on licensed data, compared with 4 Hugging Face models by a
+     rule fixed in advance (ours lost);
+   - the winner exported exactly into the product's two-file format (its classifier folds
+     into one linear head, checked to 2e-5).
 6. The consumer path: the quick check, the citizen page and the money-sent drafts.
 7. The desktop companion with live captions.
 8. The kit runner, `satya scan`.
 
 **Used, with licences recorded and pinned:**
 - GenD (MIT): won our pre-registered comparison by +0.18 validation AUC; ours is the fallback.
+- `Gustking/wav2vec2-large-xlsr-deepfake-audio-classification` (Apache-2.0): won the voice
+  comparison by +0.157 validation AUC under Opus.
 - XLS-R (Apache-2.0), Whisper (MIT), RapidOCR / PaddleOCR (Apache-2.0), YuNet and MediaPipe
   (Apache-2.0).
 - Open datasets.
