@@ -36,9 +36,6 @@ make check         # lint + types + tests -> must end with "ALL GREEN"
 make run           # open http://127.0.0.1:8000/docs  -> try GET /cases
 ```
 
-Unfinished tasks show up as **SKIPPED** tests and their endpoints return **HTTP 501** with the task
-id. That is expected.
-
 **pip fallback (no uv):**
 ```bash
 python3 -m venv .venv && source .venv/bin/activate
@@ -51,13 +48,15 @@ make check RUN=
 | Path | What |
 |---|---|
 | `AGENTS.md` | **rules for every AI agent and human** (single source of truth) |
-| `docs/tasks/` | 24 task specs (`T01` … `T24`) — start here when you work |
+| `docs/tasks/` | T-task specs (`T01` … `T25`), mostly done |
 | `docs/STATUS.md` | task board: owner, status, dependencies |
 | `docs/ARCHITECTURE.md` | design: components, policy tables, API, AWS mapping, failure modes |
 | `docs/THREAT_MODEL.md`, `docs/DATA_POLICY.md` | security + privacy/ethics |
 | `docs/RESEARCH_PROTOCOL.md`, `docs/EVALUATION.md` | paper protocol + honest product numbers |
-| `docs/DEMO_SCRIPT.md` | the 2:45 demo |
-| `docs/harness/` | agent workflow + copy-paste prompts |
+| `docs/finale/` | finale plan + mascot spec (demo script in `PLAN.md` §7) |
+| `docs/DEMO_SCRIPT.md` | the Round-1 demo (superseded by `docs/finale/PLAN.md` §7) |
+| `team/` | each person's finale cards |
+| `desktop/` | Electron app: Satya the companion |
 | `src/satyapan/` | Python backend (contracts, policy engine, detectors, API) |
 | `extension/` | Chrome MV3 extension (tab audio → on-device voice score, side panel) |
 | `console/` | React web console |
@@ -66,22 +65,18 @@ make check RUN=
 | `data/demo/` | synthetic, obviously fake fixtures (vendors, emails, invoices, 12 cases) |
 | `schemas/` | JSON Schemas exported from the contracts |
 
-## Start working with your AI agent in 5 steps
+## Grand finale (IIT Delhi, 24–25 Oct 2026)
 
-1. **Pick your task** in `docs/STATUS.md` (your initials in the Owner column, dependencies `done`).
-   `git switch -c t05-ask-extractor`.
-2. **Open your tool in the repo root.** opencode: `opencode` (it loads `AGENTS.md` and
-   `opencode.json` automatically; choose a model with `/models`). Gemini CLI: `gemini`.
-   Copilot: VS Code agent mode. Claude Code: `claude`.
-3. **Start the task:** opencode `/task T05` · Gemini `/task T05` · Copilot: paste the prompt from
-   `docs/harness/PROMPTS.md` §1.
-4. **Let it go step by step.** After each step it runs `make task T=T05`. Red → green.
-   Stuck 3 times on the same error? `/stuck T05` and tell the leader.
-5. **Finish:** `make check` green → update `docs/STATUS.md` → commit `T05: ...` → PR →
-   `/review` (opencode) for an automatic review.
+We are turning Satyapan into **Satya**, a small desktop companion that sits on the clerk's screen.
+Read in this order:
 
-Free model IDs change often: in opencode run `/models` and pick an `opencode/<id>` free model.
-Never paste real voices, bank details, dataset text or `.env` into any AI tool.
+1. `docs/GRAND_FINALS_ARCHITECTURE.md` — what we build and why (single source of truth).
+2. `docs/finale/PLAN.md` — 48-hour plan, checkpoints, demo script, risks, Q&A.
+3. `team/<YourName>.md` — your cards (F01–F16) with steps, checks and a ready prompt.
+4. `docs/finale/MASCOT_SPEC.md` — Satya's drawing, poses, motion and copy.
+
+Desktop quickstart: `cd desktop && npm install && npm run dev:web` (browser + mock, port 5174)
+or `npm run dev` (Electron). Backend: `make run`.
 
 ## What is already built
 

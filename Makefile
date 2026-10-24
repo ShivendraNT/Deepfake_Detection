@@ -39,7 +39,7 @@ check: lint typecheck test
 	@echo "make check: ALL GREEN"
 
 run:
-	$(RUN) uvicorn satyapan.api.app:app --reload --host 127.0.0.1 --port 8000
+	$(RUN) uvicorn --app-dir src satyapan.api.app:app --reload --host 0.0.0.0 --port 8000
 
 demo-data:
 	$(RUN) python scripts/make_demo_data.py

@@ -11,6 +11,7 @@ from fastapi.responses import JSONResponse
 from satyapan.api import (
     routes_cases,
     routes_citizen,
+    routes_companion,
     routes_dashboard,
     routes_live,
     routes_reports,
@@ -29,8 +30,7 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
     app.state.satyapan = state or AppState.build(settings)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
-        allow_origin_regex=r"chrome-extension://.*",
+        allow_origins=["*"],
         allow_methods=["*"],
         allow_headers=["*"],
     )
@@ -56,8 +56,10 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
         routes_live,
         routes_citizen,
         routes_seal,
+        routes_companion,
     ):
         app.include_router(r.router)
+        app.include_router(r.router, prefix="/api")
     return app
 
 

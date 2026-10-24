@@ -11,11 +11,12 @@ import logging
 import time
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import UTC, datetime
 
 from satyapan.adapters.base import Transcriber
 from satyapan.contracts.case import Case
-from satyapan.contracts.enums import Channel, GreyReason
-from satyapan.contracts.evidence import AnalysisRun, DetectorOutput, Evidence
+from satyapan.contracts.enums import ActionType, Channel, GreyReason, ReasonCode, SignalSource
+from satyapan.contracts.evidence import AnalysisRun, DetectorOutput, Evidence, Signal
 from satyapan.master.store import MasterData
 from satyapan.policy.config import DEFAULT_CONFIG, PolicyConfig
 from satyapan.policy.engine import apply_decision, decide
@@ -178,5 +179,145 @@ def merge_output(case: Case, ev: Evidence, out: DetectorOutput) -> Case:
     return case.model_copy(update={"signals": signals, "grey_reasons": grey, "evidence": evidence})
 
 
+# --------------------------------------------------------------------- X1 cross-channel
+# ARCHITECTURE §7: within 30 minutes in one case, a call/message ask for A1 (new account) or
+# A7 (payee change) next to a payment to a new/changed beneficiary raises to VERIFY; an A4
+# (secrecy) or A5 (bypass) ask in the same window raises to HOLD. Fully deterministic and
+# explainable. Evidence can only raise the band: derive() never removes or lowers anything.
+CROSS_CHANNEL_WINDOW_SECONDS = 30 * 60
+
+_ACCOUNT_ASKS: frozenset[ReasonCode] = frozenset(
+    {
+        ReasonCode.ASK_NEW_ACCOUNT,  # A1
+        ReasonCode.ASK_PAYEE_CHANGE,  # A7
+        ReasonCode.ASK_UNUSUAL_PAYMENT_METHOD,  # A6: an unusual rail plus a new payee
+    }
+)
+_URGENCY_ASKS: frozenset[ReasonCode] = frozenset(
+    {
+        ReasonCode.ASK_SECRECY,  # A4
+        ReasonCode.ASK_BYPASS,  # A5
+    }
+)
+_CROSS_CHANNEL_CODES: frozenset[ReasonCode] = frozenset(
+    {
+        ReasonCode.CROSS_CHANNEL_SEQUENCE,
+        ReasonCode.CROSS_CHANNEL_URGENT_BYPASS,
+    }
+)
+
+
+def _aware(when: datetime) -> datetime:
+    """Treat a missing timezone as UTC so comparisons never raise on fixture data."""
+    return when if when.tzinfo is not None else when.replace(tzinfo=UTC)
+
+
+def _within_window(when: datetime, anchor: datetime) -> bool:
+    return abs((_aware(when) - _aware(anchor)).total_seconds()) <= CROSS_CHANNEL_WINDOW_SECONDS
+
+
+def _beneficiary_is_new_or_changed(case: Case, master: MasterData | None) -> bool:
+    """Trusted-only check: is this payment to a new payee, or to changed bank details?
+
+    Reads the maker-entered txn (trusted) and the vendor master only. When no master is
+    passed, it falls back to the contract marker (`vendor_id is None` = maker says new) and
+    to a floor action already recorded on the case. Evidence is never consulted here.
+    """
+    txn = case.txn
+    if txn is None:
+        return False
+    if master is None:
+        if txn.vendor_id is None:
+            return True
+        decision = case.decision
+        return decision is not None and decision.action_type in {
+            ActionType.N1,
+            ActionType.N2,
+            ActionType.C1,
+        }
+    vendor = (
+        master.vendor(txn.vendor_id)
+        if txn.vendor_id is not None
+        else master.vendor_by_payee(txn.account_number, txn.ifsc, txn.upi_id)
+    )
+    if vendor is None:
+        return True  # new beneficiary
+    return not vendor.has_account(txn.account_number, txn.ifsc, txn.upi_id)  # changed details
+
+
+def _window_evidence_ids(
+    signal: Signal, captured: dict[str, datetime], anchor: datetime
+) -> list[str]:
+    """Evidence ids on this signal that fall inside the X1 window around the payment."""
+    return [
+        ev_id
+        for ev_id in signal.evidence_ids
+        if ev_id in captured and _within_window(captured[ev_id], anchor)
+    ]
+
+
+def derive_cross_channel_signals(case: Case, master: MasterData | None = None) -> list[Signal]:
+    """X1: return the cross-channel signal for this case (empty when the sequence is absent).
+
+    The sequence is: within 30 minutes of `txn.created_at`, a call/message ask for a new
+    account or payee change (A1/A6/A7) AND a payment to a new or changed beneficiary. A4
+    (secrecy) or A5 (bypass) in the same window escalates the signal to HOLD. Raise-only:
+    the result is built with `Signal.make(..., source=DETERMINISTIC)` and can never lower
+    a band. Idempotent: a code already on the case is not added twice.
+    """
+    txn = case.txn
+    if txn is None or not _beneficiary_is_new_or_changed(case, master):
+        return []
+
+    anchor = txn.created_at
+    captured = {ev.id: ev.captured_at for ev in case.evidence}
+    account_ids: list[str] = []
+    urgency_ids: list[str] = []
+    for signal in case.signals:
+        if signal.code in _CROSS_CHANNEL_CODES:
+            continue
+        ids = _window_evidence_ids(signal, captured, anchor)
+        if not ids:
+            continue
+        if signal.code in _ACCOUNT_ASKS:
+            account_ids.extend(ids)
+        elif signal.code in _URGENCY_ASKS:
+            urgency_ids.extend(ids)
+
+    if not account_ids:
+        return []
+
+    existing = {s.code for s in case.signals}
+    code = (
+        ReasonCode.CROSS_CHANNEL_URGENT_BYPASS if urgency_ids else ReasonCode.CROSS_CHANNEL_SEQUENCE
+    )
+    if code in existing or (
+        code == ReasonCode.CROSS_CHANNEL_SEQUENCE
+        and ReasonCode.CROSS_CHANNEL_URGENT_BYPASS in existing
+    ):
+        return []
+
+    evidence_ids = list(dict.fromkeys([*account_ids, *urgency_ids]))
+    return [
+        Signal.make(
+            code,
+            source=SignalSource.DETERMINISTIC,
+            evidence_ids=evidence_ids,
+            detector="cross_channel",
+            detail={
+                "window_seconds": CROSS_CHANNEL_WINDOW_SECONDS,
+                "account_asks": len(set(account_ids)),
+                "urgency_asks": len(set(urgency_ids)),
+            },
+        )
+    ]
+
+
 def recompute(case: Case, master: MasterData, cfg: PolicyConfig = DEFAULT_CONFIG) -> Case:
+    derived = derive_cross_channel_signals(case, master)
+    if derived:
+        seen = {(s.code, tuple(s.evidence_ids)) for s in case.signals}
+        extra = [s for s in derived if (s.code, tuple(s.evidence_ids)) not in seen]
+        if extra:
+            case = case.model_copy(update={"signals": [*case.signals, *extra]})
     return apply_decision(case, decide(case, master, cfg))

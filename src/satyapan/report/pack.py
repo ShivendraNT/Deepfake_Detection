@@ -8,12 +8,12 @@ It must not import any network library (tests/invariants/test_no_auto_reporting.
 from __future__ import annotations
 
 import email
-from email import policy
 import html
-from pathlib import Path
 import re
 from datetime import datetime
-from typing import Any, Literal
+from email import policy
+from pathlib import Path
+from typing import Literal
 
 from satyapan.contracts.case import Case
 from satyapan.contracts.custody import CustodyRow
@@ -322,6 +322,7 @@ def build_report_pack(
 # EVIDENCE EXTRACTION HELPERS (Court-Ready Dossier Artifact Breakdown)
 # -----------------------------------------------------------------------------
 
+
 def _resolve_evidence_path(uri: str | None) -> Path | None:
     """Safely resolves an evidence file path on disk without external networking."""
     if not uri or not uri.startswith("file://"):
@@ -386,6 +387,7 @@ def _extract_email_info(path: Path | None) -> dict[str, str]:
 # -----------------------------------------------------------------------------
 # HTML REPORT GENERATOR
 # -----------------------------------------------------------------------------
+
 
 def render_html(pack: ReportPack, case: Case | None = None) -> str:
     """Generates an official, court-ready National Cybercrime / 1930 Legal Dossier
@@ -482,7 +484,7 @@ def render_html(pack: ReportPack, case: Case | None = None) -> str:
         "<div class='header-seal'>",
         "<div class='header-seal-left'>",
         "<div class='gov-title'>Government of India • Ministry of Home Affairs // I4C Indian Cyber Crime Coordination Centre</div>",
-        f"<h1 class='dossier-main-title'>National Cybercrime Dossier & Section 63 BSA Legal Pack</h1>",
+        "<h1 class='dossier-main-title'>National Cybercrime Dossier & Section 63 BSA Legal Pack</h1>",
         "<div class='dossier-subhead'>Citizen Financial Cyber Fraud Reporting System (CFCFRMS) • Helpline 1930 Emergency Dossier</div>",
         "</div>",
         "<div class='no-print'>",
@@ -606,27 +608,37 @@ def render_html(pack: ReportPack, case: Case | None = None) -> str:
 
         parts.append("<div class='dossier-card evidence-card'>")
         parts.append("<div class='card-badge-row'>")
-        parts.append(f"<span class='badge badge-info'>{html.escape(item.channel.value.upper())}</span>")
-        parts.append(f"<span class='badge badge-outline'>ID: {html.escape(item.evidence_id)}</span>")
-        parts.append(f"<span class='badge badge-danger'>SHA-256: {html.escape(item.sha256[:16])}...</span>")
+        parts.append(
+            f"<span class='badge badge-info'>{html.escape(item.channel.value.upper())}</span>"
+        )
+        parts.append(
+            f"<span class='badge badge-outline'>ID: {html.escape(item.evidence_id)}</span>"
+        )
+        parts.append(
+            f"<span class='badge badge-danger'>SHA-256: {html.escape(item.sha256[:16])}...</span>"
+        )
         parts.append("</div>")
 
-        parts.append(f"<h3 style='margin:0 0 0.5rem 0;'>Evidence File: {html.escape(item.filename or item.evidence_id)}</h3>")
+        parts.append(
+            f"<h3 style='margin:0 0 0.5rem 0;'>Evidence File: {html.escape(item.filename or item.evidence_id)}</h3>"
+        )
         parts.append("<div style='font-size:0.8rem; color:#475569; margin-bottom:1rem;'>")
-        parts.append(f"<strong>Cryptographic SHA-256:</strong> <code>{html.escape(item.sha256)}</code><br>")
-        parts.append(f"<strong>Captured At:</strong> {html.escape(_fmt_when(item.captured_at, 'N/A'))} | ")
+        parts.append(
+            f"<strong>Cryptographic SHA-256:</strong> <code>{html.escape(item.sha256)}</code><br>"
+        )
+        parts.append(
+            f"<strong>Captured At:</strong> {html.escape(_fmt_when(item.captured_at, 'N/A'))} | "
+        )
         parts.append(f"<strong>Submitted By:</strong> {html.escape(item.submitted_by)} | ")
         if ev_obj and ev_obj.size_bytes:
             parts.append(f"<strong>File Size:</strong> {ev_obj.size_bytes:,} bytes | ")
-        parts.append(f"<strong>Storage URI:</strong> <code>{html.escape(ev_obj.storage_uri if ev_obj else 'vault://satyapan/evidence/' + item.evidence_id)}</code>")
+        parts.append(
+            f"<strong>Storage URI:</strong> <code>{html.escape(ev_obj.storage_uri if ev_obj else 'vault://satyapan/evidence/' + item.evidence_id)}</code>"
+        )
         parts.append("</div>")
 
         # ----------------- A. DOCUMENT / PDF INVOICE ELABORATION -----------------
-        if (
-            "pdf" in fn_lower
-            or "invoice" in fn_lower
-            or item.channel.value in ("pdf", "document")
-        ):
+        if "pdf" in fn_lower or "invoice" in fn_lower or item.channel.value in ("pdf", "document"):
             pdf_lines = _extract_pdf_lines(file_path)
             extracted_acct = facts.beneficiary_account or "99996666006200"
             extracted_ifsc = facts.beneficiary_ifsc or "FAKE0000620"
@@ -634,76 +646,124 @@ def render_html(pack: ReportPack, case: Case | None = None) -> str:
             master_ifsc = "FAKA0000111 (ICICI Bank Nariman Point Branch)"
 
             parts.append("<div class='stream-box'>")
-            parts.append("<div class='stream-title'>📄 Extracted Invoice Layout & Technical Fields</div>")
+            parts.append(
+                "<div class='stream-title'>📄 Extracted Invoice Layout & Technical Fields</div>"
+            )
             parts.append("<table>")
-            parts.append("<thead><tr><th>Invoice Field</th><th>Extracted Content on Altered PDF</th><th>Forensic Verification</th></tr></thead>")
+            parts.append(
+                "<thead><tr><th>Invoice Field</th><th>Extracted Content on Altered PDF</th><th>Forensic Verification</th></tr></thead>"
+            )
             parts.append("<tbody>")
-            parts.append(f"<tr><td><strong>Billed Vendor Name</strong></td><td>{html.escape(facts.beneficiary_name)}</td><td><span class='badge badge-outline'>Entity Name Matched</span></td></tr>")
-            parts.append(f"<tr><td><strong>Total Invoice Amount</strong></td><td><strong style='color:#dc2626;'>{html.escape(format_inr(facts.amount_inr))}</strong></td><td><span class='badge badge-outline'>Billed Remittance</span></td></tr>")
-            parts.append(f"<tr><td><strong>Invoice Reference No.</strong></td><td>KDP/2026/0920 (September 2026 Services)</td><td><span class='badge badge-outline'>Altered Billed Cycle</span></td></tr>")
-            parts.append(f"<tr><td><strong>Beneficiary Bank Account</strong></td><td><code style='color:#dc2626;'>{html.escape(extracted_acct)}</code></td><td><span class='badge badge-danger'>DOC_ACCOUNT_MISMATCH</span></td></tr>")
-            parts.append(f"<tr><td><strong>Beneficiary IFSC Code</strong></td><td><code style='color:#dc2626;'>{html.escape(extracted_ifsc)}</code></td><td><span class='badge badge-danger'>Diverted Branch</span></td></tr>")
+            parts.append(
+                f"<tr><td><strong>Billed Vendor Name</strong></td><td>{html.escape(facts.beneficiary_name)}</td><td><span class='badge badge-outline'>Entity Name Matched</span></td></tr>"
+            )
+            parts.append(
+                f"<tr><td><strong>Total Invoice Amount</strong></td><td><strong style='color:#dc2626;'>{html.escape(format_inr(facts.amount_inr))}</strong></td><td><span class='badge badge-outline'>Billed Remittance</span></td></tr>"
+            )
+            parts.append(
+                "<tr><td><strong>Invoice Reference No.</strong></td><td>KDP/2026/0920 (September 2026 Services)</td><td><span class='badge badge-outline'>Altered Billed Cycle</span></td></tr>"
+            )
+            parts.append(
+                f"<tr><td><strong>Beneficiary Bank Account</strong></td><td><code style='color:#dc2626;'>{html.escape(extracted_acct)}</code></td><td><span class='badge badge-danger'>DOC_ACCOUNT_MISMATCH</span></td></tr>"
+            )
+            parts.append(
+                f"<tr><td><strong>Beneficiary IFSC Code</strong></td><td><code style='color:#dc2626;'>{html.escape(extracted_ifsc)}</code></td><td><span class='badge badge-danger'>Diverted Branch</span></td></tr>"
+            )
             parts.append("</tbody></table>")
             parts.append("</div>")
 
             # Mismatch Delta Table
             parts.append("<div class='stream-box'>")
-            parts.append("<div class='stream-title'>⚠️ Beneficiary Manipulation Delta (Root-Cause Fraud Finding)</div>")
+            parts.append(
+                "<div class='stream-title'>⚠️ Beneficiary Manipulation Delta (Root-Cause Fraud Finding)</div>"
+            )
             parts.append("<table class='delta-table'>")
-            parts.append("<thead><tr><th>Verification Parameter</th><th>Authorized Master Record (ERP / Vendor Register)</th><th>Extracted from PDF Document</th><th>Discrepancy Severity</th></tr></thead>")
+            parts.append(
+                "<thead><tr><th>Verification Parameter</th><th>Authorized Master Record (ERP / Vendor Register)</th><th>Extracted from PDF Document</th><th>Discrepancy Severity</th></tr></thead>"
+            )
             parts.append("<tbody>")
-            parts.append(f"<tr><td><strong>Bank Account Number</strong></td><td class='delta-match'>{html.escape(master_acct)}</td><td class='delta-mismatch'>{html.escape(extracted_acct)}</td><td><strong style='color:#dc2626;'>CRITICAL MISMATCH</strong></td></tr>")
-            parts.append(f"<tr><td><strong>IFSC Code & Bank</strong></td><td class='delta-match'>{html.escape(master_ifsc)}</td><td class='delta-mismatch'>{html.escape(extracted_ifsc)} ({html.escape(facts.beneficiary_bank or 'Fictional Bank E')})</td><td><strong style='color:#dc2626;'>UNAUTHORIZED DIVERSION</strong></td></tr>")
-            parts.append("<tr><td><strong>Document Modification</strong></td><td class='delta-match'>Original digitally signed vendor template</td><td class='delta-mismatch'>DOC_PDF_EDITED: Font kerning & bounding-box displacement detected at bank block coordinates</td><td><strong style='color:#b45309;'>TAMPERING CONFIRMED</strong></td></tr>")
+            parts.append(
+                f"<tr><td><strong>Bank Account Number</strong></td><td class='delta-match'>{html.escape(master_acct)}</td><td class='delta-mismatch'>{html.escape(extracted_acct)}</td><td><strong style='color:#dc2626;'>CRITICAL MISMATCH</strong></td></tr>"
+            )
+            parts.append(
+                f"<tr><td><strong>IFSC Code & Bank</strong></td><td class='delta-match'>{html.escape(master_ifsc)}</td><td class='delta-mismatch'>{html.escape(extracted_ifsc)} ({html.escape(facts.beneficiary_bank or 'Fictional Bank E')})</td><td><strong style='color:#dc2626;'>UNAUTHORIZED DIVERSION</strong></td></tr>"
+            )
+            parts.append(
+                "<tr><td><strong>Document Modification</strong></td><td class='delta-match'>Original digitally signed vendor template</td><td class='delta-mismatch'>DOC_PDF_EDITED: Font kerning & bounding-box displacement detected at bank block coordinates</td><td><strong style='color:#b45309;'>TAMPERING CONFIRMED</strong></td></tr>"
+            )
             parts.append("</tbody></table>")
             parts.append("</div>")
 
             if pdf_lines:
                 parts.append("<div class='stream-box'>")
                 parts.append("<div class='stream-title'>📝 Raw PDF Content Stream Elements</div>")
-                parts.append("<pre style='font-size:0.775rem; background:#ffffff; border:1px solid #cbd5e1; padding:0.75rem; border-radius:4px;'>")
+                parts.append(
+                    "<pre style='font-size:0.775rem; background:#ffffff; border:1px solid #cbd5e1; padding:0.75rem; border-radius:4px;'>"
+                )
                 parts.append(html.escape("\n".join(pdf_lines)))
                 parts.append("</pre></div>")
 
         # ----------------- B. INBOUND EMAIL ELABORATION -----------------
-        elif (
-            "eml" in fn_lower
-            or "email" in fn_lower
-            or item.channel.value == "email"
-        ):
+        elif "eml" in fn_lower or "email" in fn_lower or item.channel.value == "email":
             eml_info = _extract_email_info(file_path)
             from_hdr = eml_info.get("from") or "Kaveri Billing <billing@kaveri-packagimg.example>"
             to_hdr = eml_info.get("to") or "Priya Sharma <priya@demo-industries.example>"
             subj_hdr = eml_info.get("subject") or "URGENT: overdue invoice KDP/2026/0917"
             date_hdr = eml_info.get("date") or _fmt_when(item.captured_at, "N/A")
-            body_txt = eml_info.get("body") or (ev_obj.excerpt if ev_obj else "Priya, this invoice is overdue. Please pay today to avoid supply stop.")
+            body_txt = eml_info.get("body") or (
+                ev_obj.excerpt
+                if ev_obj
+                else "Priya, this invoice is overdue. Please pay today to avoid supply stop."
+            )
 
             parts.append("<div class='stream-box'>")
-            parts.append("<div class='stream-title'>✉️ RFC 822 Inbound Email Headers & Spoofing Breakdown</div>")
+            parts.append(
+                "<div class='stream-title'>✉️ RFC 822 Inbound Email Headers & Spoofing Breakdown</div>"
+            )
             parts.append("<table>")
-            parts.append("<thead><tr><th>Header Attribute</th><th>Observed Value</th><th>Authentication & Domain Integrity</th></tr></thead>")
+            parts.append(
+                "<thead><tr><th>Header Attribute</th><th>Observed Value</th><th>Authentication & Domain Integrity</th></tr></thead>"
+            )
             parts.append("<tbody>")
-            parts.append(f"<tr><td><strong>From (Sender)</strong></td><td><code>{html.escape(from_hdr)}</code></td><td><span class='badge badge-danger'>EMAIL_LOOKALIKE_DOMAIN</span></td></tr>")
-            parts.append(f"<tr><td><strong>To (Recipient)</strong></td><td><code>{html.escape(to_hdr)}</code></td><td><span class='badge badge-outline'>Targeted Corporate Employee</span></td></tr>")
-            parts.append(f"<tr><td><strong>Subject Line</strong></td><td><strong>{html.escape(subj_hdr)}</strong></td><td><span class='badge badge-warn'>Social Engineering Urgency</span></td></tr>")
-            parts.append(f"<tr><td><strong>Timestamp (Date)</strong></td><td>{html.escape(date_hdr)}</td><td><span class='badge badge-outline'>Inbound Gateway Time</span></td></tr>")
+            parts.append(
+                f"<tr><td><strong>From (Sender)</strong></td><td><code>{html.escape(from_hdr)}</code></td><td><span class='badge badge-danger'>EMAIL_LOOKALIKE_DOMAIN</span></td></tr>"
+            )
+            parts.append(
+                f"<tr><td><strong>To (Recipient)</strong></td><td><code>{html.escape(to_hdr)}</code></td><td><span class='badge badge-outline'>Targeted Corporate Employee</span></td></tr>"
+            )
+            parts.append(
+                f"<tr><td><strong>Subject Line</strong></td><td><strong>{html.escape(subj_hdr)}</strong></td><td><span class='badge badge-warn'>Social Engineering Urgency</span></td></tr>"
+            )
+            parts.append(
+                f"<tr><td><strong>Timestamp (Date)</strong></td><td>{html.escape(date_hdr)}</td><td><span class='badge badge-outline'>Inbound Gateway Time</span></td></tr>"
+            )
             parts.append("</tbody></table>")
             parts.append("</div>")
 
             # Typo-squatting comparison
             parts.append("<div class='stream-box'>")
-            parts.append("<div class='stream-title'>🔤 Domain Spoofing & Homoglyph Character Replacement Attack</div>")
+            parts.append(
+                "<div class='stream-title'>🔤 Domain Spoofing & Homoglyph Character Replacement Attack</div>"
+            )
             parts.append("<table>")
-            parts.append("<thead><tr><th>Attack Parameter</th><th>Authorized Vendor Domain</th><th>Attacker Impersonation Domain</th><th>Forensic Analysis</th></tr></thead>")
+            parts.append(
+                "<thead><tr><th>Attack Parameter</th><th>Authorized Vendor Domain</th><th>Attacker Impersonation Domain</th><th>Forensic Analysis</th></tr></thead>"
+            )
             parts.append("<tbody>")
-            parts.append("<tr><td><strong>Domain String</strong></td><td><code>kaveri-packaging.example</code></td><td style='color:#dc2626;'><code>kaveri-packagimg.example</code></td><td>Character 'm' substituted for 'n' (Levenshtein Distance = 1)</td></tr>")
-            parts.append("<tr><td><strong>SPF / DKIM / DMARC</strong></td><td>Strict p=reject policy on registered domain</td><td>Aligned to attacker's lookalike infrastructure only</td><td>Failed corporate sender validation; malicious homoglyph</td></tr>")
+            parts.append(
+                "<tr><td><strong>Domain String</strong></td><td><code>kaveri-packaging.example</code></td><td style='color:#dc2626;'><code>kaveri-packagimg.example</code></td><td>Character 'm' substituted for 'n' (Levenshtein Distance = 1)</td></tr>"
+            )
+            parts.append(
+                "<tr><td><strong>SPF / DKIM / DMARC</strong></td><td>Strict p=reject policy on registered domain</td><td>Aligned to attacker's lookalike infrastructure only</td><td>Failed corporate sender validation; malicious homoglyph</td></tr>"
+            )
             parts.append("</tbody></table>")
             parts.append("</div>")
 
             parts.append("<div class='stream-box'>")
             parts.append("<div class='stream-title'>💬 Verbatim Email Body & Urgency Demands</div>")
-            parts.append(f"<pre style='font-size:0.825rem; background:#ffffff; border:1px solid #cbd5e1; padding:0.85rem; border-radius:4px;'>{html.escape(body_txt)}</pre>")
+            parts.append(
+                f"<pre style='font-size:0.825rem; background:#ffffff; border:1px solid #cbd5e1; padding:0.85rem; border-radius:4px;'>{html.escape(body_txt)}</pre>"
+            )
             parts.append("</div>")
 
         # ----------------- C. VIDEO MEETING CALL ELABORATION -----------------
@@ -718,37 +778,77 @@ def render_html(pack: ReportPack, case: Case | None = None) -> str:
                 transcript_txt = ev_obj.excerpt
 
             parts.append("<div class='stream-box'>")
-            parts.append("<div class='stream-title'>🎥 Autonomous 3-Stream Multi-Modal Video Forensic Analysis</div>")
-            parts.append("<p style='font-size:0.8rem; color:#64748b; margin-top:0;'>Evaluated simultaneously across Visual Generative AI, Voice Neural Vocoder, and Dialogue Extortion Streams.</p>")
+            parts.append(
+                "<div class='stream-title'>🎥 Autonomous 3-Stream Multi-Modal Video Forensic Analysis</div>"
+            )
+            parts.append(
+                "<p style='font-size:0.8rem; color:#64748b; margin-top:0;'>Evaluated simultaneously across Visual Generative AI, Voice Neural Vocoder, and Dialogue Extortion Streams.</p>"
+            )
 
             # Stream 1
-            parts.append("<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:4px; padding:0.75rem; margin-bottom:0.6rem;'>")
-            parts.append("<div style='font-weight:700; color:#0369a1; font-size:0.825rem;'>Stream 1: Visual Forensic Analysis (Generative AI & Face Synthesis)</div>")
+            parts.append(
+                "<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:4px; padding:0.75rem; margin-bottom:0.6rem;'>"
+            )
+            parts.append(
+                "<div style='font-weight:700; color:#0369a1; font-size:0.825rem;'>Stream 1: Visual Forensic Analysis (Generative AI & Face Synthesis)</div>"
+            )
             parts.append("<ul style='margin:0.35rem 0 0 1.2rem; padding:0; font-size:0.8rem;'>")
-            parts.append("<li><strong>C2PA Provenance Assertion:</strong> Digital provenance audit detected <code>trainedAlgorithmicMedia</code> / SynthID metadata watermark.</li>")
-            parts.append("<li><strong>2D Boundary Warping:</strong> Facial perimeter blending artifacts and jawline blurring during lateral head rotations.</li>")
-            parts.append("<li><strong>Photometric Consistency:</strong> Optical PRNU sensor noise absent; facial texture exhibits diffusion generator smoothing.</li>")
-            parts.append("<li><strong>Visual Threat Verdict:</strong> <span class='badge badge-danger'>GENERATIVE_AI_DEEPFAKE_CONFIRMED</span> (96.8% Synthetic Confidence)</li>")
+            parts.append(
+                "<li><strong>C2PA Provenance Assertion:</strong> Digital provenance audit detected <code>trainedAlgorithmicMedia</code> / SynthID metadata watermark.</li>"
+            )
+            parts.append(
+                "<li><strong>2D Boundary Warping:</strong> Facial perimeter blending artifacts and jawline blurring during lateral head rotations.</li>"
+            )
+            parts.append(
+                "<li><strong>Photometric Consistency:</strong> Optical PRNU sensor noise absent; facial texture exhibits diffusion generator smoothing.</li>"
+            )
+            parts.append(
+                "<li><strong>Visual Threat Verdict:</strong> <span class='badge badge-danger'>GENERATIVE_AI_DEEPFAKE_CONFIRMED</span> (96.8% Synthetic Confidence)</li>"
+            )
             parts.append("</ul></div>")
 
             # Stream 2
-            parts.append("<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:4px; padding:0.75rem; margin-bottom:0.6rem;'>")
-            parts.append("<div style='font-weight:700; color:#b45309; font-size:0.825rem;'>Stream 2: Voice Track Acoustic Analysis (Neural Vocoder Clone Detection)</div>")
+            parts.append(
+                "<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:4px; padding:0.75rem; margin-bottom:0.6rem;'>"
+            )
+            parts.append(
+                "<div style='font-weight:700; color:#b45309; font-size:0.825rem;'>Stream 2: Voice Track Acoustic Analysis (Neural Vocoder Clone Detection)</div>"
+            )
             parts.append("<ul style='margin:0.35rem 0 0 1.2rem; padding:0; font-size:0.8rem;'>")
-            parts.append("<li><strong>Spectral Harmonic Telemetry:</strong> Vocoder phase discontinuities detected across 8–16kHz harmonic band.</li>")
-            parts.append("<li><strong>Temporal Sliding Windows:</strong> 2 consecutive 5-second acoustic slices exceeded tau_hi threshold (Scores: <code>[0.96, 0.98]</code>).</li>")
-            parts.append("<li><strong>Waveform Metrics:</strong> ZCR Variance: <code>0.0010</code> (unnatural stability) | HF Energy Ratio: <code>0.7200</code> | Dynamic Range: <code>6.0 dB</code>.</li>")
-            parts.append("<li><strong>Acoustic Threat Verdict:</strong> <span class='badge badge-danger'>NEURAL_VOCODER_SYNTHESIS_CONFIRMED</span> (AI Voice Clone)</li>")
+            parts.append(
+                "<li><strong>Spectral Harmonic Telemetry:</strong> Vocoder phase discontinuities detected across 8–16kHz harmonic band.</li>"
+            )
+            parts.append(
+                "<li><strong>Temporal Sliding Windows:</strong> 2 consecutive 5-second acoustic slices exceeded tau_hi threshold (Scores: <code>[0.96, 0.98]</code>).</li>"
+            )
+            parts.append(
+                "<li><strong>Waveform Metrics:</strong> ZCR Variance: <code>0.0010</code> (unnatural stability) | HF Energy Ratio: <code>0.7200</code> | Dynamic Range: <code>6.0 dB</code>.</li>"
+            )
+            parts.append(
+                "<li><strong>Acoustic Threat Verdict:</strong> <span class='badge badge-danger'>NEURAL_VOCODER_SYNTHESIS_CONFIRMED</span> (AI Voice Clone)</li>"
+            )
             parts.append("</ul></div>")
 
             # Stream 3
-            parts.append("<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:4px; padding:0.75rem;'>")
-            parts.append("<div style='font-weight:700; color:#dc2626; font-size:0.825rem;'>Stream 3: Spoken Dialogue & Intent Extraction (Extortion Command Analysis)</div>")
+            parts.append(
+                "<div style='background:#ffffff; border:1px solid #e2e8f0; border-radius:4px; padding:0.75rem;'>"
+            )
+            parts.append(
+                "<div style='font-weight:700; color:#dc2626; font-size:0.825rem;'>Stream 3: Spoken Dialogue & Intent Extraction (Extortion Command Analysis)</div>"
+            )
             parts.append("<ul style='margin:0.35rem 0 0 1.2rem; padding:0; font-size:0.8rem;'>")
-            parts.append(f"<li><strong>Verbatim Speech Transcription:</strong> <em>\"{html.escape(transcript_txt)}\"</em></li>")
-            parts.append(f"<li><strong>Commanded Siphoned Amount:</strong> <strong style='color:#dc2626;'>{html.escape(format_inr(facts.amount_inr))}</strong></li>")
-            parts.append("<li><strong>Extracted Coercive Asks:</strong> <code>ASK_NEW_ACCOUNT</code> (divert funds to unverified account) · <code>STYLE_PRESSURE</code> (coercive emergency urgency).</li>")
-            parts.append("<li><strong>Social Engineering Verdict:</strong> <span class='badge badge-danger'>EXECUTIVE_IMPERSONATION_ATTACK_DETECTED</span> (Deepfake CEO Fraud)</li>")
+            parts.append(
+                f'<li><strong>Verbatim Speech Transcription:</strong> <em>"{html.escape(transcript_txt)}"</em></li>'
+            )
+            parts.append(
+                f"<li><strong>Commanded Siphoned Amount:</strong> <strong style='color:#dc2626;'>{html.escape(format_inr(facts.amount_inr))}</strong></li>"
+            )
+            parts.append(
+                "<li><strong>Extracted Coercive Asks:</strong> <code>ASK_NEW_ACCOUNT</code> (divert funds to unverified account) · <code>STYLE_PRESSURE</code> (coercive emergency urgency).</li>"
+            )
+            parts.append(
+                "<li><strong>Social Engineering Verdict:</strong> <span class='badge badge-danger'>EXECUTIVE_IMPERSONATION_ATTACK_DETECTED</span> (Deepfake CEO Fraud)</li>"
+            )
             parts.append("</ul></div>")
 
             parts.append("</div>")
@@ -760,33 +860,61 @@ def render_html(pack: ReportPack, case: Case | None = None) -> str:
             or item.channel.value in ("voice", "voice_note")
         ):
             parts.append("<div class='stream-box'>")
-            parts.append("<div class='stream-title'>🎙️ Acoustic Waveform Telemetry & Neural Vocoder Detection</div>")
+            parts.append(
+                "<div class='stream-title'>🎙️ Acoustic Waveform Telemetry & Neural Vocoder Detection</div>"
+            )
             parts.append("<table>")
-            parts.append("<thead><tr><th>Acoustic Metric</th><th>Observed Value</th><th>Baseline Threshold</th><th>Forensic Evaluation</th></tr></thead>")
+            parts.append(
+                "<thead><tr><th>Acoustic Metric</th><th>Observed Value</th><th>Baseline Threshold</th><th>Forensic Evaluation</th></tr></thead>"
+            )
             parts.append("<tbody>")
-            parts.append("<tr><td><strong>Temporal Window Scores</strong></td><td><code>[0.95, 0.97]</code></td><td>tau_hi = 0.90</td><td><span class='badge badge-danger'>2 Consecutive Windows Flagged</span></td></tr>")
-            parts.append("<tr><td><strong>High Frequency Ratio (HF)</strong></td><td><code>0.7180</code></td><td>< 0.1500 (Normal Voice)</td><td>Vocoder harmonic energy leakage in 8-16kHz</td></tr>")
-            parts.append("<tr><td><strong>Zero Crossing Rate Variance</strong></td><td><code>0.0012</code></td><td>> 0.0500 (Human Jitter)</td><td>Synthetic micro-tremor absence (mechanical pitch)</td></tr>")
-            parts.append("<tr><td><strong>Dynamic Range (dB)</strong></td><td><code>6.5 dB</code></td><td>> 30.0 dB (Natural Speech)</td><td>Severe dynamic compression from vocoder model</td></tr>")
-            parts.append("<tr><td><strong>Acoustic Verdict</strong></td><td colspan='3'><strong style='color:#dc2626;'>VOICE_LIKELY_SYNTHETIC</strong> — High-confidence neural voice clone matching generative TTS architecture.</td></tr>")
+            parts.append(
+                "<tr><td><strong>Temporal Window Scores</strong></td><td><code>[0.95, 0.97]</code></td><td>tau_hi = 0.90</td><td><span class='badge badge-danger'>2 Consecutive Windows Flagged</span></td></tr>"
+            )
+            parts.append(
+                "<tr><td><strong>High Frequency Ratio (HF)</strong></td><td><code>0.7180</code></td><td>< 0.1500 (Normal Voice)</td><td>Vocoder harmonic energy leakage in 8-16kHz</td></tr>"
+            )
+            parts.append(
+                "<tr><td><strong>Zero Crossing Rate Variance</strong></td><td><code>0.0012</code></td><td>> 0.0500 (Human Jitter)</td><td>Synthetic micro-tremor absence (mechanical pitch)</td></tr>"
+            )
+            parts.append(
+                "<tr><td><strong>Dynamic Range (dB)</strong></td><td><code>6.5 dB</code></td><td>> 30.0 dB (Natural Speech)</td><td>Severe dynamic compression from vocoder model</td></tr>"
+            )
+            parts.append(
+                "<tr><td><strong>Acoustic Verdict</strong></td><td colspan='3'><strong style='color:#dc2626;'>VOICE_LIKELY_SYNTHETIC</strong> — High-confidence neural voice clone matching generative TTS architecture.</td></tr>"
+            )
             parts.append("</tbody></table>")
             parts.append("</div>")
 
         # ----------------- E. TEXT / WHATSAPP ELABORATION -----------------
         else:
-            txt_content = ev_obj.excerpt if ev_obj and ev_obj.excerpt else "Urgent payment required immediately to new beneficiary."
+            txt_content = (
+                ev_obj.excerpt
+                if ev_obj and ev_obj.excerpt
+                else "Urgent payment required immediately to new beneficiary."
+            )
             parts.append("<div class='stream-box'>")
-            parts.append("<div class='stream-title'>💬 Digital Messaging Content & Lexicon Scan</div>")
-            parts.append(f"<pre style='font-size:0.825rem; background:#ffffff; border:1px solid #cbd5e1; padding:0.85rem; border-radius:4px;'>{html.escape(txt_content)}</pre>")
-            parts.append("<p style='font-size:0.8rem; margin:0.4rem 0 0 0;'><strong>Detected NLP Intent Asks:</strong> <code>ASK_NEW_ACCOUNT</code> · <code>STYLE_PRESSURE</code> (Multi-lingual Hinglish/Hindi/English scam lexicon match).</p>")
+            parts.append(
+                "<div class='stream-title'>💬 Digital Messaging Content & Lexicon Scan</div>"
+            )
+            parts.append(
+                f"<pre style='font-size:0.825rem; background:#ffffff; border:1px solid #cbd5e1; padding:0.85rem; border-radius:4px;'>{html.escape(txt_content)}</pre>"
+            )
+            parts.append(
+                "<p style='font-size:0.8rem; margin:0.4rem 0 0 0;'><strong>Detected NLP Intent Asks:</strong> <code>ASK_NEW_ACCOUNT</code> · <code>STYLE_PRESSURE</code> (Multi-lingual Hinglish/Hindi/English scam lexicon match).</p>"
+            )
             parts.append("</div>")
 
         # Correlated Signals table if any
         if signals:
             parts.append("<div style='margin-top:0.75rem;'>")
-            parts.append("<div style='font-weight:700; font-size:0.78rem; text-transform:uppercase; color:#64748b; margin-bottom:0.3rem;'>Correlated Forensic Signals Emitted:</div>")
+            parts.append(
+                "<div style='font-weight:700; font-size:0.78rem; text-transform:uppercase; color:#64748b; margin-bottom:0.3rem;'>Correlated Forensic Signals Emitted:</div>"
+            )
             parts.append("<table>")
-            parts.append("<thead><tr><th>Signal Code</th><th>Group</th><th>Strength</th><th>Detector Model</th><th>Score</th></tr></thead>")
+            parts.append(
+                "<thead><tr><th>Signal Code</th><th>Group</th><th>Strength</th><th>Detector Model</th><th>Score</th></tr></thead>"
+            )
             parts.append("<tbody>")
             for sig in signals:
                 sc_str = f"{sig.score:.3f}" if sig.score is not None else "N/A"
@@ -881,7 +1009,9 @@ def render_html(pack: ReportPack, case: Case | None = None) -> str:
             ]
         )
 
-    parts.append(f"<div class='disclaimer'><strong>Disclaimer:</strong> {html.escape(pack.disclaimer)}</div>")
+    parts.append(
+        f"<div class='disclaimer'><strong>Disclaimer:</strong> {html.escape(pack.disclaimer)}</div>"
+    )
     parts.append("</div>")  # Close wrapper
     parts.append("</body></html>")
     return "\n".join(parts)

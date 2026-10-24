@@ -32,7 +32,11 @@ def report(
 
     # For security investigation, allow generating pack on any HOLD/VERIFY flagged case
     target_case = case
-    if target_case.status == CaseStatus.OPEN and target_case.decision and target_case.decision.band in (Band.HOLD, Band.VERIFY):
+    if (
+        target_case.status == CaseStatus.OPEN
+        and target_case.decision
+        and target_case.decision.band in (Band.HOLD, Band.VERIFY)
+    ):
         if variant == "MONEY_SENT" and target_case.txn and target_case.txn.utr:
             target_case = target_case.model_copy(update={"status": CaseStatus.CONFIRMED_FRAUD})
         else:

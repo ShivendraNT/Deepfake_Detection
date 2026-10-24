@@ -1,5 +1,7 @@
 # Demo script (~2 min 45 s)
 
+> Round-1 demo. **For the finale use `docs/finale/PLAN.md` §7.**
+
 Two pre-tested moments: (1) the detector catches a consented clone through real Meet capture;
 (2) the floor catches a vendor fraud that every detector passes. Plus the golden-hour pack.
 

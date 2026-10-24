@@ -63,7 +63,7 @@ markers = [
 line-length = 100
 target-version = "py311"
 src = ["src", "tests", "research", "scripts"]
-extend-exclude = ["console", "extension"]
+extend-exclude = ["console", "extension", "sih"]
 
 [tool.ruff.format]
 exclude = ["*.md"]
@@ -78,6 +78,9 @@ known-first-party = ["satyapan", "research", "tests"]
 [tool.ruff.lint.per-file-ignores]
 "tests/**" = ["B011"]
 "scripts/make_demo_data.py" = ["E501"]  # fixture data lines
+"scripts/make_pitch_deck.py" = ["E501"]  # deck presentation generator
+"src/satyapan/api/routes_dashboard.py" = ["E501"]  # inline dashboard HTML
+"src/satyapan/report/pack.py" = ["E501"]  # statutory HTML report templates
 
 [tool.mypy]
 python_version = "3.11"

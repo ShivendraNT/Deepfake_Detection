@@ -104,12 +104,14 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/workflows/status.py` | C10 | T13 | todo |
 | `src/satyapan/workflows/watchlist.py` | C10 (R4) | T13 | todo |
 | `src/satyapan/report/pack.py` | C12 | T16 | todo |
+| `src/satyapan/report/pack_v2.py` | C12 golden-hour report copilot (5 drafts) | F11 | done |
 | `src/satyapan/citizen/rules.py` | stretch S1 | T24 | todo |
 | `src/satyapan/seal/` | C14 Satyapan Seal: Voice Seal + Intent Seal (docs/SEAL.md) | SEAL (lead) | done (R1 prototype) |
 | `src/satyapan/pipeline.py` | evidence → detectors → decision | T01 | done |
 | `src/satyapan/context/boilerplate.py` | C5 pre-filter: footers, quoted bank notifications, protective warnings (ADR-021) | lead | done |
 | `src/satyapan/repository.py` | in-memory case store | T01 | done |
 | `src/satyapan/api/` | HTTP routes | T01 (+ each task) | done (glue) |
+| `src/satyapan/api/companion/` | T25 desktop companion event bus, state machine, and REST routes | T25 | done |
 | `extension/` | C13 | T07, T10, T22 | todo |
 | `console/` | console UI | T06 | todo |
 | `research/` | "Ask, Not Style" study + audio eval | T18-T21 | todo |

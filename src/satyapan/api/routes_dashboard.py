@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import hashlib
 import io
-import json
 import math
 import re
 import wave
@@ -106,10 +105,10 @@ def analyze_raw_audio(file_bytes: bytes, filename: str) -> dict[str, Any]:
             for i in range(num_frames)
         ]
         zcr_var = float(np.var(zcrs))
-        zcr_mean = float(np.mean(zcrs))
+        _zcr_mean = float(np.mean(zcrs))
     else:
         zcr_var = 0.02
-        zcr_mean = 0.1
+        _zcr_mean = 0.1
 
     # High frequency energy ratio (first-order difference acts as high-pass filter)
     diffs = np.diff(samples)
@@ -243,12 +242,27 @@ def analyze_video_evidence(
     is_known_ai_video = any(
         k in fn_lower
         for k in (
-            "gemini", "sora", "runway", "kling", "pika", "luma",
-            "heygen", "synthesia", "deepfake", "fake", "ceo", "clone",
-            "urgent", "ai_meet", "generated", "swap"
+            "gemini",
+            "sora",
+            "runway",
+            "kling",
+            "pika",
+            "luma",
+            "heygen",
+            "synthesia",
+            "deepfake",
+            "fake",
+            "ceo",
+            "clone",
+            "urgent",
+            "ai_meet",
+            "generated",
+            "swap",
         )
     )
-    is_explicit_bonafide = any(k in fn_lower for k in ("human", "bonafide", "clean", "legit", "routine"))
+    is_explicit_bonafide = any(
+        k in fn_lower for k in ("human", "bonafide", "clean", "legit", "routine")
+    )
 
     if visual_mode == "BONAFIDE" or is_explicit_bonafide:
         is_visual_synthetic = False
@@ -275,7 +289,9 @@ def analyze_video_evidence(
     elif is_visual_synthetic:
         auto_transcript = "Priya, please transfer \u20b96,00,000 immediately to Kaveri's new account, this is an urgent emergency."
     else:
-        auto_transcript = "Hi team, please review the vendor delivery report before our next scheduled review."
+        auto_transcript = (
+            "Hi team, please review the vendor delivery report before our next scheduled review."
+        )
 
     asks = extract_asks(auto_transcript)
     money_match = re.search(
@@ -310,7 +326,9 @@ def analyze_video_evidence(
     # Multi-Modal Combined Verdict
     is_threat = is_visual_synthetic or is_voice_synthetic or has_financial_ask
     band = "HOLD" if is_threat else "PASS"
-    label = "CRITICAL_MULTI_MODAL_DEEPFAKE_ATTACK" if is_threat else "BONAFIDE_VIDEO_AND_AUDIO_VERIFIED"
+    label = (
+        "CRITICAL_MULTI_MODAL_DEEPFAKE_ATTACK" if is_threat else "BONAFIDE_VIDEO_AND_AUDIO_VERIFIED"
+    )
     overall_score = max(visual_score, voice_score, 0.968 if has_financial_ask else 0.05)
 
     stream_visual = {
@@ -399,14 +417,14 @@ def analyze_video_evidence(
 @router.get("/samples/audio/human")
 def get_sample_human_audio() -> FileResponse:
     """Returns sample human voice confirmation WAV."""
-    path = Path("console/public/samples/director_human_call.wav")
+    path = Path("src/satyapan/api/samples/director_human_call.dat")
     return FileResponse(path, media_type="audio/wav", filename="director_human_call.wav")
 
 
 @router.get("/samples/audio/clone")
 def get_sample_clone_audio() -> FileResponse:
     """Returns sample deepfake voice clone WAV."""
-    path = Path("console/public/samples/vishing_ai_clone.wav")
+    path = Path("src/satyapan/api/samples/vishing_ai_clone.dat")
     return FileResponse(path, media_type="audio/wav", filename="vishing_ai_clone.wav")
 
 
@@ -436,42 +454,56 @@ async def scan_evidence(
         return JSONResponse(res)
 
     elif evidence_type == "email":
-        is_spoofed = any(k in claimed_sender.lower() for k in ("dem0", "0", "fake", "spoof", "kaver1"))
+        is_spoofed = any(
+            k in claimed_sender.lower() for k in ("dem0", "0", "fake", "spoof", "kaver1")
+        )
         band = "HOLD" if is_spoofed else "PASS"
-        return JSONResponse({
-            "type": "email",
-            "band": band,
-            "label": "LOOKALIKE_SPOOFED_DOMAIN" if is_spoofed else "GENUINE_CORPORATE_DOMAIN",
-            "is_synthetic": is_spoofed,
-            "score": 0.95 if is_spoofed else 0.05,
-            "confidence": "95.0%" if is_spoofed else "99.0%",
-            "duration_s": 0.0,
-            "num_windows": 1,
-            "window_scores": [0.95 if is_spoofed else 0.05],
-            "observed": f"Inbound RFC 822 Email header sender: '{claimed_sender or 'director@dem0-industries.example'}'.",
-            "anomaly": "Typo-squatted domain detected. Levenshtein distance = 1 from registered corporate domain. Visual homoglyph character replacement attack ('0' for 'o'). SPF/DMARC alignment failed." if is_spoofed else "DMARC aligned, DKIM cryptographic signature valid. Domain matches registered vendor.",
-            "decision": "Strong Sender Auth violation -> Escalated to HOLD when paired with payment intent." if is_spoofed else "Sender authentication verified.",
-            "summary": "PHISHING ALERT: Attacker is impersonating official company domain." if is_spoofed else "VERIFIED: Sender domain is cryptographically authentic."
-        })
+        return JSONResponse(
+            {
+                "type": "email",
+                "band": band,
+                "label": "LOOKALIKE_SPOOFED_DOMAIN" if is_spoofed else "GENUINE_CORPORATE_DOMAIN",
+                "is_synthetic": is_spoofed,
+                "score": 0.95 if is_spoofed else 0.05,
+                "confidence": "95.0%" if is_spoofed else "99.0%",
+                "duration_s": 0.0,
+                "num_windows": 1,
+                "window_scores": [0.95 if is_spoofed else 0.05],
+                "observed": f"Inbound RFC 822 Email header sender: '{claimed_sender or 'director@dem0-industries.example'}'.",
+                "anomaly": "Typo-squatted domain detected. Levenshtein distance = 1 from registered corporate domain. Visual homoglyph character replacement attack ('0' for 'o'). SPF/DMARC alignment failed."
+                if is_spoofed
+                else "DMARC aligned, DKIM cryptographic signature valid. Domain matches registered vendor.",
+                "decision": "Strong Sender Auth violation -> Escalated to HOLD when paired with payment intent."
+                if is_spoofed
+                else "Sender authentication verified.",
+                "summary": "PHISHING ALERT: Attacker is impersonating official company domain."
+                if is_spoofed
+                else "VERIFIED: Sender domain is cryptographically authentic.",
+            }
+        )
 
     else:  # Text / WhatsApp
         res = scam_check(text_content or "Urgent payment required immediately", Lang.EN)
         asks = extract_asks(text_content or "")
-        return JSONResponse({
-            "type": "text",
-            "band": res.band.value,
-            "label": "FRAUDULENT_FINANCIAL_ASK" if res.band != Band.PASS else "ROUTINE_TEXT",
-            "is_synthetic": res.band != Band.PASS,
-            "score": 0.85 if res.band != Band.PASS else 0.10,
-            "confidence": "High Risk" if res.band != Band.PASS else "Low Risk",
-            "duration_s": 0.0,
-            "num_windows": 1,
-            "window_scores": [0.85 if res.band != Band.PASS else 0.10],
-            "observed": f"NLP scan across Hinglish, Hindi, and English lexicons on text: '{text_content[:80]}...'.",
-            "anomaly": f"Detected {len(asks)} high-risk fraud intent ask(s): {[a.ask_type.value for a in asks]}. Social engineering pressure detected." if asks else "No urgency, secrecy, or account divert asks detected.",
-            "decision": f"Policy engine assigned {res.band.value}: {res.action_text}",
-            "summary": res.action_text
-        })
+        return JSONResponse(
+            {
+                "type": "text",
+                "band": res.band.value,
+                "label": "FRAUDULENT_FINANCIAL_ASK" if res.band != Band.PASS else "ROUTINE_TEXT",
+                "is_synthetic": res.band != Band.PASS,
+                "score": 0.85 if res.band != Band.PASS else 0.10,
+                "confidence": "High Risk" if res.band != Band.PASS else "Low Risk",
+                "duration_s": 0.0,
+                "num_windows": 1,
+                "window_scores": [0.85 if res.band != Band.PASS else 0.10],
+                "observed": f"NLP scan across Hinglish, Hindi, and English lexicons on text: '{text_content[:80]}...'.",
+                "anomaly": f"Detected {len(asks)} high-risk fraud intent ask(s): {[a.ask_type.value for a in asks]}. Social engineering pressure detected."
+                if asks
+                else "No urgency, secrecy, or account divert asks detected.",
+                "decision": f"Policy engine assigned {res.band.value}: {res.action_text}",
+                "summary": res.action_text,
+            }
+        )
 
 
 @router.post("/create-analyzed-case")
@@ -594,8 +626,16 @@ async def create_analyzed_case(
                 )
 
             # Check if financial command + urgency present
-            money_match = re.search(r"(\b\d+[\d,]*\s*(lakh|lac|crore|k|thousand|rupee|inr|rs|\$)?\b|\b(lakh|lac|crore|thousand|funds|money|payment|transfer|advance)\b)", effective_text, re.I)
-            urgency_match = re.search(r"\b(urgent|urgently|immediately|turant|jaldi|fast|asap|now|emergency|quick|quickly|at once|right now)\b", effective_text, re.I)
+            money_match = re.search(
+                r"(\b\d+[\d,]*\s*(lakh|lac|crore|k|thousand|rupee|inr|rs|\$)?\b|\b(lakh|lac|crore|thousand|funds|money|payment|transfer|advance)\b)",
+                effective_text,
+                re.I,
+            )
+            urgency_match = re.search(
+                r"\b(urgent|urgently|immediately|turant|jaldi|fast|asap|now|emergency|quick|quickly|at once|right now)\b",
+                effective_text,
+                re.I,
+            )
             if urgency_match and not any(s.code == ReasonCode.STYLE_PRESSURE for s in signals_list):
                 signals_list.append(
                     Signal.make(
@@ -615,7 +655,9 @@ async def create_analyzed_case(
                         detector="ask_extractor",
                         score=0.95,
                         source=SignalSource.DETERMINISTIC,
-                        detail={"command": f"Direct fund diversion commanded: {money_match.group(0)}"},
+                        detail={
+                            "command": f"Direct fund diversion commanded: {money_match.group(0)}"
+                        },
                     )
                 )
 
@@ -690,7 +732,10 @@ async def create_analyzed_case(
         case_id=case.id,
         event=CustodyEvent.DECISION,
         actor=actor.employee.employee_id,
-        payload={"band": case.decision.band.value if case.decision else None, "evidence_count": len(case.evidence)},
+        payload={
+            "band": case.decision.band.value if case.decision else None,
+            "evidence_count": len(case.evidence),
+        },
     )
     return JSONResponse(case_view(case, actor.role))
 
@@ -2151,7 +2196,7 @@ DASHBOARD_HTML = """<!doctype html>
 
           // Auto-sync transaction fields if financial ask commanded
           if (st.has_fraud_asks) {
-            const rawAmt = (st.amount_commanded || '').replace(/[^\d]/g, '');
+            const rawAmt = (st.amount_commanded || '').replace(/[^\x30-\x39]/g, '');
             if (rawAmt) {
               document.getElementById('payeeAmount').value = parseInt(rawAmt, 10);
             }

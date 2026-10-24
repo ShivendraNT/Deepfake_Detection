@@ -48,6 +48,7 @@ class SignalGroup(StrEnum):
     STYLE = "style"
     WATCHLIST = "watchlist"
     PROVENANCE = "provenance"  # Satyapan Seal: who produced the audio (C14, docs/SEAL.md)
+    CROSS_CHANNEL = "cross_channel"  # X1: a call/message ask + a payment, in under 30 minutes
 
 
 class SignalSource(StrEnum):
@@ -222,6 +223,10 @@ class ReasonCode(StrEnum):
     ASK_BYPASS = "ASK_BYPASS"
     ASK_UNUSUAL_PAYMENT_METHOD = "ASK_UNUSUAL_PAYMENT_METHOD"
     ASK_PAYEE_CHANGE = "ASK_PAYEE_CHANGE"
+    # Cross-channel (X1, deterministic): a call/message ask and a payment in the same case,
+    # within 30 minutes. Evidence can only raise the band.
+    CROSS_CHANNEL_SEQUENCE = "CROSS_CHANNEL_SEQUENCE"  # A1/A7 ask + new/changed beneficiary
+    CROSS_CHANNEL_URGENT_BYPASS = "CROSS_CHANNEL_URGENT_BYPASS"  # plus A4 secrecy / A5 bypass
     # Style (C8 / LLM) — raise-only, capped at VERIFY
     STYLE_PRESSURE = "STYLE_PRESSURE"
     # Watchlist (R4)
