@@ -33,7 +33,7 @@ from satyapan.policy.engine import decide
 from satyapan.video import features as F
 from satyapan.video import regions as R
 from satyapan.video.fusion import FusionModel
-from satyapan.video.landmarks import FaceObs
+from satyapan.video.landmarks import FaceObs, VideoUnavailable
 from satyapan.video.lighting import lighting_features
 from satyapan.video.lipsync import lipsync_features
 from satyapan.video.observe import FrameRecord, observe
@@ -490,3 +490,51 @@ def test_a_heavy_crop_model_samples_fewer_crops_and_scores_each_once(monkeypatch
     assert CountingScorer.calls == 6
     assert all(t >= 9.0 for t in stream._logits)  # logits of past windows are forgotten
     stream.close()
+
+
+def test_missing_shipped_cnn_falls_back_to_its_own_sbi_config(tmp_path: Path, monkeypatch) -> None:
+    import satyapan.video.analyzer as an
+
+    def fusion_json(cnn: dict | None, version: str) -> str:
+        raw: dict = {"features": ["blend"], "median": [0.0], "mean": [0.0], "scale": [1.0],
+                     "coef": [1.0], "missing_coef": [0.0], "intercept": 0.0}  # fmt: skip
+        raw["version"] = version
+        if cnn:
+            raw["cnn"] = cnn
+        return json.dumps(raw)
+
+    thr = json.dumps({"tau_hi": 0.9, "tau_lo": 0.5, "model_version": "m", "calibrated": False,
+                      "calibration_set": "val", "cue_flag_logit": 0.75})  # fmt: skip
+    cfg, models = tmp_path / "config", tmp_path / "models"
+    cfg.mkdir()
+    models.mkdir()
+    (cfg / "video_fusion.json").write_text(
+        fusion_json({"file": "gend_clip_l14.onnx", "crop_every_s": 2.25}, "primary")
+    )
+    (cfg / "video_fusion__blend.json").write_text(fusion_json(None, "fallback"))
+    (cfg / "video_thresholds.json").write_text(thr)
+    (cfg / "video_thresholds__blend.json").write_text(thr)
+    (models / "blend_b0.onnx").write_bytes(b"")
+    monkeypatch.setenv("SATYAPAN_VIDEO_MODELS", str(models))
+    monkeypatch.setattr(an, "FUSION_PATH", cfg / "video_fusion.json")
+    monkeypatch.setattr(an, "THRESHOLDS_PATH", cfg / "video_thresholds.json")
+    monkeypatch.setattr(an, "FALLBACK_FUSION", cfg / "video_fusion__blend.json")
+    monkeypatch.setattr(an, "FALLBACK_THRESHOLDS", cfg / "video_thresholds__blend.json")
+    monkeypatch.setattr(an, "FaceTracker", _FakeTracker)
+    monkeypatch.setattr(an, "BlendScorer", lambda path: ("scorer", path.name))
+
+    analyzer = an.VideoAnalyzer.load()
+    assert analyzer.fusion.version == "fallback"
+    assert analyzer.scorer == ("scorer", "blend_b0.onnx")
+    assert analyzer.crop_every_s == F.CROP_EVERY_S
+
+    (models / "gend_clip_l14.onnx").write_bytes(b"")
+    analyzer = an.VideoAnalyzer.load()
+    assert analyzer.fusion.version == "primary"
+    assert analyzer.scorer == ("scorer", "gend_clip_l14.onnx")
+    assert analyzer.crop_every_s == 2.25
+
+    (models / "blend_b0.onnx").unlink()
+    (models / "gend_clip_l14.onnx").unlink()
+    with pytest.raises(VideoUnavailable, match="make video-models"):
+        an.VideoAnalyzer.load()

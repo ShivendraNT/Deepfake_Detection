@@ -20,7 +20,17 @@
     "best_epoch": 9,
     "val_sbi_auc": 0.9855,
     "seed": 20261024
-   }
+   },
+   "url_env": "SATYAPAN_BLEND_MODEL_URL"
+  },
+  "gend_clip_l14.onnx": {
+   "url": "",
+   "url_env": "SATYAPAN_GEND_MODEL_URL",
+   "sha256": "4349cd59083563fda3fa2a567ade5f3796291656ac59902d5ac79516da0e886e",
+   "license": "MIT (GenD, Yermakov et al., WACV 2026, yermandy/GenD_CLIP_L_14; backbone OpenAI CLIP ViT-L/14, MIT): redistributable with the notice",
+   "build": "uv sync --extra video-research && python -m research.video.export_gend, then copy $SATYAPAN_VIDEO_DATA/models/gend_clip_l14.onnx here (1.2 GB; checks it matches PyTorch)",
+   "optional": "without it the face check runs the blend CNN with config/video_*__blend.json",
+   "selected": "results/video_selection.json (pre-registered rule, val only)"
   }
  }
 }
