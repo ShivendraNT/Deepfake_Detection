@@ -16,6 +16,8 @@ Amazon AI Cyber Security Hackathon · team of 4 · Delhi Technological Universit
   `make scan F=folder/`.
 - How we know it works: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), the reproducible test kit
   on open data, with every number in [`results/EVIDENCE_LEDGER.md`](results/EVIDENCE_LEDGER.md).
+- Checking the code: [`docs/VERIFY.md`](docs/VERIFY.md) (commands, expected results, every
+  skipped test and why). Everything we did not write: [`THIRD_PARTY.md`](THIRD_PARTY.md).
 
 **How it decides.** The *ask* (OTP, "safe account", secrecy, remote access, a new payee) is the
 part a scam cannot hide, so Satya checks it deterministically, in English, Hinglish and
