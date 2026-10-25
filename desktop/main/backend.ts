@@ -45,15 +45,36 @@ export type LiveBusEvent = LiveTranscriptEvent | { type: string; [key: string]: 
 const DEFAULT_URL = 'http://127.0.0.1:8000'
 const RECONNECT_MS = 2500
 
+// Prefer the interface a phone on the same hotspot can actually reach. A VPN, Docker bridge or
+// AirDrop link-local address is a valid IPv4 interface but the phone cannot open it.
+const PREFERRED_INTERFACES = ['en0', 'en1', 'en2', 'wlan0', 'wlan1', 'eth0', 'eth1']
+const VIRTUAL_INTERFACE = /^(utun|tun|tap|docker|bridge|vmnet|vboxnet|awdl|llw|ap\d|veth|zt|tailscale)/i
+
 function getLocalIp(): string {
   try {
     const nets = networkInterfaces()
-    for (const name of Object.keys(nets)) {
+    const ipOf = (name: string): string | null => {
       for (const net of nets[name] ?? []) {
-        if (net.family === 'IPv4' && !net.internal) {
-          return net.address
-        }
+        if (net.family !== 'IPv4' || net.internal) continue
+        if (net.address.startsWith('169.254.')) continue // link-local: no DHCP, not reachable
+        return net.address
       }
+      return null
+    }
+    for (const name of PREFERRED_INTERFACES) {
+      const ip = ipOf(name)
+      if (ip) return ip
+    }
+    for (const name of Object.keys(nets)) {
+      if (/wi-?fi|wlan|ethernet/i.test(name) && !VIRTUAL_INTERFACE.test(name)) {
+        const ip = ipOf(name)
+        if (ip) return ip
+      }
+    }
+    for (const name of Object.keys(nets)) {
+      if (VIRTUAL_INTERFACE.test(name)) continue
+      const ip = ipOf(name)
+      if (ip) return ip
     }
   } catch {}
   return '127.0.0.1'

@@ -45,7 +45,11 @@ def mobile_companion_page() -> FileResponse:
 
     It relays `/companion/events` (chips, policy band, OOB) and can stop listening or send an
     OOB-Confirm. It never computes a band and never starts capture."""
-    return FileResponse(MOBILE_PAGE, media_type="text/html")
+    return FileResponse(
+        MOBILE_PAGE,
+        media_type="text/html",
+        headers={"Cache-Control": "no-store"},
+    )
 
 
 class ScamCheckIn(BaseModel):

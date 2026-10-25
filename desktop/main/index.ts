@@ -819,6 +819,10 @@ if (!hasLock) {
     app.setAppUserModelId('in.example.satyapan.companion')
     prefs = readPrefs()
     scopes = { ...DEFAULT_SCOPES, ...(prefs.scopes ?? {}) }
+    const phoneBase = (backend.config().oob_url ?? backend.baseUrl).replace(/\/oob\/?$/, '')
+    console.log(
+      `[Satya] phone pages: ${phoneBase}/mobile · ${phoneBase}/check · ${phoneBase}/oob`,
+    )
 
     mascotWindow = createMascotWindow({
       preloadPath,
