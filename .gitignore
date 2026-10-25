@@ -48,6 +48,11 @@ console/dist/
 # External / Local
 sih/
 
+# macOS / iCloud conflict duplicates
+* 2.*
+* 2
+
+
 # OS / editors
 .DS_Store
 .idea/
