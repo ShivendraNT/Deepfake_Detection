@@ -121,5 +121,7 @@ Named limits:
    Meet (`calibrated: false`).
 4. **GSM** was used to set the thresholds (val) but not tested (amendment 2).
 5. **Background noise defeats it.** 10 dB of white noise drops the fakes flagged from 63.9 % to
-   1.9 % (`results/voice_evasion.md`); speed and pitch changes do not. The fix is a validated
-   noise-robust front end (chosen on val, thresholds re-fitted, tested once); not done yet.
+   1.9 % (`results/voice_evasion.md`); speed and pitch changes do not. A denoiser in front of
+   the model does not undo it: a val-only probe (`results/voice_denoise_probe.md`) found −0.010
+   AUC on noisy clips and −0.023 on clean ones. The next fix is noise-augmented fine-tuning,
+   chosen on val with re-fitted thresholds and tested once; not done yet.

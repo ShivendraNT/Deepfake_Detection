@@ -1,0 +1,57 @@
+{
+ "split": "val",
+ "n_bonafide": 366,
+ "n_spoof": 197,
+ "denoiser": "afftdn=nf=-25",
+ "model": "gustking_xlsr@f7050b5",
+ "clean": {
+  "auc": {
+   "value": 0.982,
+   "low": 0.9433,
+   "high": 0.9994,
+   "n_boot": 2000
+  },
+  "spoof_over_tau_lo": 0.7157360406091371
+ },
+ "clean+dn": {
+  "auc": {
+   "value": 0.9594,
+   "low": 0.9203,
+   "high": 0.9969,
+   "n_boot": 2000
+  },
+  "spoof_over_tau_lo": 0.4365482233502538
+ },
+ "noisy": {
+  "auc": {
+   "value": 0.8707,
+   "low": 0.8149,
+   "high": 0.9513,
+   "n_boot": 2000
+  },
+  "spoof_over_tau_lo": 0.050761421319796954
+ },
+ "noisy+dn": {
+  "auc": {
+   "value": 0.8608,
+   "low": 0.7659,
+   "high": 0.9614,
+   "n_boot": 2000
+  },
+  "spoof_over_tau_lo": 0.015228426395939087
+ },
+ "denoiser_gain_on_noisy": {
+  "value": -0.0099,
+  "low": -0.0585,
+  "high": 0.0381,
+  "se": 0.025,
+  "n_boot": 2000
+ },
+ "denoiser_cost_on_clean": {
+  "value": -0.0226,
+  "low": -0.0354,
+  "high": -0.0021,
+  "se": 0.0086,
+  "n_boot": 2000
+ }
+}

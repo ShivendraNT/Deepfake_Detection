@@ -248,6 +248,7 @@ Script: `python -m research.run_all voice` (= `research.voice.data`, `research.v
 | Genuine voices over τ_hi (one window) | 0.0–0.1 % | 669 | [0.0, 0.8] | |
 | ASVspoof 2019 eval AUC | 0.999 | 300 + 390 | [0.997, 1.000] | upper bound: the model card says "ASVspoof 2019" without a split |
 | Evasion: white noise at 10 dB SNR on cloned voices (product scorer, frozen τ) | fakes flagged 63.9 % → 1.9 %; AUC 0.952 → 0.843 (paired −0.110 [−0.177, −0.059]) | 155 spoof + 160 bonafide, ≥ 3 s speech | see md | a measured weakness: `results/voice_evasion.md` |
+| Denoiser (ffmpeg afftdn) in front of the voice check, VAL only | AUC −0.010 [−0.059, +0.038] on noisy clips, −0.023 [−0.035, −0.002] on clean | 197 spoof + 366 bonafide val clips | see md | rejected as a fix: `results/voice_denoise_probe.md` |
 | Evasion: 10 % faster / 2 semitones up | AUC −0.004 / −0.007 (CIs include 0); fakes flagged 63.9 % / 76.8 % | same | see md | not effective evasions |
 | Our re-trained recipe (not shipped), val AUC under Opus | 0.791 | 1,457 | [0.706, 0.904] | in-domain CV AUC 1.000: the out-of-domain gap |
 
