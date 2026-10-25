@@ -1,6 +1,44 @@
 <!doctype html>
-<!-- STUB(T22) — see docs/tasks/T22-demo-assets-dry-runs.md. Remove this marker when done.
-     Offline fallback: a local "demo call" tab that plays pre-generated, CONSENTED clone clips
-     from a local folder the presenter picks (files are NEVER committed). The extension can
-     capture this tab exactly like a Meet tab. -->
-<html><head><meta charset="utf-8" /><title>Demo call</title></head><body></body></html>
+<!-- Offline fallback for the live demo (T22): a local "demo call" tab that plays clips the
+     presenter picks from this laptop (consented voices only; files are NEVER bundled or
+     uploaded). The extension captures this tab exactly like a Meet tab, and the desktop app
+     hears it through system audio. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Demo call</title>
+    <style>
+      :root { color-scheme: dark; }
+      body { margin: 0; font: 15px/1.5 system-ui, sans-serif; background: #12101a; color: #ede8f5; }
+      main { max-width: 640px; margin: 0 auto; padding: 24px 16px; }
+      h1 { font-size: 20px; margin: 0 0 4px; }
+      .label { display: inline-block; margin-bottom: 16px; padding: 2px 10px; border-radius: 999px;
+        background: #3b2f12; color: #f5c451; font-size: 12px; font-weight: 600; letter-spacing: .04em; }
+      .card { padding: 16px; border-radius: 14px; background: #1d1a28; border: 1px solid #2c2838; }
+      ol { padding-left: 20px; }
+      li { margin: 6px 0; cursor: pointer; }
+      li.playing { color: #8be9c4; font-weight: 600; }
+      audio { width: 100%; margin-top: 12px; }
+      .muted { color: #a8a0b8; font-size: 13px; }
+      button { margin-top: 10px; padding: 8px 14px; border-radius: 10px; border: 1px solid #3a3550;
+        background: #2a2540; color: #ede8f5; cursor: pointer; }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Demo call</h1>
+      <span class="label">DEMO REPLAY: NOT A LIVE CALL</span>
+      <div class="card">
+        <label for="files">Pick the clips to play (from this laptop; nothing is uploaded):</label><br />
+        <input id="files" type="file" accept="audio/*,video/*" multiple />
+        <ol id="playlist"></ol>
+        <audio id="player" controls></audio>
+        <button id="next" type="button">Play next clip</button>
+        <p class="muted">Clips play in order. Use only voices of teammates who signed
+          docs/consent/VOICE_CLONE_CONSENT_TEMPLATE.md. Satya listens to this tab like any call.</p>
+      </div>
+    </main>
+    <script src="demo_call.js"></script>
+  </body>
+</html>

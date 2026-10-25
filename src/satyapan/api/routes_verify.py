@@ -1,7 +1,8 @@
 """Verification endpoints: OOB-Confirm (T12), callbacks/clear/status/override (T13).
 
-The route glue is written; the domain functions it calls raise NotImplementedError until the
-task is done, which the app turns into HTTP 501.
+Thin route glue over satyapan.workflows (both tasks done). A domain function that is not
+available on this install raises NotImplementedError, which the app turns into HTTP 501
+instead of a crash.
 """
 
 from __future__ import annotations
