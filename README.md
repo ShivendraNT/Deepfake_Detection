@@ -14,6 +14,9 @@ Amazon AI Cyber Security Hackathon · team of 4 · Delhi Technological Universit
 - Try it: `make sync && make video && make live`, then open http://127.0.0.1:8000/check (a phone
   on the same Wi-Fi: `http://<laptop-ip>:8000/check`). Any folder of files:
   `make scan F=folder/`.
+- **On a phone:** `/check` is the consumer scam check, `/oob` is the approver page, and
+  `/mobile` is a read-only live mirror (chips, band, OOB, stop listening). None of them opens the
+  microphone; audio never leaves the laptop.
 - How we know it works: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), the reproducible test kit
   on open data, with every number in [`results/EVIDENCE_LEDGER.md`](results/EVIDENCE_LEDGER.md).
 - Checking the code: [`docs/VERIFY.md`](docs/VERIFY.md) (commands, expected results, every

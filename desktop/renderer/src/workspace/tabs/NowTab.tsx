@@ -333,13 +333,33 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
               detail={health ? `${health.vendors} vendors loaded (trusted floor for every payment).` : 'Unknown.'}
             />
           </ul>
-          {health?.oob_url ? (
-            <div className={`${inset} flex flex-col items-center gap-2 p-3 text-center`}>
-              <Qr value={health.oob_url} size={120} />
-              <p className="text-[12px] font-medium">Approver's phone</p>
-              <p className={`max-w-[160px] break-all font-mono text-[10.5px] ${surface.muted}`}>{health.oob_url}</p>
-            </div>
-          ) : null}
+          {health?.oob_url ? (() => {
+            const base = health.oob_url.replace(/\/oob\/?$/, '')
+            const phones = [
+              { label: "Approver", url: `${base}/oob` },
+              { label: "Scam check", url: `${base}/check` },
+              { label: "Satya live", url: `${base}/mobile` },
+            ]
+            return (
+              <div className="space-y-2">
+                <p className="text-[12px] font-medium">On your phone (same Wi-Fi)</p>
+                <div className="grid grid-cols-3 gap-2">
+                  {phones.map((phone) => (
+                    <div
+                      key={phone.label}
+                      className={`${inset} flex flex-col items-center gap-1.5 p-2 text-center`}
+                    >
+                      <Qr value={phone.url} size={84} />
+                      <p className="text-[11px] font-medium">{phone.label}</p>
+                      <p className={`max-w-[110px] break-all font-mono text-[9px] ${surface.muted}`}>
+                        {phone.url}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )
+          })() : null}
         </div>
       </Section>
 

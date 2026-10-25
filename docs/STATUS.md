@@ -13,7 +13,7 @@ Critical path: T01 → T02 → T07 → T11 → T12 → T22.
 | T02 | Policy engine + property tests | Shivendra | done | T01 | [spec](tasks/T02-policy-engine.md) | pre-implemented; 40+ unit tests + hypothesis invariants |
 | T03 | .eml parser | Kartikey | done | T01 | [spec](tasks/T03-eml-parser.md) | |
 | T04 | Domain checks + email signals | Kartikey | done | T01, T03 | [spec](tasks/T04-domain-checks.md) | domains.py needs only T01 |
-| T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | n=104 precision=1.000 recall=1.000; LEXICON_VERSION 1.0.0, awaiting `lexicon-v1.0` tag |
+| T05 | Ask extractor v1.0 (A1-A7) | Saarika | done | T01 | [spec](tasks/T05-ask-extractor.md) | held-out P=0.47 / R=0.33 (test; see results/EVIDENCE_LEDGER.md); lexicon frozen v1.0.0 |
 | T06 | Console UI shell | Saksham | done | T01 | [spec](tasks/T06-console-ui.md) | |
 | T07 | Extension capture core | Shivendra | in-progress | — | [spec](tasks/T07-extension-capture.md) | steps 1-7 code done + reviewed; step 8 manual Meet test pending |
 | T08 | Invoice/PDF checker | Kartikey | done | T01, T03 | [spec](tasks/T08-invoice-pdf-checker.md) | 10/10 tests pass, regex/metadata/checker done |
@@ -59,6 +59,8 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 | F16 | Approver phone page (OOB) + QR | Saksham | P0 | done — mobile-first 3-button OOB screen, oob.html, live QR code in Settings; tests green |
 
 ## Notes log
+
+25 Oct, lead (mobile): `/mobile` (and `/m`) is a read-only phone mirror of the live companion — live chips, the policy band, the exact quotes, OOB-Confirm, stop listening, cases — served by the same engine on the hotspot. It never opens the microphone. Notebook → Now now shows three phone QRs (approver, scam check, Satya live). `make check` and `make ci` green.
 
 22 Oct, F16: done — 3-button approver phone UI (OobInbox.tsx, oob.html) with "I did not request this" reason hook, live QR code in SettingsTab via qrcode; desktop typecheck + tests green.
 22 Oct, F10: done — loopback capture window (`desktop/main/capture.ts`), PCM worklet, WebRTC VAD, ONNX scorer, WAV chunking, 9 vitest capture tests green.

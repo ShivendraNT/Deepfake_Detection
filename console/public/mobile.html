@@ -1,0 +1,533 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fbf8f3" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Satya" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Satya — live companion</title>
+    <!--
+      The phone mirror (finale). Read-only by design:
+        * it never opens the microphone and never captures audio;
+        * it only relays /companion events (chips, band, OOB) from the laptop;
+        * every band comes from satyapan.policy on the laptop; this page cannot set one.
+
+      Open http://<laptop-ip>:8000/mobile on a phone on the same hotspot. The demo identity is
+      the same DEMO-ONLY one as the rest of the local engine (no real authentication).
+    -->
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #2a2238;
+        --muted: #6b6478;
+        --paper: #fbf8f3;
+        --card: #fffcf7;
+        --inner: #f6f1e9;
+        --line: #e7dfd3;
+        --teal: #1fb5a3;
+        --green: #2f9e63;
+        --amber: #b7791f;
+        --coral: #d84336;
+        --font: "Inter", "Noto Sans Devanagari", system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+        --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+      * { box-sizing: border-box; }
+      html, body { min-height: 100%; margin: 0; background: var(--paper); color: var(--ink); }
+      body {
+        font-family: var(--font);
+        -webkit-font-smoothing: antialiased;
+        padding: calc(14px + env(safe-area-inset-top)) 14px calc(20px + env(safe-area-inset-bottom));
+      }
+      .shell { width: 100%; max-width: 430px; margin: 0 auto; display: grid; gap: 12px; }
+      .top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+      .brand { display: flex; align-items: center; gap: 10px; }
+      .satya {
+        width: 44px; height: 44px; border-radius: 16px; position: relative;
+        background: radial-gradient(circle at 32% 28%, #8ff1e3 0%, #25c2b0 45%, #14867a 100%);
+        box-shadow: 0 10px 24px rgba(31, 181, 163, 0.28), inset 0 -6px 12px rgba(0, 0, 0, 0.12);
+        flex: none;
+      }
+      .satya::before, .satya::after {
+        content: ""; position: absolute; top: 17px; width: 5px; height: 8px; border-radius: 999px;
+        background: #103f3a; opacity: 0.82;
+      }
+      .satya::before { left: 14px; }
+      .satya::after { right: 14px; }
+      .satya .smile {
+        position: absolute; left: 50%; top: 27px; width: 12px; height: 6px;
+        border-bottom: 2px solid #103f3a; border-radius: 0 0 12px 12px;
+        transform: translateX(-50%); opacity: 0.72;
+      }
+      .brand h1 { margin: 0; font-size: 18px; letter-spacing: -0.02em; }
+      .brand p { margin: 1px 0 0; font-size: 11.5px; color: var(--muted); }
+      .pill {
+        display: inline-flex; align-items: center; gap: 6px; flex: none;
+        border: 1px solid var(--line); border-radius: 999px; padding: 5px 10px;
+        background: var(--card); font-size: 11.5px; color: var(--muted); white-space: nowrap;
+      }
+      .dot { width: 8px; height: 8px; border-radius: 999px; background: var(--amber); }
+      .pill.live .dot { background: var(--teal); box-shadow: 0 0 0 4px rgba(31, 181, 163, 0.14); }
+      .pill.off .dot { background: var(--coral); }
+      .card {
+        border: 1px solid var(--line); border-radius: 18px; background: var(--card);
+        padding: 14px; box-shadow: 0 8px 22px rgba(20, 16, 40, 0.05);
+      }
+      .card.subtle { background: var(--inner); box-shadow: none; }
+      .card.subtle p { margin: 0; font-size: 12px; line-height: 1.55; color: var(--muted); }
+      .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .card h2 { margin: 0; font-size: 13px; letter-spacing: 0.01em; }
+      .mode-name { font-size: 21px; font-weight: 750; letter-spacing: -0.02em; }
+      .tiny { font-size: 11.5px; color: var(--muted); }
+      .muted { color: var(--muted); }
+      .mode-line { margin: 8px 0 0; font-size: 13px; line-height: 1.5; }
+      .readiness { margin-top: 8px; font-size: 11px; color: var(--muted); line-height: 1.45; }
+      .band {
+        display: inline-flex; align-items: center; border-radius: 999px; padding: 6px 12px;
+        font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+        background: rgba(31, 181, 163, 0.12); color: #12756a;
+      }
+      .alert { border-width: 2px; }
+      .alert.band-VERIFY { border-color: #e9b75b; background: #fffcf4; }
+      .alert.band-HOLD { border-color: #e8897f; background: #fff9f8; }
+      .alert.band-VERIFY .band { background: rgba(183, 121, 31, 0.14); color: var(--amber); }
+      .alert.band-HOLD .band { background: rgba(216, 67, 54, 0.13); color: var(--coral); }
+      .alert h2 { margin: 10px 0 0; font-size: 20px; line-height: 1.25; letter-spacing: -0.02em; }
+      .why { margin: 10px 0 0; font-size: 12.5px; line-height: 1.55; color: #4c4559; white-space: pre-line; }
+      .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+      .chip {
+        display: inline-flex; align-items: center; gap: 5px; border-radius: 999px;
+        border: 1px solid var(--line); background: var(--inner); padding: 5px 9px;
+        font-size: 11.5px; font-weight: 650; color: var(--ink);
+      }
+      .chip b { font-family: var(--mono); font-size: 10px; color: var(--teal); }
+      .verified { font-size: 11px; color: var(--teal); }
+      .quotes { margin-top: 8px; display: grid; gap: 6px; }
+      .quote {
+        border-left: 3px solid #eadcc4; padding: 6px 8px; border-radius: 0 8px 8px 0;
+        background: var(--inner); font-size: 12px; line-height: 1.45; color: #4c4559;
+      }
+      .quote b { font-family: var(--mono); font-size: 10px; color: var(--amber); margin-right: 5px; }
+      .actions { display: grid; gap: 8px; margin-top: 12px; }
+      button, .action-link {
+        width: 100%; min-height: 46px; border-radius: 13px; border: 1px solid var(--line);
+        background: var(--card); color: var(--ink); font: inherit; font-size: 14px; font-weight: 700;
+        display: flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none;
+        padding: 10px 12px; cursor: pointer;
+      }
+      button:active, .action-link:active { transform: scale(0.99); }
+      button.primary { background: var(--teal); border-color: var(--teal); color: #fff; }
+      button.danger { background: var(--coral); border-color: var(--coral); color: #fff; }
+      button[disabled] { opacity: 0.55; cursor: default; }
+      .cases { display: grid; gap: 8px; margin-top: 10px; }
+      .case {
+        display: grid; grid-template-columns: 8px 1fr auto; gap: 9px; align-items: center;
+        border: 1px solid var(--line); border-radius: 12px; padding: 9px 10px; background: #fffdf9;
+      }
+      .case .stripe { width: 8px; height: 30px; border-radius: 999px; background: var(--muted); }
+      .case .stripe.PASS { background: var(--green); }
+      .case .stripe.VERIFY { background: var(--amber); }
+      .case .stripe.HOLD { background: var(--coral); }
+      .case .title { font-size: 12.5px; font-weight: 650; line-height: 1.35; }
+      .case .meta { font-size: 10.5px; color: var(--muted); margin-top: 2px; }
+      .case .band-mini { font-size: 10px; font-weight: 800; letter-spacing: 0.04em; color: var(--muted); }
+      .empty { color: var(--muted); font-size: 12px; }
+      .flash { animation: flash 0.45s ease-out; }
+      @keyframes flash { from { transform: translateY(4px); opacity: 0.4; } to { transform: none; opacity: 1; } }
+      @media (prefers-reduced-motion: reduce) {
+        .flash { animation: none; }
+        * { scroll-behavior: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="top">
+        <div class="brand">
+          <div class="satya" aria-hidden="true"><span class="smile"></span></div>
+          <div>
+            <h1>Satya</h1>
+            <p>live companion · local demo</p>
+          </div>
+        </div>
+        <span class="pill" id="conn"><span class="dot"></span><span id="conn-text">connecting</span></span>
+      </header>
+
+      <section class="card" id="mode-card">
+        <div class="row">
+          <span class="mode-name" id="mode">Sleeping</span>
+          <span class="tiny" id="monitor">not watching</span>
+        </div>
+        <p class="mode-line muted" id="mode-line">
+          Satya starts asleep. Wake him on the laptop with ⌘⇧S; nothing is watched before consent.
+        </p>
+        <div class="readiness" id="readiness"></div>
+      </section>
+
+      <section class="card alert" id="alert-card" hidden>
+        <div class="row">
+          <span class="band" id="band">VERIFY</span>
+          <span class="tiny" id="alert-time"></span>
+        </div>
+        <h2 id="alert-headline"></h2>
+        <div class="chips" id="chips"></div>
+        <div class="quotes" id="quotes"></div>
+        <p class="why" id="alert-why"></p>
+        <div class="actions" id="actions"></div>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <h2>Live tricks</h2>
+          <span class="tiny" id="coverage"></span>
+        </div>
+        <div class="chips" id="live-chips"><span class="empty">No call heard yet.</span></div>
+        <p class="tiny" style="margin: 9px 0 0">
+          These are requests Satya heard, not a band. Only the policy engine sets the band.
+        </p>
+      </section>
+
+      <section class="card">
+        <div class="row">
+          <h2>Cases</h2>
+          <span class="tiny">newest first</span>
+        </div>
+        <div class="cases" id="cases"><span class="empty">Loading…</span></div>
+      </section>
+
+      <section class="card subtle">
+        <p>
+          <strong>This phone is a mirror.</strong> It never opens the microphone and never records a
+          call. Audio stays on the laptop; the band is set only by <code>satyapan.policy</code>.
+          OOB-Confirm goes to the real approver from the employee directory, never to a number in
+          a message or a call.
+        </p>
+      </section>
+    </main>
+
+    <script>
+      (function () {
+        "use strict";
+        var params = new URLSearchParams(location.search);
+        var USER = params.get("user") || "emp_priya";
+        var ROLE = params.get("role") || "maker";
+        var AUTH = "user=" + encodeURIComponent(USER) + "&role=" + encodeURIComponent(ROLE);
+        var BANDS = { PASS: 0, VERIFY: 1, HOLD: 2 };
+        var BAND_WORDS = { PASS: "Looks OK", VERIFY: "Verify first", HOLD: "Stop — don't pay" };
+        var ASK = {
+          A1: "New account",
+          A2: "OTP / code",
+          A3: "Remote access",
+          A4: "Keep it secret",
+          A5: "Skip approval",
+          A6: "Gift card / crypto",
+          A7: "Payee change"
+        };
+        var OUTCOME = {
+          approved: "Approved this exact request.",
+          rejected: "Rejected the request.",
+          not_requested: "Says they did not ask for this.",
+          expired: "No answer — not verified."
+        };
+        var EVENTS = [
+          "alert.raised", "live.chips", "coverage.changed", "call.started", "call.stopped",
+          "session.started", "session.stopped", "oob.sent", "oob.result", "case.updated",
+          "state.changed", "call.status"
+        ];
+        var alertCaseId = null;
+        var approver = null;
+        var lastAlertAt = null;
+
+        function $(id) { return document.getElementById(id); }
+        function setText(id, text) { var el = $(id); if (el) el.textContent = text || ""; }
+        function clear(el) { while (el.firstChild) el.removeChild(el.firstChild); }
+        function chip(code, label) {
+          var span = document.createElement("span");
+          span.className = "chip";
+          var b = document.createElement("b");
+          b.textContent = code;
+          span.appendChild(b);
+          span.appendChild(document.createTextNode(label || ASK[code] || code));
+          return span;
+        }
+        function setConn(state, text) {
+          var pill = $("conn");
+          pill.className = "pill " + state;
+          setText("conn-text", text);
+        }
+        function api(path, options) {
+          var sep = path.indexOf("?") >= 0 ? "&" : "?";
+          return fetch(path + sep + AUTH, Object.assign({ cache: "no-store" }, options || {}))
+            .then(function (res) {
+              if (!res.ok) throw new Error("HTTP " + res.status);
+              return res.json();
+            });
+        }
+        function post(path, body) {
+          return api(path, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body)
+          });
+        }
+        function modeWord(mode) {
+          return {
+            SLEEP: "Sleeping",
+            ACTIVE: "Watching",
+            INVESTIGATING: "Checking",
+            ALERT: "Alert",
+            SCRIBE: "Writing",
+            DISABLED: "Off"
+          }[mode] || mode;
+        }
+        function renderState(state) {
+          if (!state) return;
+          setText("mode", modeWord(state.mode));
+          setText("monitor", state.monitoring ? "watching" : "not watching");
+          var line = "Satya is asleep on the laptop. Wake him there with ⌘⇧S; nothing is watched before consent.";
+          if (state.mode === "ACTIVE" && state.monitoring) {
+            line = "Listening to this call on the laptop. Captions stay on the laptop; only chips and the band come here.";
+          } else if (state.mode === "ALERT") {
+            line = "Satya has raised an alert on the laptop. Read the exact words below.";
+          } else if (state.mode === "SCRIBE") {
+            line = "Writing the golden-hour report pack on the laptop. A human sends every draft.";
+          } else if (state.mode === "DISABLED") {
+            line = "Satya is off. The tray on the laptop is how he comes back.";
+          }
+          setText("mode-line", line);
+        }
+        function renderHealth(h) {
+          if (!h) return;
+          var parts = [];
+          if (h.asr) {
+            parts.push("ears: " + (h.asr.ready ? "ready" : (h.asr.error ? "not ready" : "warming")));
+          }
+          if (h.voice_model) parts.push("voice model: yes");
+          if (typeof h.vendors === "number") parts.push("vendors: " + h.vendors);
+          setText("readiness", parts.join(" · "));
+        }
+        function renderCases(items) {
+          var box = $("cases");
+          clear(box);
+          if (!items || !items.length) {
+            var e = document.createElement("span");
+            e.className = "empty";
+            e.textContent = "No cases yet.";
+            box.appendChild(e);
+            return;
+          }
+          items.slice(0, 6).forEach(function (item) {
+            var row = document.createElement("div");
+            row.className = "case";
+            var stripe = document.createElement("span");
+            stripe.className = "stripe " + (item.band || "");
+            var middle = document.createElement("div");
+            var title = document.createElement("div");
+            title.className = "title";
+            title.textContent = item.title || item.case_id || "Case";
+            var meta = document.createElement("div");
+            meta.className = "meta";
+            meta.textContent = (item.status || "OPEN") + " · " + (item.queue || "MAKER") + " queue";
+            middle.appendChild(title);
+            middle.appendChild(meta);
+            var band = document.createElement("span");
+            band.className = "band-mini";
+            band.textContent = item.band || "";
+            row.appendChild(stripe);
+            row.appendChild(middle);
+            row.appendChild(band);
+            box.appendChild(row);
+          });
+        }
+        function renderChipBox(boxId, codes) {
+          var box = $(boxId);
+          if (!box) return;
+          clear(box);
+          if (!codes || !codes.length) {
+            var empty = document.createElement("span");
+            empty.className = "empty";
+            empty.textContent = "No call heard yet.";
+            box.appendChild(empty);
+            return;
+          }
+          codes.forEach(function (c) { box.appendChild(chip(c.code || c, null)); });
+        }
+        function renderChips(codes) {
+          renderChipBox("live-chips", codes);
+        }
+        function renderQuotes(quotes) {
+          var box = $("quotes");
+          clear(box);
+          (quotes || []).slice(0, 4).forEach(function (q) {
+            var div = document.createElement("div");
+            div.className = "quote";
+            var b = document.createElement("b");
+            b.textContent = q.code || "";
+            div.appendChild(b);
+            div.appendChild(document.createTextNode('"' + (q.text || "") + '"'));
+            box.appendChild(div);
+          });
+        }
+        function addAction(label, className, onClick, href) {
+          var el = document.createElement(href ? "a" : "button");
+          el.textContent = label;
+          if (href) {
+            el.href = href;
+            el.className = "action-link " + (className || "");
+            el.target = href.indexOf("tel:") === 0 ? "_self" : "_blank";
+            el.rel = "noopener";
+          } else {
+            el.type = "button";
+            el.className = className || "";
+            el.addEventListener("click", onClick);
+          }
+          $("actions").appendChild(el);
+        }
+        function renderActions(payload) {
+          var box = $("actions");
+          clear(box);
+          var caseId = payload.case_id || alertCaseId;
+          if (caseId && approver) {
+            addAction("Verify with " + approver, "primary", function () { verify(caseId); });
+          } else if (caseId) {
+            addAction("Copy a safe reply, then hang up", "", copyReply);
+            addAction("Money sent? Call 1930", "", null, "tel:1930");
+            addAction("Prepare my report", "", null, "/check#money");
+          }
+          if (payload.monitoring) {
+            addAction("Stop listening now", "", stopListening);
+          }
+        }
+        function renderAlert(payload) {
+          var band = payload.band;
+          if (!band || BANDS[band] === undefined || BANDS[band] < 1) return;
+          if (payload.case_id && payload.case_id !== alertCaseId) {
+            alertCaseId = payload.case_id;
+            approver = payload.approver_name || null;
+          } else {
+            alertCaseId = payload.case_id || alertCaseId;
+            approver = payload.approver_name || approver;
+          }
+          lastAlertAt = new Date();
+          var card = $("alert-card");
+          card.hidden = false;
+          card.className = "card alert band-" + band + " flash";
+          setText("band", BAND_WORDS[band] || band);
+          setText("alert-headline", payload.headline || "");
+          setText("alert-time", lastAlertAt.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }));
+          var alertChips = payload.chips && payload.chips.length
+            ? payload.chips
+            : (payload.quotes || []).map(function (q) { return { code: q.code }; });
+          renderChipBox("chips", alertChips);
+          renderQuotes(payload.quotes || []);
+          var why = (payload.explanation || "").split("\n\n").filter(Boolean).slice(0, 5).join("\n");
+          setText("alert-why", why);
+          renderActions(payload);
+        }
+        function renderOob(payload) {
+          var oob = payload.oob;
+          if (!oob) return;
+          setText("alert-headline", (oob.approver_name || "The approver") + ": " +
+            (OUTCOME[oob.outcome] || "answered."));
+        }
+        function handle(event) {
+          var payload = event.payload || {};
+          if (payload.band) renderAlert(payload);
+          if (payload.chips && payload.chips.length) renderChips(payload.chips);
+          if (payload.coverage) setText("coverage", "audio: " + payload.coverage);
+          if (payload.oob) renderOob(payload);
+          if (event.type === "call.stopped" || event.type === "session.stopped") {
+            setText("coverage", "");
+          }
+          if (event.type === "session.started" || event.type === "session.stopped" ||
+              event.type === "call.started" || event.type === "call.stopped" ||
+              event.type === "case.updated") {
+            refresh();
+          }
+        }
+        function verify(caseId) {
+          setText("alert-why", "Asking the approver from the directory…");
+          post("/companion/oob", { version: "1", case_id: caseId })
+            .then(function (ticket) {
+              approver = ticket.approver_name || approver;
+              setText("alert-why", "Asked " + (ticket.approver_name || "the approver") +
+                " on their own phone. Silence is never approval.");
+            })
+            .catch(function (err) {
+              setText("alert-why", "Could not ask the approver: " + err.message);
+            });
+        }
+        function copyReply() {
+          var text = "I'll verify this through our registered process and call you back.";
+          function legacyCopy() {
+            var area = document.createElement("textarea");
+            area.value = text;
+            area.setAttribute("readonly", "readonly");
+            area.style.position = "fixed";
+            area.style.top = "-1000px";
+            area.style.opacity = "0";
+            document.body.appendChild(area);
+            area.focus();
+            area.select();
+            var ok = false;
+            try { ok = document.execCommand("copy"); } catch (_) { ok = false; }
+            document.body.removeChild(area);
+            setText("alert-why", ok
+              ? "Safe reply copied. Say it, then hang up."
+              : text);
+          }
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(function () {
+              setText("alert-why", "Safe reply copied. Say it, then hang up.");
+            }).catch(legacyCopy);
+          } else {
+            legacyCopy();
+          }
+        }
+        function stopListening() {
+          post("/companion/commands", {
+            version: "1",
+            request_id: "req_mobile_" + Date.now().toString(36),
+            type: "session.stop"
+          }).then(function () {
+            setText("mode-line", "Stopped. Capture has been released on the laptop.");
+            refresh();
+          }).catch(function (err) {
+            setText("mode-line", "Could not stop: " + err.message);
+          });
+        }
+        function refresh() {
+          Promise.all([
+            api("/companion/state"),
+            api("/companion/cases"),
+            api("/companion/health")
+          ]).then(function (out) {
+            renderState(out[0]);
+            renderCases(out[1]);
+            renderHealth(out[2]);
+            setConn("live", "live");
+          }).catch(function () {
+            setConn("off", "offline");
+          });
+        }
+        function connect() {
+          if (!window.EventSource) return;
+          var es = new EventSource("/companion/events?" + AUTH);
+          es.onopen = function () { setConn("live", "live"); };
+          es.onerror = function () { setConn("off", "offline"); };
+          EVENTS.forEach(function (type) {
+            es.addEventListener(type, function (event) {
+              try { handle(JSON.parse(event.data)); } catch (_) { /* ignore malformed */ }
+            });
+          });
+        }
+        refresh();
+        connect();
+        setInterval(refresh, 5000);
+      })();
+    </script>
+  </body>
+</html>

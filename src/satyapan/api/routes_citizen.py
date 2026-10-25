@@ -26,6 +26,7 @@ from satyapan.contracts.report import TransactionFacts
 
 router = APIRouter()
 PAGE = Path(__file__).resolve().parents[3] / "console" / "public" / "scam-check.html"
+MOBILE_PAGE = Path(__file__).resolve().parents[3] / "console" / "public" / "mobile.html"
 IST = timezone(timedelta(hours=5, minutes=30))  # no DST; no tzdata needed on Windows
 
 
@@ -35,6 +36,16 @@ def scam_check_page() -> FileResponse:
     """The consumer page, served by the same local engine (a phone on the same Wi-Fi can open
     http://<laptop-ip>:8000/check when the engine runs with `make live`)."""
     return FileResponse(PAGE, media_type="text/html")
+
+
+@router.get("/mobile", include_in_schema=False)
+@router.get("/m", include_in_schema=False)
+def mobile_companion_page() -> FileResponse:
+    """A read-only phone mirror of the live companion (same Wi-Fi, no microphone, no capture).
+
+    It relays `/companion/events` (chips, policy band, OOB) and can stop listening or send an
+    OOB-Confirm. It never computes a band and never starts capture."""
+    return FileResponse(MOBILE_PAGE, media_type="text/html")
 
 
 class ScamCheckIn(BaseModel):

@@ -358,3 +358,24 @@ def test_a_personal_call_gets_consumer_actions_not_an_approver(client, monkeypat
     assert alert.headline.startswith(("Stop:", "Don't act yet"))
     assert "call back on a number you already have" in alert.explanation
     _assert_no_scores([event.model_dump(mode="json") for event in _events(client)])
+
+
+def test_the_labelled_cfo_replay_reaches_hold(client) -> None:
+    """The presenter fallback (`⌘⇧D` / demo.replay cfo_call) must build the replay case and
+    relay the policy band. Regression: it used Channel.CALL_AUDIO, which does not exist."""
+    response = client.post(
+        "/companion/commands",
+        json={
+            "version": "1",
+            "request_id": "req_replay_cfo",
+            "type": "demo.replay",
+            "payload": {"scenario": "cfo_call"},
+        },
+    )
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["accepted"] is True
+    alerts = [event for event in body["events"] if event["type"] == "alert.raised"]
+    assert alerts and alerts[0]["payload"]["band"] == "HOLD"
+    assert alerts[0]["payload"]["demo"] is True
+    _assert_no_scores(body)

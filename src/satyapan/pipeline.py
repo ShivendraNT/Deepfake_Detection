@@ -57,14 +57,6 @@ def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> D
     from satyapan.asks.extractor import ask_signals, extract_asks
     from satyapan.context import strip_context
 
-    if ctx.text_model is not None:
-        from satyapan.textrisk.rules import text_signal
-
-        sig = text_signal(ctx.text_model, text, [ev_id])
-        out.artifacts["text_risk"] = {"flagged": sig is not None,
-                                      "model": ctx.text_model.version}  # fmt: skip
-        if sig is not None:
-            out.signals.append(sig)
     if ctx.context_filter:
         res = strip_context(text)
         text = res.cleaned
@@ -74,6 +66,17 @@ def _asks(text: str, ev_id: str, ctx: PipelineContext, out: DetectorOutput) -> D
                 {"kind": r.kind, "rule": r.rule, "text": r.text[:200]} for r in res.removed
             ],
         }
+    # The scam-text model reads what the ask extractor reads: the context-filtered text.
+    # A bank's own OTP notification ("your OTP is ... do not share it") is about a request,
+    # not a scam message; reading it raw made a genuine SMS look like a scam.
+    if ctx.text_model is not None:
+        from satyapan.textrisk.rules import text_signal
+
+        sig = text_signal(ctx.text_model, text, [ev_id])
+        out.artifacts["text_risk"] = {"flagged": sig is not None,
+                                      "model": ctx.text_model.version}  # fmt: skip
+        if sig is not None:
+            out.signals.append(sig)
     if ctx.live_phrasebook:
         from satyapan.asks.phrasebook import PHRASEBOOK_VERSION, extract_live_asks
 

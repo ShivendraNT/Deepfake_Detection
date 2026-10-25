@@ -516,7 +516,7 @@ class CompanionService:
                     detail={"claimed_exec": "emp_rajesh_cfo", "seal_detected": False},
                 )
             )
-            channel = Channel.CALL_AUDIO
+            channel = Channel.CALL_RECORDING
             filename = "cfo_deepfake_call.wav"
             media_type = "audio/wav"
         else:

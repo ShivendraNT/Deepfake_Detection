@@ -53,6 +53,10 @@ with the replay; it has to be rehearsed on the actual demo laptop.
    `http://<laptop-A-ip>:8000/oob`). The page says "Waiting for a request…".
    Run `make oob-check` once after `make live`: it creates a demo request, opens the served page
    and answers "I did not request this", so you know the phone path works before the judges arrive.
+   The same card now shows three phone QRs: **Approver** (`/oob`), **Scam check** (`/check`) and
+   **Satya live** (`/mobile`). The last one is a read-only mirror of the live call: chips, the
+   policy band, the alert and OOB; it never opens the microphone. A judge can scan it and watch
+   the same alert on their own phone.
 5. Laptop B creates the Meet; laptop A joins it in Chrome. **Sound on**, volume above ~30%.
    Speakers or headphones both work: Satya taps what the laptop plays, never the microphone, so he
    hears only the other side of the call.

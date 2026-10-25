@@ -93,7 +93,13 @@ markers = [
 line-length = 100
 target-version = "py311"
 src = ["src", "tests", "research", "scripts"]
-extend-exclude = ["console", "extension", "sih"]
+extend-exclude = [
+  "console",
+  "extension",
+  "sih",
+  # One-off judge handout generator; not part of the product or the test suite.
+  "scripts/generate_judges_masterclass_pdf.py",
+]
 
 [tool.ruff.format]
 exclude = ["*.md"]
@@ -109,6 +115,7 @@ known-first-party = ["satyapan", "research", "tests"]
 "tests/**" = ["B011"]
 "scripts/make_demo_data.py" = ["E501"]  # fixture data lines
 "scripts/make_pitch_deck.py" = ["E501"]  # deck presentation generator
+"scripts/generate_judges_masterclass_pdf.py" = ["E501"]  # one-off PDF generator
 "src/satyapan/api/routes_dashboard.py" = ["E501"]  # inline dashboard HTML
 "src/satyapan/report/pack.py" = ["E501"]  # statutory HTML report templates
 

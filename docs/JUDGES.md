@@ -16,7 +16,8 @@ phone). That was our Round 1 scope and it still works, but this guide follows th
 
 ```bash
 make sync                      # Python deps (uv); no uv/make: README "pip fallback" / scripts/satya.py
-make video                     # face check + reading text in screenshots; verifies model hashes
+make video                     # face check + screenshot OCR; needs blend_b0.onnx (built locally),
+                               # otherwise it abstains ("could not check"), never guesses
 make asr                       # on-device speech (voice notes, live calls)
 make voice                     # voice-clone model: built from its pinned licensed source (torch once)
 make live                      # the engine on :8000 (0.0.0.0, so a phone on the same Wi-Fi works)
@@ -152,7 +153,7 @@ crops. That is why every model went through one protocol before it could ship
 | Voice detector through codecs | **rebuilt** on licensed data | Round 1 numbers were simulated and withdrawn (`results/INVALIDATED.md`) |
 | Satyapan Seal live in Meet | prototype only, not in the finale demo | not consumer-facing; parked |
 | AWS ap-south-1 deployment | **cut** | on-device became the privacy story; nothing needs a server |
-| Not in the plan, added | video face check, photo check, screenshot OCR, consumer Scam Check page, money-sent drafts, kit runner, open-data benchmarks for every channel | judges' Round 1 feedback: consumer focus, measured accuracy |
+| Not in the plan, added | video face check, photo check, screenshot OCR, consumer Scam Check page, money-sent drafts, kit runner, open-data benchmarks for every channel, phone mirror (`/mobile`: chips, band, OOB, no mic) | judges' Round 1 feedback: consumer focus, measured accuracy |
 
 ---
 

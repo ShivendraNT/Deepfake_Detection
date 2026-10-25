@@ -209,3 +209,11 @@ def test_a_missing_face_model_is_not_listed_as_checked(client, monkeypatch) -> N
                        data={"lang": "en"}).json()  # fmt: skip
     if any(n.startswith("face (") for n in body["not_checked"]):
         assert not any("face" in c for c in body["checked"])
+
+
+def test_the_phone_mirror_is_served_and_never_claims_the_mic(client) -> None:
+    for path in ("/mobile", "/m"):
+        response = client.get(path)
+        assert response.status_code == 200, response.text
+        assert "live companion" in response.text
+        assert "never opens the microphone" in response.text
