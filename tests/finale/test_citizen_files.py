@@ -188,3 +188,16 @@ def test_a_voice_note_is_judged_on_its_voice_and_on_its_words(client, monkeypatc
         "voice" in c for c in body["checked"]
     )
     assert body["heard_or_read"].startswith("This is your bank")
+
+
+def test_the_share_message_matches_the_answer(client) -> None:
+    from urllib.parse import unquote
+
+    def share(text: str) -> str:
+        body = client.post("/scam-check", json={"text": text, "lang": "en"}).json()
+        return unquote(body["links"]["share"])
+
+    genuine = share("123456 is your OTP for login. Do not share it with anyone.")
+    assert "No known scam pattern" in genuine and "suspicious" not in genuine
+    scam = share("Share the OTP you received to stop the account block")
+    assert "Stop." in scam and "suspicious" in scam
