@@ -167,7 +167,12 @@ def citizen_check(
     action = ACTION_TEXT[lang][band]
     links = dict(LINKS)
     links["share"] = share_link(band, lang)
-    checked = [CHECKED[k][lang] for k in ("voice", "face", "text", "asks") if k in r.findings]
+    # "not_analysed" means the model is missing: it is listed under not_checked, never here.
+    checked = [
+        CHECKED[k][lang]
+        for k in ("voice", "face", "text", "asks")
+        if r.findings.get(k, "not_analysed") != "not_analysed"
+    ]
     return CitizenFileResult(
         band=band,
         action_text=action,
