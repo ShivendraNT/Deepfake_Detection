@@ -25,8 +25,13 @@ from satyapan.contracts.enums import Lang
 from satyapan.contracts.report import TransactionFacts
 
 router = APIRouter()
-PAGE = Path(__file__).resolve().parents[3] / "console" / "public" / "scam-check.html"
-MOBILE_PAGE = Path(__file__).resolve().parents[3] / "console" / "public" / "mobile.html"
+PUBLIC = Path(__file__).resolve().parents[3] / "console" / "public"
+PAGE = PUBLIC / "scam-check.html"
+MOBILE_PAGE = PUBLIC / "mobile.html"
+POCKET_PAGE = PUBLIC / "pocket.html"
+POCKET_MANIFEST = PUBLIC / "pocket.webmanifest"
+POCKET_ICON_192 = PUBLIC / "satya-192.png"
+POCKET_ICON_512 = PUBLIC / "satya-512.png"
 IST = timezone(timedelta(hours=5, minutes=30))  # no DST; no tzdata needed on Windows
 
 
@@ -50,6 +55,36 @@ def mobile_companion_page() -> FileResponse:
         media_type="text/html",
         headers={"Cache-Control": "no-store"},
     )
+
+
+@router.get("/pocket", include_in_schema=False)
+@router.get("/app", include_in_schema=False)
+def pocket_page() -> FileResponse:
+    """Satya Pocket: the phone app client (check, live, report, help).
+
+    It calls the same local engine over the hotspot and displays its answer. It never opens the
+    microphone, never captures a phone call, and never computes a band."""
+    return FileResponse(
+        POCKET_PAGE,
+        media_type="text/html",
+        headers={"Cache-Control": "no-store"},
+    )
+
+
+@router.get("/pocket.webmanifest", include_in_schema=False)
+def pocket_manifest() -> FileResponse:
+    """Installable app metadata (Add to Home Screen). No service worker: LAN HTTP cannot use one."""
+    return FileResponse(POCKET_MANIFEST, media_type="application/manifest+json")
+
+
+@router.get("/satya-192.png", include_in_schema=False)
+def pocket_icon_192() -> FileResponse:
+    return FileResponse(POCKET_ICON_192, media_type="image/png")
+
+
+@router.get("/satya-512.png", include_in_schema=False)
+def pocket_icon_512() -> FileResponse:
+    return FileResponse(POCKET_ICON_512, media_type="image/png")
 
 
 class ScamCheckIn(BaseModel):

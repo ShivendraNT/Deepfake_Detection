@@ -217,3 +217,16 @@ def test_the_phone_mirror_is_served_and_never_claims_the_mic(client) -> None:
         assert response.status_code == 200, response.text
         assert "live companion" in response.text
         assert "never opens the microphone" in response.text
+
+
+def test_the_phone_app_and_its_pwa_assets_are_served(client) -> None:
+    for path in ("/pocket", "/app"):
+        response = client.get(path)
+        assert response.status_code == 200, response.text
+        assert "Satya Pocket" in response.text
+        assert "does not listen to phone calls" in response.text
+    manifest = client.get("/pocket.webmanifest")
+    assert manifest.status_code == 200
+    assert manifest.json()["short_name"] == "Satya"
+    for icon in ("/satya-192.png", "/satya-512.png"):
+        assert client.get(icon).status_code == 200

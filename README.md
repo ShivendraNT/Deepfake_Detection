@@ -14,9 +14,11 @@ Amazon AI Cyber Security Hackathon · team of 4 · Delhi Technological Universit
 - Try it: `make sync && make video && make live`, then open http://127.0.0.1:8000/check (a phone
   on the same Wi-Fi: `http://<laptop-ip>:8000/check`). Any folder of files:
   `make scan F=folder/`.
-- **On a phone:** `/check` is the consumer scam check, `/oob` is the approver page, and
-  `/mobile` is a read-only live mirror (chips, band, OOB, stop listening). None of them opens the
-  microphone; audio never leaves the laptop.
+- **On a phone:** `/pocket` is **Satya Pocket**, the installable phone app (check a message,
+  screenshot, voice note, PDF or video; live alert/OOB; golden-hour report). `/check` is the
+  single-page scam check, `/oob` is the approver page, and `/mobile` is a read-only live mirror.
+  None of them opens the microphone; phone calls cannot be captured by an app, so live call
+  listening stays on the laptop.
 - How we know it works: [`docs/BENCHMARKS.md`](docs/BENCHMARKS.md), the reproducible test kit
   on open data, with every number in [`results/EVIDENCE_LEDGER.md`](results/EVIDENCE_LEDGER.md).
 - Checking the code: [`docs/VERIFY.md`](docs/VERIFY.md) (commands, expected results, every

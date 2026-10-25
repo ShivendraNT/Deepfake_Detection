@@ -337,8 +337,8 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
             const base = health.oob_url.replace(/\/oob\/?$/, '')
             const phones = [
               { label: "Approver", url: `${base}/oob` },
-              { label: "Scam check", url: `${base}/check` },
-              { label: "Satya live", url: `${base}/mobile` },
+              { label: "Satya Pocket", url: `${base}/pocket` },
+              { label: "Live mirror", url: `${base}/mobile` },
             ]
             return (
               <div className="space-y-2">

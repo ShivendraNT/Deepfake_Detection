@@ -60,7 +60,7 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 
 ## Notes log
 
-25 Oct, lead (mobile): `/mobile` (and `/m`) is a read-only phone mirror of the live companion — live chips, the policy band, the exact quotes, OOB-Confirm, stop listening, cases — served by the same engine on the hotspot. It never opens the microphone. Notebook → Now now shows three phone QRs (approver, scam check, Satya live). `make check` and `make ci` green.
+25 Oct, lead (mobile): **Satya Pocket** (`/pocket`, `/app`) is the phone app: check text/screenshot/voice/PDF/video through the same engine, live alert/OOB, golden-hour report, help; installable via manifest + icons. `/mobile` stays the read-only live mirror. It never opens the microphone and never computes a band. Notebook → Now shows three phone QRs (approver, Satya Pocket, live mirror). Committed as `F05`.
 
 22 Oct, F16: done — 3-button approver phone UI (OobInbox.tsx, oob.html) with "I did not request this" reason hook, live QR code in SettingsTab via qrcode; desktop typecheck + tests green.
 22 Oct, F10: done — loopback capture window (`desktop/main/capture.ts`), PCM worklet, WebRTC VAD, ONNX scorer, WAV chunking, 9 vitest capture tests green.
