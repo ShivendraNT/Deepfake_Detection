@@ -16,19 +16,20 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT / "src"))
+sys.path.insert(0, str(ROOT / "src"))  # runs without an editable install (pip fallback)
 
-import numpy as np
+import numpy as np  # noqa: E402
 
-from satyapan.adapters.transcribe_local import (
+from satyapan.adapters.transcribe_local import (  # noqa: E402
     SAMPLE_RATE,
     LocalTranscriber,
     UnavailableTranscriber,
     build_transcriber,
     decode_wav,
 )
-from satyapan.asks.phrasebook import extract_cues, extract_live_asks
-from satyapan.context import strip_context
+from satyapan.asks.phrasebook import extract_cues, extract_live_asks  # noqa: E402
+from satyapan.context import strip_context  # noqa: E402
+
 REPLAY = ROOT / ".cache" / "replay" / "cfo_call_en.wav"
 
 
