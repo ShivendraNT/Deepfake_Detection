@@ -92,6 +92,7 @@ matrix, permissions and honest gaps are in `docs/CROSS_PLATFORM.md`.
 | `AGENTS.md` | **rules for every AI agent and human** (single source of truth) |
 | `docs/tasks/` | T-task specs (`T01` … `T25`), mostly done |
 | `docs/STATUS.md` | task board: owner, status, dependencies |
+| `docs/POCKET.md` | phone app: install, four tabs, two-minute demo, limits |
 | `docs/ARCHITECTURE.md` | design: components, policy tables, API, AWS mapping, failure modes |
 | `docs/THREAT_MODEL.md`, `docs/DATA_POLICY.md` | security + privacy/ethics |
 | `docs/RESEARCH_PROTOCOL.md`, `docs/EVALUATION.md` | paper protocol + honest product numbers |
