@@ -561,7 +561,15 @@ export function useSatya(options: SatyaOptions = {}): SatyaController {
       dispatch({ type: 'CARD_ACTION', cardId: card_id, actionId: action_id })
       actionRef.current(action_id, card_id)
     })
+    let lastLookTime = 0
+    let lastLookX = 0
+    let lastLookY = 0
     const offCursor = api.onCursor((position) => {
+      const now = performance.now()
+      if (now - lastLookTime < 80 && Math.hypot(position.dx - lastLookX, position.dy - lastLookY) < 10) return
+      lastLookTime = now
+      lastLookX = position.dx
+      lastLookY = position.dy
       setLook((previous) =>
         previous.dx === position.dx && previous.dy === position.dy && previous.near === position.near
           ? previous

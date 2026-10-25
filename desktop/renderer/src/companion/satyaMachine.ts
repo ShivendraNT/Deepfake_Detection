@@ -271,12 +271,15 @@ function alertCard(
     extra.context === 'call'
       ? actions.map((action) => (action.id === 'open_notebook' ? { ...action, id: 'liveness' } : action))
       : actions
+  const rawReasons = event.payload.reason_codes ?? []
+  const infoCodes = event.payload.info_codes ?? []
+  const allReasons = Array.from(new Set([...rawReasons, ...infoCodes]))
   return {
     kind: 'alert',
     id: `alert_${event.event_id}`,
     band,
     headline: event.payload.headline,
-    reasons: event.payload.reason_codes,
+    reasons: allReasons,
     chips,
     actions: callActions,
     quotes: extra.quotes ?? event.payload.quotes ?? [],
