@@ -60,6 +60,8 @@ Details and steps: `team/<Name>.md`. Checkpoints: CP0 H2 · CP1 H8 · CP2 H16 ·
 
 ## Notes log
 
+25 Oct, lead (trust): real injection red-team on local `llama3.1:8b` — 0/90 bands lowered (structural); 41/88 successful calls echoed before the checker, checker rejected 32/41 echoes, 9/88 survived (2 timeouts). Docs/deck now quote the measured numbers, lead with the floor (payee-change 17/17), and say the LLM summary is not on the demo path.
+
 25 Oct, lead (mobile): **Satya Pocket** (`/pocket`, `/app`) is the phone app: check text/screenshot/voice/PDF/video through the same engine, live alert/OOB, golden-hour report, help; installable via manifest + icons. `/mobile` stays the read-only live mirror. It never opens the microphone and never computes a band. Notebook → Now shows three phone QRs (approver, Satya Pocket, live mirror). Committed as `F05`.
 
 22 Oct, F16: done — 3-button approver phone UI (OobInbox.tsx, oob.html) with "I did not request this" reason hook, live QR code in SettingsTab via qrcode; desktop typecheck + tests green.

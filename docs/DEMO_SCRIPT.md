@@ -25,7 +25,7 @@ Before going on stage: `make check` green; `/health` OK; `config/voice_threshold
 | 1:05-1:30 | Priya taps **Confirm with Rajesh** (OOB-Confirm). | Screen C: "Did you just ask Priya to pay ₹48,50,000 to A/c ••••4821 (FAKM0000482)?" Rajesh taps **No, not me** → Priya's case turns **HOLD / SUSPECTED FRAUD**; checker + security notified. (fixture `case_s06`) |
 | 1:30-2:05 | **Moment 2 — the floor catches what detectors miss.** Vendor email passes DMARC (compromised mailbox), invoice looks genuine, voice note is a real human. | every detector green ("sender authenticated", "no synthetic signs"). But: **"Bank account differs from vendor master (Fictional Bank B → Fictional Bank D) → VERIFY: call back on registered number +91-00000-10002 (from master)."** Role-played callback: "We never changed our bank." (fixture `case_s07`) |
 | 2:05-2:30 | **Golden-hour pack.** Open the case where ₹6.2 lakh already left; checker sets CONFIRMED_FRAUD. | 1930 script with the **UTR on line 1**, bank fraud-desk email, NCRP draft, evidence index with hashes. "Nothing is auto-filed; the human submits." (fixture `case_s12`) |
-| 2:30-2:45 | **Evidence it's real.** | one slide: voice-detector numbers through Meet/Opus/AMR (n, CI); paraphrase-robustness chart; "0/30 injections lowered a band"; AWS ap-south-1 architecture |
+| 2:30-2:45 | **Evidence it's real.** | one slide: voice-detector numbers through In-the-Wild/Opus (n, CI; AMR-NB pending); paraphrase-robustness chart; **payee-change attacks caught by the floor: 100% (17/17)**; text signals are raise-only and capped at VERIFY; injection 0/90 bands lowered (structural), 9/88 summaries still echoed (checker residual); AWS ap-south-1 architecture |
 
 ## Fallbacks
 

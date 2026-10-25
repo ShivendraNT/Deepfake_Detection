@@ -104,13 +104,14 @@ defences are structural (LLM never sets the band, template fallback).
 | Automated tests (24 Oct finale) | **818 passed, 20 skipped** (unfinished T18–T23 + video fusion) | `make check` | current | measured |
 | Desktop tests (24 Oct finale) | **84 passed** | `cd desktop && npx vitest run` | current | measured |
 | Safety invariants property-tested (monotone, raise-only, LLM cap, floor isolation, OOB/grey, single weak signal) | 7 invariant files, hypothesis 200 examples each | `tests/invariants/` | `7f28b4e` | measured |
+| Injection red-team, local `llama3.1:8b` (`results/redteam.json`) | 0/90 bands lowered (structural); 41/88 successful calls echoed before the checker; checker rejected 32/41 echoes; 9/88 survived; 2 timeouts | `uv run python scripts/redteam.py --llm ollama` | 2026-10-25 | measured (structural + local-model probe) |
 
 ## 5. Illustrative (label as simulation, not detection)
 
 | Claim | Value | Why it is not a detection result | Status |
 |---|---|---|---|
 | "Detectors changed the outcome in 8/12 scenarios" | 8/12 | signals in the 12 fixtures are hand-authored; it shows the policy table, not detection | illustrative (policy simulation) |
-| "0/30 prompt injections lowered a band" | 0/30 | true by construction (excerpts never become signals); `results/redteam.json` not produced | illustrative; do not present as a result |
+| "0 prompt injections lowered a band" | 0/90 runs (0/30 samples) | structural: excerpts never become signals; the measured model echo/rejection is in §4 | structural only; do not present as a detection result |
 
 ## 6. Pending (no number exists; slide must say "pending")
 

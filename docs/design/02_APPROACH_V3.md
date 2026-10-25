@@ -464,7 +464,7 @@ def decide(case, master, cfg):
    - Hindi-language injections;
    - fake `Authentication-Results` headers added by the sender. Mitigation: trust only the header added by our own receiving MTA. In the demo that is the topmost header, from a fixture flagged as such.
 
-   Report two numbers: band lowered = 0/30 (guaranteed by construction and tested), and summaries that echoed the injection, before and after the checker.
+   Report two numbers: band lowered = 0 (structural, guaranteed by construction and tested across 30 samples × 3 cases), and summaries that echoed the injection, before and after the checker (measured 2026-10-25: 41/88 before, 9/88 after, 2 timeouts).
 5. **Bedrock Guardrails** (denied topics / PII filters) are an extra layer, not the defence.
 
 ### 5.7 Challenge-response that actually works in Meet, Teams and WhatsApp Web
@@ -625,7 +625,7 @@ It becomes **one future-work slide**: "Standards proposal: extend GST e-invoice 
 11. Numbers for the slide:
     - (a) the audio channel evaluation (§4.9);
     - (b) a first research result: D2, D3 and D4 on clean data and on P1 from generator A, with n stated;
-    - (c) injection red-team: 0/30 bands lowered;
+    - (c) injection red-team: 0 bands lowered (structural; 30 samples × 3 cases);
     - (d) the 12-scenario decision-relevance table.
 
 ### 8.2 Stretch (in priority order)
@@ -657,7 +657,7 @@ S1 citizen Scam Check page · S2 Transcribe streaming in live mode · S3 WebAuth
 | 1:05-1:30 | Priya taps **Confirm with Rajesh**. | Screen C: "Did you ask Priya to pay ₹48,50,000 to A/c ••••4821?" Rajesh taps **No, not me** → Priya's case turns **HOLD / SUSPECTED FRAUD**. The checker and security are notified. |
 | 1:30-2:05 | **Moment 2: the floor catches what detectors miss.** A vendor email arrives. It passes DMARC (a compromised vendor mailbox), the invoice looks genuine, and a WhatsApp voice note from the "vendor" is a real human voice. | Every detector is green ("no synthetic signs", "sender authenticated"). But: **"Bank account differs from vendor master (HDFC → Yes Bank) → VERIFY: call back on registered number +91-98xxx (from master)"**. The callback is role-played: "We never changed our bank." |
 | 2:05-2:30 | **Golden-hour pack.** Open a pre-made case where ₹6.2 lakh already left. The checker sets CONFIRMED_FRAUD. | A 1930 script with the UTR first, the bank fraud-desk email, the NCRP draft and the evidence index with hashes. "Nothing is auto-filed; the human submits." |
-| 2:30-2:45 | **Evidence it's real.** | One slide with the voice-detector numbers through Meet/Opus/AMR (n, CI), the paraphrase-robustness chart, "0/30 injections lowered a band", and the AWS ap-south-1 architecture. |
+| 2:30-2:45 | **Evidence it's real.** | One slide with the voice-detector numbers through Meet/Opus/AMR (n, CI), the paraphrase-robustness chart, **0/90 bands lowered by construction (30 samples × 3 cases); local llama3.1:8b: 41/88 echoed before checker, 32/41 rejected, 9/88 survived; payee-change attacks caught by the floor 100% (17/17)**, and the AWS ap-south-1 architecture. |
 
 **Fallbacks during the demo:**
 - If Meet or the network fails, Laptop A plays the call audio in a local "demo call" tab. The extension captures any tab, so this works offline.
@@ -693,7 +693,7 @@ S1 citizen Scam Check page · S2 Transcribe streaming in live mode · S3 WebAuth
 | T12 | OOB-Confirm: token creation (hash binding, nonce, expiry), CFO console page, SES sender with in-app fallback | B3 | T02, T06 | Deny → case HOLD + SUSPECTED_FRAUD; replayed token rejected | 2-3 |
 | T13 | Callback-logging and checker flows: the master number is shown, outcome recorded, maker can't clear HOLD, two-approver override | B3 | T02, T06 | Role tests pass | 3 |
 | T14 | Explanation templates EN/HI per reason code | B1 | T02 | Every reason code has text in both languages | 2 |
-| T15 | Bedrock summary + faithfulness checker (entities, citations, forbidden assertions) + template fallback; 30-sample injection red-team | L | T02, T14 | Red-team report: bands lowered 0/30; checker rejection rate printed | 3 |
+| T15 | Bedrock summary + faithfulness checker (entities, citations, forbidden assertions) + template fallback; 30-sample injection red-team | L | T02, T14 | Red-team report: bands lowered 0 (structural, 30 samples × 3 cases); real-model echo/rejection rate printed | 3 |
 | T16 | Report pack: attempted and money-sent variants; 1930 script, bank email, NCRP draft, evidence index (JSON + HTML) | B2 | T09, T13 | Golden-hour fixture produces all 4 artefacts, UTR on line 1 | 3 |
 | T17 | Voice-uploads path: Python onnxruntime with the same model; Transcribe batch adapter (hi-IN/en-IN) with whisper fallback | B1 | T07 (model file), T01 | .ogg voice note → voice signal + transcript + ask signals | 3 |
 | T18 | Audio channel evaluation script: ffmpeg re-encode (Opus/AMR-NB/G.711), speaker-disjoint split, EER + bootstrap CI; record 200 bonafide Meet windows; fit τ_hi/τ_lo | B3 (script), L (thresholds) | T07 | `results/audio_eval.csv` + τ values committed | 3 |
@@ -727,7 +727,7 @@ S1 citizen Scam Check page · S2 Transcribe streaming in live mode · S3 WebAuth
 **4. Evidence it works, honestly.**
 - The voice detector through Meet/Opus/AMR, with our n and CI. Base model: ITW EER 6.6%, OOD 8.4% vs AASIST 11.3% (Pascu et al., arXiv 2606.30780). Codecs cost about +5.3 EER points (ADD-C).
 - The paraphrase-robustness chart. Motivation: GPT-4o rewrites cut vishing classifiers by up to 30.96% (arXiv 2507.16291).
-- "0/30 prompt injections lowered a band."
+- "0 bands lowered by construction (30 samples × 3 cases); the real-model echo/rejection rate is measured separately in `results/redteam.json`."
 - The decision-relevance table.
 
 **5. India + AWS + roadmap.**

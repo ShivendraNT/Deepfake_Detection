@@ -1,5 +1,8 @@
 """Generate Satyapan Hackathon Pitch Deck (14 Slides, 16:9 widescreen)."""
 
+from __future__ import annotations
+
+import json
 from pathlib import Path
 
 from pptx import Presentation
@@ -7,6 +10,17 @@ from pptx.dml.color import RGBColor
 from pptx.enum.shapes import MSO_SHAPE
 from pptx.enum.text import PP_ALIGN
 from pptx.util import Inches, Pt
+
+ROOT = Path(__file__).resolve().parents[1]
+
+
+def _redteam() -> dict[str, object]:
+    """The measured injection run, or an explicit pending marker. Never a guessed number."""
+    try:
+        return json.loads((ROOT / "results" / "redteam.json").read_text(encoding="utf-8"))
+    except (FileNotFoundError, ValueError):
+        return {"model": "pending", "n": 0, "runs": 0, "bands_lowered": 0}
+
 
 # --- Color Palette ---
 BG_DARK = RGBColor(15, 23, 42)  # Slate 900
@@ -28,6 +42,27 @@ def create_deck(output_path: Path) -> None:
     prs.slide_width = Inches(13.333)
     prs.slide_height = Inches(7.5)
     blank_layout = prs.slide_layouts[6]
+
+    rt = _redteam()
+    rt_n = int(rt.get("n") or 0)
+    rt_runs = int(rt.get("runs") or 0)
+    rt_lowered = int(rt.get("bands_lowered") or 0)
+    rt_before = int(rt.get("echoed_before_checker") or 0)
+    rt_after = int(rt.get("echoed_after_checker") or 0)
+    rt_model = str(rt.get("model") or "pending")
+    rt_errors = int(rt.get("llm_errors") or 0)
+    rt_ok = max(rt_runs - rt_errors, 0)
+    rt_reject = rt.get("checker_rejection_rate")
+    if isinstance(rt_reject, (int, float)) and rt_runs:
+        rejected_ok = max(round(float(rt_reject) * rt_runs) - rt_errors, 0)
+        rt_reject_txt = f"{rejected_ok / rt_ok:.1%}" if rt_ok else "pending"
+    else:
+        rt_reject_txt = "pending"
+    rt_before_txt = f"{rt_before}/{rt_ok}" if rt_ok else "pending"
+    rt_after_txt = f"{rt_after}/{rt_ok}" if rt_ok else "pending"
+    rt_echo_rejected = max(rt_before - rt_after, 0)
+    rt_echo_reject_txt = f"{rt_echo_rejected}/{rt_before}" if rt_before else "pending"
+    rt_label = f"{rt_lowered} / {rt_runs}" if rt_runs else "0"
 
     def add_header(slide, title_text, category="SATYAPAN · RAKSHAM HACKATHON"):
         # Top banner category
@@ -547,15 +582,33 @@ def create_deck(output_path: Path) -> None:
         p2.font.color.rgb = TEXT_MAIN
 
     p = tf.add_paragraph()
-    p.text = "\n🛡️ Prompt-Injection Immunity:"
+    p.text = "\n🛡️ Prompt-Injection Containment:"
     p.font.size = Pt(13)
     p.font.bold = True
     p.font.color.rgb = PRIMARY
     p = tf.add_paragraph()
-    p.text = "LLMs are restricted to text summarization only and have ZERO write access to security bands. 30/30 red-team prompt injections failed to bypass this engine."
+    if rt_runs:
+        p.text = (
+            "LLMs are restricted to text summarization only and have ZERO write access to "
+            f"security bands. {rt_n} injection samples x 3 cases: {rt_lowered}/{rt_runs} bands "
+            f"lowered (structural). Local model ({rt_model}) echoed {rt_before_txt} successful "
+            f"calls; checker rejected {rt_echo_reject_txt} echoes; {rt_after_txt} final "
+            f"summaries still echoed. Overall checker rejection {rt_reject_txt}."
+        )
+    else:
+        p.text = (
+            "LLMs are restricted to text summarization only and have ZERO write access to "
+            "security bands. 30 injection samples x 3 cases: 0 bands lowered (structural); "
+            "real-model echo/rejection numbers pending (results/redteam.json)."
+        )
     p.font.size = Pt(11)
 
-    s7.notes_slide.notes_text_frame.text = "Layer 3 is the mathematical brain. There are three bands: PASS, VERIFY, and HOLD. Any bank change forces at least VERIFY. Strong anomalies force HOLD. Generative LLMs have zero ability to alter these bands, making the engine completely prompt-injection proof."
+    s7.notes_slide.notes_text_frame.text = (
+        "Layer 3 is the mathematical brain. There are three bands: PASS, VERIFY, and HOLD. Any "
+        "bank change forces at least VERIFY. Strong anomalies force HOLD. The band is computed "
+        "before any summary and is never parsed from model text, so a prompt injection can make "
+        "the prose wrong but cannot change the decision."
+    )
 
     # ==========================================
     # SLIDE 8: LAYER 4 - TWO USER APPLICATIONS
@@ -776,15 +829,24 @@ def create_deck(output_path: Path) -> None:
 
     metrics_data = [
         (
-            "0.0% EER",
-            "Google Meet Codec\n(Opus 16kHz audio)",
-            "Zero error rate on WebRTC video call audio (n=100 items). 4.0% EER on cellular AMR-NB.",
+            "0.909 AUC",
+            "In-the-Wild voice\n(Opus 16 kbps)",
+            "Speaker-disjoint public deepfakes: AUC 0.909 [0.857, 0.948], EER 16.9%; "
+            "58.3% of fakes flagged at tau_lo, 1.8% of genuine voices flagged. "
+            "Not a Meet-calibrated number.",
             ACCENT_GREEN,
         ),
         (
-            "0 / 30 Bypassed",
+            f"{rt_label} Bands Lowered",
             "Adversarial Red-Team\nPrompt Injections",
-            "0/30 injections lowered a security band. 97.8% checker rejection rate on malicious prompts.",
+            (
+                f"{rt_n} samples x 3 cases; 0 lowered is structural. Local model ({rt_model}) "
+                f"echoed {rt_before_txt} successful calls; checker rejected "
+                f"{rt_echo_reject_txt} echoes; {rt_after_txt} final summaries still echoed."
+                if rt_runs
+                else "30 samples x 3 cases; 0 bands lowered is structural. "
+                "Real-model echo/rejection pending (results/redteam.json)."
+            ),
             ACCENT_GREEN,
         ),
         (
@@ -796,7 +858,7 @@ def create_deck(output_path: Path) -> None:
         (
             "8 / 12 Upgraded",
             "Decision Relevance\nEnterprise Scenarios",
-            "Detectors upgraded risk outcome from unsafe PASS to HOLD/VERIFY in 8 out of 12 real attack cases.",
+            "Detectors changed the rules-only outcome in 8 of 12 team-authored scenarios (illustrative, not a detection result).",
             ACCENT_AMBER,
         ),
     ]
@@ -834,7 +896,17 @@ def create_deck(output_path: Path) -> None:
         p.font.size = Pt(11)
         p.font.color.rgb = TEXT_MUTED
 
-    s11.notes_slide.notes_text_frame.text = "Our work is backed by rigorous empirical benchmarks. On Google Meet codecs, our voice detector achieves 0.0% Equal Error Rate. In adversarial testing, 0 out of 30 prompt injections bypassed our policy. On 31,000 ICFD conversations, we achieve over 94% recall at 1% false alarms."
+    s11.notes_slide.notes_text_frame.text = (
+        "Our work is backed by empirical benchmarks with named limits. On speaker-disjoint "
+        "In-the-Wild audio under Opus 16 kbps, the voice check reaches AUC 0.909 and EER 16.9%; "
+        "this is public data, not a Meet-calibrated number. In the injection red-team, 0/90 "
+        "bands were lowered — that is structural. The local llama3.1:8b echoed 41/88 successful "
+        "calls; the checker rejected 32 of those 41, and 9/88 final summaries still echoed "
+        "(2 timeouts). The band is never read from model text; the residual is misleading prose, "
+        "which is why the template fallback is authoritative. On 31,000 ICFD conversations, the "
+        "research detector reaches over 94% recall at 1% false alarms; that is the research "
+        "claim, not the product's."
+    )
 
     # ==========================================
     # SLIDE 12: INDIA-FIRST & AWS ARCHITECTURE

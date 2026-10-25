@@ -10,7 +10,7 @@ Hackathon numbers are labelled "illustrative, n=X". The paper claim lives in
 |---|---|---|---|---|---|
 | E1 | Decision relevance (where detectors change the outcome) | 12 team-authored scenarios (`data/demo/cases/`) | rules-only band vs full band | `scripts/decision_relevance.py` (works now) | `results/decision_relevance.md` |
 | E2 | Voice detector through real channels | In-the-Wild + HAV-DF audio (+ IndieFake if available) + ~200 Meet-captured bonafide windows | EER, FPR/FNR at τ, speaker-bootstrap CI | T18 | `results/audio_eval.csv` |
-| E3 | Injection red-team | 30 samples (`data/demo/injection/injections.jsonl`) | bands lowered (must be 0/30); summaries echoing the injection before/after checker; checker rejection rate | T15 | `results/redteam.json` |
+| E3 | Injection red-team | 30 samples × 3 cases (`data/demo/injection/injections.jsonl`) | bands lowered (0/90 runs; 0/30 samples — structural); summaries echoing the injection before/after checker; checker rejection rate | T15 | `results/redteam.json` |
 | E4 | Ask extractor dev-set quality | ≥ 80 team-written sentences (not ICFD) | precision, recall | T05 test output | printed by `make task T=T05` |
 | E5 | Paraphrase robustness (first research result) | ICFD test + P1-A | recall@1%FPR with CI for D2, D3, D4 | T19-T21 | `results/research_main.csv`, `figures/money.png` |
 | E6 | Live latency | 10 Hinglish clips on the M4 | seconds from spoken ask to chip; voice alert delay | T11/T22 | `results/dry_runs.csv` |
@@ -33,7 +33,9 @@ Voice detector (Pascu et al. XLS-R-L7, ONNX in the browser)
   False alarms on team voices at τ_hi: __ / __ windows
 Paraphrase robustness (ICFD-31k test, n=__ frauds / __ normals)
   D3 recall@1%FPR clean → P1: __ → __   D4: __ → __   D6: __ → __
-Prompt injection: 0/30 bands lowered (by construction + tested); summaries echoing: 90 → 2 after checker
+Prompt injection (2026-10-25, ollama:llama3.1:8b): 0/90 bands lowered (structural; 30 samples × 3 cases)
+  Successful calls 88/90 (2 timeouts); 41/88 echoed before the checker (46.6%); checker rejected
+  32/41 echoes (78.0%); 9/88 final summaries still echoed (10.2%).
 Decision relevance: detectors changed the outcome in 8/12 illustrative scenarios
 ```
 
@@ -45,3 +47,7 @@ Fill blanks only from `results/`. If a number is not ready, the slide says "pend
 - That the floor is a research finding (it is product policy).
 - Media origin authenticity (vault proves integrity since capture only).
 - Accuracy of the citizen page (rules only, no evaluation).
+- That the text classifier is a general scam detector. It is style evidence capped at VERIFY;
+  quote the leave-one-dataset-out AUC **0.69–0.99** (`docs/TEXT_BENCHMARK.md`), not the in-domain
+  0.99+. The product ask layer is P 61.2 % / R 39.4 % with a 12.1 % benign false-ask rate on the
+  held-out test split.

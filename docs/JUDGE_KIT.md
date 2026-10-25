@@ -162,6 +162,45 @@ edited bank account, and a UPI invoice.
 This is illustrative (n=12, team-authored). It shows *where* detectors matter, not real-world
 accuracy.
 
+### 2.5 The text classifier: the honest claim
+
+The decision path is **not an LLM**. It is deterministic Python plus one small local linear
+model:
+
+- **Asks** are a frozen regex/lexicon (`src/satyapan/asks/`). Deterministic, offline, every hit
+  is explainable.
+- **Scam-text style** is a hashed TF-IDF + logistic regression (`src/satyapan/textrisk/`,
+  `config/text_model.npz`, ~6 MB). Inference is a dot product + sigmoid in numpy. No hosted API,
+  no network, no text stored in the weights.
+- **Email and invoice checks** are deterministic parsers/rules, not ML.
+
+What it is allowed to do: `TEXT_SCAM_LIKELY` is `STYLE`, `WEAK`, target `VERIFY`. It can raise a
+payment to VERIFY; it can never clear a payment, lower a floor, count as a strong group, or HOLD
+on its own. The payment floor + OOB-Confirm remain the primary control.
+
+What we do **not** claim: that it "detects scams" in general. The honest numbers are in
+`docs/TEXT_BENCHMARK.md`: leave-one-dataset-out AUC **0.69–0.99** (the number to quote for a
+channel/language it has never seen), in-domain AUC 0.99+ on public sets, 1 % FPR target on
+validation legitimate texts, and the product ask layer at **P 61.2 % / R 39.4 %** with a **12.1 %**
+benign false-ask rate on the held-out test split. Indian bank/UPI text has no licensed corpus;
+the Indian SMS sets are proxies.
+
+The optional LLM summary is **not on the demo path** (the template is authoritative). If it is
+enabled: no tools, a constant system prompt, untrusted excerpts only as JSON values ≤ 300 chars,
+band never parsed from its output, faithfulness checker + template fallback. Prompt injection can
+make the summary wrong; it cannot make the band wrong.
+
+**Measured injection red-team** (2026-10-25, local `llama3.1:8b`, `results/redteam.json`):
+30 samples × 3 cases; **0/90 bands lowered** (structural). 88/90 calls returned text (2
+timeouts); **41/88 successful calls echoed the injection before the checker** (46.6%); the
+checker rejected **32/41 echoes** (78.0%); **9/88 final summaries still echoed** (10.2%). The
+residual is misleading prose, not a wrong band; the template fallback and the displayed band are
+the containment.
+
+Judge-safe sentence: *"We don't ask you to trust the classifier. We constrain it: the floor is
+deterministic, every text signal is raise-only and capped at VERIFY, and a human verifies out of
+band."*
+
 ---
 
 ## 3. Named failure cases

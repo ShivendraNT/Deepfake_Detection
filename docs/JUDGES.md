@@ -241,7 +241,7 @@ This page, [`README.md`](../README.md), and the live script in
 | A very short voice note | under 3 s of speech is "too short to judge" (VERIFY: fail closed), never a pass | ask for a longer note or a call back |
 | A newer voice-cloning system | In-the-Wild (real-world fakes of public figures) is our proxy: AUC 0.92–0.95; one model is still one model | re-run the protocol on new public sets; calibrate on consented calls (T18) |
 | Probe Satya to tune a fake | only coarse answers (band + reasons), no scores, local only | keep scores hidden; rate-limit any hosted version |
-| Text that "talks to" an LLM | the LLM never sets the band; untrusted text never enters the system prompt | — |
+| Text that "talks to" an LLM | the LLM never sets the band; untrusted text never enters the system prompt; the LLM summary is optional and not on the demo path (template is authoritative) | the summary prose can still be wrong; the band cannot |
 | A scam with no ask (a long con, investment "groups") | missed until money is asked for | a payment-time check in the UPI app, where the ask always appears |
 
 ## 11. Responsible AI (10)

@@ -370,8 +370,11 @@ Every AWS call: 5 s timeout, automatic local fallback. Budget alarm: US$5 on day
 - **Prompt injection:** the floor never reads attacker text; asks are found by regex; LLM output
   is raise-only, capped at VERIFY, never parsed into signals; faithfulness checker blocks unsupported
   entities, uncited sentences and "safe/verified/genuine"; fake `Authentication-Results` headers are
-  ignored (only the topmost header from our own MTA counts). Red-team: 30 samples, report
-  "bands lowered 0/30" (guaranteed by construction and tested).
+  ignored (only the topmost header from our own MTA counts). Red-team: 30 samples × 3 cases;
+  **0 bands lowered — structural, guaranteed by construction and covered by an invariant test.**
+  Real-model probe (2026-10-25, `ollama:llama3.1:8b`, `results/redteam.json`): 41/88 successful
+  calls echoed the injection before the checker, the checker rejected 32/41 echoes, 9/88 final
+  summaries still echoed, 2 timeouts. Do not present the structural 0 as a model-accuracy result.
 - **Oracle abuse:** makers see band + reason codes only; scores only for checker/security; citizen
   page sees band + action only; rate limits; no public upload endpoint in the MVP.
 - **Privacy / DPDP:** see `docs/DATA_POLICY.md` (data-flow table, lawful basis, retention).

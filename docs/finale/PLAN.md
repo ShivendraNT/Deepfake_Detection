@@ -162,7 +162,7 @@ OOB page open · replay fixture ready · volume tested · Notebook closed.
 | 1:05–1:35 | Pause + verify | Satya hops once, holds the shield: **"Pause before you pay."** → **Verify with Rajesh**. The judge's phone buzzes: "Did you ask Priya to pay ₹48,50,000 to ••••4821?" Judge taps **I did not request this**. Satya: "Rajesh says he didn't ask. I've put this payment on hold." |
 | 1:35–2:00 | The email | Drag a vendor email + invoice onto Satya → "Should I read this?" → Check it → **"Verify first: the bank account differs from the vendor master. Call the vendor on their registered number."** (passes DMARC — the floor catches what detectors can't) |
 | 2:00–2:35 | Golden hour | "What if the money already left?" → Satya puts on glasses and **writes**: 1930 script with the UTR on line 1, bank email, NCRP field helper, CERT-In email, §63 Part A with SHA-256 hashes. Timer: 58:41 left. "One tap to copy. A human submits." |
-| 2:35–3:00 | Close | Notebook → Timeline + Privacy: every step logged, nothing recorded without a yes, all local. One slide: measured numbers (latency 3.12 s, alert budget HOLD 27.5% → 3.5% product / 3.0% frozen, 0/30 injections lowered a band). |
+| 2:35–3:00 | Close | Notebook → Timeline + Privacy: every step logged, nothing recorded without a yes, all local. One slide: measured numbers (latency 3.12 s, alert budget HOLD 27.5% → 3.5% product / 3.0% frozen, payee-change attacks caught by the floor 100% (17/17); text signals raise-only, capped at VERIFY; injection 0/90 bands lowered (structural), 9/88 summaries still echoed). |
 
 **Fallbacks (decide in 2 seconds, no panic):**
 - Live capture fails → switch to **replay** (the label says DEMO REPLAY — say so).

@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video voice video-models doctor demo-audio live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
+.PHONY: scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -22,6 +22,9 @@ help:
 	@echo "make video         install the face check (video deepfakes) + verify its models"
 	@echo "make voice         build + install the voice-clone model (needs torch once)"
 	@echo "make demo-audio    generate the labelled DEMO REPLAY call (synthetic voice, once)"
+	@echo "make testkit       build the local media test kit (.cache/testkit, never committed)"
+	@echo "make testkit-check scan the local test kit with every installed detector"
+	@echo "make redteam       run the 30-sample injection red-team on local Ollama"
 	@echo "make doctor        check the speech engine is ready and fast enough on this laptop"
 	@echo "make live          start the API for a live demo (no auto-reload, model warmed up)"
 	@echo "make demo-data     regenerate data/demo fixtures + schemas and validate them"
@@ -59,6 +62,20 @@ doctor:
 
 demo-audio:
 	$(RUN) --with piper-tts python scripts/make_replay_audio.py
+
+# Real-world-shaped media for every Satya path. Writes to .cache/testkit (git-ignored);
+# the repository never contains audio/video. See docs/TESTKIT.md.
+testkit:
+	$(RUN) --with piper-tts python scripts/make_testkit.py
+
+testkit-check:
+	$(RUN) python scripts/satya.py scan .cache/testkit --out .cache/testkit/report
+
+# Measured injection red-team on the local Ollama (llama3.1:8b by default). Writes
+# results/redteam.json; the 0-bands-lowered property is structural, the echo/rejection
+# rate is the empirical number. Never quote the structural 0 as model accuracy.
+redteam:
+	$(RUN) python scripts/redteam.py --llm ollama
 
 lint:
 	$(RUN) ruff check .

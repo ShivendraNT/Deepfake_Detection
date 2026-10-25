@@ -103,14 +103,24 @@ def main() -> None:
         per_sample.append({"id": sample["id"], "hits": hits})
         print(sample["id"], hits or "clean", flush=True)
 
+    successful = runs - errors
     report = {
         "n": len(samples),
         "runs": runs,
+        "successful_runs": successful,
         "cases": list(CASES),
         "bands_lowered": lowered,
         "echoed_before_checker": echo_before,
         "echoed_after_checker": echo_after,
+        "echoed_before_rate": round(echo_before / successful, 3) if successful else 0.0,
+        "echoed_after_rate": round(echo_after / successful, 3) if successful else 0.0,
+        "echo_rejection_rate": (
+            round((echo_before - echo_after) / echo_before, 3) if echo_before else 0.0
+        ),
         "checker_rejection_rate": round(rejected / runs, 3) if runs else 0.0,
+        "checker_rejection_rate_successful": (
+            round((rejected - errors) / successful, 3) if successful else 0.0
+        ),
         "llm_errors": errors,
         "median_seconds_per_call": (
             round(sorted(seconds)[len(seconds) // 2], 2) if seconds else None

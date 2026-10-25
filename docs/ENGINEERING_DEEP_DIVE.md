@@ -227,7 +227,8 @@ the floor. The alert budget measures both: 3.5% routine HOLD false alarms, 78.6%
 
 **“Can the LLM change the decision?”**
 No tools, no band, prompt-isolated, capped at VERIFY, faithfulness-checked, and the template
-fallback is always available. Prompt-injected text is treated as data.
+fallback is always available. Prompt-injected text is treated as data. The LLM summary is
+optional and is not wired into the demo API; the shipped explanation is the template.
 
 **“Where does the approver’s number come from?”**
 The vendor master / employee directory. Never from the email, the call or the message. A phone
