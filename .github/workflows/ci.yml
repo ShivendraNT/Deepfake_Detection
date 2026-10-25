@@ -33,7 +33,7 @@ jobs:
       - name: make check (ruff + format + mypy + pytest)
         run: uv run python scripts/satya.py check
       - name: Judge kit scoreboard
-        run: uv run python scripts/judge_kit.py --json
+        run: uv run python scripts/judge_kit.py --json --no-write
       - name: Automated end-to-end dry run
         run: uv run python scripts/dry_run.py --runs 1 --no-write
 

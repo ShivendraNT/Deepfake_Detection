@@ -144,8 +144,10 @@ def _tool(name: str) -> str:
 
 
 def ci() -> None:
-    """Every surface, on every OS: Python + desktop + OOB console + extension."""
+    """Every surface, on every OS: Python + judge kit + dry run + desktop + console + extension."""
     check()
+    py("python", "scripts/judge_kit.py", "--no-write")
+    py("python", "scripts/dry_run.py", "--runs", "1", "--no-write")
     npm, npx, node = _tool("npm"), _tool("npx"), _tool("node")
     desktop_dir = ROOT / "desktop"
     if not (desktop_dir / "node_modules").exists():

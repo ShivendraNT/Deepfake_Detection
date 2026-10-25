@@ -95,6 +95,7 @@ matrix, permissions and honest gaps are in `docs/CROSS_PLATFORM.md`.
 | `docs/BENCHMARKS.md` | the test kit: every benchmark, how to reproduce it, what it may claim |
 | `docs/finale/` | finale plan, mascot spec, **live demo runbook** (`LIVE_DEMO.md`), `DELIVERED.md`, `SAFEGUARDS.md`, `DRY_RUNS.md`, `SLIDES.md` |
 | `docs/JUDGE_KIT.md` | how to score the shipped stack in five minutes, with failure cases |
+| `docs/JUDGE_ONE_PAGER.md` | printable one-page answer to the five judging questions |
 | `docs/ENGINEERING_DEEP_DIVE.md` | the judge walkthrough of the policy, signals, X1 and response path |
 | `docs/CROSS_PLATFORM.md` | OS/arch matrix, CI, and the one OS-specific piece (audio capture) |
 | `docs/DEMO_SCRIPT.md` | the Round-1 demo (superseded by `docs/finale/PLAN.md` §7) |

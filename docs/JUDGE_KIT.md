@@ -3,6 +3,7 @@
 > **One command:** `make judge` (or `uv run python scripts/judge_kit.py` on Windows, no `make`).
 > **One live check:** `make judge ARGS="..."` is not wired; use
 > `uv run python scripts/judge_kit.py --file path/to/email.eml` or `--text "..."`.
+> **One page:** `docs/JUDGE_ONE_PAGER.md`.
 > Everything is local, offline, and uses fake data only (`*.example`, `FAK…`, `9999…`).
 
 This kit exists so a judge can do three things without trusting a slide:

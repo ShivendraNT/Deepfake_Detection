@@ -82,6 +82,8 @@ check: lint typecheck test
 	@echo "make check: ALL GREEN"
 
 ci: check
+	$(RUN) python scripts/judge_kit.py --no-write
+	$(RUN) python scripts/dry_run.py --runs 1 --no-write
 	cd desktop && npm run typecheck && npx vitest run && npm run build
 	cd console && npm test && npm run build
 	cd extension && node --test tests/*.test.mjs

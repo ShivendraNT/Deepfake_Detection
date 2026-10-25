@@ -770,6 +770,9 @@ def main() -> None:
     parser.add_argument("--ifsc", help="beneficiary IFSC (fake data only)")
     parser.add_argument("--beneficiary", help="beneficiary name")
     parser.add_argument("--json", action="store_true", help="print the scoreboard as JSON")
+    parser.add_argument(
+        "--no-write", action="store_true", help="do not write results/judge_kit.json + .md"
+    )
     args = parser.parse_args()
 
     if args.labels:
@@ -784,12 +787,14 @@ def main() -> None:
         raise SystemExit(live_check(args))
 
     report = build_report()
-    write_report(report)
+    if not args.no_write:
+        write_report(report)
     if args.json:
         print(json.dumps(report, indent=1, ensure_ascii=False))
     else:
         print_scoreboard(report)
-        print(f"wrote {RESULTS / 'judge_kit.json'} and {RESULTS / 'judge_kit.md'}")
+        if not args.no_write:
+            print(f"wrote {RESULTS / 'judge_kit.json'} and {RESULTS / 'judge_kit.md'}")
 
 
 if __name__ == "__main__":
