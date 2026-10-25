@@ -201,3 +201,11 @@ def test_the_share_message_matches_the_answer(client) -> None:
     assert "No known scam pattern" in genuine and "suspicious" not in genuine
     scam = share("Share the OTP you received to stop the account block")
     assert "Stop." in scam and "suspicious" in scam
+
+
+def test_a_missing_face_model_is_not_listed_as_checked(client, monkeypatch) -> None:
+    monkeypatch.setattr(ocr, "read_text", lambda rgb: "")
+    body = client.post("/scam-check/file", files={"file": ("p.png", _png(), "image/png")},
+                       data={"lang": "en"}).json()  # fmt: skip
+    if any(n.startswith("face (") for n in body["not_checked"]):
+        assert not any("face" in c for c in body["checked"])
