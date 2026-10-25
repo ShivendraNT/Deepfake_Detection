@@ -16,8 +16,8 @@ phone). That was our Round 1 scope and it still works, but this guide follows th
 
 ```bash
 make sync                      # Python deps (uv); no uv/make: README "pip fallback" / scripts/satya.py
-make video                     # face check + screenshot OCR; needs blend_b0.onnx (built locally),
-                               # otherwise it abstains ("could not check"), never guesses
+make video                     # face check + screenshot OCR; uses GenD (public) or the local
+                               # blend fallback; if neither is present it abstains, never guesses
 make asr                       # on-device speech (voice notes, live calls)
 make voice                     # voice-clone model: built from its pinned licensed source (torch once)
 make live                      # the engine on :8000 (0.0.0.0, so a phone on the same Wi-Fi works)

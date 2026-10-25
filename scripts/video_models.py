@@ -3,13 +3,15 @@
     uv run python scripts/video_models.py            # download what has a URL, verify all
     uv run python scripts/video_models.py --verify   # only verify what is on disk
 
-Files and their sha256 are listed in config/video_models.json. The blend CNN is not hosted in
-this repo (licence: trained on FaceForensics++); the leader shares it, or it is rebuilt with
-`python -m research.video.train_sbi`. Set SATYAPAN_BLEND_MODEL_URL to download it from a team
-release. GenD (the face CNN the benchmark selected, MIT) is 1.2 GB and is built locally with
-`python -m research.video.export_gend` (or downloaded from SATYAPAN_GEND_MODEL_URL); until it
-exists Satya uses the blend CNN with its own fallback config. A file with the wrong hash is
-deleted and reported, never used.
+Files and their sha256 are listed in config/video_models.json. The product config
+(`config/video_fusion.json`) uses GenD (the face CNN the benchmark selected, MIT), 1.2 GB,
+built locally with `python -m research.video.export_gend` (or downloaded from
+`SATYAPAN_GEND_MODEL_URL`). If GenD is absent, Satya uses the blend CNN with its own fallback
+config (`config/video_fusion__blend.json`); that CNN is trained on FaceForensics++ and is not
+hosted in this repo (the leader shares it, or rebuild it with
+`python -m research.video.train_sbi`; `SATYAPAN_BLEND_MODEL_URL` downloads a team release).
+Either CNN is enough; the script says which one is ready. A file with the wrong hash is deleted
+and reported, never used.
 """
 
 from __future__ import annotations
@@ -20,6 +22,7 @@ import json
 import os
 import sys
 import urllib.request
+from contextlib import suppress
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -56,7 +59,21 @@ def main() -> int:
     for meta in files.values():
         if meta.get("url_env") and os.environ.get(meta["url_env"]):
             meta["url"] = os.environ[meta["url_env"]]
-    ok = True
+
+    fusion = ROOT / "config" / "video_fusion.json"
+    fallback = ROOT / "config" / "video_fusion__blend.json"
+    selected = "gend_clip_l14.onnx"
+    with suppress(FileNotFoundError, KeyError, ValueError):
+        selected = str(json.loads(fusion.read_text(encoding="utf-8"))["cnn"]["file"])
+
+    def present(name: str) -> bool:
+        meta = files.get(name, {})
+        dest = model_dir() / name
+        if not dest.exists():
+            return False
+        want = meta.get("sha256", "")
+        return not want or sha256(dest) == want
+
     for name, meta in files.items():
         dest = (model_dir().parent / meta["dir"] / name) if meta.get("dir") else model_dir() / name
         if not dest.exists() and meta.get("url") and not args.verify:
@@ -67,19 +84,33 @@ def main() -> int:
             if meta.get("optional"):
                 print(f"OPTIONAL {name} not present ({meta['optional']}): {how}")
                 continue
-            ok = False
+            if name == "blend_b0.onnx" and selected != name and present(selected):
+                print(
+                    f"OPTIONAL {name} not present (GenD is the selected CNN; blend is a fallback)"
+                )
+                continue
             print(f"MISSING  {name}: {how}")
             continue
         want = meta.get("sha256", "")
         got = sha256(dest)
         if want and got != want:
             dest.unlink()
-            ok = False
             print(f"BAD HASH {name}: expected {want[:12]}..., got {got[:12]}... (deleted)")
             continue
         print(f"ok       {name}  sha256 {got[:12]}...  ({meta.get('license', '')[:60]})")
-    print("video check ready" if ok else "video check NOT ready (Satya still runs; face check off)")
-    return 0 if ok else 1
+
+    face_ok = all(
+        present(name) for name in ("face_detection_yunet_2023mar.onnx", "face_landmarker.task")
+    )
+    selected_ok = present(selected)
+    blend_ok = present("blend_b0.onnx") and fallback.exists()
+    ready = face_ok and (selected_ok or blend_ok)
+    if ready:
+        which = selected if selected_ok else "blend_b0.onnx (fallback)"
+        print(f"video check ready ({which})")
+        return 0
+    print("video check NOT ready (Satya still runs; face check off)")
+    return 1
 
 
 if __name__ == "__main__":
