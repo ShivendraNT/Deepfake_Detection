@@ -109,6 +109,19 @@ SHARE_TEXT: dict[Lang, str] = {
     ),
 }
 
+# A PASS is "nothing known found", not "safe" and not "suspicious": the shared message says so.
+SHARE_TEXT_PASS: dict[Lang, str] = {
+    Lang.EN: "If in doubt, call 1930 or report on cybercrime.gov.in.",
+    Lang.HI: "शक हो तो 1930 पर कॉल कीजिए या cybercrime.gov.in पर शिकायत कीजिए।",
+}
+
+
+def share_link(band: Band, lang: Lang) -> str:
+    """WhatsApp share link: the action for this band, then the warning (or, on PASS, the
+    if-in-doubt line). Never a score."""
+    tail = SHARE_TEXT_PASS[lang] if band == Band.PASS else SHARE_TEXT[lang]
+    return "https://wa.me/?text=" + quote(f"{ACTION_TEXT[lang][band]} {tail}")
+
 
 def scam_check(text: str, lang: Lang = Lang.EN) -> CitizenResult:
     """1. hits = IMPOSSIBLE_CLAIMS whose regex matches (re.I | re.S).
@@ -139,5 +152,5 @@ def scam_check(text: str, lang: Lang = Lang.EN) -> CitizenResult:
 
     action = ACTION_TEXT[lang][band]
     links = dict(LINKS)
-    links["share"] = "https://wa.me/?text=" + quote(f"{action} {SHARE_TEXT[lang]}")
+    links["share"] = share_link(band, lang)
     return CitizenResult(band=band, action_text=action, rule_hits=hits, links=links)

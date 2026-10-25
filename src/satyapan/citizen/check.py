@@ -12,9 +12,8 @@ from __future__ import annotations
 
 import re
 from typing import Any
-from urllib.parse import quote
 
-from satyapan.citizen.rules import ACTION_TEXT, IMPOSSIBLE_CLAIMS, LINKS, SHARE_TEXT, scam_check
+from satyapan.citizen.rules import ACTION_TEXT, IMPOSSIBLE_CLAIMS, LINKS, scam_check, share_link
 from satyapan.contracts.enums import Band, Channel, Lang, ReasonCode
 from satyapan.contracts.explain import CitizenFileResult
 from satyapan.policy.bands import rank
@@ -167,7 +166,7 @@ def citizen_check(
     ]
     action = ACTION_TEXT[lang][band]
     links = dict(LINKS)
-    links["share"] = "https://wa.me/?text=" + quote(f"{action} {SHARE_TEXT[lang]}")
+    links["share"] = share_link(band, lang)
     checked = [CHECKED[k][lang] for k in ("voice", "face", "text", "asks") if k in r.findings]
     return CitizenFileResult(
         band=band,
