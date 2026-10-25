@@ -287,10 +287,12 @@ function setClickThrough(through: boolean): void {
 function applyMouseHitTest(point = screen.getCursorScreenPoint()): void {
   if (!mascotWindow || mascotWindow.isDestroyed() || isDragging) return
   const bounds = mascotWindow.getBounds()
-  const cx = bounds.x + bounds.width / 2
-  const cy = bounds.y + bounds.height * 0.56
-  const distance = Math.hypot(point.x - cx, point.y - cy)
-  const shouldIgnore = manualClickThrough !== false && distance > 125
+  const inWindow =
+    point.x >= bounds.x &&
+    point.x <= bounds.x + bounds.width &&
+    point.y >= bounds.y &&
+    point.y <= bounds.y + bounds.height
+  const shouldIgnore = manualClickThrough !== false && !inWindow
   if (shouldIgnore === mouseIgnored) return
   mouseIgnored = shouldIgnore
   if (shouldIgnore) mascotWindow.setIgnoreMouseEvents(true, { forward: true })

@@ -51,7 +51,7 @@ function harden(win: BrowserWindow): void {
   win.webContents.setWindowOpenHandler(() => ({ action: 'deny' }))
   win.webContents.on('will-navigate', (event, url) => {
     const allowed =
-      url.startsWith('file://') ||
+      (url.startsWith('file://') && url.includes('index.html')) ||
       /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?\//.test(url)
     if (!allowed) event.preventDefault()
   })
