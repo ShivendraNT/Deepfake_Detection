@@ -28,6 +28,8 @@ import { FONT_MONO, surface, tone } from '../ui/theme'
 
 export interface TimelineTabProps {
   events: CompanionEvent[]
+  /** Bumped after a case/evidence event so the audit snapshot is re-read. */
+  refreshKey?: number
 }
 
 interface TimelineItem {
@@ -87,7 +89,7 @@ function eventToItem(event: CompanionEvent): TimelineItem {
   }
 }
 
-export default function TimelineTab({ events }: TimelineTabProps): JSX.Element {
+export default function TimelineTab({ events, refreshKey = 0 }: TimelineTabProps): JSX.Element {
   const [audit, setAudit] = useState<TimelineItem[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -120,7 +122,7 @@ export default function TimelineTab({ events }: TimelineTabProps): JSX.Element {
     return () => {
       active = false
     }
-  }, [])
+  }, [refreshKey])
 
   useEffect(() => {
     const timer = window.setInterval(() => setNow(Date.now()), 30_000)

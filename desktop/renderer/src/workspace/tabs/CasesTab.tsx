@@ -27,6 +27,8 @@ import { FONT_MONO, focusRing, inset, surface, tone } from '../ui/theme'
 
 export interface CasesTabProps {
   initialCaseId?: string | null
+  /** Bumped after a case/evidence event so the list and the open case re-read the backend. */
+  refreshKey?: number
 }
 
 function draftTitle(kind: 'section63' | 'helpline_1930'): string {
@@ -170,7 +172,7 @@ function CaseDetail({ snapshot }: { snapshot: WorkspaceSnapshot }): JSX.Element 
   )
 }
 
-export default function CasesTab({ initialCaseId = null }: CasesTabProps): JSX.Element {
+export default function CasesTab({ initialCaseId = null, refreshKey = 0 }: CasesTabProps): JSX.Element {
   const [cases, setCases] = useState<CaseSummary[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(initialCaseId)
   const [snapshot, setSnapshot] = useState<WorkspaceSnapshot | null>(null)
@@ -199,7 +201,7 @@ export default function CasesTab({ initialCaseId = null }: CasesTabProps): JSX.E
     return () => {
       active = false
     }
-  }, [initialCaseId])
+  }, [initialCaseId, refreshKey])
 
   useEffect(() => {
     if (initialCaseId) {
@@ -228,7 +230,7 @@ export default function CasesTab({ initialCaseId = null }: CasesTabProps): JSX.E
     return () => {
       active = false
     }
-  }, [selectedId])
+  }, [selectedId, refreshKey])
 
   return (
     <div className="grid min-h-[560px] grid-cols-[300px_minmax(0,1fr)] gap-4">

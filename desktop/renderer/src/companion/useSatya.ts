@@ -679,19 +679,23 @@ export function useSatya(options: SatyaOptions = {}): SatyaController {
     [say],
   )
 
-  const onFileDrop = useCallback((file: File) => {
-    if (stateRef.current.userMode !== 'WATCHING') {
-      dispatch({ type: 'SET_MODE', mode: stateRef.current.userMode, card: CONSENT_CARD })
-      return
-    }
-    pendingFile.current = file
-    dispatch({
-      type: 'FILE_DROP',
-      fileId: `file_${Date.now()}`,
-      name: file.name,
-      kind: fileKindOf(file.name, file.type),
-    })
-  }, [])
+  const onFileDrop = useCallback(
+    async (file: File) => {
+      pendingFile.current = file
+      if (stateRef.current.userMode !== 'WATCHING') {
+        await setWatching(scopesRef.current)
+      }
+      dispatch({
+        type: 'FILE_DROP',
+        fileId: `file_${Date.now()}`,
+        name: file.name,
+        kind: fileKindOf(file.name, file.type),
+      })
+      emote('gulp')
+      await submitPendingFile()
+    },
+    [emote, setWatching, submitPendingFile],
+  )
 
   const lastPetQuip = useRef(0)
   const onPet = useCallback(() => {

@@ -38,6 +38,7 @@ import Caption from '../../companion/bubble/Caption'
 import { api } from '../../shared/api'
 import { formatDuration, relativeTime, secondsSince } from '../lib/format'
 import type { LiveSnapshot } from '../lib/live'
+import { satyaStatus, statusTone } from '../lib/status'
 import BandBadge from '../ui/BandBadge'
 import Empty from '../ui/Empty'
 import Qr from '../ui/Qr'
@@ -50,6 +51,9 @@ export interface NowTabProps {
   onOpenCase: (caseId: string | null) => void
   captions?: CaptionLine[]
   health?: HealthInfo | null
+  /** Bumped when a case/evidence event arrives; reserved for future loaders. */
+  refreshKey?: number
+  onRecheckHealth?: () => void
 }
 
 const BAND_TONE = { PASS: tone.watch, VERIFY: tone.amber, HOLD: tone.coral } as const
@@ -130,7 +134,15 @@ function ConsentInline({ onDone }: { onDone: () => void }): JSX.Element {
   )
 }
 
-export default function NowTab({ state, live, onOpenCase, captions = [], health = null }: NowTabProps): JSX.Element {
+export default function NowTab({
+  state,
+  live,
+  onOpenCase,
+  captions = [],
+  health = null,
+  refreshKey = 0,
+  onRecheckHealth,
+}: NowTabProps): JSX.Element {
   const [now, setNow] = useState(() => Date.now())
   const [showConsent, setShowConsent] = useState(false)
   const [busy, setBusy] = useState<string | null>(null)
@@ -146,12 +158,15 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
     listRef.current?.scrollTo({ top: listRef.current.scrollHeight, behavior: 'smooth' })
   }, [captions.length])
 
-  const inCall = live.callId !== null
-  const watching = inCall || state?.mode === 'ACTIVE' || state?.mode === 'ALERT' || state?.monitoring === true
+  // Re-render on case/evidence changes so the "Last alert" and checklist stay current.
+  void refreshKey
+
+  const status = satyaStatus(state, live)
+  const inCall = status.listening
   const elapsed = live.callStartedAt ? secondsSince(live.callStartedAt, now) : 0
   const alert = live.lastAlert
   const band = live.callBand
-  const accent = band ? BAND_TONE[band] : tone.watch
+  const accent = band ? BAND_TONE[band] : tone[statusTone(status.key)]
   const cues = useMemo(
     () =>
       Array.from(new Set(captions.flatMap((line) => line.spans.filter((s) => s.kind === 'cue').map((s) => s.code)))) as CueCode[],
@@ -179,9 +194,7 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
         description={
           inCall
             ? 'Listening to this call only. Captions live in memory and vanish when it ends.'
-            : watching
-              ? 'Watching. I notice calls and ask before I listen.'
-              : 'Satya is asleep. Nothing is being watched.'
+            : status.detail
         }
         action={
           inCall ? (
@@ -191,6 +204,8 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
               <span className="h-2 w-2 animate-pulse rounded-full" style={{ backgroundColor: accent }} />
               {formatDuration(elapsed)}
             </span>
+          ) : alert ? (
+            <BandBadge band={alert.band} />
           ) : undefined
         }
       >
@@ -243,7 +258,52 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
               ))}
             </div>
           </div>
-        ) : watching ? (
+        ) : status.key === 'alert' ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex min-w-0 items-start gap-3">
+              <ShieldAlert size={18} className="mt-0.5 shrink-0" style={{ color: tone.coral }} aria-hidden="true" />
+              <div className="min-w-0">
+                <p className="text-[14px] font-medium">
+                  {alert?.headline ?? 'An alert is open.'}
+                </p>
+                <p className={`mt-1 text-[12px] ${surface.muted}`}>
+                  {alert
+                    ? `Raised ${relativeTime(alert.at, now)}. Open the case to see the policy's reasons.`
+                    : 'Open the case to see the policy reasons. The band comes only from the policy engine.'}
+                </p>
+              </div>
+            </div>
+            <div className="flex shrink-0 flex-wrap gap-2">
+              <button type="button" className={button.primary} onClick={() => onOpenCase(alert?.caseId ?? null)}>
+                Open case
+                <ArrowRight size={14} aria-hidden="true" />
+              </button>
+              <button type="button" className={button.ghost} onClick={() => void run('sleep', async () => api.setUserMode('SLEEPING'))}>
+                Sleep
+              </button>
+            </div>
+          </div>
+        ) : status.key === 'checking' ? (
+          <div className="flex items-start gap-3">
+            <ScanSearch size={18} className="mt-0.5 shrink-0" style={{ color: tone.amber }} aria-hidden="true" />
+            <div>
+              <p className="text-[14px] font-medium">Checking the evidence now.</p>
+              <p className={`mt-1 text-[12px] ${surface.muted}`}>
+                The band will come only from the policy engine. Nothing is sent anywhere.
+              </p>
+            </div>
+          </div>
+        ) : status.key === 'writing' ? (
+          <div className="flex items-start gap-3">
+            <FileCheck2 size={18} className="mt-0.5 shrink-0" style={{ color: tone.write }} aria-hidden="true" />
+            <div>
+              <p className="text-[14px] font-medium">Writing a draft.</p>
+              <p className={`mt-1 text-[12px] ${surface.muted}`}>
+                You review it and submit it yourself. Nothing is filed automatically.
+              </p>
+            </div>
+          </div>
+        ) : status.key === 'watching' ? (
           <div className="flex flex-wrap gap-2">
             <button type="button" className={button.primary} disabled={busy !== null} onClick={() => void run('listen', async () => api.startCall?.('loopback'))}>
               <Headphones size={14} aria-hidden="true" />
@@ -259,6 +319,13 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
             </button>
             <button type="button" className={button.ghost} onClick={() => void run('sleep', async () => api.setUserMode('SLEEPING'))}>
               Sleep
+            </button>
+          </div>
+        ) : status.key === 'off' ? (
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <p className="text-[14px] font-medium">Satya is off. Nothing is being watched.</p>
+            <button type="button" className={button.primary} onClick={() => void run('wake', async () => api.setUserMode('WATCHING'))}>
+              Turn on
             </button>
           </div>
         ) : showConsent ? (
@@ -278,7 +345,14 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
         title="Ready for a live call?"
         description="Checked on this laptop. Fix anything red before the call."
         action={
-          <button type="button" className={button.ghost} onClick={() => void api.getHealth?.()}>
+          <button
+            type="button"
+            className={button.ghost}
+            onClick={() => {
+              if (onRecheckHealth) onRecheckHealth()
+              else void api.getHealth?.()
+            }}
+          >
             <AudioLines size={14} aria-hidden="true" />
             Recheck
           </button>
@@ -384,6 +458,26 @@ export default function NowTab({ state, live, onOpenCase, captions = [], health 
             </div>
             <button type="button" onClick={() => onOpenCase(alert.caseId)} className={`${button.outline} shrink-0`}>
               Open case
+              <ArrowRight size={14} aria-hidden="true" />
+            </button>
+          </div>
+        ) : status.key === 'alert' ? (
+          <div className="flex items-start gap-3">
+            <div
+              className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border ${surface.line}`}
+              style={{ backgroundColor: `${tone.coral}18` }}
+            >
+              <ShieldAlert size={18} style={{ color: tone.coral }} aria-hidden="true" />
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="text-[15px] font-semibold">An alert is open.</p>
+              <p className={`mt-1 text-[12px] ${surface.muted}`}>
+                Open Cases to see the policy&apos;s reasons. Evidence can only raise the band, never
+                lower it.
+              </p>
+            </div>
+            <button type="button" onClick={() => onOpenCase(null)} className={`${button.outline} shrink-0`}>
+              Open cases
               <ArrowRight size={14} aria-hidden="true" />
             </button>
           </div>

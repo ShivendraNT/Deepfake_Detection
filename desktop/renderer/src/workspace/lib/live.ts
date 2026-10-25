@@ -60,6 +60,7 @@ export function reduceLive(previous: LiveSnapshot, event: CompanionEvent): LiveS
         callBand: null,
       }
     case 'call.stopped':
+    case 'session.stopped':
       return {
         ...next,
         callStartedAt: null,
@@ -93,18 +94,43 @@ export function reduceLive(previous: LiveSnapshot, event: CompanionEvent): LiveS
   }
 }
 
-/** Merge event-relayed fields into the last full state envelope. */
+/**
+ * Events that may change the session/capture fields. Other events (`live.chips`,
+ * `coverage.changed`, `oob.*`, `report.ready`) are about one case or one call and must not
+ * clear `monitoring` just because their payload defaults it to false.
+ */
+const STATEFUL_EVENTS = new Set([
+  'session.started',
+  'session.stopped',
+  'state.changed',
+  'call.started',
+  'call.stopped',
+  'analysis.started',
+  'analysis.completed',
+  'alert.raised',
+  'case.updated',
+  'draft.ready',
+])
+
+/**
+ * Optimistic merge from an event. This is never the authority: the Workspace also refreshes
+ * `/companion/state` after each event, so session_id/consent_id/expiry/source_label come from
+ * the backend snapshot, not from a partial payload.
+ */
 export function mergeState(
   previous: CompanionState | null,
   event: CompanionEvent,
 ): CompanionState | null {
   if (!previous) return previous
+  const payload = event.payload
+  const stateful = STATEFUL_EVENTS.has(event.type)
   return {
     ...previous,
-    mode: event.payload.state,
-    monitoring: event.payload.monitoring,
-    source: event.payload.source ?? previous.source,
-    mode_label: event.payload.mode_label ?? previous.mode_label,
+    mode: payload.state,
+    monitoring: stateful ? payload.monitoring : previous.monitoring,
+    source: stateful ? (payload.source ?? previous.source) : previous.source,
+    mode_label: stateful ? (payload.mode_label ?? previous.mode_label) : previous.mode_label,
+    demo: stateful ? payload.demo : previous.demo,
     updated_at: event.occurred_at,
     last_event_id: event.event_id,
   }

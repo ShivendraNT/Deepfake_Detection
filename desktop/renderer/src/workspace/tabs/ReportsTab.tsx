@@ -203,7 +203,13 @@ function SectionCard({
   )
 }
 
-export default function ReportsTab({ preferredCaseId = null }: { preferredCaseId?: string | null }): JSX.Element {
+export default function ReportsTab({
+  preferredCaseId = null,
+  refreshKey = 0,
+}: {
+  preferredCaseId?: string | null
+  refreshKey?: number
+}): JSX.Element {
   const now = useNow()
   const [cases, setCases] = useState<CaseSummary[]>([])
   const [caseId, setCaseId] = useState<string | null>(preferredCaseId)
@@ -221,8 +227,21 @@ export default function ReportsTab({ preferredCaseId = null }: { preferredCaseId
       const order = { HOLD: 0, VERIFY: 1, PASS: 2 } as const
       const sorted = [...result.data].sort((a, b) => order[a.band] - order[b.band])
       setCases(sorted)
-      setCaseId((current) => current ?? preferredCaseId ?? sorted[0]?.case_id ?? null)
+      setCaseId((current) => {
+        if (current && sorted.some((item) => item.case_id === current)) return current
+        if (preferredCaseId && sorted.some((item) => item.case_id === preferredCaseId)) {
+          return preferredCaseId
+        }
+        return sorted[0]?.case_id ?? null
+      })
     })
+  }, [preferredCaseId, refreshKey])
+
+  useEffect(() => {
+    if (preferredCaseId) {
+      setCaseId(preferredCaseId)
+      setPack(null)
+    }
   }, [preferredCaseId])
 
   // Type the sections one after another.

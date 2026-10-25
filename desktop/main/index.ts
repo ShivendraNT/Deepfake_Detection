@@ -111,6 +111,8 @@ let lastTail: 'left' | 'right' = 'left'
 let bubbleHeight = BUBBLE_MIN_HEIGHT
 let workspaceReady = false
 let pendingWorkspaceTab: string | null = null
+const COMPANION_HISTORY_LIMIT = 200
+const companionHistory: CompanionEvent[] = []
 
 let screenGuardTimer: ReturnType<typeof setInterval> | null = null
 let screenGuardBusy = false
@@ -288,7 +290,7 @@ function applyMouseHitTest(point = screen.getCursorScreenPoint()): void {
   const cx = bounds.x + bounds.width / 2
   const cy = bounds.y + bounds.height * 0.56
   const distance = Math.hypot(point.x - cx, point.y - cy)
-  const shouldIgnore = manualClickThrough !== false && distance > 78
+  const shouldIgnore = manualClickThrough !== false && distance > 125
   if (shouldIgnore === mouseIgnored) return
   mouseIgnored = shouldIgnore
   if (shouldIgnore) mascotWindow.setIgnoreMouseEvents(true, { forward: true })
@@ -793,6 +795,8 @@ function registerShortcuts(): void {
 
 function handleEvent(event: CompanionEvent): void {
   if (event.type === 'alert.raised' && event.payload.band) setStatus(`Alert · ${event.payload.band}`)
+  companionHistory.push(event)
+  if (companionHistory.length > COMPANION_HISTORY_LIMIT) companionHistory.shift()
   broadcast('companion:event', event)
 }
 
@@ -812,6 +816,11 @@ if (!hasLock) {
   void app.whenReady().then(() => {
     ipcMain.on('companion:workspace-ready', (event) => {
       if (event.sender !== workspaceWindow?.webContents) return
+      // The Notebook may have opened after an alert or call. Replay the bounded history so
+      // its "Last alert", Timeline and live state match what Satya actually did.
+      for (const item of companionHistory) {
+        event.sender.send('companion:event', item)
+      }
       workspaceReady = true
       sendWorkspaceNavigation()
     })

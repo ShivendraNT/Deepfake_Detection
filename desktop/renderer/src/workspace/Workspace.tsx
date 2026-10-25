@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 
 import type { CaptionLine, CompanionEvent, CompanionState, HealthInfo } from '../../../shared/contracts'
 import { api, onWorkspaceNavigate, workspaceReady } from '../shared/api'
@@ -8,6 +8,7 @@ import Sidebar, {
   type TabId,
 } from './Sidebar'
 import { EMPTY_LIVE, mergeState, reduceLive, type LiveSnapshot } from './lib/live'
+import { satyaStatus, statusTone } from './lib/status'
 import CasesTab from './tabs/CasesTab'
 import EvidenceTab from './tabs/EvidenceTab'
 import NowTab from './tabs/NowTab'
@@ -23,6 +24,22 @@ function tabFromUrl(): TabId {
   return requested && (TAB_IDS as string[]).includes(requested) ? (requested as TabId) : 'now'
 }
 
+/** Events that can change a case, its evidence or a report draft. */
+const DATA_EVENTS = new Set([
+  'session.started',
+  'session.stopped',
+  'state.changed',
+  'call.started',
+  'call.stopped',
+  'analysis.completed',
+  'evidence.received',
+  'alert.raised',
+  'case.updated',
+  'oob.result',
+  'draft.ready',
+  'report.ready',
+])
+
 /**
  * The Notebook: a 1120x720 inspection window. It only relays what the companion API already
  * decided; no band is computed here.
@@ -36,48 +53,101 @@ export default function Workspace(): JSX.Element {
   // Captions of the current call, in memory only (dropped when the call stops).
   const [captions, setCaptions] = useState<CaptionLine[]>([])
   const [health, setHealth] = useState<HealthInfo | null>(null)
+  const [dataVersion, setDataVersion] = useState(0)
+  const seenEvents = useRef<Set<string>>(new Set())
+  const mounted = useRef(true)
+  const stateFetchInFlight = useRef(false)
+  const stateRefreshQueued = useRef(false)
+  const stateRefreshTimer = useRef<number | null>(null)
+
+  const refreshState = useCallback(async (): Promise<void> => {
+    if (stateFetchInFlight.current) {
+      stateRefreshQueued.current = true
+      return
+    }
+    stateFetchInFlight.current = true
+    try {
+      const result = await api.getState()
+      if (mounted.current && result.ok) setState(result.data)
+    } finally {
+      stateFetchInFlight.current = false
+      if (stateRefreshQueued.current) {
+        stateRefreshQueued.current = false
+        void refreshState()
+      }
+    }
+  }, [])
+
+  const refreshHealth = useCallback(async (): Promise<void> => {
+    const result = await api.getHealth?.()
+    if (mounted.current && result?.ok) setHealth(result.data)
+  }, [])
+
+  const scheduleStateRefresh = useCallback((): void => {
+    if (stateRefreshTimer.current !== null) window.clearTimeout(stateRefreshTimer.current)
+    stateRefreshTimer.current = window.setTimeout(() => {
+      stateRefreshTimer.current = null
+      void refreshState()
+    }, 120)
+  }, [refreshState])
 
   useEffect(() => {
-    let active = true
-    const refresh = (): void => {
-      void api.getHealth?.().then((result) => {
-        if (active && result.ok) setHealth(result.data)
-      })
+    mounted.current = true
+    void refreshState()
+    void refreshHealth()
+
+    const stateTimer = window.setInterval(() => {
+      if (document.visibilityState !== 'hidden') void refreshState()
+    }, 3000)
+    const healthTimer = window.setInterval(() => {
+      if (document.visibilityState !== 'hidden') void refreshHealth()
+    }, 5000)
+    const onFocus = (): void => {
+      void refreshState()
+      void refreshHealth()
     }
-    refresh()
-    const timer = window.setInterval(refresh, 5000)
+    const onVisibility = (): void => {
+      if (document.visibilityState === 'visible') onFocus()
+    }
+    window.addEventListener('focus', onFocus)
+    document.addEventListener('visibilitychange', onVisibility)
+    return () => {
+      mounted.current = false
+      window.clearInterval(stateTimer)
+      window.clearInterval(healthTimer)
+      window.removeEventListener('focus', onFocus)
+      document.removeEventListener('visibilitychange', onVisibility)
+      if (stateRefreshTimer.current !== null) window.clearTimeout(stateRefreshTimer.current)
+    }
+  }, [refreshHealth, refreshState])
+
+  useEffect(() => {
+    const unsubscribe = api.onEvent((event) => {
+      if (seenEvents.current.has(event.event_id)) return
+      seenEvents.current.add(event.event_id)
+      setEvents((current) => [event, ...current].slice(0, 200))
+      setLive((current) => reduceLive(current, event))
+      setState((current) => mergeState(current, event))
+      if (DATA_EVENTS.has(event.type)) setDataVersion((version) => version + 1)
+      if (
+        event.type === 'call.started' ||
+        event.type === 'call.stopped' ||
+        event.type === 'session.stopped'
+      ) {
+        setCaptions([])
+      }
+      scheduleStateRefresh()
+    })
+    return unsubscribe
+  }, [scheduleStateRefresh])
+
+  useEffect(() => {
     const off =
       api.onSignal?.((signal) => {
         if (signal.kind === 'caption') setCaptions((lines) => [...lines, signal.line].slice(-200))
         if (signal.kind === 'health') setHealth(signal.health)
       }) ?? (() => undefined)
-    return () => {
-      active = false
-      window.clearInterval(timer)
-      off()
-    }
-  }, [])
-
-  useEffect(() => {
-    let active = true
-    void api.getState().then((result) => {
-      if (active && result.ok) setState(result.data)
-    })
-
-    const unsubscribe = api.onEvent((event) => {
-      setEvents((current) => {
-        if (current.some((item) => item.event_id === event.event_id)) return current
-        return [event, ...current].slice(0, 200)
-      })
-      setLive((current) => reduceLive(current, event))
-      if (event.type === 'call.started' || event.type === 'call.stopped') setCaptions([])
-      setState((current) => mergeState(current, event))
-    })
-
-    return () => {
-      active = false
-      unsubscribe()
-    }
+    return off
   }, [])
 
   useEffect(() => {
@@ -116,25 +186,24 @@ export default function Workspace(): JSX.Element {
     [selectTab],
   )
 
-  const watching =
-    state?.monitoring === true ||
-    state?.mode === 'ACTIVE' ||
-    live.callId !== null ||
-    live.callStartedAt !== null
+  const status = satyaStatus(state, live)
+  const statusColor = tone[statusTone(status.key)]
 
   let content: JSX.Element
   switch (tab) {
     case 'cases':
-      content = <CasesTab initialCaseId={pendingCaseId} />
+      content = <CasesTab initialCaseId={pendingCaseId} refreshKey={dataVersion} />
       break
     case 'timeline':
-      content = <TimelineTab events={events} />
+      content = <TimelineTab events={events} refreshKey={dataVersion} />
       break
     case 'evidence':
-      content = <EvidenceTab />
+      content = <EvidenceTab refreshKey={dataVersion} />
       break
     case 'reports':
-      content = <ReportsTab preferredCaseId={live.lastAlert?.caseId ?? null} />
+      content = (
+        <ReportsTab preferredCaseId={live.lastAlert?.caseId ?? null} refreshKey={dataVersion} />
+      )
       break
     case 'privacy':
       content = <PrivacyTab state={state} />
@@ -144,7 +213,17 @@ export default function Workspace(): JSX.Element {
       break
     case 'now':
     default:
-      content = <NowTab state={state} live={live} onOpenCase={openCase} captions={captions} health={health} />
+      content = (
+        <NowTab
+          state={state}
+          live={live}
+          onOpenCase={openCase}
+          captions={captions}
+          health={health}
+          refreshKey={dataVersion}
+          onRecheckHealth={() => void refreshHealth()}
+        />
+      )
       break
   }
 
@@ -153,7 +232,13 @@ export default function Workspace(): JSX.Element {
       className={`flex h-[720px] w-[1120px] max-h-screen max-w-full overflow-hidden border ${surface.line} ${surface.paper} ${surface.text} sm:rounded-[18px]`}
       style={{ fontFamily: FONT_SANS }}
     >
-      <Sidebar active={tab} onSelect={selectTab} state={state} watching={watching} />
+      <Sidebar
+        active={tab}
+        onSelect={selectTab}
+        statusKey={status.key}
+        statusLabel={status.label}
+        statusActive={status.active}
+      />
 
       <main className="flex min-w-0 flex-1 flex-col">
         <header
@@ -175,11 +260,11 @@ export default function Workspace(): JSX.Element {
               className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3 py-1 text-[12px] font-medium ${surface.line} ${surface.card}`}
             >
               <span
-                className={`h-1.5 w-1.5 rounded-full ${watching ? 'animate-pulse' : ''}`}
-                style={{ backgroundColor: watching ? tone.watch : tone.slate }}
+                className={`h-1.5 w-1.5 rounded-full ${status.active ? 'animate-pulse' : ''}`}
+                style={{ backgroundColor: statusColor }}
                 aria-hidden="true"
               />
-              {watching ? 'Watching' : 'Sleeping'}
+              {status.label}
             </span>
           </div>
         </header>

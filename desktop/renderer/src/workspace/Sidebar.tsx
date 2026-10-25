@@ -10,9 +10,9 @@ import {
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
-import type { CompanionState } from '../../../shared/contracts'
 import type { SatyaPose } from '../satya/engine'
 import SatyaSprite from '../satya/SatyaSprite'
+import { statusTone, type SatyaStatusKey } from './lib/status'
 import { FONT_SANS, focusRing, surface, tone } from './ui/theme'
 
 export type TabId = 'now' | 'cases' | 'timeline' | 'evidence' | 'reports' | 'privacy' | 'settings'
@@ -45,33 +45,44 @@ export const TAB_TITLES: Record<TabId, string> = {
   settings: 'Settings',
 }
 
-function poseFor(state: CompanionState | null, watching: boolean): SatyaPose {
-  if (!state) return watching ? 'idle' : 'sleep'
-  switch (state.mode) {
-    case 'ALERT':
+/** The Notebook mascot follows the same six-mode status the header shows. */
+function poseFor(status: SatyaStatusKey): SatyaPose {
+  switch (status) {
+    case 'alert':
       return 'alert'
-    case 'SCRIBE':
-      return 'write'
-    case 'INVESTIGATING':
+    case 'checking':
       return 'think'
-    case 'ACTIVE':
+    case 'writing':
+      return 'write'
+    case 'listening':
+      return 'listen'
+    case 'watching':
       return 'idle'
-    case 'DISABLED':
-    case 'SLEEP':
+    case 'off':
+      return 'off'
+    case 'sleeping':
     default:
-      return watching ? 'idle' : 'sleep'
+      return 'sleep'
   }
 }
 
 export interface SidebarProps {
   active: TabId
   onSelect: (tab: TabId) => void
-  state: CompanionState | null
-  watching: boolean
+  statusKey: SatyaStatusKey
+  statusLabel: string
+  statusActive: boolean
 }
 
-export default function Sidebar({ active, onSelect, state, watching }: SidebarProps): JSX.Element {
-  const pose = poseFor(state, watching)
+export default function Sidebar({
+  active,
+  onSelect,
+  statusKey,
+  statusLabel,
+  statusActive,
+}: SidebarProps): JSX.Element {
+  const pose = poseFor(statusKey)
+  const color = tone[statusTone(statusKey)]
 
   return (
     <aside
@@ -90,10 +101,10 @@ export default function Sidebar({ active, onSelect, state, watching }: SidebarPr
           <p className={`mt-1 flex items-center gap-1.5 text-[12px] ${surface.muted}`}>
             <span
               className="h-1.5 w-1.5 shrink-0 rounded-full"
-              style={{ backgroundColor: watching ? tone.watch : tone.slate }}
+              style={{ backgroundColor: color }}
               aria-hidden="true"
             />
-            {watching ? 'Watching' : 'Sleeping'}
+            {statusLabel}
           </p>
         </div>
       </div>
@@ -141,6 +152,7 @@ export default function Sidebar({ active, onSelect, state, watching }: SidebarPr
           <Lock size={12} aria-hidden="true" /> Local only
         </p>
         <p className="mt-1">Bands come from satyapan.policy.</p>
+        {!statusActive ? <p className="mt-1">Nothing is being watched.</p> : null}
       </div>
     </aside>
   )

@@ -15,6 +15,8 @@ import { useState } from 'react'
 import type { CompanionState } from '../../../../shared/contracts'
 import { api } from '../../shared/api'
 import { formatDateTime } from '../lib/format'
+import { EMPTY_LIVE } from '../lib/live'
+import { satyaStatus } from '../lib/status'
 import Section from '../ui/Section'
 import { button, inset, surface, tone } from '../ui/theme'
 
@@ -60,7 +62,8 @@ export default function PrivacyTab({ state }: PrivacyTabProps): JSX.Element {
   const [deleteState, setDeleteState] = useState<DeleteState>('idle')
   const [message, setMessage] = useState('')
 
-  const watching = state?.monitoring === true || state?.mode === 'ACTIVE'
+  const status = satyaStatus(state, EMPTY_LIVE)
+  const sessionActive = status.sessionActive
 
   async function removeSessionData(): Promise<void> {
     if (deleteState === 'idle') {
@@ -121,15 +124,19 @@ export default function PrivacyTab({ state }: PrivacyTabProps): JSX.Element {
               icon={Bell}
               label="Notice calls (no recording)"
               detail="Satya notices that a call started and shows you a card. Recording never starts by itself."
-              status={watching ? 'On' : 'Off'}
-              color={watching ? tone.green : tone.slate}
+              status={sessionActive ? 'On' : 'Off'}
+              color={sessionActive ? tone.green : tone.slate}
             />
             <ScopeRow
               icon={FileCheck2}
               label="Check files you give me"
-              detail="Only files you drag in or hand over are opened, hashed and checked."
-              status="On"
-              color={tone.green}
+              detail={
+                sessionActive
+                  ? 'Only files you drag in or hand over are opened, hashed and checked.'
+                  : 'Available only while a consented session is on.'
+              }
+              status={sessionActive ? 'On' : 'Off'}
+              color={sessionActive ? tone.green : tone.slate}
             />
             <ScopeRow
               icon={MicOff}

@@ -253,6 +253,7 @@ class CompanionService:
                     status=case.status,
                     band=decision.band,
                     queue=decision.queue,
+                    updated_at=_case_updated_at(case),
                 )
             )
         return out
@@ -1536,6 +1537,18 @@ class CompanionService:
 
     def _record(self, action: str, actor: str, detail: str) -> None:
         self._audit.append(AuditRow(actor=actor, action=action, detail=detail))
+
+
+def _case_updated_at(case: Case) -> datetime:
+    """The last trusted write to the case, not the time the list happened to be read."""
+    stamps = [case.created_at]
+    stamps.extend(ev.captured_at for ev in case.evidence)
+    if case.oob is not None:
+        stamps.append(case.oob.responded_at or case.oob.created_at)
+    stamps.extend(cb.at for cb in case.callbacks)
+    if case.override is not None:
+        stamps.append(case.override.at)
+    return max(stamps)
 
 
 _ACCOUNT_RE = re.compile(r"(?<![\d-])\d(?:[ -]?\d){8,17}(?![\d-])")

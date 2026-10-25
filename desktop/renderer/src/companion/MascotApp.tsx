@@ -7,7 +7,7 @@
  * to have it checked; click for the menu; double-click for the Notebook.
  */
 
-import { useRef, useState, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react'
+import { useEffect, useRef, useState, type DragEvent, type PointerEvent as ReactPointerEvent } from 'react'
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
 
 import type { Pose } from '../../../shared/contracts'
@@ -84,6 +84,7 @@ export default function MascotApp(): JSX.Element {
 
   function handleDragOver(event: DragEvent<HTMLElement>): void {
     event.preventDefault()
+    if (event.dataTransfer) event.dataTransfer.dropEffect = 'copy'
     satya.onFileHover(true)
   }
 
@@ -99,10 +100,43 @@ export default function MascotApp(): JSX.Element {
     if (file) satya.onFileDrop(file)
   }
 
+  useEffect(() => {
+    const onWindowDragOver = (e: globalThis.DragEvent) => {
+      e.preventDefault()
+      if (e.dataTransfer) e.dataTransfer.dropEffect = 'copy'
+      satya.onFileHover(true)
+    }
+    const onWindowDragLeave = (e: globalThis.DragEvent) => {
+      if (!e.relatedTarget) {
+        satya.onFileHover(false)
+      }
+    }
+    const onWindowDrop = (e: globalThis.DragEvent) => {
+      e.preventDefault()
+      satya.onFileHover(false)
+      const file = e.dataTransfer?.files?.[0]
+      if (file) satya.onFileDrop(file)
+    }
+    window.addEventListener('dragover', onWindowDragOver)
+    window.addEventListener('dragleave', onWindowDragLeave)
+    window.addEventListener('drop', onWindowDrop)
+    return () => {
+      window.removeEventListener('dragover', onWindowDragOver)
+      window.removeEventListener('dragleave', onWindowDragLeave)
+      window.removeEventListener('drop', onWindowDrop)
+    }
+  }, [satya])
+
   const pose = spritePose(satya.state)
 
   return (
-    <div className="relative h-full w-full select-none overflow-visible bg-transparent">
+    <div
+      className="relative h-full w-full select-none overflow-visible bg-transparent"
+      onDragEnter={handleDragOver}
+      onDragOver={handleDragOver}
+      onDragLeave={handleDragLeave}
+      onDrop={handleDrop}
+    >
       <input
         ref={fileInput}
         type="file"

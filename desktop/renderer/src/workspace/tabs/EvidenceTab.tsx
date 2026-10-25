@@ -43,7 +43,7 @@ function CheckIcon({ status }: { status: CheckState['status'] }): JSX.Element {
   return <RefreshCw size={14} className="animate-spin" aria-hidden="true" />
 }
 
-export default function EvidenceTab(): JSX.Element {
+export default function EvidenceTab({ refreshKey = 0 }: { refreshKey?: number }): JSX.Element {
   const [bundles, setBundles] = useState<EvidenceBundle[]>([])
   const [selectedKey, setSelectedKey] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -69,7 +69,7 @@ export default function EvidenceTab(): JSX.Element {
     return () => {
       active = false
     }
-  }, [])
+  }, [refreshKey])
 
   const selected = bundles.find((item) => evidenceKey(item) === selectedKey) ?? bundles[0] ?? null
 

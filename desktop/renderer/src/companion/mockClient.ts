@@ -35,6 +35,20 @@ const MOOD: Record<CompanionMode, MascotMood> = {
   DISABLED: 'off',
 }
 
+/** Only these may change capture/session fields; a chips/coverage event must not clear them. */
+const STATEFUL_EVENTS = new Set<CompanionEventType>([
+  'session.started',
+  'session.stopped',
+  'state.changed',
+  'call.started',
+  'call.stopped',
+  'analysis.started',
+  'analysis.completed',
+  'alert.raised',
+  'case.updated',
+  'draft.ready',
+])
+
 interface Scenario {
   title: string
   band: Band
@@ -444,7 +458,17 @@ export class MockCompanionClient implements CompanionApiClient {
       occurred_at: now(),
       payload: full,
     }
-    this.state = { ...this.state, last_event_id: event.event_id, updated_at: now() }
+    const stateful = STATEFUL_EVENTS.has(type)
+    this.state = {
+      ...this.state,
+      mode: full.state,
+      monitoring: stateful ? full.monitoring : this.state.monitoring,
+      source: stateful ? (full.source ?? this.state.source) : this.state.source,
+      mode_label: stateful ? (full.mode_label ?? this.state.mode_label) : this.state.mode_label,
+      demo: stateful ? full.demo : this.state.demo,
+      last_event_id: event.event_id,
+      updated_at: now(),
+    }
     this.handlers?.onEvent(event)
     return event
   }
