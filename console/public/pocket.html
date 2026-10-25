@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
     <meta name="apple-mobile-web-app-title" content="Satya Pocket" />
     <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="format-detection" content="telephone=no" />
     <link rel="apple-touch-icon" href="/satya-192.png" />
     <link rel="manifest" href="/pocket.webmanifest" />
     <title>Satya Pocket</title>
@@ -203,16 +204,20 @@
             </div>
             <div id="file-pane" hidden style="margin-top: 10px">
               <input type="file" id="file" accept="image/*,audio/*,video/*,application/pdf,.eml,.txt" />
-              <button type="button" class="secondary" id="file-pick">Choose a screenshot, voice note, PDF or video</button>
+              <input type="file" id="camera" accept="image/*" capture="environment" />
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px">
+                <button type="button" class="secondary" id="file-pick">Choose a file</button>
+                <button type="button" class="secondary" id="camera-pick">Take a photo</button>
+              </div>
               <p class="tiny" id="file-name" style="margin: 8px 0 0"></p>
             </div>
             <div class="actions">
               <button type="button" class="primary" id="check-btn">Check with Satya</button>
             </div>
-            <p class="tiny" id="check-status" style="margin: 9px 0 0"></p>
+            <p class="tiny" id="check-status" role="status" aria-live="polite" style="margin: 9px 0 0"></p>
           </div>
 
-          <div class="card result-card" id="result" hidden>
+          <div class="card result-card" id="result" role="status" aria-live="polite" hidden>
             <div class="row">
               <span class="band" id="band">PASS</span>
               <span class="tiny" id="proof"></span>
@@ -249,7 +254,7 @@
             <p class="tiny" id="live-ready" style="margin: 6px 0 0"></p>
           </div>
 
-          <div class="card result-card" id="live-alert" hidden>
+          <div class="card result-card" id="live-alert" role="alert" aria-live="assertive" hidden>
             <div class="row">
               <span class="band" id="live-band">VERIFY</span>
               <span class="tiny" id="live-time"></span>
@@ -363,6 +368,11 @@
               <a class="action-link" href="https://sancharsaathi.gov.in/sfc/" target="_blank" rel="noopener">Chakshu — report a fraud call/SMS</a>
               <a class="action-link" href="/check">Open the full Scam Check page</a>
             </div>
+            <h3 style="margin-top:14px">Put it on your home screen</h3>
+            <p class="tiny" style="line-height:1.6"><strong>iPhone:</strong> Safari → Share →
+              Add to Home Screen. <strong>Android:</strong> Chrome → menu → Add to Home screen.
+              It opens without browser chrome. The app shell still loads from the laptop, so keep
+              the laptop awake and on the same hotspot.</p>
             <p class="fine">On the laptop, open Notebook → Now → On your phone to show the QR codes.
               Phone and laptop must be on the same Wi-Fi/hotspot. Nothing on this page is stored.</p>
           </div>
@@ -471,6 +481,31 @@
           u.lang = lang === "hi" ? "hi-IN" : "en-IN";
           window.speechSynthesis.speak(u);
         }
+        function copyText(value, done) {
+          if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(value).then(done).catch(fallback);
+          } else fallback();
+          function fallback() {
+            var area = document.createElement("textarea");
+            area.value = value;
+            area.style.position = "fixed";
+            area.style.top = "-1000px";
+            document.body.appendChild(area);
+            area.focus();
+            area.select();
+            try { document.execCommand("copy"); done(); } catch (_) { /* manual */ }
+            document.body.removeChild(area);
+          }
+        }
+        function shareAdvice(result) {
+          var value = (result.action_text || "This looks like a scam. Verify before you act.") +
+            " — checked with Satya";
+          if (navigator.share) {
+            navigator.share({ title: "Satya warning", text: value }).catch(function () { copyText(value, function () { text("check-status", "Warning copied."); }); });
+          } else {
+            copyText(value, function () { text("check-status", "Warning copied."); });
+          }
+        }
 
         // ------------------------------------------------------------------ tabs
         function showTab(name) {
@@ -480,6 +515,7 @@
             if (btn) btn.classList.toggle("active", tab === name);
           });
           if (name === "live") refreshLive();
+          if (history.replaceState) history.replaceState(null, "", "#" + name);
           window.scrollTo(0, 0);
         }
         Array.prototype.forEach.call(document.querySelectorAll(".bottom-nav button"), function (btn) {
@@ -496,10 +532,18 @@
         }
         $("mode-text").addEventListener("click", function () { setMode("text"); });
         $("mode-file").addEventListener("click", function () { setMode("file"); });
+        function pickFile(input) {
+          selectedFile = input.files && input.files[0] ? input.files[0] : null;
+          text("file-name", selectedFile
+            ? selectedFile.name + " · " + Math.round(selectedFile.size / 1024) + " KB"
+            : "");
+        }
         $("file-pick").addEventListener("click", function () { $("file").click(); });
-        $("file").addEventListener("change", function () {
-          selectedFile = $("file").files && $("file").files[0] ? $("file").files[0] : null;
-          text("file-name", selectedFile ? selectedFile.name + " · " + Math.round(selectedFile.size / 1024) + " KB" : "");
+        $("camera-pick").addEventListener("click", function () { $("camera").click(); });
+        $("file").addEventListener("change", function () { pickFile($("file")); });
+        $("camera").addEventListener("change", function () {
+          pickFile($("camera"));
+          setMode("file");
         });
         Array.prototype.forEach.call(document.querySelectorAll("[data-sample]"), function (btn) {
           btn.addEventListener("click", function () {
@@ -543,6 +587,25 @@
           speakBtn.textContent = "Listen to the advice";
           speakBtn.addEventListener("click", function () { speak(result.action_text || ""); });
           $("result-actions").appendChild(speakBtn);
+          var shareBtn = document.createElement("button");
+          shareBtn.type = "button";
+          shareBtn.className = "secondary";
+          shareBtn.textContent = "Share this warning";
+          shareBtn.addEventListener("click", function () { shareAdvice(result); });
+          $("result-actions").appendChild(shareBtn);
+          var againBtn = document.createElement("button");
+          againBtn.type = "button";
+          againBtn.className = "secondary";
+          againBtn.textContent = "Check another";
+          againBtn.addEventListener("click", function () {
+            resetResult();
+            setMode("text");
+            $("msg").value = "";
+            $("msg").focus();
+            window.scrollTo(0, 0);
+          });
+          $("result-actions").appendChild(againBtn);
+          if (navigator.vibrate) navigator.vibrate(result.band === "HOLD" ? 30 : 12);
           text("fine", result.band === "PASS"
             ? "PASS means no known scam pattern was found — not that it is genuine. Never share an OTP, PIN or password."
             : "Satya can be wrong. The safe next step is to call back on a number you already have.");
@@ -633,6 +696,7 @@
           var card = $("live-alert");
           card.hidden = false;
           card.className = "card result-card " + band + " flash";
+          if (navigator.vibrate) navigator.vibrate(band === "HOLD" ? 35 : 18);
           $("live-band").className = "band " + band;
           text("live-band", BAND_WORDS[band] || band);
           text("live-headline", payload.headline || "");
@@ -795,7 +859,8 @@
           refreshLive();
           connectLive();
           setInterval(refreshLive, 5000);
-          if (location.hash === "#report") showTab("report");
+          var initial = location.hash.replace("#", "");
+          if (["check", "live", "report", "help"].indexOf(initial) >= 0) showTab(initial);
         }
         boot();
       })();

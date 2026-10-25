@@ -8,6 +8,23 @@
   "orientation": "portrait",
   "background_color": "#fbf8f3",
   "theme_color": "#1fb5a3",
+  "shortcuts": [
+    {
+      "name": "Check a message",
+      "short_name": "Check",
+      "url": "/pocket#check"
+    },
+    {
+      "name": "Money already sent",
+      "short_name": "Report",
+      "url": "/pocket#report"
+    },
+    {
+      "name": "Live alert",
+      "short_name": "Live",
+      "url": "/pocket#live"
+    }
+  ],
   "icons": [
     {
       "src": "/satya-192.png",
