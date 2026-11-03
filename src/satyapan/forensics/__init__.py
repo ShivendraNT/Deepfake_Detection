@@ -17,6 +17,13 @@ from satyapan.forensics.locker import (
     ForensicLocker,
     VerifyReport,
 )
+from satyapan.forensics.pipeline import (
+    analyze_case,
+    analyze_evidence_item,
+    infer_source_and_media_type,
+    load_case_analysis,
+    seed_demo_forensic_case,
+)
 from satyapan.forensics.provenance import (
     ProvenanceAnalysisResult,
     analyze_provenance,
@@ -47,6 +54,8 @@ __all__ = [
     "VerifyReport",
     "analyze_audio_deepfake",
     "analyze_audio_tampering",
+    "analyze_case",
+    "analyze_evidence_item",
     "analyze_image_deepfake",
     "analyze_image_tampering",
     "analyze_provenance",
@@ -59,7 +68,10 @@ __all__ = [
     "embed_c2pa_jumbf_manifest",
     "extract_and_verify_metadata",
     "extract_whole_image_features",
+    "infer_source_and_media_type",
+    "load_case_analysis",
     "noise_residual_analysis",
     "score_whole_image",
+    "seed_demo_forensic_case",
     "verify_c2pa_credentials",
 ]

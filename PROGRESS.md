@@ -56,3 +56,14 @@
   - C2PA JUMBF verification (`n=30`): 15/15 valid signed manifests verified, 15/15 post-signing tampered manifests caught (`results/forensics_m4_provenance.json`, `results/EVIDENCE_LEDGER.md` §15.4).
 - **What is next**:
   - **M5**: Design note `docs/design/M5.md` → Implement unified case analysis pipeline (`src/satyapan/forensics/pipeline.py`) and Explainable Forensic Dashboard (`src/satyapan/api/routes_forensics.py`, `/forensics` + `/api/forensics/*`) → Tests `tests/forensics/test_m5_dashboard.py` → Ledger rows → `make check` green → Commit.
+
+## M5 — Explainable Forensic Dashboard (Completed)
+- **What we did**:
+  - Wrote `docs/design/M5.md`.
+  - Implemented `src/satyapan/forensics/pipeline.py` (`analyze_evidence_item`, `analyze_case`, `load_case_analysis`, `seed_demo_forensic_case`) orchestrating M1+M2+M3+M4 on working copies and building the chronological case timeline and limitations panel.
+  - Implemented `src/satyapan/api/routes_forensics.py` serving the offline single-page workstation at `/forensics` and REST API under `/api/forensics/*` (cases list, create, demo-case seeder, multipart intake, PNG heatmap/spectrogram serving, and live 1-bit tamper simulation/restoration).
+  - Added acceptance tests in `tests/forensics/test_m5_dashboard.py`.
+- **What is measured**:
+  - All dashboard and API tests pass (`tests/forensics/test_m5_dashboard.py`), verifying 0 external CDN calls, 4-item multi-modal case analysis, PNG heatmap serving, and live 1-bit tamper detection & restoration (`results/EVIDENCE_LEDGER.md` §15.5).
+- **What is next**:
+  - **M6**: Design note `docs/design/M6.md` → Implement `src/satyapan/forensics/section63.py` (reused from Pramaan with attribution) and `src/satyapan/forensics/report.py` (reproducible one-click PDF + HTML + Markdown + JSON forensic report with embedded heatmaps, hashes, custody chain, methods, findings, limitations, examiner sign-off block, and draft Section 63 BSA 2023 Parts A & B certificate) → Tests `tests/forensics/test_m6_report.py` → Ledger rows → `make check` green → Commit.

@@ -359,3 +359,9 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m4_provenance
 | Per-class F1: `camera_original` / `social_messaging_reencode` / `editing_software_resave` | **0.971** / **0.969** / **1.000** | 50 per class | same; 3 high-Q ($Q\ge 82$) messaging re-encodes fell near the camera boundary | measured (synthetic) |
 | Metadata consistency anomaly detection (date inversion, Null Island GPS, thumbnail mismatch, AI PNG parameters, editor tags), TPR / FPR | **100.0%** (30/30) / **0.0%** (0/30) | 30 clean + 30 anomalous | same | measured (synthetic) |
 | C2PA JUMBF Content Credentials verification (valid Ed25519-signed manifests vs post-signing byte-tampered manifests) | **15/15** verified, **15/15** tampered caught | 30 assets (JPEG APP11 + PNG `caBX`) | same | measured |
+
+### 15.5 M5 — Explainable Forensic Dashboard & Case Pipeline (`src/satyapan/forensics/pipeline.py`, `src/satyapan/api/routes_forensics.py`)
+
+| Claim | Value | n | Data / command | Status |
+|---|---|---|---|---|
+| Offline workstation UI (`/forensics`) + REST API (`/api/forensics/*`) acceptance tests (4-modality demo case, artifact serving, 1-bit tamper simulation & restoration, custom multipart intake) | **2/2 PASS**, 0 external CDN/network links | 5 endpoints + 4-item multi-modal case | `uv run pytest tests/forensics/test_m5_dashboard.py` | measured |

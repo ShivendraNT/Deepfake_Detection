@@ -637,8 +637,6 @@ class CompanionService:
             target = call_id or active
             if target != active:
                 raise CompanionError("that is not the active call")
-            state.live().stop_video(target)
-            state.live().sessions.pop(target, None)
             self._call_id = None
             self._call_case_id = None
             self._chips = {}
@@ -655,7 +653,12 @@ class CompanionService:
                 monitoring=False,
             )
             self._record("call.stop", actor, f"call={target} monitoring=off")
-            return target, self.snapshot(), [event]
+            snapshot = self.snapshot()
+        # Outside our lock: a live worker holds the session lock while it publishes into
+        # `_ingest_live_event` (which takes our lock), so taking both here would deadlock.
+        state.live().stop_video(target)
+        state.live().sessions.pop(target, None)
+        return target, snapshot, [event]
 
     def _ingest_live_event(self, call_id: str, event: LiveEvent) -> None:
         """Called synchronously by `CompanionLiveBus.publish`. No scores, no transcript text."""

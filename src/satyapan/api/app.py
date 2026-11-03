@@ -17,6 +17,7 @@ from satyapan.api import (
     routes_citizen,
     routes_companion,
     routes_dashboard,
+    routes_forensics,
     routes_live,
     routes_reports,
     routes_seal,
@@ -85,6 +86,7 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
         routes_citizen,
         routes_seal,
         routes_companion,
+        routes_forensics,
     ):
         app.include_router(r.router)
         app.include_router(r.router, prefix="/api")
