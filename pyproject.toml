@@ -139,5 +139,21 @@ mypy_path = "src"
 explicit_package_bases = true
 
 [[tool.mypy.overrides]]
-module = ["scipy.*", "cbor2.*"]
+module = ["scipy.*", "cbor2.*", "onnxruntime.*", "mediapipe.*", "cv2.*", "av.*", "PIL.*"]
 ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = [
+  "satyapan.video.analyzer",
+  "satyapan.video.cnn",
+  "satyapan.video.features",
+  "satyapan.video.io",
+  "satyapan.video.landmarks",
+  "satyapan.video.lighting",
+  "satyapan.video.lipsync",
+  "satyapan.video.observe",
+  "satyapan.video.regions",
+  "satyapan.video.rppg",
+  "satyapan.imagecheck.*",
+]
+follow_imports = "silent"

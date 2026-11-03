@@ -321,3 +321,16 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m1_locker` �
 | Tamper attack catch rate (20 file bit-flips, 10 permission drops, 10 custody log edits, 10 Ed25519 signature corruptions) | **50 / 50 (100%)** | 50 attacks | same | measured |
 | Median/mean intake sealing + signing latency per item | **3.29 ms** | 50 items | same | measured |
 | Merkle inclusion proof verification latency per item | **0.65 ms** | 50 items | same | measured |
+
+### 15.2 M2 — Deepfake & Synthetic Media Detection Engine (`src/satyapan/forensics/deepfake.py`)
+
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m2_deepfake` → `results/forensics_m2_deepfake.json`, `config/whole_image_synthetic.json`. Status: **measured** (whole-image benchmark is **synthetic** camera-physics vs GAN/diffusion-artifact images, `VAL_SEED=20261101`, `TEST_SEED=20261102`; video/photo face-swap GenD and voice-clone XLS-R on public FF++/DFDC/In-the-Wild datasets are in §§11–12 above).
+
+| Claim | Value | n | 95% CI | Data / command | Status |
+|---|---|---|---|---|---|
+| Whole-image synthetic detector, validation calibration (`tau_hi=0.60`, `tau_lo=0.45`) | AUC **1.000** | 80 (40 auth + 40 synth) | — | `python -m research.forensics.eval_m2_deepfake` (synthetic, val split) | measured (synthetic) |
+| Whole-image synthetic detector, held-out test AUC (clean) | **1.000** | 120 (60 auth + 60 synth) | — | same (synthetic, held-out test) | measured (synthetic) |
+| Held-out test TPR / FPR at `tau_hi` (clean) | **100.0%** / **0.0%** | 60 synth / 60 auth | [94.0%, 100%] / [0.0%, 6.0%] | same | measured (synthetic) |
+| Compression robustness (JPEG Q60 re-encode), held-out test AUC / TPR at `tau_lo` / FPR at `tau_lo` | AUC **1.000** / TPR **68.3%** (41/60, Δ −31.7 pts) / FPR **0.0%** | 60 synth / 60 auth | TPR [55.8%, 78.7%], FPR [0.0%, 6.0%] | same | measured (synthetic; Q60 8×8 DCT attenuates 2px Nyquist checkerboard) |
+| Multi-modal spot-check on `.cache/testkit` video (`fake_faceswap_meeting_720p.mp4` vs `real_meeting_720p.mp4`) | fake **0.9705** (`consistent_with_synthetic`) vs real **0.0618** (`consistent_with_authentic`) | 2 videos (8 frames + 3 windows each) | n/a | same | measured |
+| Multi-modal spot-check on `.cache/testkit` audio (`fake_cfo_clone_en.wav` vs `real_public_domain_speech.wav`) | fake **0.8120** (`anomalies_detected_verify`) vs real **0.1011** (`consistent_with_authentic`) | 2 audio recordings | n/a | same | measured |

@@ -1,0 +1,60 @@
+{
+  "milestone": "M2",
+  "dataset": "synthetic_camera_vs_ai_generator_benchmark (seeded, val=80, test=120)",
+  "calibration": {
+    "val_n": 80,
+    "val_auc": 1.0,
+    "tau_hi": 0.6,
+    "tau_lo": 0.45
+  },
+  "test_clean": {
+    "n_total": 120,
+    "n_synthetic": 60,
+    "n_authentic": 60,
+    "auc": 1.0,
+    "tpr_at_tau_hi": 1.0,
+    "tpr_at_tau_hi_ci": [
+      0.9398,
+      1.0
+    ],
+    "fpr_at_tau_hi": 0.0,
+    "fpr_at_tau_hi_ci": [
+      0.0,
+      0.0602
+    ],
+    "tpr_at_tau_lo": 1.0,
+    "tpr_at_tau_lo_ci": [
+      0.9398,
+      1.0
+    ],
+    "fpr_at_tau_lo": 0.0,
+    "fpr_at_tau_lo_ci": [
+      0.0,
+      0.0602
+    ]
+  },
+  "test_jpeg_q60_reencode": {
+    "auc": 1.0,
+    "delta_auc": 0.0,
+    "tpr_at_tau_lo": 0.6833,
+    "tpr_at_tau_lo_ci": [
+      0.5577,
+      0.7869
+    ],
+    "fpr_at_tau_lo": 0.0,
+    "fpr_at_tau_lo_ci": [
+      0.0,
+      0.0602
+    ]
+  },
+  "testkit_multimodal_spotcheck": {
+    "video_fake_prob": 0.9705,
+    "video_fake_finding": "consistent_with_synthetic",
+    "video_real_prob": 0.0618,
+    "video_real_finding": "consistent_with_authentic",
+    "audio_fake_prob": 0.812,
+    "audio_fake_finding": "anomalies_detected_verify",
+    "audio_real_prob": 0.1011,
+    "audio_real_finding": "consistent_with_authentic"
+  }
+}
