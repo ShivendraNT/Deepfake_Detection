@@ -304,3 +304,20 @@ product finds at least one ask in 48.9% of attack texts with a 12.1% false-ask r
 texts; through the real policy, 3.5% of routine payments reach HOLD and 78.6% of attacks reach at
 least VERIFY.” Do **not** say “98% accurate” or quote the frozen-lexicon precision as the product
 precision. The test split is synthetic and the failures are named in `docs/JUDGE_KIT.md`.
+
+---
+
+## 15. Multimedia Forensics Framework (M1–M8, `igdtuw` branch)
+
+### 15.1 M1 — Evidence Intake, Working-Copy Isolation & Cryptographic Custody (`src/satyapan/forensics/locker.py`)
+
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m1_locker` → `results/forensics_m1_locker.json`. Status: **measured**.
+
+| Claim | Value | n | Data / command | Status |
+|---|---|---|---|---|
+| Read-only original sealing (`0o444`) + SHA-256 verification at intake | **50 / 50 (100%)** | 50 items | `python -m research.forensics.eval_m1_locker` | measured |
+| Working-copy checkout verification + direct-original-access guard block rate | **50 / 50 (100%)** | 50 items | same | measured |
+| RFC 6962 Merkle inclusion proof verification across items | **50 / 50 (100%)** | 50 items | same | measured |
+| Tamper attack catch rate (20 file bit-flips, 10 permission drops, 10 custody log edits, 10 Ed25519 signature corruptions) | **50 / 50 (100%)** | 50 attacks | same | measured |
+| Median/mean intake sealing + signing latency per item | **3.29 ms** | 50 items | same | measured |
+| Merkle inclusion proof verification latency per item | **0.65 ms** | 50 items | same | measured |

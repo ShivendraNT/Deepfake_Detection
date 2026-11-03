@@ -120,6 +120,7 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/repository.py` | in-memory case store | T01 | done |
 | `src/satyapan/api/` | HTTP routes | T01 (+ each task) | done (glue) |
 | `src/satyapan/api/companion/` | T25 desktop companion event bus, state machine, and REST routes | T25 | done |
+| `src/satyapan/forensics/` | Multimedia forensic locker (Ed25519 custody, RFC 6962 Merkle, read-only originals + working copies), deepfake engine, tampering suite, provenance/C2PA/attribution, and BSA Sec 63 report | M1–M8 | done |
 | `extension/` | C13 | T07, T10, T22 | todo |
 | `console/` | console UI | T06 | todo |
 | `research/` | "Ask, Not Style" study + audio eval | T18-T21 | todo |

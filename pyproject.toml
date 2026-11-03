@@ -131,6 +131,7 @@ files = [
   "src/satyapan/video/fusion.py",
   "src/satyapan/explain/prompt.py",
   "src/satyapan/seal",
+  "src/satyapan/forensics",
 ]
 strict = true
 plugins = ["pydantic.mypy"]

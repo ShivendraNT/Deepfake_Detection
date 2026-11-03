@@ -1,0 +1,13 @@
+{
+  "milestone": "M1",
+  "items_sealed": 50,
+  "readonly_enforced": "50/50",
+  "working_copies_verified": "50/50",
+  "direct_original_access_blocked": "50/50",
+  "merkle_proofs_verified": "50/50",
+  "tamper_attacks_caught": "50/50",
+  "final_chain_clean": true,
+  "intake_per_item_ms": 3.29,
+  "checkout_per_item_ms": 5.1,
+  "merkle_proof_per_item_ms": 0.65
+}

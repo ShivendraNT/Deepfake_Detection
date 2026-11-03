@@ -35,6 +35,7 @@ See `docs/VIDEO_DEEPFAKE.md` and `docs/VOICE_DEEPFAKE.md`.
 | Files | What | Licence |
 |---|---|---|
 | `extension/vendor/*`, `desktop/renderer/src/capture/vendor/ort.wasm.min.mjs` | onnxruntime-web 1.20.1 (Microsoft) | MIT, with a `LICENSE` file next to the copy |
+| `src/satyapan/forensics/locker.py`, `src/satyapan/forensics/section63.py` | Adapted from sibling project **Pramaan** (`pramaan/locker/intake.py`, `signing.py`, `custody.py`, `merkle.py`, `anchor.py`, `pramaan/report/section63.py`, `pramaan/ai/image_model.py`) by the same team (Shivendra, Kartikey, Saarika, Saksham) | MIT (team original work, attributed) |
 
 Nothing else is copied. Libraries are installed from PyPI and npm, pinned in `uv.lock`,
 `desktop/package-lock.json` and `console/package-lock.json`.
