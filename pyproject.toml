@@ -119,6 +119,8 @@ known-first-party = ["satyapan", "research", "tests"]
 "src/satyapan/api/routes_dashboard.py" = ["E501"]  # inline dashboard HTML
 "src/satyapan/api/routes_forensics.py" = ["E501"]  # inline forensic workstation HTML
 "src/satyapan/forensics/pipeline.py" = ["E501"]  # forensic disclaimer text
+"src/satyapan/forensics/report.py" = ["E501"]  # forensic report markdown/HTML templates
+"src/satyapan/forensics/section63.py" = ["E501"]  # statutory Section 63 BSA 2023 text
 "src/satyapan/report/pack.py" = ["E501"]  # statutory HTML report templates
 
 [tool.mypy]

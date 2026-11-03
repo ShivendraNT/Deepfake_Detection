@@ -67,3 +67,14 @@
   - All dashboard and API tests pass (`tests/forensics/test_m5_dashboard.py`), verifying 0 external CDN calls, 4-item multi-modal case analysis, PNG heatmap serving, and live 1-bit tamper detection & restoration (`results/EVIDENCE_LEDGER.md` §15.5).
 - **What is next**:
   - **M6**: Design note `docs/design/M6.md` → Implement `src/satyapan/forensics/section63.py` (reused from Pramaan with attribution) and `src/satyapan/forensics/report.py` (reproducible one-click PDF + HTML + Markdown + JSON forensic report with embedded heatmaps, hashes, custody chain, methods, findings, limitations, examiner sign-off block, and draft Section 63 BSA 2023 Parts A & B certificate) → Tests `tests/forensics/test_m6_report.py` → Ledger rows → `make check` green → Commit.
+
+## M6 — Automated Forensic Report & Section 63 BSA Certificate (Completed)
+- **What we did**:
+  - Wrote `docs/design/M6.md`.
+  - Implemented `src/satyapan/forensics/section63.py` (adapted with attribution from Pramaan `pramaan/report/section63.py`) generating Part A (Person in Charge & Device Schedule) and Part B (Section 63(4)(c) Technical Examiner Certificate with SHA-256 FIPS 180-4, Ed25519 RFC 8032, and RFC 6962 Merkle proofs).
+  - Implemented `src/satyapan/forensics/report.py` (`generate_forensic_report` + `_build_forensic_pdf`) generating byte-reproducible `forensic_report.{pdf,html,md,json}` with embedded `/DCTDecode` heatmaps/spectrograms and vector text.
+  - Added tests in `tests/forensics/test_m6_report.py`.
+- **What is measured**:
+  - Byte-identical SHA-256 across repeated runs for all 4 report formats (`pdf`, `html`, `md`, `json`); `pdfplumber` verifies all exhibit hashes, custody chain, limitations, examiner sign-off block, and Section 63 Parts A & B inside the generated multi-page PDF (`results/EVIDENCE_LEDGER.md` §15.6).
+- **What is next**:
+  - **M7**: Design note `docs/design/M7.md` → Build committed open/synthetic demo kit (`demo_kit/` via `scripts/make_forensic_demo_kit.py`), golden-file report tests, end-to-end test (`intake -> analysis -> report`) on `demo_kit/`, and adversarial robustness red-team benchmark (`research/forensics/eval_m7_adversarial.py`: re-encode, resize, crop, noise, metadata stripping) → Ledger rows → `make check` green → Commit.

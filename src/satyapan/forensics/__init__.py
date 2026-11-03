@@ -32,6 +32,11 @@ from satyapan.forensics.provenance import (
     extract_and_verify_metadata,
     verify_c2pa_credentials,
 )
+from satyapan.forensics.report import generate_forensic_report
+from satyapan.forensics.section63 import (
+    build_section63_certificate,
+    render_section63_markdown,
+)
 from satyapan.forensics.tamper import (
     TamperAnalysisResult,
     analyze_audio_tampering,
@@ -62,15 +67,18 @@ __all__ = [
     "analyze_video_deepfake",
     "analyze_video_tampering",
     "attribute_compression_source",
+    "build_section63_certificate",
     "copy_move_analysis",
     "double_jpeg_analysis",
     "ela_analysis",
     "embed_c2pa_jumbf_manifest",
     "extract_and_verify_metadata",
     "extract_whole_image_features",
+    "generate_forensic_report",
     "infer_source_and_media_type",
     "load_case_analysis",
     "noise_residual_analysis",
+    "render_section63_markdown",
     "score_whole_image",
     "seed_demo_forensic_case",
     "verify_c2pa_credentials",

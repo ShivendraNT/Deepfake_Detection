@@ -365,3 +365,10 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m4_provenance
 | Claim | Value | n | Data / command | Status |
 |---|---|---|---|---|
 | Offline workstation UI (`/forensics`) + REST API (`/api/forensics/*`) acceptance tests (4-modality demo case, artifact serving, 1-bit tamper simulation & restoration, custom multipart intake) | **2/2 PASS**, 0 external CDN/network links | 5 endpoints + 4-item multi-modal case | `uv run pytest tests/forensics/test_m5_dashboard.py` | measured |
+
+### 15.6 M6 — Automated Multimedia Forensic Report & Section 63 BSA 2023 Certificate (`src/satyapan/forensics/report.py`, `src/satyapan/forensics/section63.py`)
+
+| Claim | Value | n | Data / command | Status |
+|---|---|---|---|---|
+| Byte-level reproducibility of `forensic_report.{pdf,html,md,json}` across repeated runs on stored case data | **4/4 formats byte-identical (SHA-256 match)** | 4 formats × 2 runs | `uv run pytest tests/forensics/test_m6_report.py` | measured |
+| Multi-page PDF report text extraction (`pdfplumber`) + embedded `/DCTDecode` evidence heatmaps + Section 63 BSA 2023 Parts A & B draft certificate | **PASS** (≥4 pages, all exhibit hashes & Section 63 schedule verified) | 4-exhibit multi-modal case | same | measured |
