@@ -1,0 +1,56 @@
+{
+  "milestone": "M3",
+  "seed": 20261103,
+  "dataset": "synthetic_multimedia_tamper_benchmark (labeled synthetic)",
+  "image_tampering": {
+    "n_authentic": 40,
+    "n_tampered": 80,
+    "combined_auc": 0.925,
+    "combined_tpr": 1.0,
+    "combined_tpr_ci": [
+      0.9542,
+      1.0
+    ],
+    "combined_fpr": 0.175,
+    "combined_fpr_ci": [
+      0.0875,
+      0.3195
+    ],
+    "subdetectors": {
+      "ela_on_spliced_auc": 1.0,
+      "noise_residual_on_spliced_auc": 1.0,
+      "copy_move_on_cloned_auc": 1.0,
+      "double_jpeg_auc": 0.925
+    }
+  },
+  "video_tampering": {
+    "n_authentic": 15,
+    "n_tampered": 15,
+    "auc": 1.0,
+    "tpr": 1.0,
+    "tpr_ci": [
+      0.7961,
+      1.0
+    ],
+    "fpr": 0.0,
+    "fpr_ci": [
+      0.0,
+      0.2039
+    ]
+  },
+  "audio_tampering": {
+    "n_authentic": 20,
+    "n_tampered": 20,
+    "auc": 1.0,
+    "tpr": 1.0,
+    "tpr_ci": [
+      0.8389,
+      1.0
+    ],
+    "fpr": 0.0,
+    "fpr_ci": [
+      0.0,
+      0.1611
+    ]
+  }
+}

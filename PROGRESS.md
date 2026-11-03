@@ -34,3 +34,13 @@
   - Held-out test (`n=120` synthetic benchmark): clean AUC 1.000, TPR@tau_hi 100.0% [94.0%, 100%], FPR@tau_hi 0.0% [0.0%, 6.0%]; after JPEG Q60 re-encode, TPR@tau_lo drops from 100.0% to 68.3% [55.8%, 78.7%] (Q60 8×8 DCT attenuates 2px Nyquist grid) with 0.0% FPR. Multi-modal `.cache/testkit` spot-check separates fake vs real video (0.9705 vs 0.0618) and fake vs real audio (0.8120 vs 0.1011) (`results/forensics_m2_deepfake.json`, `results/EVIDENCE_LEDGER.md` §15.2).
 - **What is next**:
   - **M3**: Design note `docs/design/M3.md` → Implement `src/satyapan/forensics/tamper.py` (image ELA + heatmap, double-JPEG / quantization-table analysis, copy-move detection + heatmap, noise-residual inconsistency + heatmap; video duplicated/dropped frames & re-encoding signs; audio splice/discontinuity cues + spectrogram) → Tests `tests/forensics/test_m3_tamper.py` → Benchmark `research/forensics/eval_m3_tamper.py` → Ledger rows → `make check` green → Commit.
+
+## M3 — Tampering & Manipulation Detection (Completed)
+- **What we did**:
+  - Wrote `docs/design/M3.md`.
+  - Implemented `src/satyapan/forensics/tamper.py` covering Image (ELA + heatmap, double-JPEG / quantization-table & 8×8 DCT comb + grid analysis, copy-move block descriptor & high-pass correlation matching + heatmap, noise-residual inconsistency + heatmap + 4-panel composite), Video (duplicated/frozen frames, dropped/spliced frame jumps, macroblock re-encoding signs + timeline chart), and Audio (sample-level splice transient Z-score + 0.5s room noise-floor step shift + spectrogram with splice markers).
+  - Added unit tests in `tests/forensics/test_m3_tamper.py` and seeded benchmark `research/forensics/eval_m3_tamper.py`.
+- **What is measured**:
+  - Seeded synthetic tamper benchmark (`SEED=20261103`): Image ELA AUC 1.000, Noise-Residual AUC 1.000, Copy-Move AUC 1.000, Double-JPEG AUC 0.925, Combined Image Tampering AUC 0.925 (TPR 100.0% [95.4%, 100%], FPR 17.5% [8.8%, 32.0%] due to high-Q DCT rounding); Video Tampering AUC 1.000 (TPR 100.0%, FPR 0.0%); Audio Tampering AUC 1.000 (TPR 100.0%, FPR 0.0%) (`results/forensics_m3_tamper.json`, `results/EVIDENCE_LEDGER.md` §15.3).
+- **What is next**:
+  - **M4**: Design note `docs/design/M4.md` → Implement `src/satyapan/forensics/provenance.py` (EXIF/XMP/PNG metadata extraction & consistency checks: dates, software, GPS, embedded thumbnail vs main image; C2PA Content Credentials / JUMBF verification; compression-fingerprint source attribution: camera original vs WhatsApp/social re-encode vs editing software) → Tests `tests/forensics/test_m4_provenance.py` → Benchmark `research/forensics/eval_m4_provenance.py` → Ledger rows → `make check` green → Commit.

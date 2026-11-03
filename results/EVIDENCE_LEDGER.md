@@ -334,3 +334,17 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m2_deepfake` 
 | Compression robustness (JPEG Q60 re-encode), held-out test AUC / TPR at `tau_lo` / FPR at `tau_lo` | AUC **1.000** / TPR **68.3%** (41/60, Δ −31.7 pts) / FPR **0.0%** | 60 synth / 60 auth | TPR [55.8%, 78.7%], FPR [0.0%, 6.0%] | same | measured (synthetic; Q60 8×8 DCT attenuates 2px Nyquist checkerboard) |
 | Multi-modal spot-check on `.cache/testkit` video (`fake_faceswap_meeting_720p.mp4` vs `real_meeting_720p.mp4`) | fake **0.9705** (`consistent_with_synthetic`) vs real **0.0618** (`consistent_with_authentic`) | 2 videos (8 frames + 3 windows each) | n/a | same | measured |
 | Multi-modal spot-check on `.cache/testkit` audio (`fake_cfo_clone_en.wav` vs `real_public_domain_speech.wav`) | fake **0.8120** (`anomalies_detected_verify`) vs real **0.1011** (`consistent_with_authentic`) | 2 audio recordings | n/a | same | measured |
+
+### 15.3 M3 — Multimedia Tampering & Manipulation Detection (`src/satyapan/forensics/tamper.py`)
+
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m3_tamper` → `results/forensics_m3_tamper.json`. Data: deterministic seeded synthetic tampering benchmark (`SEED=20261103`, labeled **synthetic**). Status: **measured (synthetic)**.
+
+| Claim | Value | n | 95% CI | Data / command | Status |
+|---|---|---|---|---|---|
+| Image ELA subdetector AUC on spliced patches | **1.000** | 40 auth + 30 spliced | — | `python -m research.forensics.eval_m3_tamper` (synthetic) | measured (synthetic) |
+| Image noise-residual subdetector AUC on spliced patches | **1.000** | 40 auth + 30 spliced | — | same | measured (synthetic) |
+| Image copy-move subdetector AUC on cloned regions (with sub-grid $\pm 2\text{ px}$ alignment) | **1.000** | 40 auth + 30 copy-move | — | same | measured (synthetic) |
+| Image double-JPEG / 8×8 DCT comb + grid-mismatch AUC | **0.925** | 40 auth + 20 double-JPEG | — | same | measured (synthetic) |
+| Combined image tampering suite (all 4 checks), AUC / TPR / FPR | AUC **0.925** / TPR **100.0%** (80/80) / FPR **17.5%** (7/40) | 40 auth + 80 tampered | TPR [95.4%, 100%], FPR [8.8%, 32.0%] | same; false alarms come from DCT rounding combs on near-lossless $Q\ge 93$ single JPEGs | measured (synthetic) |
+| Video tampering (duplicated frames + dropped/spliced frame jumps), AUC / TPR / FPR | AUC **1.000** / TPR **100.0%** (15/15) / FPR **0.0%** (0/15) | 15 auth + 15 tampered videos | TPR [79.6%, 100%], FPR [0.0%, 20.4%] | same | measured (synthetic) |
+| Audio tampering (waveform splice transients + room noise-floor step shifts), AUC / TPR / FPR | AUC **1.000** / TPR **100.0%** (20/20) / FPR **0.0%** (0/20) | 20 auth + 20 spliced audio clips | TPR [83.9%, 100%], FPR [0.0%, 16.1%] | same | measured (synthetic) |
