@@ -44,3 +44,15 @@
   - Seeded synthetic tamper benchmark (`SEED=20261103`): Image ELA AUC 1.000, Noise-Residual AUC 1.000, Copy-Move AUC 1.000, Double-JPEG AUC 0.925, Combined Image Tampering AUC 0.925 (TPR 100.0% [95.4%, 100%], FPR 17.5% [8.8%, 32.0%] due to high-Q DCT rounding); Video Tampering AUC 1.000 (TPR 100.0%, FPR 0.0%); Audio Tampering AUC 1.000 (TPR 100.0%, FPR 0.0%) (`results/forensics_m3_tamper.json`, `results/EVIDENCE_LEDGER.md` §15.3).
 - **What is next**:
   - **M4**: Design note `docs/design/M4.md` → Implement `src/satyapan/forensics/provenance.py` (EXIF/XMP/PNG metadata extraction & consistency checks: dates, software, GPS, embedded thumbnail vs main image; C2PA Content Credentials / JUMBF verification; compression-fingerprint source attribution: camera original vs WhatsApp/social re-encode vs editing software) → Tests `tests/forensics/test_m4_provenance.py` → Benchmark `research/forensics/eval_m4_provenance.py` → Ledger rows → `make check` green → Commit.
+
+## M4 — Provenance & Source Attribution (Completed)
+- **What we did**:
+  - Wrote `docs/design/M4.md` and recorded the `c2pa-python` offline wheel fallback in `BLOCKERS.md`.
+  - Implemented `src/satyapan/forensics/provenance.py` (`extract_and_verify_metadata`, `embed_c2pa_jumbf_manifest`, `verify_c2pa_credentials`, `attribute_compression_source`, `analyze_provenance`).
+  - Added unit tests in `tests/forensics/test_m4_provenance.py` and seeded benchmark `research/forensics/eval_m4_provenance.py`.
+- **What is measured**:
+  - 3-class compression-fingerprint attribution (`n=150`): 98.0% accuracy (147/150), 0.980 macro-F1 (`camera_original` F1 0.971, `social_messaging_reencode` F1 0.969, `editing_software_resave` F1 1.000).
+  - Metadata consistency checks (`n=60`): 30/30 anomalies caught (100% TPR), 0/30 false alarms (0% FPR).
+  - C2PA JUMBF verification (`n=30`): 15/15 valid signed manifests verified, 15/15 post-signing tampered manifests caught (`results/forensics_m4_provenance.json`, `results/EVIDENCE_LEDGER.md` §15.4).
+- **What is next**:
+  - **M5**: Design note `docs/design/M5.md` → Implement unified case analysis pipeline (`src/satyapan/forensics/pipeline.py`) and Explainable Forensic Dashboard (`src/satyapan/api/routes_forensics.py`, `/forensics` + `/api/forensics/*`) → Tests `tests/forensics/test_m5_dashboard.py` → Ledger rows → `make check` green → Commit.

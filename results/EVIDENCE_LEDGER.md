@@ -348,3 +348,14 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m3_tamper` �
 | Combined image tampering suite (all 4 checks), AUC / TPR / FPR | AUC **0.925** / TPR **100.0%** (80/80) / FPR **17.5%** (7/40) | 40 auth + 80 tampered | TPR [95.4%, 100%], FPR [8.8%, 32.0%] | same; false alarms come from DCT rounding combs on near-lossless $Q\ge 93$ single JPEGs | measured (synthetic) |
 | Video tampering (duplicated frames + dropped/spliced frame jumps), AUC / TPR / FPR | AUC **1.000** / TPR **100.0%** (15/15) / FPR **0.0%** (0/15) | 15 auth + 15 tampered videos | TPR [79.6%, 100%], FPR [0.0%, 20.4%] | same | measured (synthetic) |
 | Audio tampering (waveform splice transients + room noise-floor step shifts), AUC / TPR / FPR | AUC **1.000** / TPR **100.0%** (20/20) / FPR **0.0%** (0/20) | 20 auth + 20 spliced audio clips | TPR [83.9%, 100%], FPR [0.0%, 16.1%] | same | measured (synthetic) |
+
+### 15.4 M4 — Multimedia Provenance & Source Attribution (`src/satyapan/forensics/provenance.py`)
+
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m4_provenance` → `results/forensics_m4_provenance.json`. Data: seeded re-encoded provenance set (`SEED=20261104`, labeled **synthetic**). Status: **measured (synthetic)**.
+
+| Claim | Value | n | Data / command | Status |
+|---|---|---|---|---|
+| 3-class compression-fingerprint source attribution (`camera_original` vs `social_messaging_reencode` vs `editing_software_resave`), accuracy / macro-F1 | **98.0%** (147/150) / **0.980** | 150 (50 per class) | `python -m research.forensics.eval_m4_provenance` (synthetic re-encoded set) | measured (synthetic) |
+| Per-class F1: `camera_original` / `social_messaging_reencode` / `editing_software_resave` | **0.971** / **0.969** / **1.000** | 50 per class | same; 3 high-Q ($Q\ge 82$) messaging re-encodes fell near the camera boundary | measured (synthetic) |
+| Metadata consistency anomaly detection (date inversion, Null Island GPS, thumbnail mismatch, AI PNG parameters, editor tags), TPR / FPR | **100.0%** (30/30) / **0.0%** (0/30) | 30 clean + 30 anomalous | same | measured (synthetic) |
+| C2PA JUMBF Content Credentials verification (valid Ed25519-signed manifests vs post-signing byte-tampered manifests) | **15/15** verified, **15/15** tampered caught | 30 assets (JPEG APP11 + PNG `caBX`) | same | measured |

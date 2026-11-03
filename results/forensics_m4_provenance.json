@@ -1,0 +1,40 @@
+{
+  "milestone": "M4",
+  "seed": 20261104,
+  "compression_attribution": {
+    "n_total": 150,
+    "n_per_class": 50,
+    "accuracy": 0.98,
+    "macro_f1": 0.98,
+    "per_class": {
+      "camera_original": {
+        "precision": 0.9434,
+        "recall": 1.0,
+        "f1": 0.9709
+      },
+      "social_messaging_reencode": {
+        "precision": 1.0,
+        "recall": 0.94,
+        "f1": 0.9691
+      },
+      "editing_software_resave": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0
+      }
+    }
+  },
+  "metadata_consistency": {
+    "n_clean": 30,
+    "n_anomalous": 30,
+    "tpr": 1.0,
+    "fpr": 0.0,
+    "caught": "30/30",
+    "false_alarms": "0/30"
+  },
+  "c2pa_verification": {
+    "engine": "satyapan-jumbf-c2pa (c2pa-python fallback documented in BLOCKERS.md)",
+    "valid_manifests_verified": "15/15",
+    "post_sign_tampering_caught": "15/15"
+  }
+}
