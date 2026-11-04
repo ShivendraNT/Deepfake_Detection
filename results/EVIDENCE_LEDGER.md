@@ -324,7 +324,7 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m1_locker` �
 
 ### 15.2 M2 — Deepfake & Synthetic Media Detection Engine (`src/satyapan/forensics/deepfake.py`)
 
-Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m2_deepfake` → `results/forensics_m2_deepfake.json`, `config/whole_image_synthetic.json`. Status: **measured (synthetic: procedures-generated camera-physics vs GAN/diffusion-artifact images; this measures detector sensitivity to the construction it targets, not field accuracy — field numbers for faces/voices are in §§11–12).**
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m2_deepfake` → `results/forensics_m2_deepfake.json`, `config/whole_image_synthetic.json`. Status: **measured (synthetic: procedurally generated camera-physics vs GAN/diffusion-artifact images; this measures detector sensitivity to the construction it targets, not field accuracy — field numbers for faces/voices are in §§11–12).**
 
 Protocol change and why: the first M2 calibration was fitted on clean images only, and an M7 end-to-end run on the committed demo kit caught it calling an ordinary JPEG Q68 4:2:0 WhatsApp copy "consistent with synthetic" (0.82). Recompressed authentic images are now **in the calibration split**, thresholds are taken over all authentic val images, and a compression gate caps strong whole-image scores at "suspicious" when chroma is subsampled or Q <= 80 (it cannot separate synthesis from quantisation there). A resampling gate likewise stops a downscale/upscale step being read as generator smoothing. Both changes came from measured false alarms, not from tuning on test data.
 
