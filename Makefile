@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test demo docker-demo clean
+.PHONY: triage scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test demo docker-demo clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -33,6 +33,7 @@ help:
 	@echo "make dry-run       automated end-to-end rehearsal (real app, fake speech)"
 	@echo "make oob-check     check the approver phone page over HTTP (engine must be running)"
 	@echo "make demo          forensic demo: intake -> analysis -> PDF report on demo_kit/ (offline)"
+	@echo "make triage F=dir  screen a folder: risk-ranked table + near-duplicate groups (CSV optional)"
 	@echo "make docker-demo   the same, one command, inside Docker (docker compose up --build)"
 
 sync:
@@ -143,6 +144,12 @@ dry-run:
 
 oob-check:
 	$(RUN) python scripts/oob_http_check.py
+
+# Screen an evidence dump: RISK ORDER + near-duplicate groups. Nothing is sealed or stored.
+#   make triage F=/evidence/dump
+triage:
+	@if [ -z "$(F)" ]; then echo "Usage: make triage F=/path/to/folder [CSV=out.csv]"; exit 2; fi
+	$(RUN) python scripts/forensics_scan.py "$(F)" $(if $(CSV),--csv $(CSV),)
 
 # Forensic workstation: one command, fully offline, ends with a PDF + Section 63 draft.
 demo:

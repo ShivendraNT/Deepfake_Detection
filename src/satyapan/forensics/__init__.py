@@ -47,6 +47,14 @@ from satyapan.forensics.tamper import (
     ela_analysis,
     noise_residual_analysis,
 )
+from satyapan.forensics.triage import (
+    TriageItem,
+    ahash,
+    dhash,
+    find_duplicate_groups,
+    hamming,
+    triage_paths,
+)
 
 __all__ = [
     "GENESIS_LINK",
@@ -56,7 +64,13 @@ __all__ = [
     "ForensicLocker",
     "ProvenanceAnalysisResult",
     "TamperAnalysisResult",
+    "TriageItem",
     "VerifyReport",
+    "ahash",
+    "dhash",
+    "find_duplicate_groups",
+    "hamming",
+    "triage_paths",
     "analyze_audio_deepfake",
     "analyze_audio_tampering",
     "analyze_case",

@@ -1,0 +1,19 @@
+{
+  "idea": "batch triage + near-duplicate clustering",
+  "seed": 20261108,
+  "files_screened": 60,
+  "seconds": 27.371,
+  "files_per_second": 2.19,
+  "duplicates": {
+    "ground_truth_pairs": 20,
+    "true_positives": 20,
+    "predicted_pairs": 20,
+    "extra_pairs": 0,
+    "precision": 1.0,
+    "recall": 1.0
+  },
+  "risk_ranking_auc": 1.0,
+  "high_risk": 20,
+  "verify": 17,
+  "duplicate_groups": 20
+}

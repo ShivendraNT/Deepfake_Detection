@@ -769,6 +769,34 @@ class ForensicLocker:
             )
         return resolved
 
+    def annotate(
+        self,
+        evidence_id: str,
+        note: str,
+        *,
+        actor: str | None = None,
+        now: datetime | None = None,
+    ) -> CustodyEntry:
+        """Attach an examiner note to an exhibit as a signed `annotation` custody entry.
+
+        The note is written into the same Ed25519 hash chain as intake and analysis, so its text
+        and position are tamper-evident. It never changes a detector finding.
+        """
+        item = self.get_item(evidence_id)
+        text = (note or "").strip()
+        if not text:
+            raise ValueError("annotation note must not be empty")
+        entry = self.log_action(
+            evidence_id=evidence_id,
+            action="annotation",
+            file_sha256=item.sha256,
+            actor=actor or self.collector,
+            notes=text[:2000],
+            now=now,
+        )
+        self.write_anchor()
+        return entry
+
     def custody_entries(self) -> list[CustodyEntry]:
         return read_custody_log(self.custody_file)
 

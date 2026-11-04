@@ -101,3 +101,9 @@
   - `make demo`: 6/6 expectations, integrity PASSED, report reproducible (§15.8).
   - Packaging contract 4/4 tests. Docker image build NOT executed here (no daemon) — recorded in `BLOCKERS.md`.
 - **What is next**: IDEAS.md (10 scored directions) and build the top measurable ones; then final polish and handoff.
+
+## Ideas loop (after M8)
+- Wrote `IDEAS.md`: 10 directions scored by impact x effort.
+- **Built #1 (batch triage)** and **#2 (near-duplicate clustering)**: `src/satyapan/forensics/triage.py`, `scripts/forensics_scan.py`, `make triage F=...`. Measured on a seeded 60-file set: duplicate precision/recall **100% / 100%**, risk-ranking AUC **1.000**, **2.19 files/s**. The first version used a coarse dHash and merged different photos that shared a lighting gradient (precision 14-18%); replaced with pHash + normalized-correlation confirmation.
+- **Built #3 (signed examiner annotations)**: `ForensicLocker.annotate()` writes an `annotation` entry into the same Ed25519 chain; editing it breaks the chain.
+- Ledger §16 has the rows. Next: #4 Hindi report strings, #5 reliability diagrams (ECE), #7 original-vs-working diff.

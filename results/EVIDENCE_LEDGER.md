@@ -395,3 +395,29 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m7_adversaria
 **How to quote §§15.2–15.7 honestly.** These rows are measured on **procedurally generated** media in which the manipulated class is built from exactly the artefacts the detectors target (GAN upsampling grids, diffusion VAE smoothing, spliced-in foreign noise, room-tone shifts). They show each detector sees its target and does not fire on matched controls — they are **not** field accuracy. The field numbers are the public-data rows: FF++/DFDC faces and In-the-Wild voices in §§11–12 (for example 74.7% of FF++ fakes vs 24.8% of DFDC fakes flagged for a call-back; 0 of 563 real test videos called synthetic; In-the-Wild voice AUC 0.921 clean). Quote those for accuracy, and these for sensitivity and ablation.
 
 | Multi-page PDF report text extraction (`pdfplumber`) + embedded `/DCTDecode` evidence heatmaps + Section 63 BSA 2023 Parts A & B draft certificate | **PASS** (≥4 pages, all exhibit hashes & Section 63 schedule verified) | 4-exhibit multi-modal case | same | measured |
+
+---
+
+## 16. Ideas built after M1–M8 (`src/satyapan/forensics/triage.py`, `locker.annotate`)
+
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_ideas_triage` → `results/forensics_ideas_triage.json`. Data: seeded synthetic set (`SEED=20261108`): 20 distinct authentic scenes, 20 distinct manipulated scenes, 20 JPEG Q55–85 4:2:0 re-encoded copies of the authentic scenes. Status: **measured (synthetic; triage mechanics, not field accuracy)**.
+
+### 16.1 Batch triage + near-duplicate clustering (IDEAS #1 and #2)
+
+| Claim | Value | n | Data / command | Status |
+|---|---|---|---|---|
+| Near-duplicate clustering (pHash ≤ 40 **and** 32x32 normalized correlation >= 0.995): precision / recall | **100% / 100%** (20 true pairs, 20 predicted, 0 spurious) | 60 files, 20 ground-truth copy pairs | `python -m research.forensics.eval_ideas_triage` | measured (synthetic) |
+| Risk ranking of distinct content (authentic originals vs manipulated), ROC AUC | **1.000** | 40 images | same | measured (synthetic) |
+| Triage throughput on one laptop CPU (all three image engines per file) | **2.19 files/s** | 60 files in 27.4 s | same | measured |
+| Files that cannot be read are reported as `unreadable`, never crash the run | covered by `tests/forensics/test_ideas_triage.py` | 1 corrupt file | `uv run pytest tests/forensics/test_ideas_triage.py` | measured (functional) |
+
+Why two similarity signals: a coarse hash alone merged different photos that share a lighting
+gradient (precision fell to 14–18% while recall stayed 100%). pHash prefilter plus a normalized-
+correlation confirmation fixed it; the cost is that a **mirrored or heavily cropped** copy can be
+missed (recall on such transforms is not claimed). Duplicates are a triage aid, not identification.
+
+### 16.2 Signed examiner annotations (IDEAS #3)
+
+| Claim | Value | Data / command | Status |
+|---|---|---|---|
+| Examiner notes are appended as an `annotation` entry in the same Ed25519 hash chain; editing the note breaks the chain (`verify_all()` fails, seq reported) | PASS | `uv run pytest tests/forensics/test_ideas_triage.py::test_annotations_are_signed_and_tamper_evident` | measured (functional) |
