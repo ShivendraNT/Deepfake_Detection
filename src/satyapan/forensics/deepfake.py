@@ -659,7 +659,21 @@ def analyze_video_deepfake(
     if locker is not None:
         locker.assert_is_working_copy(p)
 
-    from satyapan.video.io import iter_frames, read_audio
+    try:
+        from satyapan.video.io import iter_frames, read_audio
+    except ImportError as exc:  # video extra not installed (e.g. slim offline container)
+        finding, conf, stmt = _forensic_finding_and_statement(
+            0.0, 0.68, 0.48, "video", abstained=True, abstain_reason="video_decoder_not_installed"
+        )
+        return DeepfakeAnalysisResult(
+            modality="video",
+            finding=finding,
+            confidence=conf,
+            synthetic_probability=0.0,
+            statement=stmt,
+            why=[f"Video decoding dependencies are not installed here ({exc})."],
+            limitations=["Install the `video` extra (or run the full image) to analyse video."],
+        )
 
     try:
         raw_frames = list(iter_frames(p, max_s=15.0))
@@ -918,7 +932,21 @@ def analyze_audio_deepfake(
         "webm": "audio/webm",
     }
     mime = mime_map.get(ext, "audio/wav")
-    samples = decode_to_16k_mono(raw_bytes, mime)
+    try:
+        samples = decode_to_16k_mono(raw_bytes, mime)
+    except ValueError as exc:  # ffmpeg missing or undecodable stream
+        finding, conf, stmt = _forensic_finding_and_statement(
+            0.0, 0.68, 0.48, "audio", abstained=True, abstain_reason="audio_decoder_unavailable"
+        )
+        return DeepfakeAnalysisResult(
+            modality="audio",
+            finding=finding,
+            confidence=conf,
+            synthetic_probability=0.0,
+            statement=stmt,
+            why=[f"Audio could not be decoded here: {exc}"],
+            limitations=["Install ffmpeg (and the audio deps) to analyse audio."],
+        )
     speech_s = estimate_speech_seconds(samples)
     windows = split_windows(samples)
 

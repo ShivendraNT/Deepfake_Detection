@@ -384,6 +384,14 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m7_adversaria
 | Metadata + C2PA stripping: metadata-based catch before strip → after strip; pixel-only fallback after strip | **100% → 0%**; pixel fallback **100%** (30/30) | 30 synthetic/exif-tagged images | fallback [88.7%, 100%] | same | measured (synthetic) |
 | Golden-file test: Section 63 certificate Markdown regenerated from `demo_kit/manifest.json` | byte-identical to committed `demo_kit/golden_section63.md` | 1 | n/a | same pytest file | measured |
 
+### 15.8 M8 — Offline Packaging, One-Command Demo & Judge Handbooks
+
+| Claim | Value | n | Data / command | Status |
+|---|---|---|---|---|
+| One-command forensic demo `make demo` (intake -> M2/M3/M4 -> PDF + Section 63 draft) on the committed `demo_kit/` | **6/6 expected findings matched**, locker integrity PASSED, 18 signed custody entries, report written in 4 formats | 6 exhibits | `make demo` (`scripts/forensic_demo.py`) | measured |
+| Offline packaging contract: `docker compose up --build` service definition, loopback-only port, `SATYAPAN_AWS_MODE=off`, no baked models, healthcheck, demo profile | **4/4 tests PASS** | compose + Dockerfile + demo kit | `uv run pytest tests/forensics/test_m8_deploy.py` | measured (structure only; the image build was **not executed** here because no Docker daemon is available — see `BLOCKERS.md`) |
+| Non-Docker path documented and verified (`make run` + `/forensics`, `make demo`) | PASS | — | same | measured |
+
 **How to quote §§15.2–15.7 honestly.** These rows are measured on **procedurally generated** media in which the manipulated class is built from exactly the artefacts the detectors target (GAN upsampling grids, diffusion VAE smoothing, spliced-in foreign noise, room-tone shifts). They show each detector sees its target and does not fire on matched controls — they are **not** field accuracy. The field numbers are the public-data rows: FF++/DFDC faces and In-the-Wild voices in §§11–12 (for example 74.7% of FF++ fakes vs 24.8% of DFDC fakes flagged for a call-back; 0 of 563 real test videos called synthetic; In-the-Wild voice AUC 0.921 clean). Quote those for accuracy, and these for sensitivity and ablation.
 
 | Multi-page PDF report text extraction (`pdfplumber`) + embedded `/DCTDecode` evidence heatmaps + Section 63 BSA 2023 Parts A & B draft certificate | **PASS** (≥4 pages, all exhibit hashes & Section 63 schedule verified) | 4-exhibit multi-modal case | same | measured |

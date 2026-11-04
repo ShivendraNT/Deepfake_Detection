@@ -1,5 +1,44 @@
 # Satya for judges: one page per criterion
 
+> **New here? Start with §PS below.** It maps the problem statement
+> *"Multimedia Evidence Authentication, Deepfake Detection and Provenance Analysis Framework"* to
+> the exact feature, file and measured number. The rest of this page is the original consumer /
+> business guide and still works.
+
+---
+
+## PS: the five deliverables, mapped
+
+Users: **investigating agencies and forensic laboratories**. Everything runs offline on a laptop;
+nothing is uploaded; a human examiner signs.
+
+| PS deliverable | Where it lives | What it does | Measured (see `results/EVIDENCE_LEDGER.md`) |
+|---|---|---|---|
+| **1. Deepfake & synthetic media detection engine** | `src/satyapan/forensics/deepfake.py`; reuses `src/satyapan/video/` (GenD CLIP ViT-L/14 + rPPG/lighting/lip-sync fusion) and `src/satyapan/voice/` (XLS-R) | Face-swap check on photos and video frames; whole-image diffusion/GAN check (spectral checkerboard, photon-transfer noise curve, CFA residual correlation, patch noise uniformity, CLIP multi-crop); 5 s voice-clone windows; frame-level + 6 s window aggregation | Faces: FF++ test AUC 0.946, DFDC 0.778, **0 of 563 real videos called synthetic** (§11). Voices: In-the-Wild AUC 0.921 clean / 0.909 Opus, 0.6% of genuine voices flagged (§12). Whole-image (synthetic data): AUC 1.000, FPR 0% clean and recompressed (§15.2) |
+| **2. Multimedia authentication & tampering framework** | `src/satyapan/forensics/locker.py` (M1) + `src/satyapan/forensics/tamper.py` (M3) | Case folders; SHA-256 **before** parsing; sealed originals `0o444`; every analysis on a verified working copy; Ed25519-signed hash-chained custody with RFC 6962 Merkle proofs. Tampering: ELA, double-JPEG/DCT comb + block-grid, copy-move, noise-residual inconsistency, all with heatmaps; video duplicated/dropped frames; audio splice transients + room-tone shifts + spectrogram | M1: 50/50 read-only originals, 50/50 working copies verified, 50/50 original-access attempts blocked, 50/50 Merkle proofs, **50/50 tamper attacks caught** (§15.1). M3 (synthetic): image AUC 1.000 / TPR 100% / FPR 0%, video 1.000, audio 1.000 (§15.3) |
+| **3. Provenance & source attribution** | `src/satyapan/forensics/provenance.py` | EXIF/XMP/PNG metadata + 5 consistency checks (chronology, editor/AI signatures, GPS plausibility, embedded thumbnail vs main image, container mismatch); C2PA Content Credentials (JUMBF) verification; 3-class compression fingerprint (`camera_original` / `social_messaging_reencode` / `editing_software_resave`) | 3-class accuracy **98.0%**, macro-F1 0.980; metadata anomalies 30/30 caught, 0/30 false alarms; C2PA 15/15 valid verified, 15/15 post-signing tampering caught (§15.4) |
+| **4. Explainable forensic dashboard** | `src/satyapan/api/routes_forensics.py` (`GET /forensics`, `/api/forensics/*`), UI served inline (no CDN) | One case view: sealed inventory with SHA-256, per-check finding + confidence + "why" + heatmaps/spectrograms, chronological timeline, signed custody + Merkle proof, live 1-bit **tamper simulator**, and a **Limits of This Analysis** panel | 2/2 acceptance tests; 0 external network references in the served HTML; 4-modality demo case; tamper simulation flips the integrity banner and restores (§15.5) |
+| **5. Automated forensic reporting** | `src/satyapan/forensics/report.py`, `src/satyapan/forensics/section63.py` | One click -> PDF + HTML + MD + JSON: case details, SHA-256 schedule, custody chain, Merkle root, methods, per-item findings with embedded evidence images, limitations, examiner sign-off, and a **draft Section 63 (BSA 2023) Parts A & B** certificate | All four formats **byte-identical across runs** from stored case data; `pdfplumber` extracts every exhibit hash and the Section 63 schedule from the PDF (§15.6) |
+
+**Run it in one command (no Docker):**
+
+```bash
+make demo        # intake -> analysis -> PDF report + Section 63 draft, on the committed demo_kit/
+make run         # then open http://127.0.0.1:8000/forensics  ->  "Load Demo Case"
+```
+
+**Or in Docker:** `docker compose up --build` then open `http://127.0.0.1:8000/forensics`.
+The image makes no outbound calls; the large face/voice models are optional and mounted, not baked
+(see `BLOCKERS.md` for what was and was not executed here).
+
+**What we do not claim.** Findings are "consistent with" / "inconsistent with", never guilt or
+legal authenticity. The synthetic-benchmark rows measure detector sensitivity, not field accuracy.
+Known failure cases are listed in [`LIMITS.md`](LIMITS.md), including heavy re-encoding, resampling,
+unseen swap methods, small faces, noisy cloned voices, flat-region copy-move, cross-faded audio
+splices, and the third-party C2PA COSE chain we could not verify offline.
+
+---
+
 **Satya (सत्य) is a scam and deepfake check for one person, on their own laptop.** Forward it
 what a scammer sent you (a message, a screenshot, a voice note, a photo or a video), or let it
 listen to a call after you say yes. It answers in one line: **PASS**, **VERIFY** (call back on a

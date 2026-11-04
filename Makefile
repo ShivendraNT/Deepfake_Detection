@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
+.PHONY: scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test demo docker-demo clean
 
 help:
 	@echo "make sync          install core + dev deps (uv)"
@@ -32,6 +32,8 @@ help:
 	@echo "make judge         score the detector stack + check a judge's own input"
 	@echo "make dry-run       automated end-to-end rehearsal (real app, fake speech)"
 	@echo "make oob-check     check the approver phone page over HTTP (engine must be running)"
+	@echo "make demo          forensic demo: intake -> analysis -> PDF report on demo_kit/ (offline)"
+	@echo "make docker-demo   the same, one command, inside Docker (docker compose up --build)"
 
 sync:
 	uv sync --inexact
@@ -141,6 +143,13 @@ dry-run:
 
 oob-check:
 	$(RUN) python scripts/oob_http_check.py
+
+# Forensic workstation: one command, fully offline, ends with a PDF + Section 63 draft.
+demo:
+	$(RUN) python scripts/forensic_demo.py $(DEMO_ARGS)
+
+docker-demo:
+	docker compose run --rm demo
 
 console-test:
 	cd console && npm install && npm test

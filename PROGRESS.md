@@ -89,3 +89,15 @@
   - Corrected M2/M3 numbers after the fixes: M3 combined image AUC 1.000, FPR **0%** (was 17.5%); M2 compressed-authentic FPR 0% (was 100% on the demo case).
 - **What is next**:
   - **M8**: `Dockerfile` + `docker-compose.yml` (offline), `make demo` one-command scripted case, `docs/JUDGES.md` deliverable-to-feature map, `docs/LIMITS.md`, `docs/explain/<module>.md` — then `make check`, commit.
+
+## M8 — Deployable, One-Command Demo & Judge Handbooks (Completed)
+- **What we did**:
+  - `scripts/forensic_demo.py` + `make demo`: seals the 6 committed exhibits, runs every check, compares against the manifest, writes all 4 report formats, exits non-zero on a mismatch.
+  - `Dockerfile` + `docker-compose.yml` + `.dockerignore`: small offline image (ffmpeg + headless OpenCV), loopback-only port, no baked models, healthcheck, `demo` profile.
+  - `docs/JUDGES.md` now opens with a PS-deliverable-to-feature-and-number map; added `docs/LIMITS.md` and `docs/explain/*.md` for six modules.
+  - Graceful abstention when a decoder/model is missing (video/audio), so the slim container never 500s.
+  - `tests/forensics/test_m8_deploy.py` validates the packaging contract without needing a daemon.
+- **What is measured**:
+  - `make demo`: 6/6 expectations, integrity PASSED, report reproducible (§15.8).
+  - Packaging contract 4/4 tests. Docker image build NOT executed here (no daemon) — recorded in `BLOCKERS.md`.
+- **What is next**: IDEAS.md (10 scored directions) and build the top measurable ones; then final polish and handoff.

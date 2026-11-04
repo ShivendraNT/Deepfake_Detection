@@ -1,0 +1,40 @@
+# Satyapan x Pramaan — one command, offline:
+#
+#   docker compose up --build
+#   open http://127.0.0.1:8000/forensics   ->  "Load Demo Case"
+#   (or: docker compose run --rm demo     # scripted intake -> analysis -> report)
+#
+# The container makes no outbound network calls. The compromise-noted models are optional:
+# to enable the face/voice engines, place them under ./models and uncomment the volume.
+services:
+  forensic-lab:
+    build: .
+    image: satyapan-forensics:latest
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      SATYAPAN_FORENSIC_CASES_DIR: /data/cases
+      SATYAPAN_AWS_MODE: "off"
+    volumes:
+      - forensic_cases:/data/cases
+      # - ./models:/app/models:ro   # optional: GenD / XLS-R ONNX models
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-fsS", "http://127.0.0.1:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
+  demo:
+    build: .
+    image: satyapan-forensics:latest
+    profiles: ["demo"]
+    entrypoint: ["python", "scripts/forensic_demo.py", "--out", "/data/demo"]
+    environment:
+      SATYAPAN_FORENSIC_CASES_DIR: /data/demo
+    volumes:
+      - forensic_cases:/data
+
+volumes:
+  forensic_cases:

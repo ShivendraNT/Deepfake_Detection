@@ -705,7 +705,21 @@ def analyze_video_tampering(
     if locker is not None:
         locker.assert_is_working_copy(p)
 
-    import cv2
+    try:
+        import cv2
+    except ImportError as exc:  # video extra not installed (slim offline container)
+        return TamperAnalysisResult(
+            modality="video",
+            finding="inconclusive_abstain",
+            confidence=0.0,
+            tamper_probability=0.0,
+            statement=(
+                "Video decoding dependencies are not installed here, so temporal tampering "
+                "checks abstained instead of guessing."
+            ),
+            why=[f"OpenCV/FFmpeg bindings unavailable ({exc})."],
+            limitations=["Install the `video` extra to run video tampering checks."],
+        )
 
     cap = cv2.VideoCapture(str(p))
     if not cap.isOpened():
@@ -923,7 +937,20 @@ def analyze_audio_tampering(
         "flac": "audio/flac",
         "webm": "audio/webm",
     }
-    samples = np.asarray(decode_to_16k_mono(raw_bytes, mime_map.get(ext, "audio/wav")), np.float32)
+    try:
+        samples = np.asarray(
+            decode_to_16k_mono(raw_bytes, mime_map.get(ext, "audio/wav")), np.float32
+        )
+    except ValueError as exc:
+        return TamperAnalysisResult(
+            modality="audio",
+            finding="inconclusive_abstain",
+            confidence=0.0,
+            tamper_probability=0.0,
+            statement="Audio could not be decoded here, so splice checks abstained.",
+            why=[f"Decoder error: {exc}"],
+            limitations=["Install ffmpeg to run audio tampering checks."],
+        )
     sr = 16000
     duration_s = len(samples) / float(sr)
     if duration_s < 1.0:
