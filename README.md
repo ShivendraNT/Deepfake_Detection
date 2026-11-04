@@ -30,6 +30,41 @@ company's vendor master, sends "did you ask for this?" to the real approver's ph
 
 ---
 
+## 0. For forensic labs: multimedia evidence authentication, deepfake detection and provenance
+
+The same offline engine also serves **investigating agencies and forensic laboratories** with the
+five deliverables of the *Multimedia Evidence Authentication, Deepfake Detection and Provenance
+Analysis Framework* problem statement:
+
+- **Evidence intake & integrity** — case folders, SHA-256 before parsing, sealed read-only originals
+  (`0o444`), every analysis on a verified working copy, Ed25519-signed hash-chained custody and RFC
+  6962 Merkle proofs (`src/satyapan/forensics/locker.py`).
+- **Deepfake & synthetic media engine** — face-swap (GenD), whole-image diffusion/GAN checks, video
+  frames + 6 s windows, voice-clone (XLS-R) (`forensics/deepfake.py`).
+- **Tampering framework** — ELA, double-JPEG/DCT, copy-move, noise residuals, all with heatmaps;
+  duplicated/dropped video frames; audio splice + room-tone cues (`forensics/tamper.py`).
+- **Provenance & source attribution** — EXIF/XMP consistency, embedded-thumbnail mismatch, C2PA
+  Content Credentials, 3-class compression fingerprint (`forensics/provenance.py`).
+- **Explainable dashboard** — `http://127.0.0.1:8000/forensics`: findings + confidence + "why" +
+  images, timeline, signed custody with a live tamper simulator, and a limits panel.
+- **Court-facing report** — one click: PDF/HTML/MD/JSON with the hash schedule, custody chain,
+  methods, evidence images, limitations, examiner sign-off and a draft **Section 63 (BSA 2023)**
+  certificate (`forensics/report.py`, `forensics/section63.py`).
+
+```bash
+make demo        # intake -> analysis -> report on the committed 6-file demo_kit/ (offline)
+make triage F=evidence/dump     # risk-ranked screening + near-duplicate groups, nothing stored
+make run         # then http://127.0.0.1:8000/forensics  ->  "Load Demo Case"
+docker compose up --build        # the same, one command, in a container
+```
+
+Start with [`docs/JUDGES.md`](docs/JUDGES.md) §PS (deliverable -> file -> measured number),
+[`docs/LIMITS.md`](docs/LIMITS.md) (named failure cases) and `docs/explain/` (one page per module).
+Every number is a row in [`results/EVIDENCE_LEDGER.md`](results/EVIDENCE_LEDGER.md) (§15–§16 for the
+forensic work).
+
+---
+
 ## 1. What you need (install once)
 
 | Requirement | Why | Check |

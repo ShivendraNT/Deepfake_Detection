@@ -426,9 +426,9 @@ export const COPY_TABLE: Record<string, CopyEntry> = {
     hi: 'पैसे भेजने से पहले एक पल रुकिए।',
   },
   'alert.body': {
-    en: "This call asked for: {chips}. That doesn't prove who is speaking — let's check with {approver} on their own phone.",
-    hinglish: 'Is call mein maanga gaya: {chips}. Isse yeh pakka nahi hota ki bol kaun raha hai — chalo {approver} se unke apne phone par confirm karte hain.',
-    hi: 'इस कॉल में माँगा गया: {chips}। इससे यह पक्का नहीं होता कि बोल कौन रहा है — चलिए {approver} से उनके अपने फ़ोन पर पुष्टि करते हैं।',
+    en: "Possible deepfake scam: this video pushes {chips}. Don't send money from a video. Verify independently.",
+    hinglish: 'Shayad deepfake scam: yeh video {chips} ke liye dabaav daal raha hai. Video dekh kar paise mat bhejo. Khud alag se verify karo.',
+    hi: 'संभावित डीपफेक स्कैम: यह वीडियो {chips} के लिए दबाव डाल रहा है। वीडियो देखकर पैसे न भेजें। खुद अलग से पुष्टि करें।',
   },
   'alert.chips_fallback': {
     en: 'urgent changes',
@@ -436,14 +436,14 @@ export const COPY_TABLE: Record<string, CopyEntry> = {
     hi: 'ज़रूरी बदलाव',
   },
   'action.verify': {
-    en: 'Verify with {approver}',
-    hinglish: '{approver} se verify karo',
-    hi: '{approver} से पुष्टि करें',
+    en: 'Verify independently',
+    hinglish: 'Khud alag se verify karo',
+    hi: 'खुद अलग से पुष्टि करें',
   },
   'action.verify_with_approver': {
-    en: 'Verify with {approver}',
-    hinglish: '{approver} se verify karo',
-    hi: '{approver} से पुष्टि करें',
+    en: 'Verify independently',
+    hinglish: 'Khud alag se verify karo',
+    hi: 'खुद अलग से पुष्टि करें',
   },
   'action.copy_reply': {
     en: 'Copy a safe reply',

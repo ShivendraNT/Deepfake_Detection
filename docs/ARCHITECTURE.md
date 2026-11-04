@@ -120,7 +120,16 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/repository.py` | in-memory case store | T01 | done |
 | `src/satyapan/api/` | HTTP routes | T01 (+ each task) | done (glue) |
 | `src/satyapan/api/companion/` | T25 desktop companion event bus, state machine, and REST routes | T25 | done |
-| `src/satyapan/forensics/` | Multimedia forensic locker (Ed25519 custody, RFC 6962 Merkle, read-only originals + working copies), deepfake engine, tampering suite, provenance/C2PA/attribution, and BSA Sec 63 report | M1–M8 | done |
+| `src/satyapan/forensics/` | Forensic laboratory suite (problem statement: multimedia authentication, deepfake, provenance) | M1–M8 | done |
+| `src/satyapan/forensics/locker.py` | Case folders, SHA-256 before parsing, read-only originals (`0o444`), working copies, Ed25519 custody chain, RFC 6962 Merkle proofs, signed annotations | M1 | done |
+| `src/satyapan/forensics/deepfake.py` | Face-swap (GenD), whole-image diffusion/GAN, video frame+window, voice-clone (XLS-R); compression and resampling gates | M2 | done |
+| `src/satyapan/forensics/tamper.py` | ELA, double-JPEG/DCT, copy-move, noise-residual (heatmaps); duplicated/dropped video frames; audio splice + room-tone | M3 | done |
+| `src/satyapan/forensics/provenance.py` | EXIF/XMP/thumbnail consistency, C2PA JUMBF verification, 3-class compression attribution | M4 | done |
+| `src/satyapan/forensics/pipeline.py` | One case: working copy -> M2+M3+M4 per item, combined finding, timeline, `analysis.json`, demo seeder | M5 | done |
+| `src/satyapan/forensics/report.py` | Reproducible PDF/HTML/MD/JSON forensic report with embedded evidence images and Sec 63 draft | M6 | done |
+| `src/satyapan/forensics/section63.py` | Draft BSA 2023 Section 63 Parts A & B (adapted from Pramaan, attributed) | M6 | done |
+| `src/satyapan/forensics/triage.py` | Batch screening: risk ranking, pHash + correlation duplicate clustering | M8 / IDEAS | done |
+| `src/satyapan/api/routes_forensics.py` | `/forensics` workstation + `/api/forensics/*` (cases, intake, artifacts, tamper sim, report) | M5 | done |
 | `extension/` | C13 | T07, T10, T22 | todo |
 | `console/` | console UI | T06 | todo |
 | `research/` | "Ask, Not Style" study + audio eval | T18-T21 | todo |

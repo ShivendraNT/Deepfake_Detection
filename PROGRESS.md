@@ -104,6 +104,6 @@
 
 ## Ideas loop (after M8)
 - Wrote `IDEAS.md`: 10 directions scored by impact x effort.
-- **Built #1 (batch triage)** and **#2 (near-duplicate clustering)**: `src/satyapan/forensics/triage.py`, `scripts/forensics_scan.py`, `make triage F=...`. Measured on a seeded 60-file set: duplicate precision/recall **100% / 100%**, risk-ranking AUC **1.000**, **2.19 files/s**. The first version used a coarse dHash and merged different photos that shared a lighting gradient (precision 14-18%); replaced with pHash + normalized-correlation confirmation.
+- **Built #1 (batch triage)** and **#2 (near-duplicate clustering)**: `src/satyapan/forensics/triage.py`, `scripts/forensics_scan.py`, `make triage F=...`. Measured on a seeded 60-file set: duplicate precision/recall **100% / 100%**, risk-ranking AUC **1.000**, **2.19 files/s**. The first version used a coarse dHash and merged different photos that shared a lighting gradient (precision 14-18%); pHash alone was unstable on smooth scenes, so the shipped rule is 32x32 normalized correlation >= 0.995 (pHash recorded for the examiner). Triage now also screens audio and video, and applies the same compression gate as the case view.
 - **Built #3 (signed examiner annotations)**: `ForensicLocker.annotate()` writes an `annotation` entry into the same Ed25519 chain; editing it breaks the chain.
 - Ledger §16 has the rows. Next: #4 Hindi report strings, #5 reliability diagrams (ECE), #7 original-vs-working diff.

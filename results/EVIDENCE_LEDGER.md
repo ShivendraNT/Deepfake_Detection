@@ -406,15 +406,17 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_ideas_triage`
 
 | Claim | Value | n | Data / command | Status |
 |---|---|---|---|---|
-| Near-duplicate clustering (pHash ≤ 40 **and** 32x32 normalized correlation >= 0.995): precision / recall | **100% / 100%** (20 true pairs, 20 predicted, 0 spurious) | 60 files, 20 ground-truth copy pairs | `python -m research.forensics.eval_ideas_triage` | measured (synthetic) |
+| Near-duplicate clustering (32x32 normalized correlation >= 0.995; pHash recorded but not decisive): precision / recall | **100% / 100%** (20 true pairs, 20 predicted, 0 spurious) | 60 files, 20 ground-truth copy pairs | `python -m research.forensics.eval_ideas_triage` | measured (synthetic) |
 | Risk ranking of distinct content (authentic originals vs manipulated), ROC AUC | **1.000** | 40 images | same | measured (synthetic) |
-| Triage throughput on one laptop CPU (all three image engines per file) | **2.19 files/s** | 60 files in 27.4 s | same | measured |
+| Triage throughput on one laptop CPU (all three image engines per file) | **2.22 files/s** | 60 images in 27.0 s | same | measured; audio/video files take about a second each |
 | Files that cannot be read are reported as `unreadable`, never crash the run | covered by `tests/forensics/test_ideas_triage.py` | 1 corrupt file | `uv run pytest tests/forensics/test_ideas_triage.py` | measured (functional) |
 
-Why two similarity signals: a coarse hash alone merged different photos that share a lighting
-gradient (precision fell to 14–18% while recall stayed 100%). pHash prefilter plus a normalized-
-correlation confirmation fixed it; the cost is that a **mirrored or heavily cropped** copy can be
-missed (recall on such transforms is not claimed). Duplicates are a triage aid, not identification.
+How the rule was chosen (both failures measured): a coarse dHash alone merged different photos that
+share a lighting gradient (precision 14–18% at 100% recall); pHash alone was unstable on very smooth
+scenes (median-threshold bits flipped on re-encoding: copy distances 26–56 while correlation stayed
+0.9997). The shipped rule uses normalized correlation >= 0.995, with pHash recorded for the examiner.
+The cost: a **mirrored or heavily cropped** copy can be missed (not claimed). Duplicates are a triage
+aid, not identification.
 
 ### 16.2 Signed examiner annotations (IDEAS #3)
 

@@ -39,9 +39,12 @@ Near-duplicate clustering: **precision 100%, recall 100%** on 20 ground-truth co
 0 spurious) among 60 files. Risk ranking of distinct content: **ROC AUC 1.000** (20 authentic vs 20
 manipulated). Throughput: **2.19 files/s** on one laptop CPU with all three image engines running.
 
-That precision number came from a fix: a coarse dHash alone merged different photos that share a
-lighting gradient (precision 14–18% at 100% recall). The shipped rule is **pHash ≤ 40 AND 32x32
-normalized correlation ≥ 0.995**; copies score 0.9997 correlation, distinct content ≤ 0.982.
+That precision number came from two fixes. A coarse dHash alone merged different photos that share
+a lighting gradient (precision 14–18% at 100% recall). pHash alone was also unstable on very smooth
+scenes — its median threshold flips many bits on re-encoding (copy distances 26–56 while correlation
+stayed 0.9997). The shipped rule is therefore **32x32 luminance normalized correlation ≥ 0.995**
+(pHash is recorded for the examiner, not used to decide). Copies score 0.9997 correlation, distinct
+content ≤ 0.982, and flat images are excluded so they cannot match everything.
 
 **Honest limits.** A mirrored or heavily cropped copy can be missed (not claimed). Two near-identical
 photographs of the same scene will group — correctly, but an examiner must still open them. It is a

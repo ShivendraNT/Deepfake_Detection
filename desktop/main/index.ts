@@ -103,7 +103,7 @@ let scopes: Scopes = { ...DEFAULT_SCOPES }
 let consentedThisRun = false
 let statusLine = 'Sleeping'
 
-let activeCall: (CallStarted & { source: CaptureSourceKind }) | null = null
+let activeCall: (CallStarted & { source: CaptureSourceKind; inMeeting?: boolean }) | null = null
 let stopLiveStream: (() => void) | null = null
 
 let lastCard: BubbleCard | null = null
@@ -381,6 +381,7 @@ async function ensureCapture(): Promise<BrowserWindow> {
 }
 
 function onCaptureStatus(status: CaptureStatus): void {
+  console.log(`[capture-status] state=${status.state} reason=${status.reason ?? '-'} source=${status.source ?? '-'}`)
   signal({ kind: 'capture', ...status })
   if (status.state === 'capturing') {
     setStatus(activeCall?.source === 'replay' ? 'Listening · DEMO REPLAY' : 'Listening to the call')
@@ -469,7 +470,12 @@ async function startCall(source: CaptureSourceKind): Promise<BridgeResult<CallSt
       language === 'auto' ? undefined : language,
       kind === 'loopback' ? meetingWatcher.meeting?.app : undefined,
     )
-    activeCall = { call_id: started.call_id, case_id: started.case_id, source: kind }
+    activeCall = {
+      call_id: started.call_id,
+      case_id: started.case_id,
+      source: kind,
+      inMeeting: kind === 'loopback' && Boolean(meetingWatcher.meeting),
+    }
     stopLiveStream?.()
     stopLiveStream = backend.streamLive(started.call_id, onLiveEvent)
     const win = await ensureCapture()
@@ -517,7 +523,8 @@ async function stopCall(): Promise<BridgeResult<null>> {
 function onMeeting(meeting: MeetingInfo | null): void {
   signal({ kind: 'meeting', meeting })
   // The call window closed while we were listening: stop at once.
-  if (!meeting && activeCall?.source === 'loopback') void stopCall()
+  // Only when the call began inside a detected meeting: a web video has no meeting window.
+  if (!meeting && activeCall?.source === 'loopback' && activeCall.inMeeting) void stopCall()
 }
 
 // ---------------------------------------------------------------------------------------------

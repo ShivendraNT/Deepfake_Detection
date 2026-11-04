@@ -56,8 +56,10 @@ def main(argv: list[str] | None = None) -> int:
     )
     items = report["items"]
 
+    kinds = report.get("by_type", {})
+    kind_txt = ", ".join(f"{v} {k}" for k, v in kinds.items() if v)
     print(
-        f"Screened {report['files_screened']} file(s), {report['images_screened']} image(s) in "
+        f"Screened {report['files_screened']} file(s) [{kind_txt}] in "
         f"{report['seconds']}s ({report['files_per_second']}/s). "
         f"High risk: {report['high_risk']}, verify: {report['verify']}, "
         f"duplicate groups: {len(report['duplicate_groups'])}"
