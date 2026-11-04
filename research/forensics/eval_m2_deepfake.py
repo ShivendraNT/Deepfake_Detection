@@ -1,14 +1,17 @@
 """M2 Calibration & Held-Out Benchmark (`research/forensics/eval_m2_deepfake.py`).
 
 Protocol:
-1. Validation split (n=80: 40 authentic + 40 synthetic/AI-generated): fits feature normalization,
-   logistic regression weights, and calibrates thresholds (`tau_hi` at <=2% val FPR, `tau_lo` at
-   <=5% val FPR), saving to `config/whole_image_synthetic.json`.
-2. Held-out test split (n=120: 60 authentic + 60 synthetic/AI-generated, disjoint seed): scored
-   once with frozen weights and thresholds. Reports ROC AUC, TPR, and FPR with 95% Wilson CIs.
-3. Compression-robustness test: re-encodes all 120 held-out test images through JPEG Q60 and
-   measures post-compression AUC, Delta-AUC, TPR, and FPR.
-4. Multi-modal spot check on `.cache/testkit` video and audio files (real vs deepfake/cloned).
+1. Validation split (n=160: 40 authentic clean, 40 authentic JPEG-recompressed, 40 synthetic
+   clean, 40 synthetic JPEG-recompressed): fits feature normalization + logistic weights over
+   the 6 forensic features, then calibrates thresholds (`tau_hi` at <=2% val FPR, `tau_lo` at
+   <=5% val FPR over ALL authentic val images) into `config/whole_image_synthetic.json`.
+   Recompressed authentics are in calibration on purpose: JPEG artefacts mimic generator
+   artefacts, so a threshold that ignores them false-positives on ordinary WhatsApp copies.
+2. Held-out test split (n=160, disjoint seed): scored once with frozen weights/thresholds.
+3. Compression gate: on heavily re-encoded files a strong whole-image score is capped at
+   "suspicious" (it cannot tell synthesis from quantisation). Reports how often that fires and
+   what it costs in recall.
+4. Multi-modal spot check on `.cache/testkit` video and audio (real vs deepfake/cloned).
 """
 
 from __future__ import annotations
@@ -26,7 +29,7 @@ from satyapan.forensics.deepfake import (
     WHOLE_IMAGE_CONFIG,
     analyze_audio_deepfake,
     analyze_video_deepfake,
-    extract_whole_image_features,
+    apply_compression_gate,
     score_whole_image,
 )
 
@@ -34,6 +37,16 @@ ROOT = Path(__file__).resolve().parents[2]
 RESULTS_PATH = ROOT / "results" / "forensics_m2_deepfake.json"
 VAL_SEED = 20261101
 TEST_SEED = 20261102
+
+BASE_FEATURES = [
+    "checkerboard_index",
+    "fft_hf_deficit",
+    "photon_transfer_violation",
+    "cfa_decorrelation",
+    "patch_noise_uniformity",
+    "clip_whole_prob",
+]
+FEATURE_ORDER = BASE_FEATURES
 
 
 def wilson_ci(k: int, n: int, z: float = 1.96) -> list[float]:
@@ -62,11 +75,7 @@ def roc_auc(y_true: list[int], y_score: list[float]) -> float:
 
 
 def make_authentic_camera_image(rng: np.random.Generator, size: int = 256) -> np.ndarray:
-    """Synthesize a camera-like image obeying physical sensor properties:
-    - Smooth illumination gradient + natural multi-scale scene structures;
-    - Bayer CFA demosaicing cross-channel coupling (shared high-frequency luminance edge component);
-    - Poisson-Gaussian shot noise where local variance scales linearly with pixel intensity.
-    """
+    """Camera-like image obeying physical sensor properties (shot noise, CFA coupling)."""
     yy, xx = np.mgrid[0:size, 0:size].astype(np.float32) / float(size)
     ax = float(rng.uniform(0.6, 2.2))
     ay = float(rng.uniform(0.6, 2.2))
@@ -77,40 +86,27 @@ def make_authentic_camera_image(rng: np.random.Generator, size: int = 256) -> np
         + 25.0 * np.sin(2.0 * math.pi * (ax * xx + ay * yy) + phase)
     )
     base_lum = np.clip(base_lum, 25.0, 225.0)
-
-    # Shared optical edge/texture map (captures Bayer CFA demosaicing correlation across R, G, B)
     shared_tex = rng.normal(0.0, 3.8, (size, size)).astype(np.float32)
-    # Shot noise proportional to sqrt(intensity) (Poisson-Gaussian sensor model)
     shot_sigma = 0.28 * np.sqrt(base_lum)
     shot_noise = rng.normal(0.0, 1.0, (size, size)).astype(np.float32) * shot_sigma
-
     r = base_lum * float(rng.uniform(0.92, 1.08)) + shared_tex + shot_noise
     g = base_lum + shared_tex + 0.9 * shot_noise + rng.normal(0.0, 0.5, (size, size))
     b = base_lum * float(rng.uniform(0.88, 1.06)) + shared_tex + shot_noise
-
-    rgb = np.stack([r, g, b], axis=-1)
-    return np.clip(rgb, 0, 255).astype(np.uint8)
+    return np.clip(np.stack([r, g, b], axis=-1), 0, 255).astype(np.uint8)
 
 
 def make_synthetic_ai_image(
     rng: np.random.Generator, size: int = 256, mode: str = "gan"
 ) -> np.ndarray:
-    """Synthesize an image exhibiting AI generator artifacts (labeled synthetic in ledger):
-    - mode='gan': transposed-convolution 2x/4x upsampling grid + independent channel noise;
-    - mode='diffusion': autoencoder VAE HF smoothing + inverted luminance-noise curve +
-      decorrelated color residuals.
-    """
+    """AI generator-style image (checkerboard upsampling or diffusion VAE smoothing)."""
     yy, xx = np.mgrid[0:size, 0:size].astype(np.float32) / float(size)
     freq = float(rng.uniform(1.0, 3.0))
     base = 120.0 + 70.0 * np.cos(2.0 * math.pi * freq * xx) * np.sin(2.0 * math.pi * freq * yy)
-
-    # Independent per-channel residuals (violates Bayer CFA cross-channel correlation)
     ch_r = base + rng.normal(0.0, 1.2, (size, size)).astype(np.float32)
     ch_g = base + rng.normal(0.0, 1.2, (size, size)).astype(np.float32)
     ch_b = base + rng.normal(0.0, 1.2, (size, size)).astype(np.float32)
 
     if mode == "gan":
-        # Periodic transposed-convolution checkerboard artifact at period 2 and 4 pixels
         grid2 = ((-1.0) ** (np.arange(size)[:, None] + np.arange(size)[None, :])).astype(np.float32)
         grid4 = (
             (-1.0) ** ((np.arange(size)[:, None] // 2) + (np.arange(size)[None, :] // 2))
@@ -120,12 +116,10 @@ def make_synthetic_ai_image(
         ch_g -= 0.8 * amp * grid2
         ch_b += 0.9 * amp * grid2
     else:
-        # Diffusion autoencoder: smooth patches in bright regions, higher noise in dark regions
         inv_sigma = 0.35 * np.sqrt(np.clip(240.0 - base, 10.0, 220.0))
         ch_r += rng.normal(0.0, 1.0, (size, size)).astype(np.float32) * inv_sigma
         ch_g += rng.normal(0.0, 1.0, (size, size)).astype(np.float32) * inv_sigma
         ch_b += rng.normal(0.0, 1.0, (size, size)).astype(np.float32) * inv_sigma
-        # Slight bilinear smoothing from latent upsampling
         pil_tmp = Image.fromarray(
             np.clip(np.stack([ch_r, ch_g, ch_b], axis=-1), 0, 255).astype(np.uint8)
         )
@@ -138,64 +132,64 @@ def make_synthetic_ai_image(
     return np.clip(rgb, 0, 255).astype(np.uint8)
 
 
-def jpeg_reencode(rgb: np.ndarray, quality: int = 60) -> np.ndarray:
+def compress_jpeg(rgb: np.ndarray, quality: int) -> tuple[np.ndarray, bytes]:
+    """Encode at `quality` with 4:2:0 chroma, then decode back to pixels."""
     buf = io.BytesIO()
-    Image.fromarray(rgb).save(buf, format="JPEG", quality=quality)
-    buf.seek(0)
-    return np.asarray(Image.open(buf).convert("RGB"), dtype=np.uint8)
+    Image.fromarray(rgb).save(buf, format="JPEG", quality=quality, subsampling=2)
+    raw = buf.getvalue()
+    dec = np.asarray(Image.open(io.BytesIO(raw)).convert("RGB"), dtype=np.uint8)
+    return dec, raw
 
 
-def build_split(seed: int, n_per_class: int) -> tuple[list[np.ndarray], list[int]]:
+def build_split(seed: int, n_per_class: int) -> list[tuple[np.ndarray, bytes | None, int, bool]]:
+    """[(pixels, original_bytes_if_jpeg, label, is_compressed)]"""
     rng = np.random.default_rng(seed)  # provenance: seeded-resampling-ok
-    images: list[np.ndarray] = []
-    labels: list[int] = []
+    out: list[tuple[np.ndarray, bytes | None, int, bool]] = []
     for _ in range(n_per_class):
-        images.append(make_authentic_camera_image(rng))
-        labels.append(0)
+        out.append((make_authentic_camera_image(rng), None, 0, False))
+    for _ in range(n_per_class):
+        pix, raw = compress_jpeg(make_authentic_camera_image(rng), int(rng.integers(58, 83)))
+        out.append((pix, raw, 0, True))
     for i in range(n_per_class):
         mode = "gan" if i % 2 == 0 else "diffusion"
-        images.append(make_synthetic_ai_image(rng, mode=mode))
-        labels.append(1)
-    return images, labels
+        out.append((make_synthetic_ai_image(rng, mode=mode), None, 1, False))
+    for i in range(n_per_class):
+        mode = "gan" if i % 2 == 0 else "diffusion"
+        pix, raw = compress_jpeg(make_synthetic_ai_image(rng, mode=mode), int(rng.integers(58, 83)))
+        out.append((pix, raw, 1, True))
+    return out
+
+
+def _feature_vector(rgb: np.ndarray, raw_bytes: bytes | None) -> list[float]:
+    res = score_whole_image(rgb, raw_bytes=raw_bytes)
+    feats = res["features"]
+    return [float(feats[k]) for k in FEATURE_ORDER]
 
 
 def fit_and_calibrate() -> dict[str, Any]:
-    val_imgs, val_labels = build_split(VAL_SEED, n_per_class=40)
-    order = [
-        "checkerboard_index",
-        "fft_hf_deficit",
-        "photon_transfer_violation",
-        "cfa_decorrelation",
-        "patch_noise_uniformity",
-        "clip_whole_prob",
-    ]
-    rows = []
-    for img in val_imgs:
-        f = extract_whole_image_features(img, clip_scorer=None)
-        rows.append([f[k] for k in order])
-    x_val = np.array(rows, dtype=np.float64)
-    y_val = np.array(val_labels, dtype=np.int32)
+    val = build_split(VAL_SEED, n_per_class=40)
+    x_val = np.array([_feature_vector(p, raw) for p, raw, _y, _c in val], dtype=np.float64)
+    y_val = np.array([y for _p, _r, y, _c in val], dtype=np.int32)
 
     means = x_val.mean(axis=0)
     stds = np.maximum(x_val.std(axis=0), 0.05)
-
-    # Fit positive class separation weights proportional to standardized mean difference
     z_pos = ((x_val[y_val == 1] - means) / stds).mean(axis=0)
     z_neg = ((x_val[y_val == 0] - means) / stds).mean(axis=0)
-    diff = np.maximum(0.25, z_pos - z_neg)
-    weights = diff / np.linalg.norm(diff) * 2.2
-    # Keep clip_whole_prob weight strong for when heavy CLIP model is active
-    weights[-1] = 1.15
+    diff = z_pos - z_neg
+    weights = diff / max(1e-6, float(np.linalg.norm(diff))) * 2.2
+    # Keep the CLIP whole-image signal strong when a GenD scorer is available
+    weights[FEATURE_ORDER.index("clip_whole_prob")] = 1.15
     bias = -0.35
 
     cfg = {
-        "model_name": "satyapan_whole_image_synthetic_v1",
+        "model_name": "satyapan_whole_image_synthetic_v2",
         "description": (
             "Logistic fusion over spectral checkerboard/high-frequency roll-off, photon-transfer "
-            "noise curve, CFA cross-channel residual correlation, patch noise uniformity, and "
-            "CLIP ViT-L/14 whole-image logit."
+            "noise curve, CFA cross-channel residual correlation, patch noise uniformity, and the "
+            "CLIP ViT-L/14 whole-image logit; thresholds calibrated with JPEG-recompressed "
+            "authentic images included so ordinary messaging re-encodes do not read as synthetic."
         ),
-        "feature_order": order,
+        "feature_order": FEATURE_ORDER,
         "means": [round(float(m), 4) for m in means],
         "stds": [round(float(s), 4) for s in stds],
         "weights": [round(float(w), 4) for w in weights],
@@ -203,17 +197,13 @@ def fit_and_calibrate() -> dict[str, Any]:
         "tau_hi": 0.68,
         "tau_lo": 0.48,
         "calibrated": True,
-        "calibration_split": "val_synthetic_vs_authentic_n80",
+        "calibration_split": "val_n160_clean_and_jpeg_recompressed",
     }
     WHOLE_IMAGE_CONFIG.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
 
-    # Compute validation scores and set tau_hi at 98th percentile of authentic val images
-    # and tau_lo at 95th percentile of authentic val images (<=5% FPR)
-    val_probs = [
-        float(score_whole_image(img, config_path=WHOLE_IMAGE_CONFIG)["probability"])
-        for img in val_imgs
-    ]
-    neg_probs = sorted(p for p, y in zip(val_probs, val_labels, strict=True) if y == 0)
+    # Calibrate thresholds on ALL authentic val images (clean + recompressed)
+    val_probs = [float(score_whole_image(p, raw_bytes=r)["probability"]) for p, r, _y, _c in val]
+    neg_probs = sorted(p for p, (_p, _r, y, _c) in zip(val_probs, val, strict=True) if y == 0)
     tau_hi = round(max(0.60, float(np.percentile(neg_probs, 98)) + 0.01), 4)
     tau_lo = round(max(0.45, float(np.percentile(neg_probs, 95)) + 0.005), 4)
     if tau_lo >= tau_hi:
@@ -223,8 +213,8 @@ def fit_and_calibrate() -> dict[str, Any]:
     cfg["tau_lo"] = tau_lo
     WHOLE_IMAGE_CONFIG.write_text(json.dumps(cfg, indent=2) + "\n", encoding="utf-8")
     return {
-        "val_n": len(val_labels),
-        "val_auc": roc_auc(val_labels, val_probs),
+        "val_n": len(val),
+        "val_auc": roc_auc([y for _p, _r, y, _c in val], val_probs),
         "tau_hi": tau_hi,
         "tau_lo": tau_lo,
     }
@@ -235,35 +225,52 @@ def evaluate_heldout_and_compression() -> dict[str, Any]:
     tau_hi = float(cal["tau_hi"])
     tau_lo = float(cal["tau_lo"])
 
-    test_imgs, test_labels = build_split(TEST_SEED, n_per_class=60)
-    n_pos = sum(1 for y in test_labels if y == 1)
-    n_neg = sum(1 for y in test_labels if y == 0)
+    test = build_split(TEST_SEED, n_per_class=40)
+    clean = [(p, r, y) for p, r, y, c in test if not c]
+    comp = [(p, r, y) for p, r, y, c in test if c]
 
-    clean_probs = [
-        float(score_whole_image(img, config_path=WHOLE_IMAGE_CONFIG)["probability"])
-        for img in test_imgs
-    ]
-    clean_auc = roc_auc(test_labels, clean_probs)
-    tp_hi = sum(1 for p, y in zip(clean_probs, test_labels, strict=True) if y == 1 and p >= tau_hi)
-    fp_hi = sum(1 for p, y in zip(clean_probs, test_labels, strict=True) if y == 0 and p >= tau_hi)
-    tp_lo = sum(1 for p, y in zip(clean_probs, test_labels, strict=True) if y == 1 and p >= tau_lo)
-    fp_lo = sum(1 for p, y in zip(clean_probs, test_labels, strict=True) if y == 0 and p >= tau_lo)
+    def score(group) -> tuple[list[int], list[float]]:
+        ys = [y for _p, _r, y in group]
+        ps = [float(score_whole_image(p, raw_bytes=r)["probability"]) for p, r, _y in group]
+        return ys, ps
 
-    # Compression robustness: JPEG Q60 re-encoding of all held-out test images
-    q60_imgs = [jpeg_reencode(img, quality=60) for img in test_imgs]
-    q60_probs = [
-        float(score_whole_image(img, config_path=WHOLE_IMAGE_CONFIG)["probability"])
-        for img in q60_imgs
-    ]
-    q60_auc = roc_auc(test_labels, q60_probs)
-    q60_tp_lo = sum(
-        1 for p, y in zip(q60_probs, test_labels, strict=True) if y == 1 and p >= tau_lo
-    )
-    q60_fp_lo = sum(
-        1 for p, y in zip(q60_probs, test_labels, strict=True) if y == 0 and p >= tau_lo
-    )
+    def score_gated(group) -> tuple[list[int], list[float], int]:
+        ys = [y for _p, _r, y in group]
+        ps: list[float] = []
+        gated = 0
+        for p, r, _y in group:
+            res = score_whole_image(p, raw_bytes=r)
+            g, was = apply_compression_gate(
+                float(res["probability"]),
+                float(res["tau_hi"]),
+                float(res["tau_lo"]),
+                res["compression_context"],
+            )
+            ps.append(g)
+            gated += int(was)
+        return ys, ps, gated
 
-    # Spot-check real vs fake video & audio on .cache/testkit if present
+    c_y, c_p = score(clean)
+    k_y, k_p = score(comp)
+    k_y_g, k_p_g, gated_n = score_gated(comp)
+    n_pos_c = sum(c_y)
+    n_neg_c = len(c_y) - n_pos_c
+    n_pos_k = sum(k_y)
+    n_neg_k = len(k_y) - n_pos_k
+
+    def rate(ys: list[int], ps: list[float], label: int, thr: float) -> tuple[int, int]:
+        hits = sum(1 for y, p in zip(ys, ps, strict=True) if y == label and p >= thr)
+        total = sum(1 for y in ys if y == label)
+        return hits, total
+
+    tp_hi_c, n_pc = rate(c_y, c_p, 1, tau_hi)
+    fp_hi_c, n_nc = rate(c_y, c_p, 0, tau_hi)
+    tp_lo_k, n_pk = rate(k_y, k_p, 1, tau_lo)
+    fp_lo_k, n_nk = rate(k_y, k_p, 0, tau_lo)
+    tp_hi_k, _ = rate(k_y, k_p, 1, tau_hi)
+    tp_hi_kg, _ = rate(k_y_g, k_p_g, 1, tau_hi)
+    fp_hi_kg, _ = rate(k_y_g, k_p_g, 0, tau_hi)
+
     testkit_spot: dict[str, Any] = {}
     tk_video = ROOT / ".cache" / "testkit" / "video"
     tk_audio = ROOT / ".cache" / "testkit" / "audio"
@@ -295,29 +302,33 @@ def evaluate_heldout_and_compression() -> dict[str, Any]:
 
     summary = {
         "milestone": "M2",
-        "dataset": "synthetic_camera_vs_ai_generator_benchmark (seeded, val=80, test=120)",
+        "dataset": "synthetic_camera_vs_ai_generator_benchmark (seeded, val=160, test=160)",
         "calibration": cal,
         "test_clean": {
-            "n_total": len(test_labels),
-            "n_synthetic": n_pos,
-            "n_authentic": n_neg,
-            "auc": clean_auc,
-            "tpr_at_tau_hi": round(tp_hi / n_pos, 4),
-            "tpr_at_tau_hi_ci": wilson_ci(tp_hi, n_pos),
-            "fpr_at_tau_hi": round(fp_hi / n_neg, 4),
-            "fpr_at_tau_hi_ci": wilson_ci(fp_hi, n_neg),
-            "tpr_at_tau_lo": round(tp_lo / n_pos, 4),
-            "tpr_at_tau_lo_ci": wilson_ci(tp_lo, n_pos),
-            "fpr_at_tau_lo": round(fp_lo / n_neg, 4),
-            "fpr_at_tau_lo_ci": wilson_ci(fp_lo, n_neg),
+            "n_total": len(c_y),
+            "n_synthetic": n_pos_c,
+            "n_authentic": n_neg_c,
+            "auc": roc_auc(c_y, c_p),
+            "tpr_at_tau_hi": round(tp_hi_c / max(1, n_pc), 4),
+            "tpr_at_tau_hi_ci": wilson_ci(tp_hi_c, n_pc),
+            "fpr_at_tau_hi": round(fp_hi_c / max(1, n_nc), 4),
+            "fpr_at_tau_hi_ci": wilson_ci(fp_hi_c, n_nc),
         },
-        "test_jpeg_q60_reencode": {
-            "auc": q60_auc,
-            "delta_auc": round(q60_auc - clean_auc, 4),
-            "tpr_at_tau_lo": round(q60_tp_lo / n_pos, 4),
-            "tpr_at_tau_lo_ci": wilson_ci(q60_tp_lo, n_pos),
-            "fpr_at_tau_lo": round(q60_fp_lo / n_neg, 4),
-            "fpr_at_tau_lo_ci": wilson_ci(q60_fp_lo, n_neg),
+        "test_jpeg_recompressed": {
+            "n_total": len(k_y),
+            "n_synthetic": n_pos_k,
+            "n_authentic": n_neg_k,
+            "auc": roc_auc(k_y, k_p),
+            "tpr_at_tau_lo": round(tp_lo_k / max(1, n_pk), 4),
+            "tpr_at_tau_lo_ci": wilson_ci(tp_lo_k, n_pk),
+            "fpr_at_tau_lo": round(fp_lo_k / max(1, n_nk), 4),
+            "fpr_at_tau_lo_ci": wilson_ci(fp_lo_k, n_nk),
+        },
+        "compression_gate": {
+            "files_gated_at_tau_hi": gated_n,
+            "synthetic_recall_at_tau_hi_before_gate": round(tp_hi_k / max(1, n_pk), 4),
+            "synthetic_recall_at_tau_hi_after_gate": round(tp_hi_kg / max(1, n_pk), 4),
+            "fpr_at_tau_hi_after_gate": round(fp_hi_kg / max(1, n_nk), 4),
         },
         "testkit_multimodal_spotcheck": testkit_spot,
     }

@@ -324,30 +324,31 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m1_locker` �
 
 ### 15.2 M2 — Deepfake & Synthetic Media Detection Engine (`src/satyapan/forensics/deepfake.py`)
 
-Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m2_deepfake` → `results/forensics_m2_deepfake.json`, `config/whole_image_synthetic.json`. Status: **measured** (whole-image benchmark is **synthetic** camera-physics vs GAN/diffusion-artifact images, `VAL_SEED=20261101`, `TEST_SEED=20261102`; video/photo face-swap GenD and voice-clone XLS-R on public FF++/DFDC/In-the-Wild datasets are in §§11–12 above).
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m2_deepfake` → `results/forensics_m2_deepfake.json`, `config/whole_image_synthetic.json`. Status: **measured (synthetic: procedures-generated camera-physics vs GAN/diffusion-artifact images; this measures detector sensitivity to the construction it targets, not field accuracy — field numbers for faces/voices are in §§11–12).**
+
+Protocol change and why: the first M2 calibration was fitted on clean images only, and an M7 end-to-end run on the committed demo kit caught it calling an ordinary JPEG Q68 4:2:0 WhatsApp copy "consistent with synthetic" (0.82). Recompressed authentic images are now **in the calibration split**, thresholds are taken over all authentic val images, and a compression gate caps strong whole-image scores at "suspicious" when chroma is subsampled or Q <= 80 (it cannot separate synthesis from quantisation there). A resampling gate likewise stops a downscale/upscale step being read as generator smoothing. Both changes came from measured false alarms, not from tuning on test data.
 
 | Claim | Value | n | 95% CI | Data / command | Status |
 |---|---|---|---|---|---|
-| Whole-image synthetic detector, validation calibration (`tau_hi=0.60`, `tau_lo=0.45`) | AUC **1.000** | 80 (40 auth + 40 synth) | — | `python -m research.forensics.eval_m2_deepfake` (synthetic, val split) | measured (synthetic) |
-| Whole-image synthetic detector, held-out test AUC (clean) | **1.000** | 120 (60 auth + 60 synth) | — | same (synthetic, held-out test) | measured (synthetic) |
-| Held-out test TPR / FPR at `tau_hi` (clean) | **100.0%** / **0.0%** | 60 synth / 60 auth | [94.0%, 100%] / [0.0%, 6.0%] | same | measured (synthetic) |
-| Compression robustness (JPEG Q60 re-encode), held-out test AUC / TPR at `tau_lo` / FPR at `tau_lo` | AUC **1.000** / TPR **68.3%** (41/60, Δ −31.7 pts) / FPR **0.0%** | 60 synth / 60 auth | TPR [55.8%, 78.7%], FPR [0.0%, 6.0%] | same | measured (synthetic; Q60 8×8 DCT attenuates 2px Nyquist checkerboard) |
-| Multi-modal spot-check on `.cache/testkit` video (`fake_faceswap_meeting_720p.mp4` vs `real_meeting_720p.mp4`) | fake **0.9705** (`consistent_with_synthetic`) vs real **0.0618** (`consistent_with_authentic`) | 2 videos (8 frames + 3 windows each) | n/a | same | measured |
-| Multi-modal spot-check on `.cache/testkit` audio (`fake_cfo_clone_en.wav` vs `real_public_domain_speech.wav`) | fake **0.8120** (`anomalies_detected_verify`) vs real **0.1011** (`consistent_with_authentic`) | 2 audio recordings | n/a | same | measured |
+| Whole-image synthetic detector, validation (clean + Q58–82 4:2:0), `tau_hi=0.60`, `tau_lo=0.45` | AUC **1.000** | 160 (80 auth, 80 synth) | — | `python -m research.forensics.eval_m2_deepfake` | measured (synthetic) |
+| Held-out test, clean: AUC / TPR@`tau_hi` / FPR@`tau_hi` | **1.000** / **100%** (40/40) / **0%** (0/40) | 80 | TPR [91.2%, 100%], FPR [0%, 8.8%] | same | measured (synthetic) |
+| Held-out test, JPEG recompressed (Q58–82, 4:2:0): AUC / TPR@`tau_lo` / FPR@`tau_lo` | **1.000** / **100%** (40/40) / **0%** (0/40) | 80 | TPR [91.2%, 100%], FPR [0%, 8.8%] | same | measured (synthetic) |
+| Compression gate cost: synthetic files gated at `tau_hi` / recall@`tau_hi` before → after gate | 40 / 40 gated; **100% → 0%** (screening recall@`tau_lo` stays **100%**) | 40 recompressed synthetic | — | same | measured (synthetic); on heavy re-encodes we say "suspicious, verify", never "consistent with synthetic" |
+| Multi-modal spot check on `.cache/testkit` video (`fake_faceswap_meeting_720p.mp4` vs `real_meeting_720p.mp4`) | fake **0.9705** (`consistent_with_synthetic`) vs real **0.0849** (`consistent_with_authentic`) | 2 videos | n/a | same | measured |
+| Multi-modal spot check on `.cache/testkit` audio (`fake_cfo_clone_en.wav` vs `real_public_domain_speech.wav`) | fake **0.8120** (`anomalies_detected_verify`) vs real **0.1011** (`consistent_with_authentic`) | 2 recordings | n/a | same | measured |
 
 ### 15.3 M3 — Multimedia Tampering & Manipulation Detection (`src/satyapan/forensics/tamper.py`)
 
-Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m3_tamper` → `results/forensics_m3_tamper.json`. Data: deterministic seeded synthetic tampering benchmark (`SEED=20261103`, labeled **synthetic**). Status: **measured (synthetic)**.
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m3_tamper` → `results/forensics_m3_tamper.json`. Data: deterministic seeded synthetic tamper benchmark (`SEED=20261103`, labeled **synthetic**). Status: **measured (synthetic; sensitivity, not field accuracy)**.
+
+Two false alarms found in the M7 demo-kit run were fixed before these numbers: ELA and noise-residual z-scores now require absolute evidence (a real residual gap) before firing, copy-move accepts larger absolute patch differences inside strongly textured blocks (JPEG re-compression shifts pixels) while still demanding high-pass correlation >= 0.88, and block-grid mismatch needs >= 12 macro-patches and a genuinely strong global 8x8 grid. The earlier 17.5% FPR row is superseded.
 
 | Claim | Value | n | 95% CI | Data / command | Status |
 |---|---|---|---|---|---|
-| Image ELA subdetector AUC on spliced patches | **1.000** | 40 auth + 30 spliced | — | `python -m research.forensics.eval_m3_tamper` (synthetic) | measured (synthetic) |
-| Image noise-residual subdetector AUC on spliced patches | **1.000** | 40 auth + 30 spliced | — | same | measured (synthetic) |
-| Image copy-move subdetector AUC on cloned regions (with sub-grid $\pm 2\text{ px}$ alignment) | **1.000** | 40 auth + 30 copy-move | — | same | measured (synthetic) |
-| Image double-JPEG / 8×8 DCT comb + grid-mismatch AUC | **0.925** | 40 auth + 20 double-JPEG | — | same | measured (synthetic) |
-| Combined image tampering suite (all 4 checks), AUC / TPR / FPR | AUC **0.925** / TPR **100.0%** (80/80) / FPR **17.5%** (7/40) | 40 auth + 80 tampered | TPR [95.4%, 100%], FPR [8.8%, 32.0%] | same; false alarms come from DCT rounding combs on near-lossless $Q\ge 93$ single JPEGs | measured (synthetic) |
-| Video tampering (duplicated frames + dropped/spliced frame jumps), AUC / TPR / FPR | AUC **1.000** / TPR **100.0%** (15/15) / FPR **0.0%** (0/15) | 15 auth + 15 tampered videos | TPR [79.6%, 100%], FPR [0.0%, 20.4%] | same | measured (synthetic) |
-| Audio tampering (waveform splice transients + room noise-floor step shifts), AUC / TPR / FPR | AUC **1.000** / TPR **100.0%** (20/20) / FPR **0.0%** (0/20) | 20 auth + 20 spliced audio clips | TPR [83.9%, 100%], FPR [0.0%, 16.1%] | same | measured (synthetic) |
+| Combined image tampering suite (ELA + double-JPEG + copy-move + noise-residual), AUC / TPR / FPR | AUC **1.000** / TPR **100%** (80/80) / FPR **0%** (0/40) | 40 auth + 80 tampered | TPR [95.4%, 100%], FPR [0%, 8.8%] | same | measured (synthetic) |
+| Subdetector AUC: ELA on spliced / noise-residual on spliced / copy-move on cloned / double-JPEG | **1.000** / **1.000** / **1.000** / **1.000** | 40 auth per comparison | — | same | measured (synthetic) |
+| Video tampering (duplicated frames + dropped/spliced frame jumps), AUC / TPR / FPR | AUC **1.000** / TPR **100%** (15/15) / FPR **0%** (0/15) | 15 auth + 15 tampered videos | TPR [79.6%, 100%], FPR [0%, 20.4%] | same | measured (synthetic) |
+| Audio tampering (waveform splice transients + room noise-floor step shifts), AUC / TPR / FPR | AUC **1.000** / TPR **100%** (20/20) / FPR **0%** (0/20) | 20 auth + 20 spliced clips | TPR [83.9%, 100%], FPR [0%, 16.1%] | same | measured (synthetic) |
 
 ### 15.4 M4 — Multimedia Provenance & Source Attribution (`src/satyapan/forensics/provenance.py`)
 
@@ -371,4 +372,18 @@ Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m4_provenance
 | Claim | Value | n | Data / command | Status |
 |---|---|---|---|---|
 | Byte-level reproducibility of `forensic_report.{pdf,html,md,json}` across repeated runs on stored case data | **4/4 formats byte-identical (SHA-256 match)** | 4 formats × 2 runs | `uv run pytest tests/forensics/test_m6_report.py` | measured |
+
+### 15.7 M7 — Tests, Golden Files & Adversarial Red-Team (`demo_kit/`, `research/forensics/eval_m7_adversarial.py`)
+
+Script: `PYTHONPATH=src:. uv run python -m research.forensics.eval_m7_adversarial` → `results/forensics_m7_adversarial.json`. Data: deterministic seeded synthetic red-team set (`SEED=20261107`), 30 authentic + 30 manipulated images per attack. Status: **measured (synthetic; detector sensitivity under each transform, not field accuracy)**.
+
+| Claim | Value | n | 95% CI | Data / command | Status |
+|---|---|---|---|---|---|
+| Committed multi-modal demo kit (6 exhibits: authentic C2PA photo, GAN scene, copy-move+splice, WhatsApp re-encode, spliced audio, manipulated video) | 6/6 expected findings matched end-to-end; 6/6 SHA-256 + Merkle proofs verified; originals `0o444` | 6 | n/a | `uv run pytest tests/forensics/test_m7_e2e_and_redteam.py` | measured |
+| Attacker transforms: clean / JPEG Q50 / downscale-upscale / 15% crop / Gaussian noise σ=6 — combined detector AUC, TPR, FPR | **1.000 / 100% / 0%** in **all five** conditions | 30 auth + 30 manipulated each | TPR [88.7%, 100%], FPR [0%, 11.4%] | `python -m research.forensics.eval_m7_adversarial` | measured (synthetic) |
+| Metadata + C2PA stripping: metadata-based catch before strip → after strip; pixel-only fallback after strip | **100% → 0%**; pixel fallback **100%** (30/30) | 30 synthetic/exif-tagged images | fallback [88.7%, 100%] | same | measured (synthetic) |
+| Golden-file test: Section 63 certificate Markdown regenerated from `demo_kit/manifest.json` | byte-identical to committed `demo_kit/golden_section63.md` | 1 | n/a | same pytest file | measured |
+
+**How to quote §§15.2–15.7 honestly.** These rows are measured on **procedurally generated** media in which the manipulated class is built from exactly the artefacts the detectors target (GAN upsampling grids, diffusion VAE smoothing, spliced-in foreign noise, room-tone shifts). They show each detector sees its target and does not fire on matched controls — they are **not** field accuracy. The field numbers are the public-data rows: FF++/DFDC faces and In-the-Wild voices in §§11–12 (for example 74.7% of FF++ fakes vs 24.8% of DFDC fakes flagged for a call-back; 0 of 563 real test videos called synthetic; In-the-Wild voice AUC 0.921 clean). Quote those for accuracy, and these for sensitivity and ablation.
+
 | Multi-page PDF report text extraction (`pdfplumber`) + embedded `/DCTDecode` evidence heatmaps + Section 63 BSA 2023 Parts A & B draft certificate | **PASS** (≥4 pages, all exhibit hashes & Section 63 schedule verified) | 4-exhibit multi-modal case | same | measured |

@@ -76,5 +76,16 @@
   - Added tests in `tests/forensics/test_m6_report.py`.
 - **What is measured**:
   - Byte-identical SHA-256 across repeated runs for all 4 report formats (`pdf`, `html`, `md`, `json`); `pdfplumber` verifies all exhibit hashes, custody chain, limitations, examiner sign-off block, and Section 63 Parts A & B inside the generated multi-page PDF (`results/EVIDENCE_LEDGER.md` §15.6).
+## M7 — Tests, Golden Files & Adversarial Red-Team (Completed)
+- **What we did**:
+  - Wrote `docs/design/M7.md`.
+  - Built the committed 6-exhibit multi-modal demo kit `demo_kit/` (+ `manifest.json`, `golden_section63.md`) with `scripts/make_forensic_demo_kit.py` — 223 KB, 100% procedural, zero private data, no media in the scanned repo paths.
+  - Added `tests/forensics/test_m7_e2e_and_redteam.py`: module-coverage audit (no forensic module without tests), golden-file Section 63 test, and end-to-end `intake -> analysis -> report` on `demo_kit/`.
+  - Added `research/forensics/eval_m7_adversarial.py` (5 attacker transforms + metadata/C2PA stripping) and `results/forensics_m7_adversarial.json`.
+  - **Fixed three real false alarms the demo-kit run exposed** (all recorded in the ledger): ELA/noise-residual relative z-scores now need absolute evidence; copy-move accepts larger patch differences in strongly textured blocks (JPEG shift) while requiring high-pass correlation; block-grid mismatch needs >= 12 macro-patches and a strong global grid. Plus a resampling gate (a downscale/upscale step no longer reads as generator smoothing) and a compression gate (heavy re-encode caps the whole-image verdict at "suspicious"). Recompressed authentic images were added to the M2 calibration split.
+- **What is measured**:
+  - E2E on `demo_kit/`: 6/6 expected findings, 6/6 hashes + Merkle proofs, originals read-only; report bytes reproducible. Golden Section 63 file byte-identical.
+  - Adversarial: combined detector AUC 1.000 / TPR 100% / FPR 0% under all five transforms; metadata catch 100% -> 0% after stripping, with pixel fallback 100%.
+  - Corrected M2/M3 numbers after the fixes: M3 combined image AUC 1.000, FPR **0%** (was 17.5%); M2 compressed-authentic FPR 0% (was 100% on the demo case).
 - **What is next**:
-  - **M7**: Design note `docs/design/M7.md` → Build committed open/synthetic demo kit (`demo_kit/` via `scripts/make_forensic_demo_kit.py`), golden-file report tests, end-to-end test (`intake -> analysis -> report`) on `demo_kit/`, and adversarial robustness red-team benchmark (`research/forensics/eval_m7_adversarial.py`: re-encode, resize, crop, noise, metadata stripping) → Ledger rows → `make check` green → Commit.
+  - **M8**: `Dockerfile` + `docker-compose.yml` (offline), `make demo` one-command scripted case, `docs/JUDGES.md` deliverable-to-feature map, `docs/LIMITS.md`, `docs/explain/<module>.md` — then `make check`, commit.

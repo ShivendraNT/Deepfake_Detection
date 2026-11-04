@@ -1,0 +1,102 @@
+{
+  "milestone": "M7",
+  "seed": 20261107,
+  "dataset": "synthetic_adversarial_redteam_benchmark (labeled synthetic)",
+  "attacks": {
+    "clean": {
+      "n_authentic": 30,
+      "n_manipulated": 30,
+      "combined_auc": 1.0,
+      "m2_synthetic_auc": 1.0,
+      "m3_tamper_auc": 1.0,
+      "tpr": 1.0,
+      "tpr_ci": [
+        0.8865,
+        1.0
+      ],
+      "fpr": 0.0,
+      "fpr_ci": [
+        0.0,
+        0.1135
+      ]
+    },
+    "jpeg_q50_reencode": {
+      "n_authentic": 30,
+      "n_manipulated": 30,
+      "combined_auc": 1.0,
+      "m2_synthetic_auc": 1.0,
+      "m3_tamper_auc": 1.0,
+      "tpr": 1.0,
+      "tpr_ci": [
+        0.8865,
+        1.0
+      ],
+      "fpr": 0.0,
+      "fpr_ci": [
+        0.0,
+        0.1135
+      ]
+    },
+    "resize_0.5x_1.0x": {
+      "n_authentic": 30,
+      "n_manipulated": 30,
+      "combined_auc": 1.0,
+      "m2_synthetic_auc": 1.0,
+      "m3_tamper_auc": 1.0,
+      "tpr": 1.0,
+      "tpr_ci": [
+        0.8865,
+        1.0
+      ],
+      "fpr": 0.0,
+      "fpr_ci": [
+        0.0,
+        0.1135
+      ]
+    },
+    "crop_15pct": {
+      "n_authentic": 30,
+      "n_manipulated": 30,
+      "combined_auc": 1.0,
+      "m2_synthetic_auc": 1.0,
+      "m3_tamper_auc": 1.0,
+      "tpr": 1.0,
+      "tpr_ci": [
+        0.8865,
+        1.0
+      ],
+      "fpr": 0.0,
+      "fpr_ci": [
+        0.0,
+        0.1135
+      ]
+    },
+    "gaussian_noise_sigma6": {
+      "n_authentic": 30,
+      "n_manipulated": 30,
+      "combined_auc": 1.0,
+      "m2_synthetic_auc": 1.0,
+      "m3_tamper_auc": 1.0,
+      "tpr": 1.0,
+      "tpr_ci": [
+        0.8865,
+        1.0
+      ],
+      "fpr": 0.0,
+      "fpr_ci": [
+        0.0,
+        0.1135
+      ]
+    },
+    "metadata_and_c2pa_strip": {
+      "n_manipulated": 30,
+      "metadata_catch_before_strip": 1.0,
+      "metadata_catch_after_strip": 0.0,
+      "pixel_fallback_catch_after_strip": 1.0,
+      "pixel_fallback_ci": [
+        0.8865,
+        1.0
+      ]
+    }
+  }
+}

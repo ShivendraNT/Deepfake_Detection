@@ -171,8 +171,12 @@ def ela_analysis(rgb: np.ndarray, quality: int = 90) -> tuple[dict[str, Any], np
     top_mean_z = float(np.mean(np.sort(smooth_z.ravel())[::-1][:top_k]))
     outlier_blocks = int(np.sum(smooth_z >= 3.2))
     outlier_ratio = outlier_blocks / max(1, smooth_z.size)
+    mean_diff = float(np.mean(diff))
 
-    score = float(np.clip((top_mean_z - 2.3) / 3.2, 0.0, 1.0))
+    # Relative z-scores alone fire on smooth, heavily quantised images (little residual to
+    # normalise against). Require absolute compression-residual energy before believing them.
+    absolute_gate = float(np.clip(mean_diff / 1.6, 0.0, 1.0))
+    score = float(np.clip((top_mean_z - 2.8) / 3.2, 0.0, 1.0) * absolute_gate)
     heat = np.clip(smooth_z / max(4.5, max_z), 0.0, 1.0)
 
     return (
@@ -283,10 +287,14 @@ def double_jpeg_analysis(raw_bytes: bytes, rgb: np.ndarray) -> dict[str, Any]:
                 ratios.append(r_2d)
         r_arr = np.array(ratios, dtype=np.float32)
         global_grid = float(np.median(r_arr))
-        if global_grid > 1.15:
+        # A genuine 8x8 JPEG grid must be visible across most of the frame, and one region must
+        # have lost it. Small images (few patches) are too noisy to make this call at all.
+        if r_arr.size >= 12 and global_grid >= 1.30:
             min_r = float(np.min(r_arr))
-            if min_r < 0.95:
-                grid_mismatch = float(np.clip((global_grid - min_r - 0.20) / 0.25, 0.0, 1.0))
+            if min_r <= 0.55 * global_grid:
+                grid_mismatch = float(
+                    np.clip((0.55 * global_grid - min_r) / (0.35 * global_grid), 0.0, 1.0)
+                )
 
     score = float(
         np.clip(
@@ -385,6 +393,10 @@ def copy_move_analysis(rgb: np.ndarray) -> tuple[dict[str, Any], np.ndarray]:
             if float(np.hypot(y2_base - y1, x2_base - x1)) < 24.0:
                 continue
             # Search +-2 px around (y2_base, x2_base) for sub-stride shifts
+            # JPEG re-compression shifts pixel values by several levels inside textured regions,
+            # so allow more absolute difference when the block carries strong texture energy
+            # (high-pass correlation must stay high, which smooth gradients cannot fake).
+            mad_allow = 3.0 + 0.16 * (n1 / max(1.0, float(bsize)))
             matched_pos: tuple[int, int] | None = None
             for oy in (-2, -1, 0, 1, 2):
                 yy2 = y2_base + oy
@@ -395,12 +407,12 @@ def copy_move_analysis(rgb: np.ndarray) -> tuple[dict[str, Any], np.ndarray]:
                     if xx2 < 0 or xx2 + bsize > w:
                         continue
                     p2 = work_rgb[yy2 : yy2 + bsize, xx2 : xx2 + bsize]
-                    if float(np.mean(np.abs(p1 - p2))) > 3.5:
+                    if float(np.mean(np.abs(p1 - p2))) > mad_allow:
                         continue
                     hp2 = lap_full[yy2 : yy2 + bsize, xx2 : xx2 + bsize].ravel()
                     hp2 = hp2 - float(np.mean(hp2))
                     denom = n1 * float(np.linalg.norm(hp2))
-                    if denom > 1e-4 and float(np.sum(hp1 * hp2)) / denom >= 0.85:
+                    if denom > 1e-4 and float(np.sum(hp1 * hp2)) / denom >= 0.88:
                         matched_pos = (yy2, xx2)
                         break
                 if matched_pos is not None:
@@ -482,8 +494,15 @@ def noise_residual_analysis(rgb: np.ndarray) -> tuple[dict[str, Any], np.ndarray
     top_k = max(1, min(6, smooth_z.size // 10))
     top_mean_z = float(np.mean(np.sort(smooth_z.ravel())[::-1][:top_k]))
     anomalous_blocks = int(np.sum(smooth_z >= 3.3))
+    median_sigma = float(np.median(block_std))
+    p95_sigma = float(np.percentile(block_std, 95))
+    sigma_gap = max(0.0, p95_sigma - median_sigma)
 
-    score = float(np.clip((top_mean_z - 2.4) / 3.0, 0.0, 1.0))
+    # Relative outliers are meaningless when the whole frame has one uniform (quantised) noise
+    # floor. A genuine splice or airbrush leaves a measurable absolute gap between the noisiest
+    # region and the frame's typical noise level, so gate on that gap, not on the median.
+    absolute_gate = float(np.clip(sigma_gap / 1.0, 0.0, 1.0))
+    score = float(np.clip((top_mean_z - 2.4) / 3.0, 0.0, 1.0) * absolute_gate)
     heat = np.clip(smooth_z / max(4.5, max_z), 0.0, 1.0)
 
     return (
@@ -492,7 +511,8 @@ def noise_residual_analysis(rgb: np.ndarray) -> tuple[dict[str, Any], np.ndarray
             "max_noise_z": round(max_z, 3),
             "top_blocks_noise_z": round(top_mean_z, 3),
             "anomalous_blocks": anomalous_blocks,
-            "median_noise_sigma": round(float(np.median(block_std)), 3),
+            "median_noise_sigma": round(median_sigma, 3),
+            "noise_sigma_gap": round(sigma_gap, 3),
         },
         heat,
     )

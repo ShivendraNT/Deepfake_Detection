@@ -1,0 +1,92 @@
+{
+  "kit_name": "Satyapan Forensic Demo Kit v1.0",
+  "seed": 20261106,
+  "generated_by": "scripts/make_forensic_demo_kit.py",
+  "licence": "MIT (100% synthetic/procedurally generated test media, zero private data)",
+  "items": [
+    {
+      "evidence_id": "EV0001",
+      "filename": "01_authentic_c2pa_photo.jpg",
+      "source_type": "image",
+      "device": "witness-camera",
+      "device_info": {
+        "make": "Sony",
+        "model": "ILCE-7M4",
+        "os": "Firmware 3.0"
+      },
+      "sha256": "0d797c92ca985647a33725ac2c6b5fad1b33a287245129eb353a532ff322171e",
+      "size_bytes": 25780,
+      "expected_overall_finding": "consistent_with_authentic"
+    },
+    {
+      "evidence_id": "EV0002",
+      "filename": "02_synthetic_gan_scene.png",
+      "source_type": "image",
+      "device": "suspect-workstation",
+      "device_info": {
+        "make": "Custom",
+        "model": "GPU-Node",
+        "os": "Linux"
+      },
+      "sha256": "a37ee07164985a48a869a00bf0d6a526e3646a64f210a8962f1b3a5f1af4ed88",
+      "size_bytes": 86440,
+      "expected_overall_finding": "consistent_with_manipulation"
+    },
+    {
+      "evidence_id": "EV0003",
+      "filename": "03_tampered_copymove_splice.jpg",
+      "source_type": "image",
+      "device": "seized-laptop",
+      "device_info": {
+        "make": "Apple",
+        "model": "MacBookPro",
+        "os": "macOS"
+      },
+      "sha256": "340eed84387907472a273320c175543095a3f9002b41393a51af214e0218c183",
+      "size_bytes": 17618,
+      "expected_overall_finding": "consistent_with_manipulation"
+    },
+    {
+      "evidence_id": "EV0004",
+      "filename": "04_whatsapp_reencoded_photo.jpg",
+      "source_type": "image",
+      "device": "messaging-export",
+      "device_info": {
+        "make": "Android",
+        "model": "WhatsApp Media",
+        "os": "Android"
+      },
+      "sha256": "fcc6586bc1d0c25f37dbc0fd4eef052b3f4cba087f8f0510a45b25f85fb71fd7",
+      "size_bytes": 3750,
+      "expected_overall_finding": "anomalies_detected_verify"
+    },
+    {
+      "evidence_id": "EV0005",
+      "filename": "05_spliced_audio_recording.wav",
+      "source_type": "audio",
+      "device": "voice-recorder",
+      "device_info": {
+        "make": "Samsung",
+        "model": "S24",
+        "os": "Android"
+      },
+      "sha256": "c486a5d2313ba19007b595520b8f4c4694d13bf9e2d8a6e04ac3cbefb501149a",
+      "size_bytes": 96044,
+      "expected_overall_finding": "consistent_with_manipulation"
+    },
+    {
+      "evidence_id": "EV0006",
+      "filename": "06_manipulated_video_clip.mp4",
+      "source_type": "video",
+      "device": "dvr-export",
+      "device_info": {
+        "make": "Hikvision",
+        "model": "NVR",
+        "os": "Embedded"
+      },
+      "sha256": "4e171a5d5349fd15ebce949d5a378d3db194a55eb391c27500cde52d366c9bd7",
+      "size_bytes": 9454,
+      "expected_overall_finding": "consistent_with_manipulation"
+    }
+  ]
+}

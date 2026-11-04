@@ -216,6 +216,41 @@ def _parse_jpeg_chroma_subsampling(raw_bytes: bytes) -> str:
     return "unknown"
 
 
+def estimate_jpeg_profile(raw_bytes: bytes) -> dict[str, Any]:
+    """(chroma subsampling, approximate JPEG quality, quantization means) for JPEG bytes."""
+    subsampling = _parse_jpeg_chroma_subsampling(raw_bytes)
+    luma_q_mean: float | None = None
+    chroma_q_mean: float | None = None
+    estimated_q: int | None = None
+    non_standard_q = False
+    try:
+        with Image.open(io.BytesIO(raw_bytes)) as im:
+            qtables = getattr(im, "quantization", None)
+            if qtables and 0 in qtables:
+                lq = list(qtables[0])
+                luma_q_mean = round(float(np.mean(lq[:16])), 3)
+                if luma_q_mean <= 1.05:
+                    estimated_q = 100
+                elif luma_q_mean < 50.0:
+                    estimated_q = int(round(max(1, min(99, 100.0 - luma_q_mean * 1.4))))
+                else:
+                    estimated_q = int(round(max(1, 5000.0 / (luma_q_mean * 2.0))))
+                if len(lq) >= 8 and lq[0] > lq[1] * 2.2:
+                    non_standard_q = True
+            if qtables and 1 in qtables:
+                chroma_q_mean = round(float(np.mean(list(qtables[1])[:16])), 3)
+    except Exception:  # noqa: BLE001
+        pass
+    return {
+        "is_jpeg": raw_bytes.startswith(b"\xff\xd8"),
+        "chroma_subsampling": subsampling,
+        "estimated_jpeg_quality": estimated_q,
+        "luma_q_mean": luma_q_mean,
+        "chroma_q_mean": chroma_q_mean,
+        "non_standard_q_table": non_standard_q,
+    }
+
+
 def _extract_xmp_packet(raw_bytes: bytes) -> dict[str, str]:
     """Extract key XMP tags from an embedded `<x:xmpmeta ...>` XML packet if present."""
     out: dict[str, str] = {}
@@ -739,30 +774,12 @@ def attribute_compression_source(
     thumb_info = consistency_checks.get("thumbnail_check") or {}
     thumb_mismatch = bool(thumb_info.get("present") and not thumb_info.get("consistent", True))
 
-    subsampling = _parse_jpeg_chroma_subsampling(raw_bytes)
-    luma_q_mean: float | None = None
-    chroma_q_mean: float | None = None
-    estimated_q: int | None = None
-    non_standard_q = False
-
-    try:
-        with Image.open(io.BytesIO(raw_bytes)) as im:
-            qtables = getattr(im, "quantization", None)
-            if qtables and 0 in qtables:
-                lq = list(qtables[0])
-                luma_q_mean = round(float(np.mean(lq[:16])), 3)
-                if luma_q_mean <= 1.05:
-                    estimated_q = 100
-                elif luma_q_mean < 50.0:
-                    estimated_q = int(round(max(1, min(99, 100.0 - luma_q_mean * 1.4))))
-                else:
-                    estimated_q = int(round(max(1, 5000.0 / (luma_q_mean * 2.0))))
-                if len(lq) >= 8 and lq[0] > lq[1] * 2.2:
-                    non_standard_q = True
-            if qtables and 1 in qtables:
-                chroma_q_mean = round(float(np.mean(list(qtables[1])[:16])), 3)
-    except Exception:  # noqa: BLE001
-        pass
+    profile = estimate_jpeg_profile(raw_bytes)
+    subsampling = str(profile["chroma_subsampling"])
+    luma_q_mean: float | None = profile["luma_q_mean"]
+    chroma_q_mean: float | None = profile["chroma_q_mean"]
+    estimated_q: int | None = profile["estimated_jpeg_quality"]
+    non_standard_q = bool(profile["non_standard_q_table"])
 
     # Compute unnormalized evidence scores for the 3 provenance profiles
     s_camera = 0.15

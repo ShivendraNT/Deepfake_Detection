@@ -1,6 +1,6 @@
 {
-  "model_name": "satyapan_whole_image_synthetic_v1",
-  "description": "Logistic fusion over spectral checkerboard/high-frequency roll-off, photon-transfer noise curve, CFA cross-channel residual correlation, patch noise uniformity, and CLIP ViT-L/14 whole-image logit.",
+  "model_name": "satyapan_whole_image_synthetic_v2",
+  "description": "Logistic fusion over spectral checkerboard/high-frequency roll-off, photon-transfer noise curve, CFA cross-channel residual correlation, patch noise uniformity, and the CLIP ViT-L/14 whole-image logit; thresholds calibrated with JPEG-recompressed authentic images included so ordinary messaging re-encodes do not read as synthetic.",
   "feature_order": [
     "checkerboard_index",
     "fft_hf_deficit",
@@ -10,32 +10,32 @@
     "clip_whole_prob"
   ],
   "means": [
-    0.2816,
-    0.7475,
-    0.3738,
-    0.4854,
-    0.2388,
+    0.2978,
+    0.6775,
+    0.3322,
+    0.2399,
+    0.1952,
     0.25
   ],
   "stds": [
-    0.4197,
-    0.3037,
-    0.4152,
-    0.4862,
-    0.4092,
+    0.3999,
+    0.3578,
+    0.3706,
+    0.4163,
+    0.3426,
     0.05
   ],
   "weights": [
-    0.9032,
-    0.1699,
-    1.2235,
-    1.3567,
-    0.7929,
+    0.9401,
+    -1.1891,
+    1.1826,
+    0.7606,
+    0.7519,
     1.15
   ],
   "bias": -0.35,
   "tau_hi": 0.6,
   "tau_lo": 0.45,
   "calibrated": true,
-  "calibration_split": "val_synthetic_vs_authentic_n80"
+  "calibration_split": "val_n160_clean_and_jpeg_recompressed"
 }

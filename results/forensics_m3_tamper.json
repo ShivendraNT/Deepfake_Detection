@@ -5,22 +5,22 @@
   "image_tampering": {
     "n_authentic": 40,
     "n_tampered": 80,
-    "combined_auc": 0.925,
+    "combined_auc": 1.0,
     "combined_tpr": 1.0,
     "combined_tpr_ci": [
       0.9542,
       1.0
     ],
-    "combined_fpr": 0.175,
+    "combined_fpr": 0.0,
     "combined_fpr_ci": [
-      0.0875,
-      0.3195
+      0.0,
+      0.0876
     ],
     "subdetectors": {
       "ela_on_spliced_auc": 1.0,
       "noise_residual_on_spliced_auc": 1.0,
       "copy_move_on_cloned_auc": 1.0,
-      "double_jpeg_auc": 0.925
+      "double_jpeg_auc": 1.0
     }
   },
   "video_tampering": {

@@ -186,6 +186,14 @@ def extract_whole_image_features(
     # with non-saturated pixel intensity (shot noise). Synthetic images often have flat, negative,
     # or texture-driven variance independent of sensor luminance.
     bh, bw = h // 16, w // 16
+    # Lag-1 autocorrelation of the residual: sensor noise is spatially white (near 0 or negative),
+    # while any interpolation/resampling step correlates neighbouring residual samples. Used below
+    # so that "smooth" residuals from resizing are not read as generator smoothing.
+    res_flat = res.ravel()
+    if float(np.std(res_flat)) > 1e-4:
+        lag1_resampling = float(np.corrcoef(res_flat[:-1], res_flat[1:])[0, 1])
+    else:
+        lag1_resampling = 0.0
     if bh >= 2 and bw >= 2:
         g_crop = gray[: bh * 16, : bw * 16].reshape(bh, 16, bw, 16)
         r_crop = res[: bh * 16, : bw * 16].reshape(bh, 16, bw, 16)
@@ -204,10 +212,14 @@ def extract_whole_image_features(
             photon_transfer_violation = float(np.clip((0.30 - corr) / 0.60, 0.0, 1.0))
         else:
             photon_transfer_violation = 0.5
-        # 5. Patch noise uniformity: over-smooth (median var < 0.6) or extreme bimodal variance
+        # 5. Patch noise uniformity: over-smooth (median var < 0.6) or extreme bimodal variance.
+        # The "smooth" branch is only admissible when the residual is spatially white; a positive
+        # lag-1 correlation means an interpolation/resize step explains the smoothing instead.
         med_var = float(np.median(block_var))
         cv_var = float(np.std(block_var) / (np.mean(block_var) + 1e-6))
         smooth_score = float(np.clip((1.2 - med_var) / 1.2, 0.0, 1.0))
+        if lag1_resampling >= 0.05:
+            smooth_score = 0.0
         bimodal_score = float(np.clip((cv_var - 2.2) / 2.5, 0.0, 1.0))
         patch_noise_uniformity = float(max(smooth_score, bimodal_score))
     else:
@@ -247,6 +259,7 @@ def extract_whole_image_features(
         "cfa_decorrelation": round(cfa_decorrelation, 4),
         "patch_noise_uniformity": round(patch_noise_uniformity, 4),
         "clip_whole_prob": round(float(clip_whole_prob), 4),
+        "residual_lag1": round(float(lag1_resampling), 4),
     }
 
 
@@ -266,15 +279,53 @@ def _whole_image_crops(rgb: np.ndarray) -> np.ndarray:
     return np.stack(crops, axis=0)
 
 
+def _compression_context(raw_bytes: bytes | None) -> dict[str, Any]:
+    """Estimate how much JPEG re-compression can explain away spectral/noise features.
+
+    `compressibility` in [0, 1] is 0 for a high-quality 4:4:4 or lossless source and rises with
+    heavier quantisation and chroma subsampling, because both create the very 2-px periodicity
+    and high-frequency roll-off that raw diffusion/GAN detectors also look for.
+    """
+    if not raw_bytes:
+        return {"compressibility": 0.0, "chroma_subsampling": "none", "quality": None}
+    try:
+        from satyapan.forensics.provenance import estimate_jpeg_profile
+
+        prof = estimate_jpeg_profile(raw_bytes)
+    except Exception:  # noqa: BLE001
+        return {"compressibility": 0.0, "chroma_subsampling": "unknown", "quality": None}
+
+    chroma = str(prof["chroma_subsampling"])
+    q = prof["estimated_jpeg_quality"]
+    c = 0.0
+    if isinstance(q, int):
+        c = max(c, 1.0 - (q / 100.0))
+    if chroma in ("4:2:0", "4:2:2"):
+        c += 0.35
+    return {
+        "compressibility": round(float(np.clip(c, 0.0, 1.0)), 4),
+        "chroma_subsampling": chroma,
+        "quality": q,
+    }
+
+
 def score_whole_image(
     rgb: np.ndarray,
     *,
     config_path: Path = WHOLE_IMAGE_CONFIG,
     clip_scorer: Any | None = None,
+    raw_bytes: bytes | None = None,
 ) -> dict[str, Any]:
-    """Score an RGB uint8 image for whole-image synthetic (diffusion/GAN) indicators."""
+    """Score an RGB uint8 image for whole-image synthetic (diffusion/GAN) indicators.
+
+    When the encoded bytes are supplied, a `compression_context` is reported alongside the score
+    so callers can tell how much of the spectral/noise evidence JPEG quantisation and chroma
+    subsampling could explain away.
+    """
     cfg = json.loads(config_path.read_text(encoding="utf-8"))
     feats = extract_whole_image_features(rgb, clip_scorer=clip_scorer)
+    ctx = _compression_context(raw_bytes)
+
     order: list[str] = cfg["feature_order"]
     means: list[float] = cfg["means"]
     stds: list[float] = cfg["stds"]
@@ -308,9 +359,25 @@ def score_whole_image(
         "tau_hi": tau_hi,
         "tau_lo": tau_lo,
         "features": feats,
+        "compression_context": ctx,
         "contributions": contributions,
         "calibrated": bool(cfg.get("calibrated", False)),
     }
+
+
+def apply_compression_gate(
+    prob: float, tau_hi: float, tau_lo: float, context: dict[str, Any]
+) -> tuple[float, bool]:
+    """Cap a strong synthetic score at 'suspicious' when the file is heavily re-encoded.
+
+    Heavy JPEG/social re-encoding removes exactly the high-frequency and noise evidence the
+    whole-image detector uses, so a strong score there is not trustworthy enough to call
+    "consistent with synthetic generation". Returns `(gated_probability, was_gated)`.
+    """
+    compressibility = float(context.get("compressibility") or 0.0)
+    if compressibility >= 0.5 and prob >= tau_hi:
+        return round(min(prob, tau_lo + 0.03), 4), True
+    return prob, False
 
 
 def _render_spectrum_heatmap(rgb: np.ndarray, out_path: Path) -> None:
@@ -446,8 +513,20 @@ def analyze_image_deepfake(
                 "problem": verdict.problem,
             }
 
-    whole_info = score_whole_image(rgb, clip_scorer=clip_scorer)
-    whole_prob = float(whole_info["probability"])
+    whole_info = score_whole_image(rgb, clip_scorer=clip_scorer, raw_bytes=raw_bytes)
+    tau_hi = float(whole_info["tau_hi"])
+    tau_lo = float(whole_info["tau_lo"])
+    whole_prob, was_gated = apply_compression_gate(
+        float(whole_info["probability"]), tau_hi, tau_lo, whole_info["compression_context"]
+    )
+    if was_gated:
+        why.append(
+            "Heavy JPEG/social re-encoding (chroma "
+            f"{whole_info['compression_context'].get('chroma_subsampling')}, approximate Q"
+            f"{whole_info['compression_context'].get('quality')}) removes the high-frequency and "
+            "sensor-noise evidence this check relies on; the whole-image result is therefore "
+            "capped at 'suspicious' rather than 'consistent with synthetic generation'."
+        )
     feats = whole_info["features"]
     if whole_info["label"] in ("likely_synthetic", "suspicious"):
         if feats["checkerboard_index"] >= 0.30:
@@ -473,8 +552,6 @@ def analyze_image_deepfake(
 
     # Combine face-swap and whole-image probabilities: when a face >= 64px is scored by GenD,
     # weight the dedicated 304M face model primarily unless whole-image exceeds strict tau_hi.
-    tau_hi = float(whole_info["tau_hi"])
-    tau_lo = float(whole_info["tau_lo"])
     if face_info.get("logit") is not None:
         combined_prob = round(
             max(
