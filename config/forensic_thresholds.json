@@ -1,0 +1,36 @@
+{
+ "_note": "Classical tampering detector operating points; research/forensics/classical_calib.py",
+ "thresholds": {
+  "ela": {
+   "weak": 8.726233806610106,
+   "moderate": 10.666337003707877,
+   "strong": 17.73749942779541
+  },
+  "noise": {
+   "weak": 14.760382843017476,
+   "moderate": 139461.4780468748,
+   "strong": 249322.45078125002
+  },
+  "copymove": {
+   "weak": 10.0,
+   "moderate": 14.544999999999959,
+   "strong": 21.0
+  },
+  "grid_shift": {
+   "weak": 0.15,
+   "moderate": 0.17071765705943076,
+   "strong": 0.22331409081816675
+  },
+  "grid_second": {
+   "weak": 0.5864953875541682,
+   "moderate": 0.7951094907522201,
+   "strong": 0.994133672118187
+  }
+ },
+ "fpr": {
+  "weak": 0.02,
+  "moderate": 0.005,
+  "strong": 0.001
+ },
+ "calibration_set": "300 MS COCO photographs (Defactify validation shard)"
+}

@@ -116,8 +116,10 @@ known-first-party = ["satyapan", "research", "tests"]
 "scripts/make_demo_data.py" = ["E501"]  # fixture data lines
 "scripts/make_pitch_deck.py" = ["E501"]  # deck presentation generator
 "scripts/generate_judges_masterclass_pdf.py" = ["E501"]  # one-off PDF generator
-"src/satyapan/api/routes_dashboard.py" = ["E501"]  # inline dashboard HTML
 "src/satyapan/report/pack.py" = ["E501"]  # statutory HTML report templates
+"src/satyapan/forensics/**" = ["E501"]  # forensic finding texts and report templates
+"src/satyapan/api/routes_lab.py" = ["E501"]
+"research/forensics/**" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

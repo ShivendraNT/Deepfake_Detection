@@ -1,0 +1,174 @@
+{
+ "rule": "(fixed before running): pick the highest validation AUC under `normalised`; thresholds\ntau_lo / tau_hi are the 95th / 99th percentiles of the chosen model's real-image logits on\nvalidation, taking the larger of the two conditions (conservative for unseen sizes).",
+ "val": {},
+ "candidates": {
+  "community_forensics": {
+   "repo": "buildborderless/CommunityForensics-DeepfakeDet-ViT",
+   "license": "MIT",
+   "normalised": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.9521777629852295,
+    "tpr@1%": 0.7333333333333333,
+    "thr@1%": -3.9948630332946777,
+    "tpr@5%": 0.7733333333333333,
+    "thr@5%": -5.391341209411621
+   },
+   "native": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.9462666511535645,
+    "tpr@1%": 0.68,
+    "thr@1%": -3.864415168762207,
+    "tpr@5%": 0.7466666666666667,
+    "thr@5%": -5.746600151062012
+   },
+   "seconds_per_image": 0.149
+  },
+  "ateeqq_siglip": {
+   "repo": "Ateeqq/ai-vs-human-image-detector",
+   "license": "Apache-2.0",
+   "normalised": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.8863111138343811,
+    "tpr@1%": 0.36,
+    "thr@1%": 8.08459186553955,
+    "tpr@5%": 0.64,
+    "thr@5%": 5.6861772537231445
+   },
+   "native": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.8245777487754822,
+    "tpr@1%": 0.20666666666666667,
+    "thr@1%": 8.528266906738281,
+    "tpr@5%": 0.4666666666666667,
+    "thr@5%": 6.869952201843262
+   },
+   "seconds_per_image": 0.128
+  },
+  "haywoodsloan_swinv2": {
+   "repo": "haywoodsloan/ai-image-detector-deploy",
+   "license": "Apache-2.0",
+   "normalised": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.9491111040115356,
+    "tpr@1%": 0.7533333333333333,
+    "thr@1%": 1.25912344455719,
+    "tpr@5%": 0.7866666666666666,
+    "thr@5%": -2.0037682056427
+   },
+   "native": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.9446222186088562,
+    "tpr@1%": 0.7,
+    "thr@1%": 0.9460334777832031,
+    "tpr@5%": 0.7866666666666666,
+    "thr@5%": -2.958979368209839
+   },
+   "seconds_per_image": 0.467
+  },
+  "nyuad_vit": {
+   "error": "nyuad_vit: cannot map labels {0: 'dalle', 1: 'real', 2: 'sd'}"
+  },
+  "organika_sdxl": {
+   "repo": "Organika/sdxl-detector",
+   "license": "CC-BY-NC-3.0",
+   "normalised": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.8987555503845215,
+    "tpr@1%": 0.38666666666666666,
+    "thr@1%": 8.247657775878906,
+    "tpr@5%": 0.58,
+    "thr@5%": 5.296698093414307
+   },
+   "native": {
+    "n_real": 150,
+    "n_fake": 150,
+    "auc": 0.8486666679382324,
+    "tpr@1%": 0.24,
+    "thr@1%": 9.884315490722656,
+    "tpr@5%": 0.5266666666666666,
+    "thr@5%": 7.961584091186523
+   },
+   "seconds_per_image": 0.347
+  }
+ },
+ "decision": "community_forensics",
+ "thresholds": {
+  "tau_lo": -5.391341209411621,
+  "tau_hi": -3.864415168762207
+ },
+ "test": {
+  "normalised": {
+   "n_real": 400,
+   "n_fake": 400,
+   "auc": 0.8897500038146973,
+   "tpr@1%": 0.3275,
+   "thr@1%": -1.3770053386688232,
+   "tpr@5%": 0.585,
+   "thr@5%": -4.901663303375244,
+   "at_frozen": {
+    "tau_hi": {
+     "tpr": 0.4925,
+     "fpr": 0.0225
+    },
+    "tau_lo": {
+     "tpr": 0.6225,
+     "fpr": 0.0625
+    }
+   },
+   "per_generator_tpr_tau_lo": {
+    "SD 2.1": 0.9625,
+    "SDXL": 0.875,
+    "SD 3": 0.575,
+    "DALL-E 3": 0.2125,
+    "Midjourney v6": 0.4875
+   },
+   "per_generator_tpr_tau_hi": {
+    "SD 2.1": 0.8875,
+    "SDXL": 0.7,
+    "SD 3": 0.425,
+    "DALL-E 3": 0.15,
+    "Midjourney v6": 0.3
+   }
+  },
+  "native": {
+   "n_real": 400,
+   "n_fake": 400,
+   "auc": 0.875587522983551,
+   "tpr@1%": 0.315,
+   "thr@1%": -0.8705374598503113,
+   "tpr@5%": 0.6,
+   "thr@5%": -4.846076011657715,
+   "at_frozen": {
+    "tau_hi": {
+     "tpr": 0.52,
+     "fpr": 0.025
+    },
+    "tau_lo": {
+     "tpr": 0.65,
+     "fpr": 0.0675
+    }
+   },
+   "per_generator_tpr_tau_lo": {
+    "SD 2.1": 0.9625,
+    "SDXL": 0.9,
+    "SD 3": 0.65,
+    "DALL-E 3": 0.1875,
+    "Midjourney v6": 0.55
+   },
+   "per_generator_tpr_tau_hi": {
+    "SD 2.1": 0.9,
+    "SDXL": 0.7625,
+    "SD 3": 0.45,
+    "DALL-E 3": 0.0875,
+    "Midjourney v6": 0.4
+   }
+  }
+ }
+}

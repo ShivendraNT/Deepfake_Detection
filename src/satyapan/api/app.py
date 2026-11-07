@@ -16,7 +16,7 @@ from satyapan.api import (
     routes_cases,
     routes_citizen,
     routes_companion,
-    routes_dashboard,
+    routes_lab,
     routes_live,
     routes_reports,
     routes_seal,
@@ -54,7 +54,13 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
         _warm_speech_engine(app.state.satyapan)
         yield
 
-    app = FastAPI(title="Satyapan — Payment Verification Desk", version="0.1.0", lifespan=lifespan)
+    app = FastAPI(
+        title="Satyapan — Multimedia Forensic Lab",
+        description="Multimedia evidence authentication, deepfake detection and provenance "
+        "analysis for investigators. Dashboard: /lab",
+        version="1.0.0",
+        lifespan=lifespan,
+    )
     app.state.satyapan = state or AppState.build(settings)
     app.add_middleware(
         CORSMiddleware,
@@ -77,7 +83,7 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
         )
 
     for r in (
-        routes_dashboard,
+        routes_lab,
         routes_cases,
         routes_verify,
         routes_reports,
