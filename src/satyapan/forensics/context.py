@@ -91,7 +91,8 @@ class AnalysisContext:
         """Mono float32 at `sr` (decoded by ffmpeg). ValueError if there is no audio."""
         key = f"audio_{sr}"
         if key not in self.cache:
-            self.cache[key] = decode_audio(self.data, sr)
+            path = self.cache.get("path")
+            self.cache[key] = decode_audio(self.data, sr, path=path)
         return self.cache[key]  # type: ignore[no-any-return]
 
     def audio_native(self) -> tuple[np.ndarray, int]:
@@ -134,16 +135,22 @@ class AnalysisContext:
         return fname
 
 
-def decode_audio(data: bytes, sr: int = 16000, stream: str = "a:0") -> np.ndarray:
-    """ffmpeg -> mono float32 at sr. Works for audio files and the audio track of a video."""
-    if not data:
+def decode_audio(
+    data: bytes, sr: int = 16000, stream: str = "a:0", path: Path | None = None
+) -> np.ndarray:
+    """ffmpeg -> mono float32 at sr. Works for audio files and the audio track of a video.
+    Reads from the stored file when a path is given (MP4/MOV may keep their index at the end,
+    which a pipe cannot seek to)."""
+    if not data and path is None:
         raise ValueError("empty file")
+    src = str(path) if path is not None else "pipe:0"
     cmd = [
-        "ffmpeg", "-hide_banner", "-loglevel", "error", "-i", "pipe:0", "-map", stream,
+        "ffmpeg", "-hide_banner", "-loglevel", "error", "-i", src, "-map", stream,
         "-vn", "-ac", "1", "-ar", str(sr), "-f", "f32le", "pipe:1",
     ]  # fmt: skip
     try:
-        proc = subprocess.run(cmd, input=data, capture_output=True, timeout=300)
+        proc = subprocess.run(cmd, input=None if path is not None else data,
+                              capture_output=True, timeout=300)  # fmt: skip
     except (OSError, subprocess.TimeoutExpired) as exc:
         raise ValueError(f"ffmpeg could not run: {exc}") from exc
     if proc.returncode != 0 or not proc.stdout:

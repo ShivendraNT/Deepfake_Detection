@@ -556,7 +556,7 @@ def run_jpeg_grid(ctx: AnalysisContext) -> TechniqueResult:
                     f"the file is a {fmt.upper()}: it was JPEG-compressed earlier and then "
                     "converted or screenshotted. A camera-original lossless file has no grid.",
                     Category.PROVENANCE,
-                    strength=round(strength, 3),
+                    grid_strength=round(strength, 3),
                 )  # fmt: skip
             )
             summary = f"earlier JPEG compression detected (grid strength {strength:.2f})"

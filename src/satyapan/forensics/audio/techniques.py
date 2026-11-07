@@ -199,19 +199,32 @@ def run_voice(ctx: AnalysisContext) -> TechniqueResult:
     from satyapan.voice.rules import classify_windows
 
     x = x16(ctx)
-    sp = dsp.speech_seconds(x)
+    segs = dsp.speech_segments(x)
+    sp = float(sum(e - s for s, e in segs))
     thr = m["thresholds"]
     if sp < 3.0:
         return make_result(t, summary=f"only {sp:.1f} s of speech: too short to judge",
                            status=Status.SKIPPED, data={"speech_seconds": sp})  # fmt: skip
-    windows = split_windows(x)
+    all_windows = split_windows(x)
+
+    def speech_in(i: int) -> float:
+        a, b = i * 5.0, (i + 1) * 5.0
+        return sum(max(0.0, min(b, e) - max(a, s)) for s, e in segs)
+
+    keep = [i for i in range(len(all_windows)) if speech_in(i) >= 1.5]
+    if not keep:
+        return make_result(t, summary="no 5-second window has enough speech to judge",
+                           status=Status.SKIPPED, data={"speech_seconds": sp})  # fmt: skip
+    windows = [all_windows[i] for i in keep]
     with ctx.models.lock("voice_run"):
         scores = m["detector"].score_windows(windows)
     verdict = classify_windows(scores, thr, sp)
-    spans = [TimeSpan(start_s=i * 5.0, end_s=min(len(x) / 16000, (i + 1) * 5.0),
+    spans = [TimeSpan(start_s=keep[j] * 5.0, end_s=min(len(x) / 16000, (keep[j] + 1) * 5.0),
                       label="synthetic" if s >= thr.tau_hi else "elevated", score=round(s, 3))
-             for i, s in enumerate(scores) if s >= thr.tau_lo]  # fmt: skip
+             for j, s in enumerate(scores) if s >= thr.tau_lo]  # fmt: skip
     data = {"window_s": 5.0, "scores": [round(float(s), 4) for s in scores],
+            "window_starts": [keep[j] * 5.0 for j in range(len(scores))],
+            "speech_segments": [[round(s, 2), round(e, 2)] for s, e in segs][:200],
             "tau_hi": thr.tau_hi, "tau_lo": thr.tau_lo, "speech_seconds": round(sp, 1),
             "label": str(verdict.label), "model": thr.model_version,
             "benchmark": "In-the-Wild deepfake audio (speakers unseen): AUC 0.921"}  # fmt: skip
@@ -420,7 +433,7 @@ def run_transcript(ctx: AnalysisContext) -> TechniqueResult:
     x = x16(ctx)
     if dsp.speech_seconds(x) < 0.5:
         return make_result(t, summary="no speech", status=Status.SKIPPED)
-    tr = asr.transcribe(x[: 16000 * 600])
+    tr = asr.transcribe(dsp.normalise_loudness(x[: 16000 * 600]))
     text = tr.text
     findings, cdata = content_findings(text)
     ctx.cache["transcript"] = text

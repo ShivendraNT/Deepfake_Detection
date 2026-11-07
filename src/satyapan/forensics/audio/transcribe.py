@@ -35,6 +35,20 @@ class Transcript:
         return " ".join(s.text.strip() for s in self.segments).strip()
 
 
+def plausible(seg: Segment) -> bool:
+    """Drop Whisper hallucinations: punctuation-only text, repetition loops, and more words
+    than anyone can say in the segment's duration."""
+    import re
+
+    words = re.findall(r"\w+", seg.text, flags=re.UNICODE)
+    if not words:
+        return False
+    dur = max(0.3, seg.end - seg.start)
+    if len(words) / dur > 7.0:
+        return False
+    return not (len(words) >= 8 and len({w.lower() for w in words}) / len(words) < 0.25)
+
+
 @dataclass
 class ForensicTranscriber:
     engine: str
@@ -80,12 +94,15 @@ class ForensicTranscriber:
                     vad_parameters={"min_silence_duration_ms": 400},
                 )  # fmt: skip
                 out = [Segment(float(s.start), float(s.end), s.text.strip()) for s in segs
-                       if not (s.no_speech_prob > 0.7 and s.avg_logprob < -0.8)]  # fmt: skip
+                       if not (s.no_speech_prob > 0.7 and s.avg_logprob < -0.8)
+                       and getattr(s, "compression_ratio", 1.0) <= 2.4]  # fmt: skip
+                out = [seg for seg in out if plausible(seg)]
                 return Transcript(str(info.language), float(info.language_probability), out,
                                   f"faster-whisper:{self.model_name}")  # fmt: skip
             res = model.transcribe(x16k.astype(np.float32), path_or_hf_repo=self.model_name,
                                    temperature=0.0, condition_on_previous_text=False)  # fmt: skip
             out = [Segment(float(s["start"]), float(s["end"]), str(s["text"]).strip())
-                   for s in res.get("segments", [])]  # fmt: skip
+                   for s in res.get("segments", []) if s.get("compression_ratio", 1.0) <= 2.4]  # fmt: skip
+            out = [seg for seg in out if plausible(seg)]
             return Transcript(str(res.get("language", "unknown")), 1.0, out,
                               f"mlx-whisper:{self.model_name}")  # fmt: skip

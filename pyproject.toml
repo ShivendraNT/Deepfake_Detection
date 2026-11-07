@@ -120,6 +120,9 @@ known-first-party = ["satyapan", "research", "tests"]
 "src/satyapan/forensics/**" = ["E501"]  # forensic finding texts and report templates
 "src/satyapan/api/routes_lab.py" = ["E501"]
 "research/forensics/**" = ["E501"]
+"scripts/build_demo_dataset.py" = ["E501"]  # dataset narrative strings
+"scripts/make_ai_portrait.py" = ["E501"]
+"tests/forensics/**" = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"

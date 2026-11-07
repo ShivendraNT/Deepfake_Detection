@@ -319,6 +319,22 @@ def run_frames(ctx: AnalysisContext) -> TechniqueResult:
 # ---------------------------------------------------------------------------------------------
 
 
+def file_thresholds(thr: Any) -> Any:
+    """Evidence files are examined at their original quality, so the lab uses the operating
+    point fitted on FF++ validation real videos at original quality (per_condition.orig: 1% /
+    5% window false alarms) instead of the stricter live-call one (max over call codecs)."""
+    import dataclasses
+    import json
+
+    from satyapan.video.rules import DEFAULT_PATH
+
+    try:
+        orig = json.loads(DEFAULT_PATH.read_text(encoding="utf-8"))["per_condition"]["orig"]
+        return dataclasses.replace(thr, tau_hi=float(orig["tau_hi"]), tau_lo=float(orig["tau_lo"]))
+    except (OSError, KeyError, ValueError):
+        return thr
+
+
 def run_video_deepfake(ctx: AnalysisContext) -> TechniqueResult:
     t = VIDEO_DEEPFAKE
     try:
@@ -339,8 +355,8 @@ def run_video_deepfake(ctx: AnalysisContext) -> TechniqueResult:
                     crops[r.t] = (float(cache[r.t]), r.crop)
             return res
 
-    an = Recording(base.fusion, base.thresholds, base.scorer, base.tracker_factory,
-                   base.crop_every_s)  # fmt: skip
+    an = Recording(base.fusion, file_thresholds(base.thresholds), base.scorer,
+                   base.tracker_factory, base.crop_every_s)  # fmt: skip
     path = video_path(ctx)
     audio = None
     try:

@@ -205,10 +205,12 @@ def digital_silence(x: np.ndarray, sr: int, min_ms: float = 12.0) -> list[Splice
 
 
 def noise_floor_jumps(
-    x: np.ndarray, sr: int, win_s: float = 1.5
+    x: np.ndarray, sr: int, win_s: float = 2.0, hop_s: float = 0.5
 ) -> tuple[list[SpliceCue], list[float], list[float]]:
-    """Background level (quiet 20 ms frames) in sliding windows; abrupt level steps between
-    adjacent windows suggest audio recorded under different conditions was joined."""
+    """Background level per window = 10th percentile of its 20 ms frame energies (the pauses,
+    or the whole window when there is no speech). Two neighbouring windows whose levels differ
+    by more than 6 dB, with steady levels on each side, suggest audio recorded under different
+    conditions was joined there."""
     fl = int(0.02 * sr)
     hop = fl // 2
     if len(x) < sr * 3:
@@ -216,27 +218,29 @@ def noise_floor_jumps(
     fr = frames(x, fl, hop)
     e = 10 * np.log10((fr.astype(np.float64) ** 2).mean(axis=1) + 1e-12)
     t = (np.arange(len(e)) * hop + fl / 2) / sr
-    floor_thr = np.percentile(e, 25) + 6.0
-    quiet = e <= floor_thr
-    w = int(win_s / (hop / sr))
+    w = max(4, int(win_s / (hop / sr)))
+    step = max(1, int(hop_s / (hop / sr)))
     levels, lt = [], []
-    for i in range(0, len(e) - w, max(1, w // 3)):
-        seg = e[i : i + w][quiet[i : i + w]]
-        if len(seg) >= 8:
-            levels.append(float(np.median(seg)))
-            lt.append(float(t[i + w // 2]))
+    for i in range(0, len(e) - w + 1, step):
+        levels.append(float(np.percentile(e[i : i + w], 10)))
+        lt.append(float(t[i + w // 2]))
     cues: list[SpliceCue] = []
     lv = np.array(levels)
-    if len(lv) >= 4:
-        diffs = np.abs(np.diff(lv))
-        typ = float(np.median(diffs)) + 0.5
-        for i in np.where((diffs > 6.0) & (diffs > 4 * typ))[0]:
-            left = lv[max(0, i - 2) : i + 1].mean()
-            right = lv[i + 1 : i + 4].mean()
-            if abs(right - left) > 6.0:
-                cues.append(SpliceCue((lt[i] + lt[i + 1]) / 2, "noise_floor_jump",
-                                      f"background level changes by {right - left:+.1f} dB",
-                                      1.5 if abs(right - left) > 10 else 1.0))  # fmt: skip
+    k = max(1, int(round(win_s / hop_s)))  # windows that do not overlap
+    if len(lv) > 2 * k + 1:
+        d = np.full(len(lv), 0.0)
+        for i in range(k, len(lv) - k):
+            d[i] = float(np.median(lv[i : i + k]) - np.median(lv[max(0, i - k) : i]))
+        cand = [i for i in range(k, len(lv) - k) if abs(d[i]) > 6.0
+                and abs(d[i]) >= np.abs(d[max(0, i - k) : i + k + 1]).max() - 1e-9]  # fmt: skip
+        for i in cand:
+            left = lv[max(0, i - 2 * k) : max(1, i - k // 2)]
+            right = lv[min(len(lv) - 1, i + k // 2) : i + 2 * k]
+            if len(left) and len(right) and np.std(left) < 3.0 and np.std(right) < 3.0:
+                ts = (lt[i - 1] + lt[i]) / 2 if i > 0 else lt[i]
+                cues.append(SpliceCue(ts - win_s / 2 + hop_s / 2, "noise_floor_jump",
+                                      f"background level changes by {d[i]:+.1f} dB",
+                                      1.5 if abs(d[i]) > 10 else 1.0))  # fmt: skip
     return cues, lt, [round(v, 2) for v in levels]
 
 
@@ -279,10 +283,46 @@ def merge_cues(cues: list[SpliceCue], within_s: float = 0.4) -> list[dict[str, A
     return out
 
 
-def speech_seconds(x16k: np.ndarray, thr: float = 0.01) -> float:
-    fl = 480
-    n = len(x16k) // fl
-    if n == 0:
-        return 0.0
-    rms = np.sqrt((x16k[: n * fl].reshape(n, fl) ** 2).mean(axis=1))
-    return float((rms > thr).sum() * 0.03)
+def normalise_loudness(x: np.ndarray, target_peak: float = 0.5) -> np.ndarray:
+    """Scale so the 99.9th-percentile absolute sample is target_peak (VAD is gain-sensitive;
+    the deepfake models normalise internally, so scoring is unaffected)."""
+    if len(x) == 0:
+        return x
+    p = float(np.percentile(np.abs(x), 99.9))
+    if p < 1e-5:
+        return x
+    return (x * (target_peak / p)).astype(np.float32)
+
+
+def speech_segments(x16k: np.ndarray) -> list[tuple[float, float]]:
+    """Speech (start_s, end_s) from Silero VAD (shipped with faster-whisper) on loudness-
+    normalised audio; an adaptive energy detector when it is not installed."""
+    y = normalise_loudness(x16k)
+    try:
+        from faster_whisper.vad import VadOptions, get_speech_timestamps
+
+        ts = get_speech_timestamps(y, VadOptions(threshold=0.5, min_silence_duration_ms=300,
+                                                 speech_pad_ms=100))  # fmt: skip
+        return [(t["start"] / 16000, t["end"] / 16000) for t in ts]
+    except Exception:  # noqa: BLE001 - no faster-whisper: energy fallback
+        fl = 480
+        n = len(y) // fl
+        if n == 0:
+            return []
+        rms = np.sqrt((y[: n * fl].reshape(n, fl) ** 2).mean(axis=1))
+        thr = max(0.02, float(np.percentile(rms, 20)) * 4)
+        on = rms > thr
+        out, start = [], None
+        for i, v in enumerate(on):
+            if v and start is None:
+                start = i
+            if not v and start is not None:
+                out.append((start * 0.03, i * 0.03))
+                start = None
+        if start is not None:
+            out.append((start * 0.03, n * 0.03))
+        return out
+
+
+def speech_seconds(x16k: np.ndarray) -> float:
+    return float(sum(e - s for s, e in speech_segments(x16k)))
