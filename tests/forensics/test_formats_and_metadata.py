@@ -208,3 +208,15 @@ def test_c2pa_ai_declaration_and_tampering(stub_models, tmp_path: Path) -> None:
     g = {x.code: x for t in b.techniques for x in t.findings}
     assert g["C2PA_INVALID"].hypothesis == Hypothesis.MANIPULATED
     assert g["C2PA_AI_GENERATED"].strength == Strength.STRONG
+
+
+def test_heic_iphone_photo_is_analysed(stub_models, tmp_path: Path) -> None:
+    import pytest
+
+    heif = pytest.importorskip("pillow_heif")
+    heif.register_heif_opener()
+    buf = io.BytesIO()
+    Image.fromarray(textured(400, 300)).save(buf, format="HEIF", quality=90)
+    a, _ = analyze_bytes(buf.getvalue(), "IMG_0001.HEIC", tmp_path, models=stub_models)
+    assert a.media.format == "heic" and a.media.width == 400
+    assert not [t.id for t in a.techniques if t.status.value == "error"]

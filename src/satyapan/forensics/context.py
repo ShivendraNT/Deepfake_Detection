@@ -51,6 +51,8 @@ class AnalysisContext:
         if "pil" not in self.cache:
             from PIL import Image, ImageOps
 
+            register_heif()
+
             try:
                 img = Image.open(io.BytesIO(self.data))
                 img.load()
@@ -133,6 +135,22 @@ class AnalysisContext:
         fname = name if name.endswith(".json") else f"{name}.json"
         (self.artifact_dir / fname).write_text(json.dumps(obj, default=str), encoding="utf-8")
         return fname
+
+
+_HEIF: list[bool] = []
+
+
+def register_heif() -> bool:
+    """HEIC/HEIF (the iPhone camera default) through pillow-heif when installed."""
+    if not _HEIF:
+        try:
+            from pillow_heif import register_heif_opener
+
+            register_heif_opener()
+            _HEIF.append(True)
+        except ImportError:
+            _HEIF.append(False)
+    return _HEIF[0]
 
 
 def decode_audio(

@@ -44,6 +44,10 @@ def media_info(
 
         from PIL import Image
 
+        from satyapan.forensics.context import register_heif
+
+        register_heif()
+
         try:
             with Image.open(io.BytesIO(data)) as img:
                 m.width, m.height = img.size
