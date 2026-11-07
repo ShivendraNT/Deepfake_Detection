@@ -176,6 +176,34 @@ def run_video_container(ctx: AnalysisContext) -> TechniqueResult:
 # ---------------------------------------------------------------------------------------------
 
 
+def frozen_in_motion(diff: np.ndarray, still: float = 0.15, ctx_frames: int = 8,
+                     motion: float = 1.5) -> np.ndarray:  # fmt: skip
+    """Indices (into diff) of repeated frames that sit inside moving footage: each run of
+    near-identical consecutive frames is kept when the footage moves both before and after it
+    (a static scene legitimately repeats frames)."""
+    still_mask = diff < still
+    out: list[int] = []
+    i, n = 0, len(diff)
+    while i < n:
+        if not still_mask[i]:
+            i += 1
+            continue
+        j = i
+        while j < n and still_mask[j]:
+            j += 1
+        before = diff[max(0, i - ctx_frames) : i]
+        after = diff[j : j + ctx_frames]
+        if (
+            len(before) >= 2
+            and len(after) >= 2
+            and np.median(before) > motion
+            and np.median(after) > motion
+        ):
+            out.extend(range(i, j))
+        i = j
+    return np.array(out, dtype=int)
+
+
 def run_frames(ctx: AnalysisContext) -> TechniqueResult:
     t = FRAMES
     try:
@@ -219,9 +247,7 @@ def run_frames(ctx: AnalysisContext) -> TechniqueResult:
     p = np.array(pts)
     dt = np.diff(p)
     med_dt = float(np.median(dt[dt > 0])) if (dt > 0).any() else 0.04
-    moving = np.convolve(diff, np.ones(9) / 9, mode="same")
-    dup = (diff < 0.15) & (moving > 1.5)
-    dup_idx = np.where(dup)[0]
+    dup_idx = frozen_in_motion(diff)
     cuts = np.where((hd > 0.35) & (diff > 12))[0]
     gaps = np.where(dt > 2.5 * med_dt)[0] if med_dt > 0 else np.array([], int)
     findings: list[Finding] = []
@@ -235,10 +261,11 @@ def run_frames(ctx: AnalysisContext) -> TechniqueResult:
                  for i in gaps[:50]],
     }  # fmt: skip
     if len(dup_idx) >= 2:
-        periodic = False
-        if len(dup_idx) >= 6:
-            iv = np.diff(dup_idx)
-            periodic = float(np.std(iv)) < 0.6 and float(np.median(iv)) <= 6
+        # frame-rate conversion repeats single frames at a regular interval; a freeze is a run
+        runs = np.split(dup_idx, np.where(np.diff(dup_idx) > 1)[0] + 1)
+        starts = np.array([r[0] for r in runs])
+        periodic = (len(runs) >= 4 and max(len(r) for r in runs) <= 2
+                    and float(np.std(np.diff(starts))) < 1.0 and 2 <= float(np.median(np.diff(starts))) <= 8)  # fmt: skip
         if periodic:
             findings.append(info("FRAME_RATE_CONVERSION", "Regularly repeated frames",
                                  "Frames repeat at a fixed interval, the signature of frame-rate "

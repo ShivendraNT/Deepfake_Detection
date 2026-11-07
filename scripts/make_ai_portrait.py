@@ -45,6 +45,12 @@ bgr = np.ascontiguousarray(np.asarray(img)[..., ::-1])
 marked = enc.encode(bgr, "dwtDct")[..., ::-1]
 Image.fromarray(np.ascontiguousarray(marked)).save(out, format="PNG")
 with open(out + ".json", "w") as fh:
-    json.dump({"generator": f"SD-Turbo (stabilityai/sd-turbo), 2 steps, seed {SEED}", "prompt": PROMPT,
-               "watermark": "invisible-watermark dwtDct 'SDV2'"}, fh)
+    json.dump(
+        {
+            "generator": f"SD-Turbo (stabilityai/sd-turbo), 2 steps, seed {SEED}",
+            "prompt": PROMPT,
+            "watermark": "invisible-watermark dwtDct 'SDV2'",
+        },
+        fh,
+    )
 print("wrote", out)

@@ -25,9 +25,21 @@ OUT_MD = ROOT / "results" / "forensics_demo_benchmark.md"
 
 def grade(truth: str, label: str) -> str:
     if truth == "synthetic":
-        return "correct" if label == "SYNTHETIC" else "flagged" if label in ("SUSPICIOUS", "MANIPULATED") else "missed"
+        return (
+            "correct"
+            if label == "SYNTHETIC"
+            else "flagged"
+            if label in ("SUSPICIOUS", "MANIPULATED")
+            else "missed"
+        )
     if truth == "manipulated":
-        return "correct" if label == "MANIPULATED" else "flagged" if label in ("SUSPICIOUS", "SYNTHETIC") else "missed"
+        return (
+            "correct"
+            if label == "MANIPULATED"
+            else "flagged"
+            if label in ("SUSPICIOUS", "SYNTHETIC")
+            else "missed"
+        )
     if label in ("SYNTHETIC", "MANIPULATED"):
         return "false alarm"
     return "correct" if label == "NO_INDICATORS" else "cautious"
@@ -66,8 +78,17 @@ def main() -> int:
                   "score": ln.score} for ln in svc.store.links(cid)]  # fmt: skip
         svc.pool.shutdown(wait=True)
     rows.sort(key=lambda r: (r["exhibit"][0] != "Q", int(r["exhibit"][1:])))
-    summary = {g: sum(r["grade"] == g for r in rows) for g in ("correct", "flagged", "cautious", "missed", "false alarm")}
-    res = {"dataset": manifest["name"], "wall_seconds": round(wall, 1), "summary": summary, "rows": rows, "links": links}
+    summary = {
+        g: sum(r["grade"] == g for r in rows)
+        for g in ("correct", "flagged", "cautious", "missed", "false alarm")
+    }
+    res = {
+        "dataset": manifest["name"],
+        "wall_seconds": round(wall, 1),
+        "summary": summary,
+        "rows": rows,
+        "links": links,
+    }
     OUT_JSON.write_text(json.dumps(res, indent=1, ensure_ascii=False))
     lines = [
         "# Forensic Lab on the investigation dataset",

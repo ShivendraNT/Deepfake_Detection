@@ -140,9 +140,15 @@ def run_c2pa(ctx: AnalysisContext) -> TechniqueResult:
                 f"type trainedAlgorithmicMedia"
                 + (f", software agent “{agent_name}”" if agent_name else "")
                 + ". The "
-                "creator's own signed record states the content was made with AI.",
+                "creator's own signed record states the content was made with AI."
+                + (
+                    " The file was altered after signing, so the declaration describes an "
+                    "earlier version of it."
+                    if (hash_fail or sig_fail)
+                    else ""
+                ),
                 Hypothesis.SYNTHETIC,
-                Strength.VERY_STRONG,
+                Strength.STRONG if (hash_fail or sig_fail) else Strength.VERY_STRONG,
                 Category.PROVENANCE,
                 issuer=issuer,
                 generator=gen,

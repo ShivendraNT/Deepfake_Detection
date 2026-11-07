@@ -37,7 +37,7 @@ models 5–20× faster.
 | 2. Validation for court use | 3–4 months | Re-fit thresholds on Indian casework media (WhatsApp/Telegram re-encodes, Indian languages, local phone models); blind proficiency tests; write the lab's validation file per ISO/IEC 17025 7.2; peer review of methods | Validation report signed by the lab; error rates per technique on Indian data; SOP approved |
 | 3. Accreditation & notification | 6 months (parallel) | NABL ISO/IEC 17025 scope extension for "multimedia authentication"; supporting the lab's notification as an *Examiner of Electronic Evidence* under IT Act s.79A (MeitY) | Accredited scope; s.79A notification dossier |
 | 4. State-wide roll-out | 6–12 months | Server deployments in state cyber HQ; integration with CCTNS / ICJS case numbers; training of 1 trainer per district | All districts can request examinations through the cell; turnaround SLA met |
-| 5. Continuous improvement | ongoing | Quarterly model refresh against new generators (each through the pre-registered selection protocol); new technique modules (PRNU camera matching, lip-sync, document forgery) | Benchmarks re-run and published each release |
+| 5. Continuous improvement | ongoing | Quarterly model refresh against new generators (each through the pre-registered selection protocol); new technique modules: a learned splice/inpainting localiser (e.g. TruFor, CVPR 2023 — research-licensed, to be integrated after a code review in the lab), PRNU camera matching, AI-video (Sora/Veo-class) detection, document forgery | Benchmarks re-run and published each release |
 
 ## 4. Integration points
 

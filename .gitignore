@@ -63,3 +63,6 @@ sih/
 
 # Forensic Lab runtime data (evidence, artifacts, reports)
 lab_data/
+
+# Agent worktrees
+.claude/worktrees/

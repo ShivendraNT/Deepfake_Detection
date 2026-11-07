@@ -182,3 +182,29 @@ def test_no_thumbnail_skips_cleanly(stub_models, tmp_path: Path) -> None:
     a, _ = analyze_bytes(jpeg(textured(320, 240)), "x.jpg", tmp_path, models=stub_models)
     th = next(r for r in a.techniques if r.id == "image.thumbnail")
     assert th.status.value == "skipped"
+
+
+def test_c2pa_ai_declaration_and_tampering(stub_models, tmp_path: Path) -> None:
+    import importlib.util
+    import sys
+
+    import pytest
+
+    if importlib.util.find_spec("c2pa") is None or importlib.util.find_spec("cryptography") is None:
+        pytest.skip("c2pa-python / cryptography not installed")
+    sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "scripts"))
+    from build_demo_dataset import c2pa_sign
+
+    (tmp_path / "in.png").write_bytes(png(textured(256, 256)))
+    c2pa_sign(tmp_path / "in.png", tmp_path / "signed.png", tmp_path)
+    signed = (tmp_path / "signed.png").read_bytes()
+    a, _ = analyze_bytes(signed, "signed.png", tmp_path / "a", models=stub_models)
+    f = {x.code: x for t in a.techniques for x in t.findings}
+    assert f["C2PA_AI_GENERATED"].strength == Strength.VERY_STRONG
+    assert "C2PA_INVALID" not in f and a.verdict.label.value == "SYNTHETIC"
+    b, _ = analyze_bytes(
+        signed + b"appended" * 8, "tampered.png", tmp_path / "b", models=stub_models
+    )
+    g = {x.code: x for t in b.techniques for x in t.findings}
+    assert g["C2PA_INVALID"].hypothesis == Hypothesis.MANIPULATED
+    assert g["C2PA_AI_GENERATED"].strength == Strength.STRONG
