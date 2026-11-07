@@ -35,7 +35,8 @@ def reals(path: Path, n: int, seed: int) -> list[bytes]:
 
     tab = pq.read_table(path, columns=["Image", "Label_B"])
     lb = np.array(tab.column("Label_B").to_pylist())
-    idx = np.random.default_rng(seed).choice(np.where(lb == 0)[0], size=n, replace=False)
+    rng = np.random.default_rng(seed)
+    idx = rng.choice(np.where(lb == 0)[0], size=n, replace=False)
     col = tab.column("Image")
     return [col[int(i)].as_py()["bytes"] for i in sorted(idx)]
 

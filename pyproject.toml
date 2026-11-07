@@ -37,6 +37,22 @@ video = [
   "mediapipe>=0.10.21; (sys_platform != 'darwin' or platform_machine != 'x86_64') and (sys_platform != 'win32' or platform_machine != 'ARM64')",
   "mediapipe==0.10.21; sys_platform == 'darwin' and platform_machine == 'x86_64' and python_version < '3.13'",
 ]
+# Satyapan Forensic Lab (SUTRAM 2026 PS2): every technique of src/satyapan/forensics on top of
+# the video + audio + asr extras. `make lab-setup` installs all of it; the models: `make forensics-models`.
+forensics = [
+  "numpy>=1.26",
+  "scipy>=1.11",
+  "pillow>=10",
+  "av>=12",
+  "reportlab>=4.0",
+  "c2pa-python>=0.9",
+  "huggingface_hub>=0.34,<1.0",
+  "onnxruntime>=1.18; sys_platform != 'darwin' or platform_machine != 'x86_64'",
+  "onnxruntime>=1.18,<1.24; sys_platform == 'darwin' and platform_machine == 'x86_64'",
+]
+# Only to export the AI-image classifier to ONNX once (scripts/forensics_models.py) and for
+# research/forensics/: CPU torch is enough.
+forensics-build = ["torch>=2.3", "transformers>=4.44,<5", "huggingface_hub>=0.34,<1.0", "onnx>=1.16", "scikit-learn>=1.4", "pyarrow>=15", "soundfile>=0.12", "piper-tts>=1.2", "cryptography>=42"]
 # Text inside photos / screenshots (src/satyapan/imagecheck/ocr.py): RapidOCR, Apache-2.0, ONNX
 # models bundled, CPU, any OS. Optional: without it images are still face-checked.
 ocr = ["rapidocr-onnxruntime>=1.4"]
@@ -122,6 +138,7 @@ known-first-party = ["satyapan", "research", "tests"]
 "research/forensics/**" = ["E501"]
 "scripts/build_demo_dataset.py" = ["E501"]  # dataset narrative strings
 "scripts/make_ai_portrait.py" = ["E501"]
+"scripts/lab_benchmark.py" = ["E501"]
 "tests/forensics/**" = ["E501"]
 
 [tool.mypy]

@@ -188,6 +188,61 @@ def run_spectral(ctx: AnalysisContext) -> TechniqueResult:
 # ---------------------------------------------------------------------------------------------
 
 
+def score_with_features(det: Any, windows: list[np.ndarray]) -> tuple[list[float], np.ndarray]:
+    """One XLS-R pass per window: the shipped head's P(synthetic) and the pooled features
+    (shared with the open-TTS head)."""
+    sess = det.model_session
+    inp = sess.get_inputs()[0].name
+    lr = det.logreg_session
+    lr_in = lr.get_inputs()[0].name
+    probs, feats = [], []
+    for w in windows:
+        hs = sess.run(None, {inp: np.asarray(w, np.float32)[None, :]})[0]
+        pooled = hs.mean(axis=1).astype(np.float32)
+        out = lr.run(None, {lr_in: pooled})
+        p = 0.0
+        for item in out:
+            if isinstance(item, np.ndarray) and item.shape[-1] == 2:
+                p = float(item[0, 1])
+                break
+        probs.append(float(np.clip(p, 0.0, 1.0)))
+        feats.append(pooled[0])
+    return probs, np.stack(feats) if feats else np.zeros((0, 1024), np.float32)
+
+
+class OpenTtsHead:
+    def __init__(self, raw: dict[str, Any]) -> None:
+        self.mean = np.asarray(raw["mean"], np.float64)
+        self.scale = np.asarray(raw["scale"], np.float64)
+        self.coef = np.asarray(raw["coef"], np.float64)
+        self.intercept = float(raw["intercept"])
+        self.tau_hi, self.tau_lo = float(raw["tau_hi"]), float(raw["tau_lo"])
+        self.metrics: dict[str, float] = dict(raw.get("metrics", {}))
+
+    def logits(self, feats: np.ndarray) -> np.ndarray:
+        if len(feats) == 0:
+            return np.zeros(0)
+        return ((feats - self.mean) / self.scale) @ self.coef + self.intercept
+
+
+_HEAD: list[OpenTtsHead | None] = []
+
+
+def opentts_head() -> OpenTtsHead | None:
+    """config/voice_opentts_head.json, only if it passed its pre-registered ship rule."""
+    if not _HEAD:
+        import json
+        from pathlib import Path
+
+        p = Path(__file__).resolve().parents[4] / "config" / "voice_opentts_head.json"
+        head = None
+        if p.exists():
+            raw = json.loads(p.read_text(encoding="utf-8"))
+            head = OpenTtsHead(raw) if raw.get("ships") else None
+        _HEAD.append(head)
+    return _HEAD[0]
+
+
 def run_voice(ctx: AnalysisContext) -> TechniqueResult:
     t = VOICE
     try:
@@ -217,8 +272,10 @@ def run_voice(ctx: AnalysisContext) -> TechniqueResult:
                            status=Status.SKIPPED, data={"speech_seconds": sp})  # fmt: skip
     windows = [all_windows[i] for i in keep]
     with ctx.models.lock("voice_run"):
-        scores = m["detector"].score_windows(windows)
+        scores, pooled = score_with_features(m["detector"], windows)
     verdict = classify_windows(scores, thr, sp)
+    head = opentts_head()
+    head_scores = [float(v) for v in head.logits(pooled)] if head is not None else []
     spans = [TimeSpan(start_s=keep[j] * 5.0, end_s=min(len(x) / 16000, (keep[j] + 1) * 5.0),
                       label="synthetic" if s >= thr.tau_hi else "elevated", score=round(s, 3))
              for j, s in enumerate(scores) if s >= thr.tau_lo]  # fmt: skip
@@ -259,12 +316,44 @@ def run_voice(ctx: AnalysisContext) -> TechniqueResult:
                 "synthetic recording (real speech with inserted synthetic words) also "
                 "looks like this; compare with the splice analysis.",
                 Hypothesis.SYNTHETIC,
-                Strength.MODERATE if hi else Strength.WEAK,
+                Strength.MODERATE if hi or n_lo >= 2 else Strength.WEAK,
                 Category.SYNTHETIC,
                 score=round(max(scores), 4),
                 spans=spans,
             )  # fmt: skip
         )
+    if head is not None and head_scores:
+        data["opentts_scores"] = [round(v, 3) for v in head_scores]
+        data["opentts_tau_hi"], data["opentts_tau_lo"] = head.tau_hi, head.tau_lo
+        data["opentts_metrics"] = head.metrics
+        h_hi = [v >= head.tau_hi for v in head_scores]
+        run = max((len(r) for r in "".join("1" if b else "0" for b in h_hi).split("0")), default=0)
+        strong = run >= 2 or (len(head_scores) == 1 and h_hi[0])
+        n_lo2 = sum(v >= head.tau_lo for v in head_scores)
+        if strong or n_lo2:
+            hspans = [TimeSpan(start_s=keep[j] * 5.0, end_s=min(len(x) / 16000, (keep[j] + 1) * 5.0),
+                               label="open-TTS", score=round(v, 3))
+                      for j, v in enumerate(head_scores) if v >= head.tau_lo]  # fmt: skip
+            findings.append(
+                finding(
+                    "OPEN_TTS_VOICE",
+                    "Open-source neural TTS signature" if strong else "Weak open-TTS signature",
+                    "Satyapan's open-TTS head (trained on Piper/VITS voices and real English + "
+                    "Hindi speech; tested on voices and speakers it never saw: AUC "
+                    f"{head.metrics.get('test_auc', 0):.2f}) scores "
+                    f"{sum(h_hi)} of {len(head_scores)} speech windows above its strict threshold "
+                    f"({head.metrics.get('test_real_flagged_tau_hi', 0):.1%} of genuine test clips "
+                    "exceed it). The voice carries the vocoder traces of the freely available "
+                    "neural TTS family used to clone voices offline.",
+                    Hypothesis.SYNTHETIC,
+                    Strength.STRONG
+                    if strong
+                    else (Strength.MODERATE if n_lo2 >= 2 else Strength.WEAK),
+                    Category.SYNTHETIC,
+                    score=round(max(head_scores), 3),
+                    spans=hspans,
+                )  # fmt: skip
+            )
     summary = (f"max synthetic score {max(scores):.2f} over {len(scores)} windows "
                f"({verdict.label})")  # fmt: skip
     return make_result(t, summary=summary, findings=findings, data=data)
@@ -435,12 +524,15 @@ def run_transcript(ctx: AnalysisContext) -> TechniqueResult:
         return make_result(t, summary="no speech", status=Status.SKIPPED)
     tr = asr.transcribe(dsp.normalise_loudness(x[: 16000 * 600]))
     text = tr.text
-    findings, cdata = content_findings(text)
+    english = " ".join(s.text for s in tr.translation).strip()
+    findings, cdata = content_findings(text + ("\n" + english if english else ""))
     ctx.cache["transcript"] = text
     data = {"language": tr.language, "language_probability": round(tr.language_probability, 3),
-            "engine": tr.engine, "text": text,
+            "engine": tr.engine, "text": text, "translation": english,
             "segments": [{"start": round(s.start, 2), "end": round(s.end, 2), "text": s.text}
-                         for s in tr.segments], **cdata}  # fmt: skip
+                         for s in tr.segments],
+            "translation_segments": [{"start": round(s.start, 2), "end": round(s.end, 2),
+                                      "text": s.text} for s in tr.translation], **cdata}  # fmt: skip
     summary = f"{tr.language} speech, {len(text.split())} words" + (
         f"; fraud language: {len(cdata['asks']) + len(cdata['rules'])} cue(s)" if findings else "")  # fmt: skip
     return make_result(t, summary=summary, findings=findings, data=data)

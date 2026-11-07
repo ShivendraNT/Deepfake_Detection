@@ -9,9 +9,17 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
+.PHONY: lab lab-setup lab-ui forensics-models demo-dataset lab-benchmark examine scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
 
 help:
+	@echo "== Satyapan Forensic Lab (SUTRAM 2026, PS2) =="
+	@echo "make lab-setup     install the lab (Python deps + video/voice/speech/forensic models)"
+	@echo "make lab           start the lab on http://127.0.0.1:8000/lab (dashboard + API)"
+	@echo "make demo-dataset  rebuild the investigation dataset (data/forensics/demo)"
+	@echo "make lab-benchmark run the lab on the dataset and score it against ground truth"
+	@echo "make examine F=dir batch-examine files/folders from the terminal (+ PDF report)"
+	@echo "make lab-ui        rebuild the dashboard (needs Node; the built copy is committed)"
+	@echo "== Satya consumer companion (previous round) =="
 	@echo "make sync          install core + dev deps (uv)"
 	@echo "make check         lint + format check + typecheck + all tests (run before every commit)"
 	@echo "make ci            every surface: Python + desktop + OOB console + extension"
@@ -150,3 +158,30 @@ ext-test:
 
 clean:
 	rm -rf .pytest_cache .mypy_cache .ruff_cache vault_data
+
+# ---------------------------------------------------------------- Satyapan Forensic Lab
+lab-setup:
+	uv sync --inexact --extra video --extra audio --extra ocr $(ASR_EXTRAS) --extra forensics --extra forensics-build --extra voice-build
+	$(RUN) python scripts/video_models.py || true
+	$(RUN) python -m research.video.export_gend || true
+	$(RUN) python -m research.voice.export --install || true
+	$(RUN) python scripts/forensics_models.py
+
+forensics-models:
+	$(RUN) python scripts/forensics_models.py
+
+lab:
+	$(RUN) uvicorn --app-dir src satyapan.api.app:app --host 0.0.0.0 --port 8000
+
+lab-ui:
+	cd lab && npm install && npm run build
+
+demo-dataset:
+	$(RUN) python scripts/build_demo_dataset.py
+
+lab-benchmark:
+	$(RUN) python scripts/lab_benchmark.py
+
+examine:
+	@if [ -z "$(F)" ]; then echo "Usage: make examine F=path/to/files [REPORT=1]"; exit 2; fi
+	$(RUN) python -m satyapan.forensics.cli $(F) $(if $(REPORT),--report,)

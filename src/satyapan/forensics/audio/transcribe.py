@@ -29,6 +29,7 @@ class Transcript:
     language_probability: float
     segments: list[Segment] = field(default_factory=list)
     engine: str = ""
+    translation: list[Segment] = field(default_factory=list)  # English, for non-English speech
 
     @property
     def text(self) -> str:
@@ -63,9 +64,9 @@ class ForensicTranscriber:
         engine = detect_engine(os.environ.get("SATYAPAN_ASR", "auto"))
         if engine == "none":
             raise Unavailable("no speech engine installed (run `make asr`)")
-        cores = os.cpu_count() or 4
-        default = "small" if cores >= 8 else "base"
-        name = os.environ.get("SATYAPAN_LAB_ASR_MODEL", default)
+        # Evidence is not transcribed in real time, so the lab uses the more accurate "small"
+        # model (far better Hindi than "base", which tends to translate instead).
+        name = os.environ.get("SATYAPAN_LAB_ASR_MODEL", "small")
         if engine == "mlx-whisper":
             name = os.environ.get("SATYAPAN_LAB_ASR_MODEL", "mlx-community/whisper-small-mlx")
         return cls(engine=engine, model_name=name)
@@ -88,17 +89,25 @@ class ForensicTranscriber:
         with self._lock:
             model = self._get()
             if self.engine == "faster-whisper":
-                segs, info = model.transcribe(
-                    x16k.astype(np.float32), beam_size=1, temperature=0.0, vad_filter=True,
-                    condition_on_previous_text=False,
-                    vad_parameters={"min_silence_duration_ms": 400},
-                )  # fmt: skip
-                out = [Segment(float(s.start), float(s.end), s.text.strip()) for s in segs
-                       if not (s.no_speech_prob > 0.7 and s.avg_logprob < -0.8)
-                       and getattr(s, "compression_ratio", 1.0) <= 2.4]  # fmt: skip
-                out = [seg for seg in out if plausible(seg)]
-                return Transcript(str(info.language), float(info.language_probability), out,
-                                  f"faster-whisper:{self.model_name}")  # fmt: skip
+
+                def run(task: str, language: str | None) -> tuple[list[Segment], Any]:
+                    segs, info = model.transcribe(
+                        x16k.astype(np.float32), task=task, language=language, beam_size=2,
+                        temperature=0.0, vad_filter=True, condition_on_previous_text=False,
+                        vad_parameters={"min_silence_duration_ms": 400},
+                    )  # fmt: skip
+                    out = [Segment(float(s.start), float(s.end), s.text.strip()) for s in segs
+                           if not (s.no_speech_prob > 0.7 and s.avg_logprob < -0.8)
+                           and getattr(s, "compression_ratio", 1.0) <= 2.4]  # fmt: skip
+                    return [seg for seg in out if plausible(seg)], info
+
+                out, info = run("transcribe", None)
+                lang = str(info.language)
+                tr = Transcript(lang, float(info.language_probability), out,
+                                f"faster-whisper:{self.model_name}")  # fmt: skip
+                if out and lang != "en" and info.language_probability >= 0.5:
+                    tr.translation, _ = run("translate", lang)
+                return tr
             res = model.transcribe(x16k.astype(np.float32), path_or_hf_repo=self.model_name,
                                    temperature=0.0, condition_on_previous_text=False)  # fmt: skip
             out = [Segment(float(s["start"]), float(s["end"]), str(s["text"]).strip())

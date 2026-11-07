@@ -63,3 +63,40 @@ The demo data in `data/demo/` is synthetic: IFSC `FAK…`, accounts `9999…`, d
 The team wrote this code with AI coding assistants, under the rules in `AGENTS.md`. Commits
 made with an assistant carry a `Co-Authored-By` trailer. Every change is gated by the tests in
 `make check`.
+
+---
+
+# Satyapan Forensic Lab (SUTRAM 2026) additions
+
+## Models the lab runs (downloaded or exported by `make lab-setup`; never committed)
+
+| Model | Used for | Licence | Source |
+|---|---|---|---|
+| Community Forensics ViT-S/16 (Park & Owens, CVPR 2025) | AI-generated image classifier | MIT | `buildborderless/CommunityForensics-DeepfakeDet-ViT`, exported to ONNX by `scripts/forensics_models.py` (selected by `research/forensics/aigen_select.py`) |
+| WeSpeaker ResNet34-LM (VoxCeleb) | speaker comparison between exhibits | CC BY 4.0 | `Wespeaker/wespeaker-voxceleb-resnet34-LM` (ONNX as published) |
+| OpenCV Zoo SFace (2021dec) | face identity comparison between exhibits | Apache-2.0 | `opencv/face_recognition_sface` |
+| Silero VAD (bundled with faster-whisper) | speech detection | MIT | via `faster-whisper` |
+| Whisper `small` (faster-whisper) | transcripts + English translation | MIT | `make lab-setup` |
+| Our open-TTS voice head (`config/voice_opentts_head.json`) | synthetic voice, open-source TTS | ours | `research/forensics/opentts_head.py` |
+
+## Libraries and code
+
+| What | Licence | Note |
+|---|---|---|
+| `c2pa-python` (C2PA SDK) | Apache-2.0 / MIT | Content Credentials reading and validation |
+| `invisible-watermark` dwtDct decoder | MIT | re-implemented in NumPy in `src/satyapan/forensics/image/watermark.py`, tested bit-exact against the library |
+| ReportLab | BSD | PDF reports |
+| DejaVu fonts (`src/satyapan/forensics/report/fonts/`) | Bitstream Vera / DejaVu licence (free, redistributable; `LICENSE_DEJAVU` alongside) | report typography incl. ₹, ≥, — |
+| OpenCV, NumPy, SciPy, Pillow, PyAV, FFmpeg | BSD / Apache / LGPL | signal processing and decoding |
+
+## Data
+
+| Data | Licence | Use |
+|---|---|---|
+| UniData deepfake-videos-dataset sample (`UniDataPro/deepfake-videos-dataset`) | CC BY-NC-ND 4.0, consented participants | 3 files redistributed **unmodified** in `data/forensics/demo/` for non-commercial research, with attribution |
+| LJSpeech 1.1 | public domain | reference voice in the demo case; real speech for the voice probe/head |
+| LibriTTS-R (dev/test clean) | CC BY 4.0 | real speech for the voice probe/head (not committed) |
+| FLEURS Hindi (google/fleurs) | CC BY 4.0 | real Hindi speech for the voice head (not committed) |
+| Defactify Image Dataset (MS COCO + SD2.1/SDXL/SD3/DALL·E 3/Midjourney v6) | research dataset (AAAI Defactify 4) | evaluation of the AI-image classifier and calibration of the classical detectors (not committed) |
+| Piper TTS (MIT) and voices (`rhasspy/piper-voices`, per-voice licences) | MIT / various | synthetic voices in the demo case and the voice probe/head |
+| SD-Turbo (`stabilityai/sd-turbo`) | Stability AI Community Licence (non-commercial research) | the AI portrait exhibit of the demo case |
