@@ -9,7 +9,7 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: lab lab-setup lab-ui forensics-models demo-dataset lab-benchmark examine scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
+.PHONY: lab lab-lan lab-setup lab-ui forensics-models demo-dataset lab-benchmark examine scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
 
 help:
 	@echo "== Satyapan Forensic Lab (SUTRAM 2026, PS2) =="
@@ -171,6 +171,11 @@ forensics-models:
 	$(RUN) python scripts/forensics_models.py
 
 lab:
+	$(RUN) uvicorn --app-dir src satyapan.api.app:app --host 127.0.0.1 --port 8000
+
+# Serve the lab to other machines on the LAN (cyber-cell server). There is no login yet:
+# only on a trusted, isolated network.
+lab-lan:
 	$(RUN) uvicorn --app-dir src satyapan.api.app:app --host 0.0.0.0 --port 8000
 
 lab-ui:

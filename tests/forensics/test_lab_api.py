@@ -238,3 +238,17 @@ def test_root_redirects_to_lab(lab) -> None:
     client, _ = lab
     r = client.get("/", follow_redirects=False)
     assert r.status_code in (302, 307) and r.headers["location"] == "/lab"
+
+
+def test_lab_api_refuses_foreign_origins(lab) -> None:
+    client, _ = lab
+    evil = client.get("/lab/api/cases", headers={"Origin": "https://evil.example"})
+    assert evil.status_code == 403
+    pre = client.options("/lab/api/cases", headers={"Origin": "https://evil.example",
+                                                    "Access-Control-Request-Method": "GET"})  # fmt: skip
+    assert pre.status_code == 403
+    own = client.get("/lab/api/cases", headers={"Origin": "http://testserver"})
+    assert own.status_code == 200
+    assert client.get("/lab/api/cases").status_code == 200  # same-origin fetches send no Origin
+    dev = client.get("/lab/api/cases", headers={"Origin": "http://127.0.0.1:5175"})
+    assert dev.status_code == 200

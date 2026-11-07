@@ -105,9 +105,17 @@ async def lab_add_evidence(
         r = EvidenceRole(role)
     except ValueError as exc:
         raise HTTPException(422, "role must be 'questioned' or 'reference'") from exc
+    from satyapan.forensics.service import MAX_UPLOAD_BYTES
+
     out = []
     for f in files:
-        data = await f.read()
+        chunks, total = [], 0
+        while chunk := await f.read(1 << 20):  # bounded: never buffer more than the limit
+            total += len(chunk)
+            if total > MAX_UPLOAD_BYTES:
+                raise HTTPException(413, f"{f.filename}: larger than {MAX_UPLOAD_BYTES >> 20} MB")
+            chunks.append(chunk)
+        data = b"".join(chunks)
         try:
             ev, dup = await asyncio.to_thread(
                 svc.add_evidence, case_id, data, f.filename or "evidence.bin",

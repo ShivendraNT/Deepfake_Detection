@@ -46,6 +46,17 @@ def _warm_speech_engine(state: AppState) -> None:
     threading.Thread(target=run, name="asr-warmup", daemon=True).start()
 
 
+_LAB_DEV_ORIGINS = {
+    f"http://{h}:{p}" for h in ("127.0.0.1", "localhost") for p in (5173, 5174, 5175)
+}
+
+
+def _lab_origin_allowed(origin: str, request: Request) -> bool:
+    own = f"{request.url.scheme}://{request.headers.get('host', '')}"
+    extra = {o.strip() for o in os.environ.get("SATYAPAN_LAB_ORIGINS", "").split(",") if o.strip()}
+    return origin == own or origin in _LAB_DEV_ORIGINS or origin in extra
+
+
 def create_app(settings: Settings | None = None, state: AppState | None = None) -> FastAPI:
     settings = settings or get_settings()
 
@@ -68,6 +79,19 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
         allow_methods=["*"],
         allow_headers=["*"],
     )
+
+    @app.middleware("http")
+    async def lab_same_origin_only(request: Request, call_next):  # type: ignore[no-untyped-def]
+        """Evidence must not be readable by other websites open in the examiner's browser: the
+        lab API answers only its own dashboard (same origin) or local dev servers, whatever
+        the global CORS setting of the older consumer routes."""
+        if request.url.path.startswith(("/lab/api", "/api/lab/api")):
+            origin = request.headers.get("origin")
+            if origin and not _lab_origin_allowed(origin, request):
+                return JSONResponse(
+                    status_code=403, content={"detail": "cross-origin access to the lab is refused"}
+                )
+        return await call_next(request)
 
     @app.exception_handler(NotImplementedError)
     async def not_implemented(_: Request, exc: NotImplementedError) -> JSONResponse:
