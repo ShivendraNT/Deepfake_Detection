@@ -18,6 +18,8 @@ given; raw outputs are in `results/`.
 | Watermark decoder | bit-exact against `invisible-watermark` | identical bits; chance probability of a false match ≤ 10⁻⁹ for SDXL (48 bits) | `tests/forensics/test_signal_techniques.py` |
 | ENF and splice cues | synthetic hum traces (continuous vs spliced), digital-silence and noise-floor joins | continuous traces show no jump; spliced traces flagged within 3 s of the join | `tests/forensics/test_signal_techniques.py` |
 
+**End to end on genuine photos.** The whole image pipeline (all 14 image techniques, all models) on 40 genuine MS COCO photographs from the Defactify test shard: 37 *no indications*, 1 *suspicious* (the AI-image classifier at its lenient threshold), 2 *manipulated* — both from a single noise-inconsistency map. Indicative techniques are now capped at moderate support (METHODOLOGY §3), which turns those two into *suspicious*.
+
 ## Selection protocols (pre-registered)
 
 **AI-generated image classifier.** Five permissively licensed candidates were compared on a

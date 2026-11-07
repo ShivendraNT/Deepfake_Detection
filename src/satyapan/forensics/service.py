@@ -235,12 +235,19 @@ class LabService:
         for e in evs:
             k = e.verdict.value if e.verdict else e.status.value
             counts[k] = counts.get(k, 0) + 1
+        from satyapan.forensics.narrative import case_findings
+
+        links = self.store.links(case_id)
+        analyses = {e.id: self.store.analysis(e.id) for e in evs if e.verdict is not None}
         return {
             "case": case.model_dump(mode="json"),
             "evidence": [e.model_dump(mode="json") for e in evs],
-            "links": [ln.model_dump(mode="json") for ln in self.store.links(case_id)],
+            "links": [ln.model_dump(mode="json") for ln in links],
             "counts": counts,
             "reports": self.store.reports(case_id),
+            "findings": case_findings(
+                evs, analyses, links, self.store.custody.verify_chain().ok
+            ),  # fmt: skip
         }
 
     def custody_view(self, case_id: str) -> dict[str, Any]:

@@ -277,6 +277,16 @@ def build_pdf(svc: Any, case: LabCase, items: list[tuple[LabEvidence, EvidenceAn
         "a single model) and is phrased on the ENFSI verbal scale of support. Techniques that "
         "could not be applied are stated for each exhibit.", st["base"]))  # fmt: skip
     story.append(Spacer(1, 3 * mm))
+    from satyapan.forensics.narrative import case_findings
+
+    cf = case_findings([e for e, _ in items], {e.id: a for e, a in items},
+                       [ln for ln in links if ln.source in ids and ln.target in ids],
+                       custody["chain"]["ok"])  # fmt: skip
+    story.append(Spacer(1, 2 * mm))
+    story.append(Paragraph("<b>Findings across the case</b>", st["h3"]))
+    for sent in cf["sentences"]:
+        story.append(Paragraph(f"• {esc(sent)}", st["base"]))
+    story.append(Spacer(1, 3 * mm))
     rows: list[list[Any]] = [[Paragraph(h, st["cellh"]) for h in
                               ("Exhibit", "File", "Type", "Conclusion", "Statement")]]  # fmt: skip
     extra = []

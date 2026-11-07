@@ -17,8 +17,10 @@ import numpy as np
 from satyapan.forensics.models import EvidenceLink, LinkKind
 
 YUNET = "face_detection_yunet_2023mar.onnx"
-SFACE_SAME = 0.363  # OpenCV SFace cosine threshold (LFW protocol)
-SPEAKER_SAME = 0.55  # WeSpeaker ResNet34 cosine; see config/speaker_thresholds.json
+SFACE_SAME = 0.45  # stricter than OpenCV's LFW operating point (0.363): links must be solid
+SPEAKER_SAME = (
+    0.55  # WeSpeaker ResNet34 cosine; docs/forensics/VALIDATION.md (different speakers <= 0.45)
+)
 
 
 def phash(gray: np.ndarray) -> str:
@@ -80,6 +82,27 @@ def _cos(a: list[float], b: list[float]) -> float:
     return float(va @ vb / (np.linalg.norm(va) * np.linalg.norm(vb) + 1e-9))
 
 
+def plausible_homography(
+    H: np.ndarray, src_shape: tuple[int, ...], dst_shape: tuple[int, ...]
+) -> bool:
+    """Reject degenerate fits that RANSAC produces between unrelated images: extreme scale,
+    reflection, strong perspective, or a source that maps onto a sliver."""
+    import cv2
+
+    A = H[:2, :2]
+    det = float(np.linalg.det(A))
+    if not 0.05 < abs(det) < 20 or det < 0:
+        return False
+    if abs(H[2, 0]) > 2e-3 or abs(H[2, 1]) > 2e-3:
+        return False
+    h, w = src_shape[:2]
+    corners = np.float32([[0, 0], [w, 0], [w, h], [0, h]]).reshape(-1, 1, 2)
+    proj = cv2.perspectiveTransform(corners, H).reshape(-1, 2)
+    area = abs(cv2.contourArea(proj.astype(np.float32)))
+    dh, dw = dst_shape[:2]
+    return area > 0.04 * dh * dw and cv2.isContourConvex(proj.astype(np.float32))
+
+
 def shared_content(a_rgb: np.ndarray, b_rgb: np.ndarray) -> dict[str, Any] | None:
     """Align b onto a with SIFT + RANSAC; return inliers, the warped b and a difference map."""
     import cv2
@@ -107,14 +130,17 @@ def shared_content(a_rgb: np.ndarray, b_rgb: np.ndarray) -> dict[str, Any] | Non
     if H is None or mask is None:
         return None
     inl = int(mask.sum())
-    if inl < 25:
+    if inl < 30 or inl / len(good) < 0.25 or not plausible_homography(H, gb.shape, ga.shape):
         return None
     warped = cv2.warpPerspective(b, H, (a.shape[1], a.shape[0]))
     valid = cv2.warpPerspective(np.ones(gb.shape, np.uint8), H, (a.shape[1], a.shape[0])) > 0
     diff = np.abs(a.astype(np.float32) - warped.astype(np.float32)).mean(axis=2)
     diff = cv2.GaussianBlur(diff, (0, 0), 2.0)
     diff[~valid] = 0
-    thr = max(18.0, float(np.percentile(diff[valid], 99)) if valid.any() else 18.0)
+    vals = diff[valid] if valid.any() else diff.ravel()
+    med = float(np.median(vals))
+    mad = float(np.median(np.abs(vals - med))) * 1.4826 + 1e-3
+    thr = max(15.0, med + 8.0 * mad)  # robust: edits can cover more than 1% of the picture
     mask_c = (diff > thr).astype(np.uint8)
     mask_c = cv2.morphologyEx(mask_c, cv2.MORPH_OPEN, np.ones((5, 5), np.uint8))
     n, _, stats, _ = cv2.connectedComponentsWithStats(mask_c)
@@ -163,11 +189,14 @@ def compute_links(me: dict[str, Any], peers: list[dict[str, Any]], artifact_dir:
         if fm.get("phash") and fp.get("phash"):
             d = min(hamming(fm["phash"], fp["phash"]), 64)
             if d <= 10:
+                if "video" in (me["kind"], p["kind"]):
+                    what = (f"the key frames show the same scene as {pex}: the same footage, "
+                            "possibly with the face or the audio replaced.")  # fmt: skip
+                else:
+                    what = f"the same picture as {pex}, re-encoded, resized or lightly edited."
                 out.append(EvidenceLink(source=me["id"], target=pid, kind=LinkKind.NEAR_DUPLICATE,
                                         score=round(1 - d / 64, 3),
-                                        detail=f"Perceptual hashes differ in {d}/64 bits: the "
-                                        f"same picture as {pex}, re-encoded, resized or "
-                                        "lightly edited."))  # fmt: skip
+                                        detail=f"Perceptual hashes differ in {d}/64 bits: {what}"))  # fmt: skip
         if me["kind"] == "image" and p["kind"] == "image" and fm.get("phash") and fp.get("phash"):
             try:
                 res = shared_content(load_rgb(pid), load_rgb(me["id"]))

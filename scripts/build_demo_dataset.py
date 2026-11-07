@@ -152,8 +152,9 @@ def font(size: int, bold: bool = False):
     return ImageFont.truetype(str(f), size)
 
 
-def notice(name: str, amount: str, rng: np.random.Generator) -> np.ndarray:
-    """A fictional agency notice, rendered like a photographed paper document."""
+def notice(name: str, amount: str, rng: np.random.Generator) -> tuple[np.ndarray, dict]:
+    """A fictional agency notice, rendered like a photographed paper document. Returns the
+    image and the boxes (x0, y0, x1, y1) of the addressee, the amount and the round stamp."""
     from PIL import Image, ImageDraw, ImageFilter
 
     W, H = 1240, 1754
@@ -163,20 +164,14 @@ def notice(name: str, amount: str, rng: np.random.Generator) -> np.ndarray:
     d.ellipse([90, 85, 230, 225], outline=(40, 52, 92), width=5)
     d.text((118, 132), "DFC", font=font(46, True), fill=(40, 52, 92))
     d.text((260, 95), "DIRECTORATE OF FINANCIAL CRIMES", font=font(44, True), fill=(30, 40, 80))
-    d.text(
-        (262, 155), "(FICTIONAL AGENCY — SATYAPAN DEMO EXHIBIT)", font=font(22), fill=(90, 90, 110)
-    )
-    d.text(
-        (262, 192),
-        "Mumbai Zonal Unit · Case Ref. DFC/MZU/2026/4471",
-        font=font(24),
-        fill=(60, 60, 80),
-    )
+    d.text((262, 155), "(FICTIONAL AGENCY — SATYAPAN DEMO EXHIBIT)", font=font(22), fill=(90, 90, 110))
+    d.text((262, 192), "Mumbai Zonal Unit · Case Ref. DFC/MZU/2026/4471", font=font(24), fill=(60, 60, 80))
     y = 300
     d.text((80, y), "NOTICE OF PRELIMINARY ENQUIRY", font=font(36, True), fill=(20, 20, 30))
     y += 80
     d.text((80, y), "To:", font=font(28, True), fill=(20, 20, 30))
     d.text((150, y), name, font=font(28), fill=(20, 20, 30))
+    layout = {"to": (146, y - 6, W - 80, y + 42)}
     y += 60
     body = [
         "Your Aadhaar-linked account is under enquiry in connection with a parcel",
@@ -191,8 +186,11 @@ def notice(name: str, amount: str, rng: np.random.Generator) -> np.ndarray:
         d.text((80, y), line, font=font(26), fill=(25, 25, 35))
         y += 44
     y += 30
-    d.text((80, y), "Amount for verification:", font=font(30, True), fill=(20, 20, 30))
-    d.text((480, y), amount, font=font(30, True), fill=(120, 20, 20))
+    label = "Amount for verification:"
+    d.text((80, y), label, font=font(30, True), fill=(20, 20, 30))
+    ax = 80 + int(font(30, True).getlength(label)) + 18
+    d.text((ax, y), amount, font=font(30, True), fill=(120, 20, 20))
+    layout["amount"] = (ax - 6, y - 6, W - 80, y + 46)
     y += 120
     d.text((80, y), "Issued under the authority of the Director.", font=font(24), fill=(40, 40, 50))
     # official round stamp + signature
@@ -201,16 +199,14 @@ def notice(name: str, amount: str, rng: np.random.Generator) -> np.ndarray:
         d.ellipse([cx - r, cy - r, cx + r, cy + r], outline=(52, 64, 160), width=wdt)
     d.text((cx - 78, cy - 22), "DFC · MZU", font=font(30, True), fill=(52, 64, 160))
     d.text((cx - 70, cy + 18), "VERIFIED", font=font(24, True), fill=(52, 64, 160))
-    pts = [
-        (700 + i * 9, cy + 150 + int(18 * np.sin(i / 2.2)) + int(rng.integers(-3, 4)))
-        for i in range(40)
-    ]
+    layout["stamp"] = (cx - 128, cy - 128, cx + 128, cy + 128)
+    pts = [(700 + i * 9, cy + 150 + int(18 * np.sin(i / 2.2)) + int(rng.integers(-3, 4))) for i in range(40)]
     d.line(pts, fill=(25, 25, 70), width=3)
     d.text((700, cy + 200), "Enquiry Officer", font=font(24), fill=(40, 40, 50))
     a = np.asarray(img.filter(ImageFilter.GaussianBlur(0.6)), dtype=np.float32)
     shade = np.linspace(1.0, 0.93, W)[None, :, None] * np.linspace(0.98, 1.0, H)[:, None, None]
     a = a * shade + rng.normal(0, 3.2, a.shape)
-    return np.clip(a, 0, 255).astype(np.uint8)
+    return np.clip(a, 0, 255).astype(np.uint8), layout
 
 
 def jpeg_bytes(arr: np.ndarray, q: int, **kw) -> bytes:
@@ -227,26 +223,24 @@ def decode(b: bytes) -> np.ndarray:
     return np.asarray(Image.open(io.BytesIO(b)).convert("RGB")).copy()
 
 
-def forged_notice(template: np.ndarray, rng: np.random.Generator) -> tuple[np.ndarray, dict]:
-    """Forge the notice: new addressee and amount pasted in (rendered and compressed
-    separately, i.e. a splice) and the stamp cloned next to the signature (copy-move)."""
-    from PIL import Image, ImageDraw
-
+def forged_notice(template: np.ndarray, layout: dict, rng: np.random.Generator) -> tuple[np.ndarray, dict]:
+    """Forge the notice: the addressee and the amount are pasted in from a separately rendered
+    and compressed copy (a splice), and the official stamp is cloned onto the left of the page
+    with an ink mask, the way a forger lifts a seal (copy-move)."""
     img = template.copy()
-    patch = notice(
-        "Shri Ramesh K. Mehta (Retd. Professor)", "₹ 4,50,000/-", np.random.default_rng(99)
-    )
+    patch, _ = notice("Shri Ramesh K. Mehta (Retd. Professor)", "₹ 4,50,000/-", np.random.default_rng(99))
     patch = decode(jpeg_bytes(patch, 55))
-    img[355:420, 140:1180] = patch[355:420, 140:1180]  # addressee line
-    img[840:900, 470:1000] = patch[840:900, 470:1000]  # amount line
-    sy, sx = 1135, 765
-    stamp = img[sy - 10 : sy + 270, sx - 10 : sx + 270].copy()
-    ty, tx = 1240, 150
-    img[ty : ty + stamp.shape[0], tx : tx + stamp.shape[1]] = stamp
-    pil = Image.fromarray(img)
-    ImageDraw.Draw(pil)
-    return np.asarray(pil), {"spliced_regions": [[140, 355, 1180, 420], [470, 840, 1000, 900]],
-                             "cloned_stamp": {"from": [sx, sy], "to": [tx, ty]}}  # fmt: skip
+    for key in ("to", "amount"):
+        x0, y0, x1, y1 = layout[key]
+        img[y0:y1, x0:x1] = patch[y0:y1, x0:x1]
+    x0, y0, x1, y1 = layout["stamp"]
+    stamp = img[y0:y1, x0:x1].astype(np.int16)
+    ink = (stamp[..., 2] - stamp[..., 0] > 30) & (stamp.mean(axis=2) < 190)
+    tx, ty = 160, y0 - 10
+    target = img[ty : ty + (y1 - y0), tx : tx + (x1 - x0)]
+    target[ink] = stamp[ink].astype(np.uint8)
+    return img, {"spliced_regions": [list(layout["to"]), list(layout["amount"])],
+                 "cloned_stamp": {"from": [x0, y0, x1, y1], "to": [tx, ty, tx + x1 - x0, ty + y1 - y0]}}  # fmt: skip
 
 
 def whatsapp_image(arr: np.ndarray, out: Path, q: int = 80, long_side: int = 1600) -> None:
@@ -465,7 +459,7 @@ def build(args: argparse.Namespace) -> None:
         "Generated for this dataset (LJSpeech public domain)", truth_detail=meta)  # fmt: skip
 
     print("5/7 notice: genuine template and the forged copy")
-    template = notice(
+    template, layout = notice(
         "________________________________", "₹ ________________", np.random.default_rng(7)
     )
     (OUT / "notice_template_from_laptop.jpg").write_bytes(jpeg_bytes(template, 92))
@@ -474,13 +468,13 @@ def build(args: argparse.Namespace) -> None:
         "Rendered for this dataset (fictional agency), saved once at JPEG quality 92.",
         "Generated for this dataset")  # fmt: skip
     forged, fmeta = forged_notice(
-        decode((OUT / "notice_template_from_laptop.jpg").read_bytes()), rng
+        decode((OUT / "notice_template_from_laptop.jpg").read_bytes()), layout, rng
     )
     whatsapp_image(forged, OUT / "IMG-20261021-WA0011.jpg", q=82, long_side=1600)
     add("IMG-20261021-WA0011.jpg", "questioned", "manipulated", "Complainant's phone (WhatsApp)",
         "'Notice of preliminary enquiry' sent to the complainant.",
         "The template with the addressee and amount pasted in from a separately compressed render "
-        "(splice) and the round stamp cloned next to the text (copy-move); resized to 1600 px and "
+        "(splice) and the round stamp lifted and cloned onto the left of the page (copy-move); resized to 1600 px and "
         "re-compressed like a WhatsApp image.", "Generated for this dataset", truth_detail=fmeta)  # fmt: skip
 
     print(

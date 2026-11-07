@@ -85,6 +85,8 @@ difference map shows exactly what was changed — the derivation of a forgery fr
 5. **NO INDICATIONS** — otherwise; worded "this does not prove the item is authentic", with
    positive indicators (signed capture, continuous ENF, consistent thumbnail) stated.
 
+**Indicative techniques are capped.** ELA, noise inconsistency and the JPEG-grid analysis produce maps an examiner reads, not proof (SWGDE): their findings never exceed *moderate* support. A MANIPULATED verdict therefore needs a structural finding (a cloned region, a thumbnail that shows a different picture, a broken C2PA hash, a mains-frequency jump, appended data, missing frames) or two independent techniques agreeing. Before this cap, 2 of 40 genuine photographs were called manipulated on the strength of one noise map.
+
 The rule is deterministic and unit-tested (`tests/forensics/test_verdict.py`); no model can
 by itself produce MANIPULATED from a weak signal, and a missing model can only make a
 verdict less certain, never more. The 0–100 "risk index" on the dashboard is derived from the

@@ -145,9 +145,12 @@ def thresholds() -> dict[str, Any]:
     return _THRESHOLDS
 
 
-def level(score: float, thr: dict[str, float]) -> Strength:
+INDICATIVE_CAP = Strength.MODERATE  # ELA, noise and grid maps are indicative (SWGDE): never decisive alone
+
+
+def level(score: float, thr: dict[str, float], cap: Strength = Strength.VERY_STRONG) -> Strength:
     if score >= thr.get("strong", 1e9):
-        return Strength.STRONG
+        return min(Strength.STRONG, cap)
     if score >= thr["moderate"]:
         return Strength.MODERATE
     if score >= thr["weak"]:
@@ -240,7 +243,7 @@ def run_ela(ctx: AnalysisContext) -> TechniqueResult:
     findings: list[Finding] = []
     data: dict[str, Any] = {"quality": ELA_QUALITY, "score": round(score, 2),
                             "thresholds": thr, "mean_error": round(float(err.mean()), 3)}  # fmt: skip
-    strength = level(score, thr)
+    strength = level(score, thr, INDICATIVE_CAP)
     if strength > Strength.NONE and regions:
         findings.append(
             finding(
@@ -330,7 +333,7 @@ def run_noise(ctx: AnalysisContext) -> TechniqueResult:
     data = {"median_sigma": round(float(np.nanmedian(st["sigma"])), 3), "score": round(score, 2),
             "thresholds": thr, "blocks": int(np.isfinite(st["sigma"]).sum())}  # fmt: skip
     findings: list[Finding] = []
-    strength = level(score, thr)
+    strength = level(score, thr, INDICATIVE_CAP)
     if strength > Strength.NONE and regions:
         findings.append(
             finding(
@@ -570,7 +573,7 @@ def run_jpeg_grid(ctx: AnalysisContext) -> TechniqueResult:
     ts, t2 = thresholds()["grid_shift"], thresholds()["grid_second"]
     if strength < 0.04:
         summary = "block grid too weak to analyse (very high quality)"
-    elif level(shift_score, ts) > Strength.NONE:
+    elif level(shift_score, ts, INDICATIVE_CAP) > Strength.NONE:
         findings.append(
             finding(
                 "SHIFTED_JPEG_GRID",
@@ -580,13 +583,13 @@ def run_jpeg_grid(ctx: AnalysisContext) -> TechniqueResult:
                 "comes from an earlier save, and the image was cropped before its last save "
                 f"(score {shift_score:.2f}; {fpr_text(shift_score, ts)}).",
                 Hypothesis.MANIPULATED,
-                level(shift_score, ts),
+                level(shift_score, ts, INDICATIVE_CAP),
                 Category.TAMPERING,
                 score=round(shift_score, 3),
             )  # fmt: skip
         )
         summary = "dominant JPEG grid shifted: cropped after an earlier compression"
-    elif level(second_score, t2) > Strength.NONE:
+    elif level(second_score, t2, INDICATIVE_CAP) > Strength.NONE:
         findings.append(
             finding(
                 "MISALIGNED_DOUBLE_JPEG",
@@ -596,7 +599,7 @@ def run_jpeg_grid(ctx: AnalysisContext) -> TechniqueResult:
                 f"then compressed again (score {second_score:.2f}; "
                 f"{fpr_text(second_score, t2)}).",
                 Hypothesis.MANIPULATED,
-                level(second_score, t2),
+                level(second_score, t2, INDICATIVE_CAP),
                 Category.TAMPERING,
                 score=round(second_score, 3),
             )  # fmt: skip

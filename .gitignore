@@ -66,3 +66,10 @@ lab_data/
 
 # Agent worktrees
 .claude/worktrees/
+
+# The forensic investigation dataset is synthetic / public domain / unmodified consented samples
+# (docs/forensics/DATASET.md), so its media are committed.
+!data/forensics/demo/*.mp4
+!data/forensics/demo/*.opus
+!data/forensics/demo/*.m4a
+!data/forensics/demo/*.wav
