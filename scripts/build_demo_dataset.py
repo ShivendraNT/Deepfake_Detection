@@ -164,8 +164,15 @@ def notice(name: str, amount: str, rng: np.random.Generator) -> tuple[np.ndarray
     d.ellipse([90, 85, 230, 225], outline=(40, 52, 92), width=5)
     d.text((118, 132), "DFC", font=font(46, True), fill=(40, 52, 92))
     d.text((260, 95), "DIRECTORATE OF FINANCIAL CRIMES", font=font(44, True), fill=(30, 40, 80))
-    d.text((262, 155), "(FICTIONAL AGENCY — SATYAPAN DEMO EXHIBIT)", font=font(22), fill=(90, 90, 110))
-    d.text((262, 192), "Mumbai Zonal Unit · Case Ref. DFC/MZU/2026/4471", font=font(24), fill=(60, 60, 80))
+    d.text(
+        (262, 155), "(FICTIONAL AGENCY — SATYAPAN DEMO EXHIBIT)", font=font(22), fill=(90, 90, 110)
+    )
+    d.text(
+        (262, 192),
+        "Mumbai Zonal Unit · Case Ref. DFC/MZU/2026/4471",
+        font=font(24),
+        fill=(60, 60, 80),
+    )
     y = 300
     d.text((80, y), "NOTICE OF PRELIMINARY ENQUIRY", font=font(36, True), fill=(20, 20, 30))
     y += 80
@@ -200,7 +207,10 @@ def notice(name: str, amount: str, rng: np.random.Generator) -> tuple[np.ndarray
     d.text((cx - 78, cy - 22), "DFC · MZU", font=font(30, True), fill=(52, 64, 160))
     d.text((cx - 70, cy + 18), "VERIFIED", font=font(24, True), fill=(52, 64, 160))
     layout["stamp"] = (cx - 128, cy - 128, cx + 128, cy + 128)
-    pts = [(700 + i * 9, cy + 150 + int(18 * np.sin(i / 2.2)) + int(rng.integers(-3, 4))) for i in range(40)]
+    pts = [
+        (700 + i * 9, cy + 150 + int(18 * np.sin(i / 2.2)) + int(rng.integers(-3, 4)))
+        for i in range(40)
+    ]
     d.line(pts, fill=(25, 25, 70), width=3)
     d.text((700, cy + 200), "Enquiry Officer", font=font(24), fill=(40, 40, 50))
     a = np.asarray(img.filter(ImageFilter.GaussianBlur(0.6)), dtype=np.float32)
@@ -223,12 +233,16 @@ def decode(b: bytes) -> np.ndarray:
     return np.asarray(Image.open(io.BytesIO(b)).convert("RGB")).copy()
 
 
-def forged_notice(template: np.ndarray, layout: dict, rng: np.random.Generator) -> tuple[np.ndarray, dict]:
+def forged_notice(
+    template: np.ndarray, layout: dict, rng: np.random.Generator
+) -> tuple[np.ndarray, dict]:
     """Forge the notice: the addressee and the amount are pasted in from a separately rendered
     and compressed copy (a splice), and the official stamp is cloned onto the left of the page
     with an ink mask, the way a forger lifts a seal (copy-move)."""
     img = template.copy()
-    patch, _ = notice("Shri Ramesh K. Mehta (Retd. Professor)", "₹ 4,50,000/-", np.random.default_rng(99))
+    patch, _ = notice(
+        "Shri Ramesh K. Mehta (Retd. Professor)", "₹ 4,50,000/-", np.random.default_rng(99)
+    )
     patch = decode(jpeg_bytes(patch, 55))
     for key in ("to", "amount"):
         x0, y0, x1, y1 = layout[key]
@@ -556,7 +570,10 @@ def check() -> int:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--check", action="store_true")
-    ap.add_argument("--resign", action="store_true",
-                    help="regenerate and re-sign the officer portrait (needs scripts/make_ai_portrait.py)")
+    ap.add_argument(
+        "--resign",
+        action="store_true",
+        help="regenerate and re-sign the officer portrait (needs scripts/make_ai_portrait.py)",
+    )
     a = ap.parse_args()
     raise SystemExit(check() if a.check else build(a) or 0)
