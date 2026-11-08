@@ -1,6 +1,6 @@
 {
  "dataset": "Satyapan Forensic Lab investigation dataset v1",
- "wall_seconds": 69.1,
+ "wall_seconds": 49.9,
  "summary": {
   "correct": 9,
   "flagged": 0,
@@ -35,7 +35,7 @@
     "[moderate support] AI-generated image classifier: above its strict threshold",
     "[moderate support] Copy of a synthetic picture (Q7)"
    ],
-   "seconds": 1.4
+   "seconds": 1.5
   },
   {
    "exhibit": "Q3",
@@ -46,7 +46,7 @@
    "grade": "missed",
    "headline": "No indications of manipulation or synthesis in the recording",
    "key": [],
-   "seconds": 10.3
+   "seconds": 5.9
   },
   {
    "exhibit": "Q4",
@@ -60,7 +60,7 @@
     "[weak support] 1 possible edit point(s)",
     "[weak support] Voice partly suspicious: 3 of 4 windows elevated"
    ],
-   "seconds": 29.8
+   "seconds": 12.2
   },
   {
    "exhibit": "Q5",
@@ -74,7 +74,7 @@
     "[strong support] Face replaced: footage of R2 with another person's face",
     "[weak support] Face score elevated in 1 window(s)"
    ],
-   "seconds": 8.5
+   "seconds": 8.7
   },
   {
    "exhibit": "Q6",
@@ -85,9 +85,9 @@
    "grade": "correct",
    "headline": "Manipulated recording: strong support",
    "key": [
-    "[strong support] Mains-frequency trace breaks at 3 point(s)"
+    "[strong support] Mains-frequency trace breaks at 16.5 s"
    ],
-   "seconds": 19.2
+   "seconds": 10.4
   },
   {
    "exhibit": "Q7",
@@ -101,7 +101,7 @@
     "[moderate support] Content Credentials declare generative AI",
     "[moderate support] AI-generated image classifier: above its strict threshold"
    ],
-   "seconds": 1.5
+   "seconds": 1.4
   },
   {
    "exhibit": "R1",
@@ -112,7 +112,7 @@
    "grade": "correct",
    "headline": "No indications of manipulation or synthesis in the recording",
    "key": [],
-   "seconds": 22.2
+   "seconds": 18.9
   },
   {
    "exhibit": "R2",
@@ -125,7 +125,7 @@
    "key": [
     "[moderate support] Mains-frequency trace is continuous"
    ],
-   "seconds": 15.5
+   "seconds": 12.6
   },
   {
    "exhibit": "R3",
@@ -138,7 +138,7 @@
    "key": [
     "[weak support] JPEG grid is shifted from the file's own grid"
    ],
-   "seconds": 4.0
+   "seconds": 6.2
   },
   {
    "exhibit": "R4",
@@ -149,63 +149,63 @@
    "grade": "correct",
    "headline": "No indications of manipulation or synthesis in the image",
    "key": [],
-   "seconds": 1.6
+   "seconds": 2.1
   }
  ],
  "links": [
   {
    "kind": "shares_content",
-   "source": "ev_15a23cad79bf_a7e7",
-   "target": "ev_9faafdf20e03_bd3e",
+   "source": "ev_15a23cad79bf_b2b8",
+   "target": "ev_9faafdf20e03_23fb",
    "score": 1.0
   },
   {
    "kind": "same_speaker",
-   "source": "ev_638f43f605b4_b06d",
-   "target": "ev_15a3c3eb0932_4e52",
-   "score": 0.892
+   "source": "ev_ae0e341a7c76_c094",
+   "target": "ev_dbbd9ad41ad4_362c",
+   "score": 0.898
   },
   {
    "kind": "near_duplicate",
-   "source": "ev_4d718c8e3ff6_f1c0",
-   "target": "ev_585563deeb44_5637",
+   "source": "ev_4d718c8e3ff6_467a",
+   "target": "ev_585563deeb44_2840",
    "score": 0.969
   },
   {
    "kind": "same_face",
-   "source": "ev_4d718c8e3ff6_f1c0",
-   "target": "ev_3390396cfbc7_4e6e",
-   "score": 0.801
+   "source": "ev_4d718c8e3ff6_467a",
+   "target": "ev_3390396cfbc7_1c93",
+   "score": 0.803
   },
   {
    "kind": "near_duplicate",
-   "source": "ev_b45ae04df963_288e",
-   "target": "ev_b00a836ec626_8d62",
+   "source": "ev_b45ae04df963_1ec0",
+   "target": "ev_b00a836ec626_0206",
    "score": 0.938
   },
   {
    "kind": "shares_content",
-   "source": "ev_b45ae04df963_288e",
-   "target": "ev_b00a836ec626_8d62",
+   "source": "ev_b45ae04df963_1ec0",
+   "target": "ev_b00a836ec626_0206",
    "score": 1.0
   },
   {
    "kind": "same_face",
-   "source": "ev_b45ae04df963_288e",
-   "target": "ev_b00a836ec626_8d62",
+   "source": "ev_b45ae04df963_1ec0",
+   "target": "ev_b00a836ec626_0206",
    "score": 0.985
   },
   {
    "kind": "same_speaker",
-   "source": "ev_ea0f3dca7f3d_8a5f",
-   "target": "ev_15a3c3eb0932_4e52",
+   "source": "ev_1edfaaaa8c76_9712",
+   "target": "ev_dbbd9ad41ad4_362c",
    "score": 0.906
   },
   {
    "kind": "same_speaker",
-   "source": "ev_ea0f3dca7f3d_8a5f",
-   "target": "ev_638f43f605b4_b06d",
-   "score": 0.946
+   "source": "ev_1edfaaaa8c76_9712",
+   "target": "ev_ae0e341a7c76_c094",
+   "score": 0.954
   }
  ]
 }

@@ -1,6 +1,6 @@
 # Forensic Lab on the investigation dataset
 
-`make lab-benchmark` — 11 exhibits, 69 s wall time on this machine. Correct 9, flagged-but-not-conclusive 0, cautious (inconclusive on a genuine item) 0, missed 2, false alarms 0.
+`make lab-benchmark` — 11 exhibits, 50 s wall time on this machine. Correct 9, flagged-but-not-conclusive 0, cautious (inconclusive on a genuine item) 0, missed 2, false alarms 0.
 
 | Exhibit | File | Ground truth | Verdict | Risk | Grade | Strongest findings |
 |---|---|---|---|---|---|---|
@@ -9,7 +9,7 @@
 | Q3 | `PTT-20261021-WA0007.opus` | synthetic | **NO_INDICATORS** | 10 | missed |  |
 | Q4 | `PTT-20261021-WA0009.opus` | synthetic | **NO_INDICATORS** | 14 | missed | [weak support] 1 possible edit point(s); [weak support] Voice partly suspicious: 3 of 4 windows elevated |
 | Q5 | `VID-20261021-WA0003.mp4` | synthetic | **SYNTHETIC** | 88 | correct | [strong support] Face replaced: footage of R2 with another person's face; [weak support] Face score elevated in 1 window(s) |
-| Q6 | `call_recording_20261021_1412.wav` | manipulated | **MANIPULATED** | 84 | correct | [strong support] Mains-frequency trace breaks at 3 point(s) |
+| Q6 | `call_recording_20261021_1412.wav` | manipulated | **MANIPULATED** | 84 | correct | [strong support] Mains-frequency trace breaks at 16.5 s |
 | Q7 | `officer_id_photo_original.png` | synthetic | **SYNTHETIC** | 80 | correct | [moderate support] Content Credentials declare generative AI; [moderate support] AI-generated image classifier: above its strict threshold |
 | R1 | `daughter_known_voice_sample.m4a` | authentic | **NO_INDICATORS** | 10 | correct |  |
 | R2 | `laptop_seized_clip_0193.mp4` | authentic | **NO_INDICATORS** | 3 | correct | [moderate support] Mains-frequency trace is continuous |
