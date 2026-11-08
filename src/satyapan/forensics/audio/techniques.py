@@ -437,11 +437,15 @@ def run_enf(ctx: AnalysisContext) -> TechniqueResult:
         findings.append(
             finding(
                 "ENF_DISCONTINUITY",
-                f"Mains-frequency trace breaks at {len(res.jumps)} point(s)",
+                (
+                    f"Mains-frequency trace breaks at {res.jumps[0]['t']:.1f} s"
+                    if len(res.jumps) == 1
+                    else f"Mains-frequency trace breaks at {len(res.jumps)} points"
+                ),
                 "The 50 Hz power-grid hum captured in the recording drifts slowly and "
                 "continuously in real time. Here it jumps abruptly ("
                 + ", ".join(
-                    f"{j['t']:.0f} s: {j['delta_hz'] * 1000:+.0f} mHz" for j in res.jumps[:4]
+                    f"{j['t']:.1f} s: {j['delta_hz'] * 1000:+.0f} mHz" for j in res.jumps[:4]
                 )
                 + "), which happens when pieces recorded at different times are joined.",
                 Hypothesis.MANIPULATED,

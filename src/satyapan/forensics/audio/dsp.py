@@ -165,12 +165,27 @@ def enf_trace(x16k: np.ndarray, nominal: float = 50.0, win_s: float = 4.0,
     if best.present and len(d):
         mad = float(np.median(np.abs(d - np.median(d)))) * 1.4826 + 1e-4
         thr = max(0.012, 8 * mad)
+        raw: list[int] = []
         for i in np.where(d > thr)[0]:
             left = f[max(0, i - 2) : i + 1]
             right = f[i + 1 : i + 4]
             if len(right) and abs(float(np.median(right)) - float(np.median(left))) > thr * 0.8:
-                best.jumps.append({"t": float(best.times[i] + best.times[i + 1]) / 2.0,
-                                   "delta_hz": float(f[i + 1] - f[i])})  # fmt: skip
+                raw.append(int(i))
+        # One edit disturbs every analysis frame that overlaps it (win_s long), so steps closer
+        # than a frame length are one edit point: report its centre and the net level change.
+        groups: list[list[int]] = []
+        span = max(1, int(round(win_s / hop_s)))
+        for i in raw:
+            if groups and i - groups[-1][-1] <= span:
+                groups[-1].append(i)
+            else:
+                groups.append([i])
+        for g in groups:
+            t0, t1 = best.times[g[0]], best.times[g[-1] + 1]
+            before = float(np.median(f[max(0, g[0] - 2) : g[0] + 1]))
+            after = float(np.median(f[g[-1] + 1 : g[-1] + 4]))
+            best.jumps.append({"t": round(float(t0 + t1) / 2.0, 2), "delta_hz": after - before,
+                               "steps": len(g)})  # fmt: skip
     return best
 
 
