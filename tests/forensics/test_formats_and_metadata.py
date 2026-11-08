@@ -90,7 +90,8 @@ def test_png_text_chunks_and_a1111_signature(stub_models, tmp_path: Path) -> Non
     assert "parameters" in info.text and info.width == 320
     a, _ = analyze_bytes(data, "officer.png", tmp_path, models=stub_models)
     gen = [f for t in a.techniques for f in t.findings if f.code == "GENERATOR_SIGNATURE"]
-    assert gen and gen[0].strength == Strength.VERY_STRONG
+    # Structured generator parameters: strong support, not proof (metadata can be edited).
+    assert gen and gen[0].strength == Strength.STRONG
     assert a.verdict.label.value == "SYNTHETIC"
     assert "Stable Diffusion" in (a.provenance.generator or "")
 
@@ -200,14 +201,18 @@ def test_c2pa_ai_declaration_and_tampering(stub_models, tmp_path: Path) -> None:
     signed = (tmp_path / "signed.png").read_bytes()
     a, _ = analyze_bytes(signed, "signed.png", tmp_path / "a", models=stub_models)
     f = {x.code: x for t in a.techniques for x in t.findings}
-    assert f["C2PA_AI_GENERATED"].strength == Strength.VERY_STRONG
-    assert "C2PA_INVALID" not in f and a.verdict.label.value == "SYNTHETIC"
+    # The demo test CA is on no trust list: anyone could sign such a manifest, so the
+    # declaration is only moderate support until the signer is verified.
+    assert f["C2PA_AI_GENERATED"].strength == Strength.MODERATE
+    assert "trust list" in f["C2PA_AI_GENERATED"].detail
+    assert "C2PA_INVALID" not in f and a.verdict.label.value == "SUSPICIOUS"
     b, _ = analyze_bytes(
         signed + b"appended" * 8, "tampered.png", tmp_path / "b", models=stub_models
     )
     g = {x.code: x for t in b.techniques for x in t.findings}
     assert g["C2PA_INVALID"].hypothesis == Hypothesis.MANIPULATED
-    assert g["C2PA_AI_GENERATED"].strength == Strength.STRONG
+    assert g["C2PA_AI_GENERATED"].strength == Strength.MODERATE
+    assert b.verdict.label.value == "MANIPULATED"
 
 
 def test_heic_iphone_photo_is_analysed(stub_models, tmp_path: Path) -> None:
@@ -220,3 +225,25 @@ def test_heic_iphone_photo_is_analysed(stub_models, tmp_path: Path) -> None:
     a, _ = analyze_bytes(buf.getvalue(), "IMG_0001.HEIC", tmp_path, models=stub_models)
     assert a.media.format == "heic" and a.media.width == 400
     assert not [t.id for t in a.techniques if t.status.value == "error"]
+
+
+def test_generator_words_in_free_text_are_context_not_evidence(stub_models, tmp_path: Path) -> None:
+    """A caption or file name saying 'Midjourney' is not a tool record; a Software tag is."""
+    meta = PngInfo()
+    meta.add_text("Description", "inspired by midjourney art; dall-e style poster")
+    buf = io.BytesIO()
+    Image.fromarray(textured(256, 256)).save(buf, format="PNG", pnginfo=meta)
+    a, _ = analyze_bytes(buf.getvalue(), "midjourney_v6_upscale.png", tmp_path / "a",
+                         models=stub_models)  # fmt: skip
+    fs = [x for t in a.techniques for x in t.findings]
+    assert not [x for x in fs if x.code == "GENERATOR_SIGNATURE"]
+    mention = [x for x in fs if x.code == "GENERATOR_MENTION"]
+    assert mention and all(x.strength == Strength.NONE for x in mention)
+    assert a.verdict.label.value != "SYNTHETIC"
+    meta2 = PngInfo()
+    meta2.add_text("Software", "Midjourney")
+    buf2 = io.BytesIO()
+    Image.fromarray(textured(256, 256)).save(buf2, format="PNG", pnginfo=meta2)
+    b, _ = analyze_bytes(buf2.getvalue(), "img.png", tmp_path / "b", models=stub_models)
+    sig = [x for t in b.techniques for x in t.findings if x.code == "GENERATOR_SIGNATURE"]
+    assert sig and sig[0].strength == Strength.MODERATE

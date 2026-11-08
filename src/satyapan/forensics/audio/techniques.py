@@ -89,9 +89,10 @@ def run_audio_container(ctx: AnalysisContext) -> TechniqueResult:
         "tags": tags,
     }  # fmt: skip
     enc = " ".join(v for k, v in tags.items() if "encoder" in k.lower() or "software" in k.lower())
-    blob = " ".join(f"{k}={v}" for k, v in tags.items()) + " " + (ctx.filename or "")
+    blob = " ".join(f"{k}={v}" for k, v in tags.items() if any(
+        w in k.lower() for w in ("encoder", "software", "comment", "title", "artist", "tool")))  # fmt: skip
     for pat, name in TTS_HINTS:
-        if re.search(pat, blob, re.I):
+        if re.search(rf"\b(?:{pat})\b", blob, re.I):
             findings.append(
                 finding(
                     "TTS_SIGNATURE",
@@ -100,7 +101,7 @@ def run_audio_container(ctx: AnalysisContext) -> TechniqueResult:
                     f"tool ({name}). Tools that create synthetic voices often leave their "
                     "name in metadata; it can also be added by hand, so verify.",
                     Hypothesis.SYNTHETIC,
-                    Strength.MODERATE,
+                    Strength.WEAK,
                     Category.PROVENANCE,
                     tool=name,
                 )  # fmt: skip
@@ -316,7 +317,7 @@ def run_voice(ctx: AnalysisContext) -> TechniqueResult:
                 "synthetic recording (real speech with inserted synthetic words) also "
                 "looks like this; compare with the splice analysis.",
                 Hypothesis.SYNTHETIC,
-                Strength.MODERATE if hi or n_lo >= 2 else Strength.WEAK,
+                Strength.MODERATE if hi else Strength.WEAK,
                 Category.SYNTHETIC,
                 score=round(max(scores), 4),
                 spans=spans,
@@ -373,11 +374,13 @@ def run_splice(ctx: AnalysisContext) -> TechniqueResult:
     jumps, lt, levels = dsp.noise_floor_jumps(x, sr)
     cues += jumps
     cues += dsp.discontinuities(x, sr)
-    enf = ctx.cache.get("enf_jumps", [])
-    for j in enf:
-        cues.append(dsp.SpliceCue(j["t"], "enf_jump", f"mains-hum frequency jumps by "
-                                  f"{j['delta_hz'] * 1000:+.0f} mHz", 2.0))  # fmt: skip
     groups = dsp.merge_cues(cues, within_s=1.0)
+    # ENF is its own technique; a coinciding mains-hum jump is noted, never counted twice.
+    for g in groups:
+        for j in ctx.cache.get("enf_jumps", []):
+            if abs(float(j["t"]) - float(g["t"])) <= 1.5:
+                g["details"].append(f"coincides with a mains-hum jump at {float(j['t']):.1f} s")
+                break
     data = {"cues": groups, "noise_floor_t": lt, "noise_floor_db": levels,
             "duration_s": round(len(x) / sr, 2)}  # fmt: skip
     findings: list[Finding] = []
@@ -569,7 +572,7 @@ SPLICE = Technique(
     "Three cues are located and merged: runs of exact digital silence inside a recording that "
     "otherwise has background noise, abrupt steps in the background noise floor between "
     "adjacent 1.5 s windows, and isolated sample-to-sample jumps (hard cuts without a fade). "
-    "Mains-frequency jumps from the ENF analysis are added when available.",
+    "A coinciding mains-frequency jump from the ENF analysis is noted, not counted twice.",
     "Grigoras, 'Digital audio recording analysis: the ENF criterion' (2005); SWGDE Best "
     "Practices for Digital Audio Authentication", order=21,
 )  # fmt: skip

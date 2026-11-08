@@ -109,7 +109,7 @@ def test_watermark_detected_end_to_end(stub_models, tmp_path: Path) -> None:
     )
     a, _ = analyze_bytes(png(marked), "gen.png", tmp_path, models=stub_models)
     assert "SD_WATERMARK" in finding_codes(a)
-    assert a.verdict.label.value == "SYNTHETIC" and a.verdict.risk_index >= 90
+    assert a.verdict.label.value == "SYNTHETIC" and a.verdict.confidence == "strong support"
 
 
 # ------------------------------------------------------------------ audio

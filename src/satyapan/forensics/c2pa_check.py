@@ -142,13 +142,23 @@ def run_c2pa(ctx: AnalysisContext) -> TechniqueResult:
                 + ". The "
                 "creator's own signed record states the content was made with AI."
                 + (
+                    " The signer is not on this workstation's trust list, so anyone could have "
+                    "made this manifest: moderate support until the signer is verified."
+                    if untrusted and not (hash_fail or sig_fail)
+                    else ""
+                )
+                + (
                     " The file was altered after signing, so the declaration describes an "
                     "earlier version of it."
                     if (hash_fail or sig_fail)
                     else ""
                 ),
                 Hypothesis.SYNTHETIC,
-                Strength.STRONG if (hash_fail or sig_fail) else Strength.VERY_STRONG,
+                (
+                    Strength.MODERATE
+                    if (hash_fail or sig_fail or untrusted)
+                    else Strength.VERY_STRONG
+                ),
                 Category.PROVENANCE,
                 issuer=issuer,
                 generator=gen,

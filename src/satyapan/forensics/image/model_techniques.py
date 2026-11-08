@@ -46,10 +46,12 @@ def run_watermark(ctx: AnalysisContext) -> TechniqueResult:
                 f"Invisible watermark: {m.name}",
                 f"{m.matching} of {m.bits} watermark bits match the message that "
                 f"{m.name} embeds in every image it generates (chance of this on an "
-                f"unmarked image: {m.p_chance:.1e}). The image came out of that generator "
-                "and has not been resized or heavily re-compressed since.",
+                f"unmarked image: {m.p_chance:.1e}). This supports generation by that "
+                "pipeline, and shows the file was not resized or heavily re-compressed since. "
+                "A watermark can in principle be copied onto another image, so it is strong "
+                "support, not proof.",
                 Hypothesis.SYNTHETIC,
-                Strength.VERY_STRONG,
+                Strength.STRONG,
                 Category.PROVENANCE,
                 score=round(m.accuracy, 3),
                 generator=m.name,
@@ -92,20 +94,26 @@ def run_aigen(ctx: AnalysisContext) -> TechniqueResult:
     data = {"logit": round(logit, 3), "probability": round(p, 4), "views": per_view,
             "tau_hi": tau_hi, "tau_lo": tau_lo, "model": spec.get("name"),
             "model_license": spec.get("license"), "metrics": metrics}  # fmt: skip
-    fpr_hi = spec.get("fpr_at_tau_hi", 0.01)
-    fpr_lo = spec.get("fpr_at_tau_lo", 0.05)
+    tpr_hi = float(metrics.get("test_tpr_at_tau_hi", 0.5))
+    fpr_hi = max(float(metrics.get("test_fpr_at_tau_hi", spec.get("fpr_at_tau_hi", 0.01))), 1e-3)
+    tpr_lo = float(metrics.get("test_tpr_at_tau_lo", 0.65))
+    fpr_lo = max(float(metrics.get("test_fpr_at_tau_lo", spec.get("fpr_at_tau_lo", 0.05))), 1e-3)
+    data["likelihood_ratio_strict"] = round(tpr_hi / fpr_hi, 1)
+    data["likelihood_ratio_lenient"] = round(tpr_lo / fpr_lo, 1)
     findings: list[Finding] = []
     if logit >= tau_hi:
         findings.append(
             finding(
                 "AI_IMAGE_CLASSIFIER",
-                f"AI-generated image classifier: {p:.0%} synthetic",
-                f"The {spec.get('name')} classifier scores this image above its strict "
-                f"threshold (false-alarm rate {fpr_hi:.0%} on real photographs in our "
-                "validation set). It has learned the statistical traces that diffusion and "
-                "GAN generators leave in pixels, independently of metadata.",
+                "AI-generated image classifier: above its strict threshold",
+                f"The {spec.get('name')} classifier (trained on images from thousands of "
+                "generators) scores this image above its strict threshold. On held-out test "
+                f"images that threshold flagged {tpr_hi:.0%} of AI-generated images and "
+                f"{fpr_hi:.1%} of real photographs (likelihood ratio ≈ {tpr_hi / fpr_hi:.0f}): "
+                "moderate support on its own. It reads statistical traces generators leave in "
+                "the pixels, independently of metadata.",
                 Hypothesis.SYNTHETIC,
-                Strength.STRONG,
+                Strength.MODERATE,
                 Category.SYNTHETIC,
                 score=round(p, 4),
                 logit=round(logit, 3),
@@ -115,12 +123,13 @@ def run_aigen(ctx: AnalysisContext) -> TechniqueResult:
         findings.append(
             finding(
                 "AI_IMAGE_CLASSIFIER",
-                f"AI-generated image classifier: {p:.0%} synthetic",
-                f"The score is above the lenient threshold (false-alarm rate {fpr_lo:.0%} "
-                "on real photographs) but below the strict one: moderate support for AI "
-                "generation. Heavy compression and filters can also raise the score.",
+                "AI-generated image classifier: above its lenient threshold",
+                f"Above the lenient threshold (held-out: {tpr_lo:.0%} of AI images and "
+                f"{fpr_lo:.1%} of real photos flagged, likelihood ratio ≈ {tpr_lo / fpr_lo:.0f}) "
+                "but below the strict one: weak support. Heavy compression and filters can also "
+                "raise the score.",
                 Hypothesis.SYNTHETIC,
-                Strength.MODERATE,
+                Strength.WEAK,
                 Category.SYNTHETIC,
                 score=round(p, 4),
                 logit=round(logit, 3),
@@ -130,14 +139,17 @@ def run_aigen(ctx: AnalysisContext) -> TechniqueResult:
         findings.append(
             info(
                 "AI_IMAGE_CLASSIFIER_LOW",
-                f"AI-generated image classifier: {p:.0%} synthetic",
-                "Below both thresholds. Generators the model never saw can still pass, so "
-                "this is not a proof of authenticity.",
+                "AI-generated image classifier: below its thresholds",
+                "Generators the model never saw can still pass, so this is not a proof of "
+                "authenticity.",
                 Category.SYNTHETIC,
                 score=round(p, 4),
             )  # fmt: skip
         )
-    return make_result(t, summary=f"P(AI-generated) = {p:.1%}", findings=findings, data=data)
+    level = "strict" if logit >= tau_hi else "lenient" if logit >= tau_lo else "no"
+    summary = (f"classifier score {logit:+.2f} (uncalibrated); above {level} threshold" if level != "no"
+               else f"classifier score {logit:+.2f}: below both thresholds")  # fmt: skip
+    return make_result(t, summary=summary, findings=findings, data=data)
 
 
 # ---------------------------------------------------------------------------------------------
@@ -257,10 +269,11 @@ def run_faces(ctx: AnalysisContext) -> TechniqueResult:
                     f"The GenD face model (CLIP ViT-L/14, trained on face-swap and "
                     f"re-enactment fakes) scores this face {lg:.2f}, above its strict "
                     f"threshold {thr.tau_hi:.2f} (1% false alarms on real faces in "
-                    "validation). The face shows blending or synthesis artefacts typical "
-                    "of a deepfake.",
+                    "validation; photo crops: AUC 0.92 on FaceForensics++, so a single photo "
+                    "hit is moderate support). The face shows blending or synthesis artefacts "
+                    "typical of a face swap.",
                     Hypothesis.SYNTHETIC,
-                    Strength.STRONG,
+                    Strength.MODERATE,
                     Category.SYNTHETIC,
                     score=round(lg, 3),
                     regions=[reg],
@@ -274,9 +287,9 @@ def run_faces(ctx: AnalysisContext) -> TechniqueResult:
                     "FACE_SWAP",
                     f"Face {k + 1}: manipulated-face model score elevated",
                     f"Score {lg:.2f} is between the lenient ({thr.tau_lo:.2f}, 5% false "
-                    f"alarms) and strict ({thr.tau_hi:.2f}) thresholds.",
+                    f"alarms) and strict ({thr.tau_hi:.2f}) thresholds: weak support.",
                     Hypothesis.SYNTHETIC,
-                    Strength.MODERATE,
+                    Strength.WEAK,
                     Category.SYNTHETIC,
                     score=round(lg, 3),
                     regions=[reg],

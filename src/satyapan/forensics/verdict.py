@@ -1,14 +1,17 @@
 """From findings to a verdict: a fixed rule table, not a model (docs/forensics/METHODOLOGY.md).
 
 Rules, applied in order:
-  1. SYNTHETIC    if any finding supports "synthetic" with STRONG or VERY_STRONG strength.
+  1. SYNTHETIC    if any finding supports "synthetic" with STRONG or VERY_STRONG strength, or
+                  two different techniques each give at least MODERATE support for it.
   2. MANIPULATED  if any finding supports "manipulated" with STRONG or VERY_STRONG strength,
-                  or two different techniques each give at least MODERATE support.
+                  or two different techniques each give at least MODERATE support and at
+                  least one of them is structural (not one of the indicative pixel maps:
+                  ELA, noise residue, JPEG grid), so two heat maps never convict alone.
   3. SUSPICIOUS   if any synthetic / manipulated finding is MODERATE, or three different
                   techniques give WEAK support for manipulation.
   4. INCONCLUSIVE if fewer than two authenticity techniques (synthetic or tampering
                   category) completed on this file.
-  5. NO_INDICATORS otherwise.
+  5. NO_INDICATORS otherwise; weak indications below the threshold are named in the text.
 Confidence words follow the ENFSI verbal scale. The strongest supported hypothesis sets the
 statement; every technique that could not run is listed under "not checked". The risk index
 is only a dashboard gauge derived from the same rule.
@@ -47,6 +50,10 @@ def _techs(findings: list[Finding], hyp: Hypothesis, at_least: Strength) -> set[
     return {f.technique for f in findings if f.hypothesis == hyp and f.strength >= at_least}
 
 
+# Indicative pixel maps: useful to localise, never sufficient on their own (METHODOLOGY.md).
+INDICATIVE = frozenset({"image.ela", "image.noise", "image.jpeg_grid"})
+
+
 def decide(kind: MediaKind, results: list[TechniqueResult]) -> Verdict:
     fs = _all_findings(results)
     syn = _max(fs, Hypothesis.SYNTHETIC)
@@ -55,6 +62,8 @@ def decide(kind: MediaKind, results: list[TechniqueResult]) -> Verdict:
     man_mod = _techs(fs, Hypothesis.MANIPULATED, Strength.MODERATE)
     man_weak = _techs(fs, Hypothesis.MANIPULATED, Strength.WEAK)
     syn_strong = _techs(fs, Hypothesis.SYNTHETIC, Strength.STRONG)
+    syn_mod = _techs(fs, Hypothesis.SYNTHETIC, Strength.MODERATE)
+    structural = man_mod - INDICATIVE
     checks_ok = [
         r for r in results
         if r.status == Status.OK and r.category in (Category.SYNTHETIC, Category.TAMPERING)
@@ -74,15 +83,19 @@ def decide(kind: MediaKind, results: list[TechniqueResult]) -> Verdict:
            and f.strength >= Strength.WEAK][:6]  # fmt: skip
     hyps = {"synthetic": int(syn), "manipulated": int(man), "authentic": int(auth)}
 
-    if syn >= Strength.STRONG:
-        conf = Strength.VERY_STRONG if syn == Strength.VERY_STRONG or len(syn_strong) >= 2 else syn
-        word = STRENGTH_WORDS[conf]
+    if syn >= Strength.STRONG or len(syn_mod) >= 2:
+        if syn >= Strength.STRONG:
+            conf = (Strength.VERY_STRONG if syn == Strength.VERY_STRONG or len(syn_strong) >= 2
+                    or (len(syn_mod) >= 2 and syn >= Strength.STRONG) else syn)  # fmt: skip
+            word = STRENGTH_WORDS[conf]
+            risk = 96 if conf == Strength.VERY_STRONG else 88
+        else:  # two independent moderate findings agree
+            word, risk = "moderately strong support", 80
         what = (
             "AI-generated or deepfaked"
             if kind != MediaKind.AUDIO
             else "synthetic (AI-generated voice)"
         )
-        risk = 96 if conf == Strength.VERY_STRONG else 88
         extra = " It also shows signs of editing." if man >= Strength.MODERATE else ""
         return Verdict(
             label=VerdictLabel.SYNTHETIC,
@@ -92,12 +105,13 @@ def decide(kind: MediaKind, results: list[TechniqueResult]) -> Verdict:
             confidence=word, risk_index=risk, hypotheses=hyps, key_findings=key,
             rationale=rationale, not_checked=not_checked,
         )  # fmt: skip
-    if man >= Strength.STRONG or len(man_mod) >= 2:
-        conf = man if man >= Strength.STRONG else Strength.STRONG
-        if man >= Strength.STRONG and len(man_mod) >= 2:
-            conf = Strength.VERY_STRONG
-        word = STRENGTH_WORDS[conf]
-        risk = 92 if conf == Strength.VERY_STRONG else 80
+    if man >= Strength.STRONG or (len(man_mod) >= 2 and structural):
+        if man >= Strength.STRONG:
+            conf = Strength.VERY_STRONG if len(man_mod) >= 2 else man
+            word = STRENGTH_WORDS[conf]
+            risk = 92 if conf == Strength.VERY_STRONG else 84
+        else:  # two independent moderate findings, one of them structural
+            word, risk = "moderately strong support", 76
         return Verdict(
             label=VerdictLabel.MANIPULATED,
             headline=f"Manipulated {noun}: {word}",
@@ -132,11 +146,17 @@ def decide(kind: MediaKind, results: list[TechniqueResult]) -> Verdict:
     risk = max(3, min(25, 10 + 4 * len(man_weak) - 4 * int(auth)))
     support = (f" Positive authenticity indicators: {STRENGTH_WORDS[auth]}."
                if auth >= Strength.MODERATE else "")  # fmt: skip
+    weak = [f.title for f in fs if f.strength == Strength.WEAK
+            and f.hypothesis in (Hypothesis.SYNTHETIC, Hypothesis.MANIPULATED)]  # fmt: skip
+    if weak:
+        support += (f" Weak indications below the threshold for concern were noted "
+                    f"({'; '.join(dict.fromkeys(weak[:3]))}); they are listed in the findings.")  # fmt: skip
     return Verdict(
         label=VerdictLabel.NO_INDICATORS,
         headline=f"No indications of manipulation or synthesis in the {noun}",
         statement=f"None of the {len(checks_ok)} authenticity techniques applied found "
-        f"indications of synthesis or manipulation.{support} This does not prove the {noun} is "
+        f"significant indications of synthesis or manipulation.{support} This does not prove "
+        f"the {noun} is "
         "authentic: techniques that could not be applied, and their known limits, are listed.",
         confidence="no support for manipulation", risk_index=risk, hypotheses=hyps,
         key_findings=key, rationale=rationale, not_checked=not_checked,

@@ -430,30 +430,29 @@ def _human_delta(seconds: float) -> str:
 # ---------------------------------------------------------------------------------------------
 
 GENERATOR_PATTERNS = [
-    (r"\bsteps:\s*\d+.{0,200}\bsampler:", "Stable Diffusion (AUTOMATIC1111 / Forge web UI)"),
     (r"\bnovelai\b", "NovelAI"),
-    (r"invokeai", "InvokeAI"),
+    (r"\binvokeai\b", "InvokeAI"),
     (r"\bfooocus\b", "Fooocus"),
     (r"\bmidjourney\b", "Midjourney"),
-    (r"dall[·\-\s]?e", "OpenAI DALL·E"),
-    (r"gpt-?4o|openai", "OpenAI image generation"),
-    (r"adobe firefly|\bfirefly\b", "Adobe Firefly"),
-    (r"made with google ai|imagen|gemini", "Google Imagen / Gemini"),
-    (r"imagined with ai|meta ai", "Meta AI"),
-    (r"bing image creator|microsoft designer", "Microsoft Designer / Bing Image Creator"),
-    (r"leonardo\.ai|\bleonardo\b", "Leonardo.Ai"),
-    (r"black-forest-labs|\bflux\.1\b|\bflux\b", "FLUX (Black Forest Labs)"),
+    (r"\bdall[·\-\s]?e(\s?[23])?\b", "OpenAI DALL·E"),
+    (r"\bgpt-?4o\b|\bopenai\b", "OpenAI image generation"),
+    (r"\badobe firefly\b|\bfirefly\b", "Adobe Firefly"),
+    (r"\bmade with google ai\b|\bimagen\s?\d\b|\bgemini\b", "Google Imagen / Gemini"),
+    (r"\bimagined with ai\b|\bmeta ai\b", "Meta AI"),
+    (r"\bbing image creator\b|\bmicrosoft designer\b", "Microsoft Designer / Bing Image Creator"),
+    (r"\bleonardo\.ai\b", "Leonardo.Ai"),
+    (r"\bblack-forest-labs\b|\bflux\.1\b", "FLUX (Black Forest Labs)"),
     (r"\bideogram\b", "Ideogram"),
-    (r"\brunway\b", "Runway"),
-    (r"stable diffusion|stability\.ai|\bsdxl\b", "Stable Diffusion"),
+    (r"\brunway(ml)?\b", "Runway"),
+    (r"\bstable diffusion\b|\bstability\.ai\b|\bsdxl\b", "Stable Diffusion"),
     (r"\bdiffusers\b", "Hugging Face diffusers"),
-    (r"comfyui", "ComfyUI"),
+    (r"\bcomfyui\b", "ComfyUI"),
 ]
 
 DIGITAL_SOURCE_TYPES = {
-    "trainedalgorithmicmedia": ("AI-generated (declared)", Strength.VERY_STRONG),
+    "trainedalgorithmicmedia": ("AI-generated (declared)", Strength.STRONG),
     "compositewithtrainedalgorithmicmedia": ("Composite with AI-generated elements (declared)",
-                                             Strength.VERY_STRONG),
+                                             Strength.STRONG),
     "algorithmicallyenhanced": ("Algorithmically enhanced (declared)", Strength.WEAK),
     "compositesynthetic": ("Synthetic composite (declared)", Strength.STRONG),
     "algorithmicmedia": ("Algorithmic / synthetic media (declared)", Strength.STRONG),
@@ -479,40 +478,63 @@ PLATFORM_FILENAMES = [
 
 
 def generator_hits(ctx: AnalysisContext, meta: ImageMeta) -> list[tuple[str, str, Strength]]:
-    """(generator, evidence, strength) from text the file carries about itself."""
+    """(generator, evidence, strength) from what the file says about the tool that wrote it.
+
+    Structured blocks that generator front-ends write (prompt + sampler + seed, ComfyUI node
+    graphs) are strong support. A generator name in a *tool* field (EXIF Software, XMP
+    CreatorTool, the XMP history's softwareAgent, PNG Software/Source) is moderate support.
+    Mentions anywhere else (descriptions, captions, artist, file names) are only context: the
+    caller reports them without weight, because any word can be typed there."""
     hits: list[tuple[str, str, Strength]] = []
     png = meta.png_text
-    if "parameters" in png and re.search(r"steps:\s*\d+", png["parameters"], re.I):
+    if "parameters" in png and re.search(r"steps:\s*\d+", png["parameters"], re.I) and re.search(
+            r"sampler:|seed:", png["parameters"], re.I):  # fmt: skip
         hits.append(("Stable Diffusion (AUTOMATIC1111 / Forge web UI)",
                      "PNG text chunk 'parameters' holds prompt, sampler, seed and model hash",
-                     Strength.VERY_STRONG))  # fmt: skip
-    if "prompt" in png and "class_type" in png.get("prompt", "") or "workflow" in png:
+                     Strength.STRONG))  # fmt: skip
+    if ("prompt" in png and "class_type" in png.get("prompt", "")) or (
+            "workflow" in png and "nodes" in png.get("workflow", "")):  # fmt: skip
         hits.append(("ComfyUI (Stable Diffusion / FLUX workflow)",
                      "PNG text chunks 'prompt'/'workflow' hold a ComfyUI node graph",
-                     Strength.VERY_STRONG))  # fmt: skip
+                     Strength.STRONG))  # fmt: skip
     if "invokeai_metadata" in png or "sd-metadata" in png:
-        hits.append(("InvokeAI", "PNG text chunk written by InvokeAI", Strength.VERY_STRONG))
-    if png.get("Software", "").lower().startswith("novelai"):
-        hits.append(("NovelAI", "PNG 'Software: NovelAI'", Strength.VERY_STRONG))
-    texts = [
-        str(ctx.media.format),
-        *(f"{k}={v}" for k, v in png.items()),
-        *(str(meta.exif.get(k, "")) for k in ("Software", "ImageDescription", "UserComment",
-                                               "Artist", "Make", "Model", "XPComment")),
-        *meta.xmp.values(),
+        hits.append(("InvokeAI", "PNG text chunk written by InvokeAI", Strength.STRONG))
+    tool_fields = [
+        str(meta.exif.get("Software", "")), meta.xmp.get("xmp:CreatorTool", ""),
+        meta.xmp.get("tiff:Software", ""), png.get("Software", ""), png.get("Source", ""),
         *(h.get("softwareAgent", "") for h in meta.xmp_history),
-        *meta.iptc.values(),
-        *meta.comments,
     ]  # fmt: skip
-    blob = " | ".join(t for t in texts if t)[:200_000]
-    seen = {h[0] for h in hits}
+    blob = " | ".join(t for t in tool_fields if t)[:20_000]
+    seen = {h[0].split(" (")[0] for h in hits}
     for pat, name in GENERATOR_PATTERNS:
         m = re.search(pat, blob, re.I)
-        if m and not any(name.split(" (")[0] in s for s in seen):
-            snippet = blob[max(0, m.start() - 40) : m.end() + 40].replace("\n", " ")
-            hits.append((name, f"metadata text mentions it: “…{snippet}…”", Strength.STRONG))
-            seen.add(name)
+        if m and name.split(" (")[0] not in seen:
+            snippet = blob[max(0, m.start() - 30) : m.end() + 30].replace("\n", " ")
+            hits.append((name, f"the tool field that names the writing software says “…{snippet}…”",
+                         Strength.MODERATE))  # fmt: skip
+            seen.add(name.split(" (")[0])
     return hits
+
+
+def generator_mentions(ctx: AnalysisContext, meta: ImageMeta) -> list[tuple[str, str]]:
+    """Generator names in free text (descriptions, captions, file name): context only."""
+    texts = [
+        str(meta.exif.get(k, ""))
+        for k in ("ImageDescription", "UserComment", "Artist", "XPComment")
+    ]
+    texts += [meta.xmp.get(k, "") for k in ("dc:description", "dc:title")] + list(
+        meta.iptc.values()
+    )
+    texts += [v for k, v in meta.png_text.items()
+              if k.lower() in ("description", "comment", "title", "author", "caption")]  # fmt: skip
+    texts += [re.sub(r"[_\-.]+", " ", ctx.filename or "")]  # "midjourney_v6.png" → words
+    blob = " | ".join(str(t) for t in texts if t)[:20_000]
+    out = []
+    for pat, name in GENERATOR_PATTERNS:
+        m = re.search(pat, blob, re.I)
+        if m:
+            out.append((name, blob[max(0, m.start() - 30) : m.end() + 30].replace("\n", " ")))
+    return out[:3]
 
 
 def run_provenance(ctx: AnalysisContext) -> TechniqueResult:
@@ -535,6 +557,19 @@ def run_provenance(ctx: AnalysisContext) -> TechniqueResult:
             )  # fmt: skip
         )
         data.setdefault("generators", []).append(gen)
+    for gen, snippet in generator_mentions(ctx, meta):
+        if gen in data.get("generators", []):
+            continue
+        findings.append(
+            info(
+                "GENERATOR_MENTION",
+                f"Free text mentions {gen}",
+                f"A description, caption or the file name contains “…{snippet}…”. Anyone can "
+                "type this, so it is noted as context only.",
+                Category.PROVENANCE,
+                generator=gen,
+            )  # fmt: skip
+        )
     dst = meta.xmp.get("Iptc4xmpExt:DigitalSourceType", "")
     if dst:
         key = dst.rstrip("/").rsplit("/", 1)[-1].lower()
@@ -561,9 +596,10 @@ def run_provenance(ctx: AnalysisContext) -> TechniqueResult:
                 finding(
                     "AI_SYSTEM_DECLARED",
                     f"Declares the AI system used: {meta.xmp[key][:60]}",
-                    f"XMP {key} = “{meta.xmp[key][:200]}”.",
+                    f"XMP {key} = “{meta.xmp[key][:200]}”. A declared field: strong support, "
+                    "though metadata can be edited.",
                     Hypothesis.SYNTHETIC,
-                    Strength.VERY_STRONG,
+                    Strength.STRONG,
                     Category.PROVENANCE,
                     value=meta.xmp[key][:300],
                 )  # fmt: skip

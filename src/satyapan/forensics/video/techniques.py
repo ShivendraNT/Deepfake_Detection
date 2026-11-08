@@ -126,18 +126,18 @@ def run_video_container(ctx: AnalysisContext) -> TechniqueResult:
                 encoder=enc[:200],
             )  # fmt: skip
         )
-    blob = " ".join(f"{k}={v}" for k, v in tags.items()) + " " + (ctx.filename or "")
+    blob = " ".join(f"{k}={v}" for k, v in tags.items())  # file names are not evidence of a tool
     for pat, name in VIDEO_GEN_HINTS:
         if re.search(pat, blob, re.I):
             findings.append(
                 finding(
                     "VIDEO_GENERATOR_SIGNATURE",
                     f"Metadata names a synthetic-video tool: {name}",
-                    f"A tag or the file name mentions {name}, a tool that generates or "
+                    f"A metadata tag mentions {name}, a tool that generates or "
                     "face-swaps video. Names can be edited, so corroborate with the "
                     "face analysis.",
                     Hypothesis.SYNTHETIC,
-                    Strength.MODERATE,
+                    Strength.WEAK,
                     Category.PROVENANCE,
                     tool=name,
                 )  # fmt: skip
