@@ -261,7 +261,9 @@ def lab_export(case_id: str) -> JSONResponse:
 
 
 @router.post("/lab/api/demo", status_code=201)
-async def lab_demo(reset: bool = True) -> dict[str, Any]:
+async def lab_demo(reset: bool = False) -> dict[str, Any]:
+    """Load the scripted demo case. An existing demo case is returned as it is unless
+    ?reset=true, so a second click during a presentation never wipes a finished analysis."""
     from satyapan.forensics.demo import load_demo_case
 
     try:

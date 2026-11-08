@@ -225,8 +225,30 @@ def build_pdf(svc: Any, case: LabCase, items: list[tuple[LabEvidence, EvidenceAn
             "CONFIDENTIAL — prepared for the investigating agency / court. "
             "Draft for the examiner's verification and signature.",
         )
-        canvas.drawRightString(W - margin, 9 * mm, f"Page {doc.page}")
         canvas.restoreState()
+
+    from reportlab.pdfgen.canvas import Canvas
+
+    class NumberedCanvas(Canvas):
+        """Defers each page so the footer can say 'Page x of y'."""
+
+        def __init__(self, *args: Any, **kwargs: Any) -> None:
+            super().__init__(*args, **kwargs)
+            self._pages: list[dict[str, Any]] = []
+
+        def showPage(self) -> None:  # noqa: N802 - ReportLab API
+            self._pages.append(dict(self.__dict__))
+            self._startPage()
+
+        def save(self) -> None:
+            total = len(self._pages)
+            for state in self._pages:
+                self.__dict__.update(state)
+                self.setFont("DejaVu", 7)
+                self.setFillColor(colors.HexColor("#64748b"))
+                self.drawRightString(W - margin, 9 * mm, f"Page {self._pageNumber} of {total}")
+                super().showPage()
+            super().save()
 
     story: list[Any] = []
     # ------------------------------------------------------------------ cover
@@ -272,10 +294,12 @@ def build_pdf(svc: Any, case: LabCase, items: list[tuple[LabEvidence, EvidenceAn
     # ------------------------------------------------------------------ 1. summary
     story.append(Paragraph("1. Summary of conclusions", st["h1"]))
     story.append(Paragraph(
-        "Each exhibit was examined with every applicable technique listed in Section 3. The "
-        "verdict for an exhibit follows a fixed rule table from the individual findings (never "
-        "a single model) and is phrased on the ENFSI verbal scale of support. Techniques that "
-        "could not be applied are stated for each exhibit.", st["base"]))  # fmt: skip
+        "Each exhibit was examined with every applicable technique listed in Section 3 and "
+        "compared with the other exhibits of the case. The verdict for an exhibit follows a "
+        "fixed rule table from the individual findings and is phrased on the ENFSI verbal scale "
+        "of support. A single classifier score is at most moderate support; a firm conclusion "
+        "needs a strong finding or two independent ones. Techniques that could not be applied "
+        "are stated for each exhibit.", st["base"]))  # fmt: skip
     story.append(Spacer(1, 3 * mm))
     from satyapan.forensics.narrative import case_findings
 
@@ -342,8 +366,10 @@ def build_pdf(svc: Any, case: LabCase, items: list[tuple[LabEvidence, EvidenceAn
                   key=lambda tid: catalogue.BY_ID[tid].order if tid in catalogue.BY_ID else 99)  # fmt: skip
     rows = [[Paragraph(h, st["cellh"]) for h in ("Technique", "Method", "Reference")]]
     for tid in used:
-        t = catalogue.BY_ID.get(tid)
-        if t is None:
+        t: Any = catalogue.BY_ID.get(tid)
+        if t is None:  # case-level techniques describe themselves in the result
+            t = next((r for _, a in items if a for r in a.techniques if r.id == tid), None)
+        if t is None or not t.method:
             continue
         rows.append([Paragraph(f"<b>{esc(t.name)}</b><br/><font size=6.5 color='#64748b'>{esc(t.id)}</font>",
                                st["cell"]), Paragraph(esc(t.method), st["cell"]),
@@ -620,7 +646,7 @@ def build_pdf(svc: Any, case: LabCase, items: list[tuple[LabEvidence, EvidenceAn
                             topMargin=16 * mm, bottomMargin=15 * mm,
                             title=f"Forensic report {report_id}", author=case.lab_name,
                             subject=case.title, creator="Satyapan Forensic Lab")  # fmt: skip
-    doc.build(story, onFirstPage=on_page, onLaterPages=on_page)
+    doc.build(story, onFirstPage=on_page, onLaterPages=on_page, canvasmaker=NumberedCanvas)
     return buf.getvalue()
 
 

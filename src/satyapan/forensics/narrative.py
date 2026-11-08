@@ -51,6 +51,30 @@ def case_findings(evidence: list[LabEvidence], analyses: dict[str, EvidenceAnaly
         sentences.append(f"{tag[e.id]} is {LABEL_WORDS[e.verdict.value]}"
                          + (f": {lower_first(why)}." if why else "."))  # fmt: skip
     seen: set[tuple[str, str, str]] = set()
+    for e in sorted(done, key=lambda e: e.exhibit):
+        a = analyses.get(e.id)
+        for t in a.techniques if a else []:
+            if t.id != "case.compare":
+                continue
+            for f in t.findings:
+                o = f.observations
+                if f.code == "FACE_REPLACED" and o.get("original") in ex:
+                    orig = str(o["original"])
+                    srcs = [str(x) for x in o.get("face_sources") or [] if x in ex]
+                    sentences.append(
+                        f"{tag[e.id]} is the footage of {tag[orig]} with the face replaced"
+                        + (f" by the face in {', '.join(tag[x] for x in srcs)}" if srcs else "")
+                        + ": a face-swap deepfake built from "
+                        + ("these exhibits." if srcs else "that footage.")
+                    )  # fmt: skip
+                    seen.add((*sorted((e.id, orig)), LinkKind.NEAR_DUPLICATE.value))  # type: ignore[arg-type]
+                    for x in srcs:
+                        seen.add((*sorted((e.id, x)), LinkKind.SAME_FACE.value))  # type: ignore[arg-type]
+                elif f.code == "COPY_OF_SYNTHETIC" and o.get("original") in ex:
+                    orig = str(o["original"])
+                    sentences.append(f"{tag[e.id]} is a re-shared copy of {tag[orig]}, which is "
+                                     "synthetic on its own evidence.")  # fmt: skip
+                    seen.add((*sorted((e.id, orig)), LinkKind.NEAR_DUPLICATE.value))  # type: ignore[arg-type]
     for ln in sorted(links, key=lambda ln: (ln.kind.value, -ln.score)):
         a_id, b_id = ln.source, ln.target
         key = (*sorted((a_id, b_id)), ln.kind.value)

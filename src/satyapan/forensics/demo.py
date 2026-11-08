@@ -22,6 +22,10 @@ def load_demo_case(svc: Any, reset: bool = True, demo_dir: Path = DEMO_DIR) -> d
     if not manifest_path.exists():
         raise FileNotFoundError("demo dataset not built: run `make demo-dataset`")
     m = json.loads(manifest_path.read_text(encoding="utf-8"))
+    missing = [it["file"] for it in m["items"] if not (demo_dir / it["file"]).exists()]
+    if missing:  # a partial demo case would silently change every cross-exhibit finding
+        raise FileNotFoundError(f"demo dataset incomplete, missing: {', '.join(missing)} "
+                                "(run `make demo-dataset`)")  # fmt: skip
     sc = dict(m["scenario"])
     case_id = sc.pop("id")
     existing = svc.store.case(case_id)
@@ -33,8 +37,6 @@ def load_demo_case(svc: Any, reset: bool = True, demo_dir: Path = DEMO_DIR) -> d
     items = sorted(m["items"], key=lambda it: (it["role"] != "reference", it["file"]))
     for it in items:
         p = demo_dir / it["file"]
-        if not p.exists():
-            continue
         svc.add_evidence(case_id, p.read_bytes(), it["file"], actor="demo-loader",
                          role=EvidenceRole(it["role"]), description=it["description"],
                          received_from=it["received_from"])  # fmt: skip

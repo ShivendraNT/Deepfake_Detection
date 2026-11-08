@@ -495,8 +495,11 @@ def build(args: argparse.Namespace) -> None:
             shutil.copy(WORK / "portrait.png", OUT / "officer_id_photo_original.png")
         add("officer_id_photo_original.png", "questioned", "synthetic", "Telegram (sent as file)",
             "'Officer ID card' photo, original file sent on Telegram.",
-            "SD-Turbo text-to-image (2 steps), Stability reference watermark, signed C2PA manifest "
-            "declaring trainedAlgorithmicMedia.", "Generated for this dataset", truth_detail=gen)  # fmt: skip
+            "SD-Turbo text-to-image (2 steps), signed C2PA manifest declaring "
+            "trainedAlgorithmicMedia (test CA, not on a trust list). Stability's reference "
+            "invisible watermark was applied, but on this flat-background portrait neither the "
+            "reference decoder nor Satyapan's can read it back: watermarks are fragile.",
+            "Generated for this dataset", truth_detail=gen)  # fmt: skip
         from PIL import Image
 
         im = Image.open(WORK / "portrait.png").convert("RGB")

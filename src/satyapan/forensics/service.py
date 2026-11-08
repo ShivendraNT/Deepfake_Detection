@@ -52,6 +52,7 @@ class LabService:
         self.pool = ThreadPoolExecutor(max_workers=workers, thread_name_prefix="lab-analysis")
         self._events: dict[str, list[ProgressEvent]] = {}
         self._ev_lock = threading.Lock()
+        self._infer_lock = threading.Lock()
         self._pending: set[str] = set()
 
     # ------------------------------------------------------------------ events
@@ -180,7 +181,6 @@ class LabService:
         self.emit(ev.id, "links", "comparing with other exhibits in the case", 0.98)
         self.refresh_links(ev)
         v = analysis.verdict
-        ev.status = EvidenceStatus.DONE
         ev.verdict = v.label if v else None
         ev.risk_index = v.risk_index if v else None
         ev.headline = v.headline if v else None
@@ -195,8 +195,71 @@ class LabService:
                      "techniques": len(analysis.techniques),
                      "input_sha256": now_sha},
         )  # fmt: skip
-        self.emit(ev.id, "done", v.headline if v else "analysis complete", 1.0, "done")
-        return analysis
+        self.emit(ev.id, "case", "re-evaluating cross-exhibit findings", 0.99)
+        try:
+            self.apply_case_inferences(ev.case_id, actor, current=ev.id)
+        except Exception as exc:  # noqa: BLE001 - the file analysis stands on its own
+            self.emit(ev.id, "case", f"cross-exhibit re-evaluation failed: {exc}", 0.99, "error")
+        final = self.store.analysis(ev.id) or analysis
+        cur = self.store.evidence(ev.id) or ev
+        fv = final.verdict
+        cur.status = EvidenceStatus.DONE  # only now: the dashboard polls until nothing is pending
+        cur.verdict = fv.label if fv else None
+        cur.risk_index = fv.risk_index if fv else None
+        cur.headline = fv.headline if fv else None
+        self.store.put_evidence(cur)
+        self.emit(ev.id, "done", fv.headline if fv else "analysis complete", 1.0, "done")
+        return final
+
+    def apply_case_inferences(self, case_id: str, actor: str = "examiner",
+                              current: str | None = None) -> list[str]:  # fmt: skip
+        """Recompute the case-level findings (satyapan.forensics.inference) and re-decide the
+        verdict of every exhibit whose case findings changed. `current` is the exhibit whose
+        analysis is finishing (still ANALYZING). Returns the changed ids."""
+        from satyapan.forensics import inference
+
+        with self._infer_lock:
+            evs = [e for e in self.store.case_evidence(case_id)
+                   if e.status == EvidenceStatus.DONE or e.id == current]  # fmt: skip
+            analyses = {e.id: a for e in evs if (a := self.store.analysis(e.id)) is not None}
+            feats = {i: self.store.features(i) for i in analyses}
+            paths = {e.id: self.store.evidence_path(e.case_id, e.sha256) for e in evs}
+            found = inference.infer(evs, analyses, feats, self.store.links(case_id), paths,
+                                    self.store.artifact_dir)  # fmt: skip
+            changed: list[str] = []
+            for e in evs:
+                a = analyses.get(e.id)
+                if a is None:
+                    continue
+                fs, arts = found.get(e.id, ([], []))
+                if inference.signature(a) == sorted((f.code, f.title, int(f.strength)) for f in fs):
+                    continue
+                cur = self.store.evidence(e.id)
+                if cur is None or (cur.status != EvidenceStatus.DONE and e.id != current):
+                    continue  # re-queued meanwhile: its own analysis will redo this
+                b = inference.with_case_findings(a, fs, arts)
+                self.store.put_analysis(b, feats.get(e.id, {}))
+                v = b.verdict
+                before = cur.verdict.value if cur.verdict else None
+                cur.verdict = v.label if v else None
+                cur.risk_index = v.risk_index if v else None
+                cur.headline = v.headline if v else None
+                self.store.put_evidence(cur)
+                digest = hashlib.sha256(
+                    canonical_json(b.model_dump(mode="json")).encode()
+                ).hexdigest()
+                self.store.log(
+                    case_id=case_id, event=CustodyEvent.ANALYSIS, actor=actor, evidence_id=e.id,
+                    payload={"engine": b.engine_version, "reason": "cross-exhibit re-evaluation",
+                             "verdict_before": before, "verdict": v.label.value if v else None,
+                             "risk_index": v.risk_index if v else None, "analysis_sha256": digest,
+                             "case_findings": [f.code for f in fs]},
+                )  # fmt: skip
+                if e.id != current:
+                    self.emit(e.id, "case", f"re-evaluated with cross-exhibit findings: "
+                              f"{v.headline if v else ''}", 1.0, "ok")  # fmt: skip
+                changed.append(e.id)
+            return changed
 
     def refresh_links(self, ev: LabEvidence) -> None:
         peers = []
