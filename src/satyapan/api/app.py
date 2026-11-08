@@ -51,6 +51,16 @@ _LAB_DEV_ORIGINS = {
 }
 
 
+def _lab_host_allowed(request: Request) -> bool:
+    """DNS-rebinding guard: the lab answers only to the names of this workstation (plus any
+    listed in SATYAPAN_LAB_HOSTS for a LAN deployment)."""
+    host = request.headers.get("host", "").rsplit(":", 1)[0].strip("[]").lower()
+    extra = {
+        h.strip().lower() for h in os.environ.get("SATYAPAN_LAB_HOSTS", "").split(",") if h.strip()
+    }
+    return host in {"127.0.0.1", "localhost", "::1", "testserver"} | extra
+
+
 def _lab_origin_allowed(origin: str, request: Request) -> bool:
     own = f"{request.url.scheme}://{request.headers.get('host', '')}"
     extra = {o.strip() for o in os.environ.get("SATYAPAN_LAB_ORIGINS", "").split(",") if o.strip()}
@@ -86,6 +96,8 @@ def create_app(settings: Settings | None = None, state: AppState | None = None) 
         lab API answers only its own dashboard (same origin) or local dev servers, whatever
         the global CORS setting of the older consumer routes."""
         if request.url.path.startswith(("/lab/api", "/api/lab/api")):
+            if not _lab_host_allowed(request):
+                return JSONResponse(status_code=403, content={"detail": "unknown host"})
             origin = request.headers.get("origin")
             if origin and not _lab_origin_allowed(origin, request):
                 return JSONResponse(

@@ -145,7 +145,9 @@ def thresholds() -> dict[str, Any]:
     return _THRESHOLDS
 
 
-INDICATIVE_CAP = Strength.MODERATE  # ELA, noise and grid maps are indicative (SWGDE): never decisive alone
+INDICATIVE_CAP = (
+    Strength.MODERATE
+)  # ELA, noise and grid maps are indicative (SWGDE): never decisive alone
 
 
 def level(score: float, thr: dict[str, float], cap: Strength = Strength.VERY_STRONG) -> Strength:

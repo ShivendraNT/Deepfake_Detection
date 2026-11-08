@@ -11,6 +11,7 @@ Forensic-integrity rules enforced here:
 from __future__ import annotations
 
 import hashlib
+import re
 import secrets
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -72,7 +73,7 @@ class LabService:
         now = utcnow()
         case = LabCase(id=fields.pop("id", None) or new_case_id(now), created_at=now, **fields)
         self.store.put_case(case)
-        self.store.custody.append(case_id=case.id, event=CustodyEvent.STATUS_CHANGE, actor=actor,
+        self.store.log(case_id=case.id, event=CustodyEvent.STATUS_CHANGE, actor=actor,
                                   payload={"action": "case_opened", "title": case.title,
                                            "fir": case.fir_number})  # fmt: skip
         return case
@@ -108,7 +109,7 @@ class LabService:
         )  # fmt: skip
         path = self.store.write_once(case_id, h.sha256, data)
         self.store.put_evidence(ev)
-        self.store.custody.append(
+        self.store.log(
             case_id=case_id, event=CustodyEvent.INTAKE, actor=actor, evidence_id=ev.id,
             payload={"exhibit": ev.exhibit, "filename": safe_name, "sha256": h.sha256,
                      "md5": h.md5, "sha1": h.sha1, "size": h.size_bytes, "format": sn.format,
@@ -153,7 +154,7 @@ class LabService:
         data = path.read_bytes()
         now_sha = hashlib.sha256(data).hexdigest()
         if now_sha != ev.sha256:
-            self.store.custody.append(
+            self.store.log(
                 case_id=ev.case_id, event=CustodyEvent.STATUS_CHANGE, actor="system",
                 evidence_id=ev.id, payload={"action": "INTEGRITY_FAILURE", "expected": ev.sha256,
                                             "found": now_sha})  # fmt: skip
@@ -187,7 +188,7 @@ class LabService:
         digest = hashlib.sha256(
             canonical_json(analysis.model_dump(mode="json")).encode()
         ).hexdigest()
-        self.store.custody.append(
+        self.store.log(
             case_id=ev.case_id, event=CustodyEvent.ANALYSIS, actor=actor, evidence_id=ev.id,
             payload={"engine": analysis.engine_version, "verdict": v.label.value if v else None,
                      "risk_index": v.risk_index if v else None, "analysis_sha256": digest,
@@ -281,11 +282,17 @@ def set_service(svc: LabService | None) -> None:
         _SERVICE = svc
 
 
+_SAFE_NAME = re.compile(r"^[A-Za-z0-9][A-Za-z0-9_.\-]{0,120}$")
+
+
 def artifact_path(svc: LabService, evidence_id: str, name: str) -> Path:
-    if "/" in name or "\\" in name or name.startswith("."):
+    """Only an artifact file of an exhibit that exists: the id must be a known exhibit, the
+    name a plain file name, and the resolved path must stay inside that exhibit's folder."""
+    if svc.store.evidence(evidence_id) is None or not _SAFE_NAME.match(name) or ".." in name:
         raise KeyError(name)
-    p = svc.store.artifact_dir(evidence_id) / name
-    if not p.exists():
+    base = svc.store.artifact_dir(evidence_id).resolve()
+    p = (base / name).resolve()
+    if p.parent != base or not p.is_file():
         raise KeyError(name)
     return p
 

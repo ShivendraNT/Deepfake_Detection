@@ -54,7 +54,14 @@ class LabStore:
         self._db.executescript(_SCHEMA)
         self._db.commit()
         self._lock = threading.RLock()
+        self._custody_lock = threading.Lock()
         self.custody = CustodyLog(self.root / "custody.db")
+
+    def log(self, **kw: Any) -> Any:
+        """Append a custody row. Serialised: the chain's next sequence number and previous hash
+        are read and written as one step even when two analyses finish together."""
+        with self._custody_lock:
+            return self.custody.append(**kw)
 
     # ------------------------------------------------------------------ paths
     def evidence_path(self, case_id: str, sha256: str) -> Path:

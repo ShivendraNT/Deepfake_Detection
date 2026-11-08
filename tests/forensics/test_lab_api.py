@@ -252,3 +252,32 @@ def test_lab_api_refuses_foreign_origins(lab) -> None:
     assert client.get("/lab/api/cases").status_code == 200  # same-origin fetches send no Origin
     dev = client.get("/lab/api/cases", headers={"Origin": "http://127.0.0.1:5175"})
     assert dev.status_code == 200
+
+
+def test_artifact_route_cannot_escape_the_exhibit_folder(lab) -> None:
+    client, svc = lab
+    cid = new_case(client)
+    ev = upload(client, cid, "a.jpg", jpeg(textured(160, 120))).json()[0]
+    wait_done(client, cid)
+    for url in ("/lab/api/evidence/../artifacts/lab.db", "/lab/api/evidence/%2E%2E/artifacts/lab.db",
+                "/lab/api/evidence/%2E%2E/artifacts/custody.db", f"/lab/api/evidence/{ev['id']}/artifacts/..%2Flab.db",
+                "/lab/api/evidence/ev_unknown/artifacts/ela.jpg"):  # fmt: skip
+        r = client.get(url)
+        assert r.status_code == 404 and not r.content.startswith(b"SQLite"), url
+
+
+def test_lab_api_refuses_unknown_hosts(lab) -> None:
+    client, _ = lab
+    assert client.get("/lab/api/cases", headers={"Host": "attacker.example"}).status_code == 403
+    assert client.get("/lab/api/cases", headers={"Host": "127.0.0.1:8000"}).status_code == 200
+
+
+def test_parallel_analyses_keep_the_custody_chain_consistent(lab) -> None:
+    client, svc = lab
+    cid = new_case(client)
+    for i in range(6):
+        upload(client, cid, f"img{i}.jpg", jpeg(textured(200, 150, seed=30 + i)))
+    v = wait_done(client, cid)
+    assert all(e["status"] == "done" for e in v["evidence"])
+    rows = client.get(f"/lab/api/cases/{cid}/custody").json()
+    assert rows["chain"]["ok"] and len([r for r in rows["rows"] if r["event"] == "ANALYSIS"]) == 6

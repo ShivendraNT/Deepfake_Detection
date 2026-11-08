@@ -679,7 +679,7 @@ def generate_report(svc: Any, case_id: str, evidence_ids: list[str], examiner: s
            "size_bytes": len(pdf), "exhibits": [e.exhibit for e in evs],
            "url": f"/lab/api/reports/{report_id}.pdf"}  # fmt: skip
     svc.store.put_report(case_id, report_id, rec)
-    svc.store.custody.append(case_id=case_id, event=CustodyEvent.EXPORT, actor=actor,
+    svc.store.log(case_id=case_id, event=CustodyEvent.EXPORT, actor=actor,
                              payload={"action": "report_generated", "report_id": report_id,
                                       "pdf_sha256": digest, "exhibits": rec["exhibits"]})  # fmt: skip
     return rec
