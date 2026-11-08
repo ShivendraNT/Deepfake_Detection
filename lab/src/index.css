@@ -1,0 +1,303 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --bg: #03060c;
+    --grid: rgba(148, 163, 184, 0.045);
+  }
+
+  html,
+  body,
+  #root {
+    min-height: 100%;
+  }
+
+  body {
+    @apply bg-ink-950 font-sans text-slate-200 antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background: rgba(34, 211, 238, 0.3);
+    color: #fff;
+  }
+
+  /* Thin, dark scrollbars */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(148, 163, 184, 0.22) transparent;
+  }
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: rgba(148, 163, 184, 0.2);
+    border-radius: 8px;
+  }
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  :focus-visible {
+    outline: 2px solid rgba(34, 211, 238, 0.7);
+    outline-offset: 2px;
+  }
+
+  input[type="range"] {
+    accent-color: #22d3ee;
+  }
+}
+
+@layer components {
+  /* Page backdrop: navy gradient, faint grid that fades out, film-grain noise. */
+  .lab-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(1200px 520px at 50% -180px, rgba(34, 211, 238, 0.1), transparent 70%),
+      radial-gradient(900px 600px at 105% 20%, rgba(99, 102, 241, 0.06), transparent 60%),
+      radial-gradient(700px 500px at -10% 90%, rgba(45, 212, 191, 0.05), transparent 60%),
+      linear-gradient(180deg, #050a14 0%, #03060c 60%);
+  }
+  .lab-backdrop::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 44px 44px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 85%);
+  }
+  .lab-backdrop::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    opacity: 0.05;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  }
+
+  .panel {
+    @apply relative rounded-2xl border border-white/[0.07] bg-ink-850/70 shadow-glass backdrop-blur-xl;
+  }
+  .panel::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.07), rgba(255, 255, 255, 0) 40%);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+  }
+  .panel-tight {
+    @apply relative rounded-xl border border-white/[0.06] bg-ink-800/60;
+  }
+  .panel-title {
+    @apply flex items-center gap-2 text-[0.8125rem] font-semibold uppercase tracking-[0.08em] text-slate-300;
+  }
+  .eyebrow {
+    @apply text-2xs font-semibold uppercase tracking-[0.14em] text-slate-500;
+  }
+
+  .btn {
+    @apply inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg px-3.5 py-2 text-sm font-medium transition duration-150 disabled:cursor-not-allowed disabled:opacity-45;
+  }
+  .btn-primary {
+    @apply btn bg-gradient-to-b from-cyan-300 to-cyan-500 text-ink-950 shadow-[0_0_0_1px_rgba(34,211,238,0.5),0_8px_24px_-8px_rgba(34,211,238,0.6)] hover:from-cyan-200 hover:to-cyan-400 active:translate-y-px;
+  }
+  .btn-secondary {
+    @apply btn border border-white/10 bg-white/[0.04] text-slate-200 hover:border-white/20 hover:bg-white/[0.08] active:translate-y-px;
+  }
+  .btn-ghost {
+    @apply btn text-slate-300 hover:bg-white/[0.06] hover:text-white;
+  }
+  .btn-danger {
+    @apply btn border border-red-500/40 bg-red-500/10 text-red-200 hover:bg-red-500/20;
+  }
+  .btn-sm {
+    @apply px-2.5 py-1.5 text-xs;
+  }
+
+  .input {
+    @apply w-full rounded-lg border border-white/10 bg-ink-900/80 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600 transition focus:border-accent/60 focus:outline-none focus:ring-2 focus:ring-accent/20;
+  }
+  .label {
+    @apply mb-1.5 block text-xs font-medium text-slate-400;
+  }
+
+  .chip {
+    @apply inline-flex items-center gap-1 rounded-md border px-1.5 py-0.5 text-2xs font-semibold uppercase tracking-wider;
+  }
+  .chip-muted {
+    @apply chip border-white/10 bg-white/[0.04] text-slate-400;
+  }
+
+  .mono {
+    @apply font-mono text-[0.78rem] tracking-tight;
+  }
+
+  .hairline {
+    @apply border-white/[0.06];
+  }
+
+  .link {
+    @apply text-accent-soft underline-offset-4 hover:text-white hover:underline;
+  }
+
+  .kv {
+    @apply grid grid-cols-[minmax(110px,38%)_1fr] gap-x-3 gap-y-1.5 text-sm;
+  }
+  .kv > dt {
+    @apply truncate text-slate-500;
+  }
+  .kv > dd {
+    @apply min-w-0 break-words text-slate-200;
+  }
+
+  .scan-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 45%;
+    background: linear-gradient(
+      180deg,
+      rgba(34, 211, 238, 0) 0%,
+      rgba(34, 211, 238, 0.08) 70%,
+      rgba(103, 232, 249, 0.55) 98%,
+      rgba(255, 255, 255, 0.9) 100%
+    );
+    animation: scan 2.2s cubic-bezier(0.45, 0, 0.55, 1) infinite;
+  }
+  .scan-grid {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(34, 211, 238, 0.13) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(34, 211, 238, 0.13) 1px, transparent 1px);
+    background-size: 22px 22px;
+    mask-image: radial-gradient(ellipse at center, #000 40%, transparent 90%);
+  }
+
+  .shimmer {
+    background: linear-gradient(
+      90deg,
+      rgba(255, 255, 255, 0.03) 0%,
+      rgba(255, 255, 255, 0.09) 50%,
+      rgba(255, 255, 255, 0.03) 100%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 2.4s linear infinite;
+  }
+
+  .indeterminate {
+    position: relative;
+    overflow: hidden;
+  }
+  .indeterminate::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(103, 232, 249, 0.9), transparent);
+    animation: indeterminate 1.4s ease-in-out infinite;
+  }
+
+  .checker {
+    background-color: #0b1427;
+    background-image:
+      linear-gradient(45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+      linear-gradient(-45deg, rgba(255, 255, 255, 0.03) 25%, transparent 25%),
+      linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%),
+      linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.03) 75%);
+    background-size: 16px 16px;
+    background-position:
+      0 0,
+      0 8px,
+      8px -8px,
+      -8px 0;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@keyframes indeterminate {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(250%);
+  }
+}
+
+@keyframes scan {
+  0% {
+    transform: translateY(-100%);
+  }
+  100% {
+    transform: translateY(230%);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* React Flow, dark */
+.react-flow {
+  --xy-background-color: transparent;
+  --xy-edge-label-background-color: transparent;
+  --xy-minimap-background-color: rgba(8, 16, 31, 0.9);
+  --xy-controls-button-background-color: rgba(11, 20, 39, 0.95);
+  --xy-controls-button-background-color-hover: rgba(26, 42, 74, 1);
+  --xy-controls-button-color: #cbd5e1;
+  --xy-controls-button-border-color: rgba(255, 255, 255, 0.08);
+}
+.react-flow__attribution {
+  display: none;
+}
+.react-flow__controls {
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+.react-flow__minimap {
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Recharts text */
+.recharts-text {
+  fill: #64748b;
+  font-size: 11px;
+}
+.recharts-cartesian-axis-tick-value tspan {
+  font-family: "JetBrains Mono", ui-monospace, monospace;
+}
+.recharts-tooltip-cursor {
+  fill: rgba(148, 163, 184, 0.06);
+}
