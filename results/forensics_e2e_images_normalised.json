@@ -1,0 +1,597 @@
+{
+ "summary": {
+  "n_genuine": 40,
+  "n_ai": 40,
+  "genuine_verdicts": {
+   "NO_INDICATORS": 38,
+   "SUSPICIOUS": 2
+  },
+  "ai_verdicts": {
+   "SUSPICIOUS": 39,
+   "NO_INDICATORS": 1
+  },
+  "false_alarms": 0,
+  "ai_synthetic": 0,
+  "ai_suspicious": 39,
+  "seconds": 44.2
+ },
+ "rows": {
+  "genuine": [
+   {
+    "i": 0,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 1,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 2,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 3,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 4,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 5,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 6,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 7,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] Noise level inconsistent in 2 region(s)"
+    ]
+   },
+   {
+    "i": 8,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 9,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 10,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 11,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": [
+     "[weak support] Noise level inconsistent in 1 region(s)"
+    ]
+   },
+   {
+    "i": 12,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 13,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 14,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 15,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 16,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 17,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 18,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 19,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 20,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 21,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 22,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 23,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 24,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 25,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 26,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 27,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 28,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 29,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": [
+     "[weak support] AI-generated image classifier: above its lenient threshold"
+    ]
+   },
+   {
+    "i": 30,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 31,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 32,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 33,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 34,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 35,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 36,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": [
+     "[weak support] Traces of an earlier, shifted JPEG grid"
+    ]
+   },
+   {
+    "i": 37,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 38,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   },
+   {
+    "i": 39,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": []
+   }
+  ],
+  "ai": [
+   {
+    "i": 0,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 1,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 2,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 3,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 4,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 5,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 6,
+    "verdict": "NO_INDICATORS",
+    "confidence": "no support for manipulation",
+    "top": [
+     "[weak support] AI-generated image classifier: above its lenient threshold"
+    ]
+   },
+   {
+    "i": 7,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 8,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 9,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 10,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 11,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 12,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 13,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 14,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 15,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 16,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 17,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 18,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 19,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 20,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 21,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 22,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 23,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] Noise level inconsistent in 4 region(s)",
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 24,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold",
+     "[weak support] Traces of an earlier, shifted JPEG grid"
+    ]
+   },
+   {
+    "i": 25,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 26,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 27,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 28,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 29,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 30,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 31,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 32,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] Noise level inconsistent in 2 region(s)",
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 33,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 34,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 35,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 36,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 37,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 38,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   },
+   {
+    "i": 39,
+    "verdict": "SUSPICIOUS",
+    "confidence": "moderate support",
+    "top": [
+     "[moderate support] AI-generated image classifier: above its strict threshold"
+    ]
+   }
+  ]
+ }
+}

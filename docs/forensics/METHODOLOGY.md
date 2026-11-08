@@ -32,10 +32,10 @@ language in a transcript) carry no weight in the verdict.
 |---|---|---|
 | File structure & compression | JPEG segments (APPn, COM, DQT, DHT, SOF, trailing bytes after EOI) and PNG chunks are parsed byte by byte; JPEG quality estimated by matching the quantisation tables to IJG tables 1–100. | manipulated (data appended after the image) |
 | Metadata | EXIF (incl. GPS), XMP (incl. edit history) and IPTC are extracted and cross-checked: capture vs modify time, EXIF vs actual pixel size (crop/resize), editing software. | manipulated (weak–moderate), context |
-| Generator & platform signatures | Prompt/seed blocks of Stable Diffusion front-ends (A1111, ComfyUI, InvokeAI, NovelAI), IPTC `DigitalSourceType = trainedAlgorithmicMedia`, AI-system fields, Meta's `FBMD` marker, messaging-app and camera naming. | synthetic (strong–very strong), context |
+| Generator & platform signatures | Prompt/seed blocks of Stable Diffusion front-ends (A1111, ComfyUI, InvokeAI, NovelAI), IPTC `DigitalSourceType = trainedAlgorithmicMedia`, AI-system fields, Meta's `FBMD` marker, messaging-app and camera naming. | synthetic (moderate for a tool-name field, strong for structured generator parameters or a DigitalSourceType declaration), context (free text) |
 | EXIF thumbnail | The preview cameras embed is compared with the main image (correlation, mean difference, aspect ratio after removing letterbox bars). Editors that keep the old EXIF block leave the original picture behind. | manipulated (moderate–strong) |
-| Content Credentials (C2PA) | Manifest read and validated with the C2PA SDK: signer, claim generator, actions, digital source type, hard-binding hash. | synthetic (very strong, signed AI declaration), manipulated (strong, hash mismatch), authentic (signed capture) |
-| Stable Diffusion watermark | NumPy re-implementation of the `invisible-watermark` dwtDct decoder (bit-exact against the library); bits compared with the SDXL, SD 1.x and SD 2.x messages; binomial chance probability reported. | synthetic (very strong) |
+| Content Credentials (C2PA) | Manifest read and validated with the C2PA SDK: signer, claim generator, actions, digital source type, hard-binding hash. | synthetic (very strong for a signed AI declaration from a trusted signer, moderate if the signer is untrusted or the file was altered), manipulated (strong, hash mismatch), authentic (signed capture) |
+| Stable Diffusion watermark | NumPy re-implementation of the `invisible-watermark` dwtDct decoder (bit-exact against the library); bits compared with the SDXL, SD 1.x and SD 2.x messages; binomial chance probability reported. | synthetic (strong: anyone can apply the open-source watermark) |
 | Error Level Analysis | Re-compression at q90; error normalised by local texture; robust z-scores; connected anomalous regions. | manipulated |
 | Noise inconsistency | Per-block noise σ from the finest Haar diagonal band (MAD estimator); robust outlier regions. | manipulated |
 | Copy-move | SIFT self-matching, generalised 2-NN ratio test, RANSAC similarity transforms; a compact dominant group of matching keypoints = a cloned region. | manipulated |
@@ -52,7 +52,7 @@ language in a transcript) carry no weight in the verdict.
 | Spectrogram & bandwidth | STFT spectrogram; long-term average spectrum of active frames; a brick-wall cut-off below Nyquist reveals an earlier sample rate (telephone, VoIP, TTS) or a lossy codec. | context (history) |
 | ENF | The 50 Hz grid hum (and harmonics) is band-passed and tracked with zero-padded 4-s STFT frames and quadratic interpolation; a continuous trace supports an unedited recording, an abrupt jump marks a splice. | manipulated (strong), authentic (moderate) |
 | Splice & edit points | Exact digital silence inside a noisy recording, steps in the background noise floor (10th-percentile energy per 2-s window), isolated waveform discontinuities, plus ENF jumps. | manipulated |
-| Synthetic voice | XLS-R wav2vec2 model fine-tuned for deepfake speech (selected on In-the-Wild), 5-s windows with ≥ 1.5 s of speech (Silero VAD on loudness-normalised audio); plus the open-TTS head (see VALIDATION). | synthetic |
+| Synthetic voice | XLS-R wav2vec2 model fine-tuned for deepfake speech (selected on In-the-Wild), 5-s windows with ≥ 1.5 s of speech (Silero VAD on loudness-normalised audio); an open-TTS head was trained but is not shipped (missed its pre-registered bar, VALIDATION). | synthetic |
 | Transcript & fraud language | Whisper `small` offline with language detection (Hindi, English, Hinglish…), English translation for non-English speech, hallucination filter; the text is matched against the deterministic fraud lexicon (OTP, "safe account", secrecy, remote access, digital arrest…). | context (modus operandi) |
 
 ### Video
@@ -67,30 +67,83 @@ language in a transcript) carry no weight in the verdict.
 
 Perceptual hashes (pHash, dHash), SFace face embeddings, WeSpeaker speaker embeddings and
 the device / generator strings of each exhibit are compared with every other exhibit in the
-case. Two images that share content are aligned (SIFT + RANSAC homography) and their
-difference map shows exactly what was changed — the derivation of a forgery from its source.
+case. Two images that share content are aligned (SIFT + RANSAC homography, plausibility-checked)
+and their difference map shows exactly what was changed — the derivation of a forgery from
+its source.
+
+Two **cross-exhibit inferences** turn links into findings (`satyapan/forensics/inference.py`,
+technique `case.compare`), recomputed whenever an exhibit finishes:
+
+* **FACE_REPLACED** — two videos show the same footage (key frames match) but not the same
+  person (no face pair reaches the SFace match threshold, 0.45). The altered one is the video
+  whose face matches a *third* exhibit (the face source). *Strong* support needs a second,
+  independent corroboration: between temporally matched frames, the difference is at least
+  2.5× stronger on the face than elsewhere (figure attached). One corroboration gives
+  *moderate* support; with none, both videos only get a neutral note.
+* **COPY_OF_SYNTHETIC** — an image that is a near-duplicate of an exhibit which is SYNTHETIC
+  *on its own evidence*, with no region changed after alignment, inherits that support (at most
+  *strong*). It is not applied to an item already SYNTHETIC on its own evidence.
+
+Only file-only verdicts feed these rules, so inferences never build on each other, and the
+file-only verdict stays recoverable from the analysis. Each re-evaluation is a custody row
+(verdict before and after, new analysis hash). The source exhibits get neutral notes
+("this footage reappears in Q5 with another face", "its face appears in Q5").
 
 ## 3. The verdict rule table
 
 `satyapan/forensics/verdict.py`, applied in order:
 
-1. **SYNTHETIC** — any finding gives *strong* or *very strong* support to "synthetic".
-   Confidence is *very strong* if a finding is very strong or two techniques are strong.
-2. **MANIPULATED** — any *strong* support for "manipulated", or two different techniques
-   each give at least *moderate* support.
+1. **SYNTHETIC** — any finding gives *strong* or *very strong* support to "synthetic", or two
+   different techniques each give at least *moderate* support (worded *moderately strong
+   support*). Confidence is *very strong* if a finding is very strong or two are strong.
+2. **MANIPULATED** — any *strong* support for "manipulated", or two different techniques each
+   give at least *moderate* support **and at least one of them is structural** (worded
+   *moderately strong support*).
 3. **SUSPICIOUS** — any *moderate* synthetic/manipulated finding, or three different
    techniques with *weak* support for manipulation.
 4. **INCONCLUSIVE** — fewer than two authenticity techniques (synthetic or tampering
    category) could run on the file.
 5. **NO INDICATIONS** — otherwise; worded "this does not prove the item is authentic", with
-   positive indicators (signed capture, continuous ENF, consistent thumbnail) stated.
+   positive indicators (signed capture, continuous ENF, consistent thumbnail) stated and any
+   *weak* cues below the threshold named.
 
-**Indicative techniques are capped.** ELA, noise inconsistency and the JPEG-grid analysis produce maps an examiner reads, not proof (SWGDE): their findings never exceed *moderate* support. A MANIPULATED verdict therefore needs a structural finding (a cloned region, a thumbnail that shows a different picture, a broken C2PA hash, a mains-frequency jump, appended data, missing frames) or two independent techniques agreeing. Before this cap, 2 of 40 genuine photographs were called manipulated on the strength of one noise map.
+**Indicative techniques are capped.** ELA, noise inconsistency and the JPEG-grid analysis
+produce maps an examiner reads, not proof (SWGDE): their findings never exceed *moderate*
+support, and two of them together are still only *suspicious*. A MANIPULATED verdict needs a
+structural finding (a cloned region, a thumbnail that shows a different picture, a broken C2PA
+hash, a mains-frequency jump, appended data, missing frames) or one structural and one other
+technique agreeing. Before this cap, 2 of 40 genuine photographs were called manipulated on the
+strength of one noise map.
 
-The rule is deterministic and unit-tested (`tests/forensics/test_verdict.py`); no model can
-by itself produce MANIPULATED from a weak signal, and a missing model can only make a
-verdict less certain, never more. The 0–100 "risk index" on the dashboard is derived from the
-same rule for display only; the words are authoritative.
+### Strength words are tied to measured error rates
+
+The ENFSI scale maps likelihood ratios to words (1–10 weak, 10–100 moderate, 100–1 000
+moderately strong, 1 000–10 000 strong, above that very strong). Where a technique has a
+measured error rate, its strength follows from it; where it does not, it is set conservatively
+and the reason is written in the finding:
+
+| Finding | Strength | Why |
+|---|---|---|
+| AI-image classifier above the strict threshold | moderate | held-out LR⁺ = 52 % / 2.5 % ≈ 21 |
+| AI-image classifier above the lenient threshold only | weak | LR⁺ = 65 % / 6.8 % ≈ 9.6 |
+| Face model (photo) strict / lenient | moderate / weak | AUC 0.92 on FF++ crops, lower on unseen methods |
+| Synthetic voice: two consecutive windows above the strict threshold | strong | 0.6 % of genuine voices flagged on In-the-Wild |
+| SD invisible watermark decoded | strong | ≥ 85 % of bits and binomial chance < 10⁻⁶ required, but the open-source encoder can mark any image |
+| C2PA AI declaration, valid and signer trusted | very strong | a cryptographic record by the creator |
+| C2PA AI declaration, signer not on the trust list or file altered | moderate | anyone can sign a manifest with their own certificate |
+| Structured generator parameters (A1111, ComfyUI, InvokeAI) | strong | written automatically by the tool; editable |
+| Tool name in a Software / CreatorTool / encoder field | moderate (images), weak (audio, video) | editable metadata |
+| Generator names in captions, comments or the file name | context only | anyone can type them |
+| ELA, noise, JPEG grid | ≤ moderate | 0.5 % genuine photos at moderate; indicative maps |
+
+A single model output can therefore never produce SYNTHETIC on its own; two independent
+moderate findings can (if independent, their LRs multiply into the 100–1 000 band).
+
+The rule is deterministic and unit-tested (`tests/forensics/test_verdict.py`,
+`tests/forensics/test_case_inference.py`); no model can by itself produce SYNTHETIC or
+MANIPULATED, and a missing model can only make a verdict less certain, never more. The 0–100
+"risk index" on the dashboard is derived from the same rule for display only; the words are
+authoritative.
 
 ## 4. Operating points
 

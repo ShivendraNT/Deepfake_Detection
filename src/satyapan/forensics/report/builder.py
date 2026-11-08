@@ -599,21 +599,32 @@ def build_pdf(svc: Any, case: LabCase, items: list[tuple[LabEvidence, EvidenceAn
         "must be checked, completed and signed by hand by the person giving it; the software "
         "does not sign on anyone's behalf. Part A is completed by the party producing the "
         "record.</i>", st["small"]))  # fmt: skip
+    story.append(Paragraph(
+        "<i>Legal basis.</i> The examiner's opinion on information stored in electronic form is a "
+        "relevant fact under Section 39(2) BSA 2023 when given by an Examiner of Electronic "
+        "Evidence notified under Section 79A of the Information Technology Act, 2000, and under "
+        "Section 39(1) as the opinion of an expert otherwise; where the examiner is a Government "
+        "scientific expert to whom Section 329 BNSS 2023 applies, the report may be used in "
+        "evidence under that section. This certificate accompanies the electronic records "
+        "themselves (Section 63).", st["small"]))  # fmt: skip
     story.append(Paragraph("PART B (to be filled by the Expert)", st["h2"]))
     story.append(Paragraph(
-        f"I, ____________________ (name), {esc(designation) or '____________________'} "
-        f"(designation), employed at {esc(case.lab_name)}, do hereby solemnly affirm and "
-        "sincerely state and submit as follows:", st["base"]))  # fmt: skip
+        "I, ____________________ (name), son / daughter / spouse of ____________________, "
+        f"residing / employed at {esc(case.lab_name)} as "
+        f"{esc(designation) or '____________________'} (designation), do hereby solemnly affirm "
+        "and sincerely state and submit as follows:", st["base"]))  # fmt: skip
     story.append(Spacer(1, 2 * mm))
     story.append(Paragraph(
         "The produced electronic record / output of the digital record listed below was "
         "obtained from the following device / digital record source (tick): "
         "☐ Computer / Storage media  ☐ DVR  ☐ Mobile  ☐ Flash drive  ☐ CD/DVD  ☐ Server  "
-        "☐ Cloud  ☐ Other: ____________. Make &amp; model: ____________  Serial / IMEI / "
-        "UID: ____________.", st["base"]))  # fmt: skip
+        "☐ Cloud  ☐ Other: ____________. Make &amp; model: ____________  Colour: ________  "
+        "Serial number: ____________  IMEI / UIN / UID / MAC / Cloud ID (as applicable): "
+        "____________, and any other relevant information about the device / digital record: "
+        "____________.", st["base"]))  # fmt: skip
     story.append(Spacer(1, 2 * mm))
     story.append(Paragraph("I state that the hash values of the electronic / digital records are as "
-                           "follows, obtained through the algorithms SHA-256, SHA-1 and MD5 "
+                           "follows, obtained through the algorithms ☑ SHA-256 ☑ SHA-1 ☑ MD5 "
                            "(hash report enclosed as Section 2 of this report):", st["base"]))  # fmt: skip
     rows = [[Paragraph(h, st["cellh"]) for h in ("Exhibit", "SHA-256", "SHA-1 / MD5")]]
     for e, _ in items:

@@ -77,7 +77,7 @@ made with an assistant carry a `Co-Authored-By` trailer. Every change is gated b
 | OpenCV Zoo SFace (2021dec) | face identity comparison between exhibits | Apache-2.0 | `opencv/face_recognition_sface` |
 | Silero VAD (bundled with faster-whisper) | speech detection | MIT | via `faster-whisper` |
 | Whisper `small` (faster-whisper) | transcripts + English translation | MIT | `make lab-setup` |
-| Our open-TTS voice head (`config/voice_opentts_head.json`) | synthetic voice, open-source TTS | ours | `research/forensics/opentts_head.py` |
+| Our open-TTS voice head (`config/voice_opentts_head.json`, `ships: false`) | research only: did not pass its acceptance rule | ours | `research/forensics/opentts_head.py` |
 
 ## Libraries and code
 

@@ -17,8 +17,10 @@ with `scripts/make_ai_portrait.py` (separate environment, SD-Turbo).
 
 **FIR No. 0457/2026, Cyber Crime Police Station (demo), South-West District, New Delhi.**
 Sections: BNS 2023 §§ 308(2) extortion, 318(4) cheating, 319(2) cheating by personation,
-336(3) forgery, 61(2) conspiracy; IT Act 2000 §§ 66C identity theft, 66D cheating by
-personation using a computer resource.
+204 personating a public servant, 351 criminal intimidation, 336(3) forgery for the purpose of
+cheating, 340(2) using a forged document or electronic record as genuine, 61(2) criminal
+conspiracy; IT Act 2000 §§ 66C identity theft, 66D cheating by personation using a computer
+resource.
 
 On 21-10-2026 a 68-year-old retired professor (fictional) is told over a WhatsApp video call
 by a man posing as an "enquiry officer" that a drugs parcel was seized in his name and that he

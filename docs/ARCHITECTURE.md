@@ -122,7 +122,8 @@ the callback, so a detector hit moves verification away from that person (VERIFY
 | `src/satyapan/api/companion/` | T25 desktop companion event bus, state machine, and REST routes | T25 | done |
 | `src/satyapan/forensics/` | **Forensic Lab (SUTRAM PS2)**: evidence intake (MD5/SHA-1/SHA-256 before parsing, write-once store, re-hash before analysis, custody chain), technique registry, engine, fixed verdict rule table (ENFSI verbal scale), cross-exhibit links, model registry, demo case loader (docs/forensics/) | SUTRAM (lead) | done |
 | `src/satyapan/forensics/image/` | image techniques: structure/quantisation, EXIF/XMP/IPTC, generator & platform signatures, EXIF thumbnail, Stable Diffusion watermark, ELA, noise, copy-move, JPEG grid, spectrum, AI-image classifier, GenD faces | SUTRAM (lead) | done |
-| `src/satyapan/forensics/audio/` | audio techniques: container, spectrogram/bandwidth, ENF (50 Hz), splice cues, synthetic voice (XLS-R + open-TTS head), Whisper transcript + translation + fraud lexicon, speaker embeddings | SUTRAM (lead) | done |
+| `src/satyapan/forensics/inference.py` | cross-exhibit inferences (face replaced in reused footage, copy of a synthetic picture); re-decides verdicts, logs custody | SUTRAM (lead) | done |
+| `src/satyapan/forensics/audio/` | audio techniques: container, spectrogram/bandwidth, ENF (50 Hz), splice cues, synthetic voice (XLS-R; open-TTS head trained, not shipped), Whisper transcript + translation + fraud lexicon, speaker embeddings | SUTRAM (lead) | done |
 | `src/satyapan/forensics/video/` | video techniques: container/device provenance, frame integrity, GenD deepfake timeline | SUTRAM (lead) | done |
 | `src/satyapan/forensics/report/` | court-ready PDF report (hash report, methodology, per-exhibit findings and figures, custody, error rates, BSA s.63(4)(c) Part B draft) | SUTRAM (lead) | done |
 | `extension/` | C13 | T07, T10, T22 | todo |

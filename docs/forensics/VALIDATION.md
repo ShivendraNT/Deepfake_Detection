@@ -18,7 +18,24 @@ given; raw outputs are in `results/`.
 | Watermark decoder | bit-exact against `invisible-watermark` | identical bits; chance probability of a false match ≤ 10⁻⁹ for SDXL (48 bits) | `tests/forensics/test_signal_techniques.py` |
 | ENF and splice cues | synthetic hum traces (continuous vs spliced), digital-silence and noise-floor joins | continuous traces show no jump; spliced traces flagged within 3 s of the join | `tests/forensics/test_signal_techniques.py` |
 
-**End to end on genuine photos.** The whole image pipeline (all 14 image techniques, all models) on 40 genuine MS COCO photographs from the Defactify test shard: 37 *no indications*, 1 *suspicious* (the AI-image classifier at its lenient threshold), 2 *manipulated* — both from a single noise-inconsistency map. Indicative techniques are now capped at moderate support (METHODOLOGY §3), which turns those two into *suspicious*.
+**End to end, image pipeline** (`python -m research.forensics.e2e_images 40`, all 13 image
+techniques and all models under the shipped rules, 40 genuine + 40 AI images drawn with a fixed
+seed from the held-out Defactify test shard; `results/forensics_e2e_images*.md`): genuine
+photos — **0 false alarms** (39 *no indications*, 1 *suspicious*). AI images — all 40
+*suspicious* and none *synthetic*: one classifier hit is only moderate support by design, and
+these images carry no metadata or credentials to corroborate it. On the files as distributed
+the real and AI classes differ in size and format, which flatters any classifier, so the
+normalised run (every image centre-cropped to 512 px, JPEG q90) is the fairer figure:
+genuine photos 0 false alarms (38 *no indications*, 2 *suspicious*), AI images 39 of 40 *suspicious* (37 on the classifier's strict threshold, 2 on a noise map) and 1 *no indications*. With n = 40 per class these are spot checks, not error-rate estimates; the per-technique rates above are the estimates. (Before the calibration in METHODOLOGY §3, the same pipeline called 2 of 40
+genuine photos *manipulated* on a single noise map.)
+
+**Demo case** (`make lab-benchmark`, 11 exhibits with ground truth, DATASET.md): **9 of 11
+correct, 0 false alarms on the 4 genuine exhibits**, 2 missed (the open-source TTS voice
+notes). Two of the nine are reached only through the cross-exhibit inferences: the face-swap
+video (on its own file a single *weak* window) and the WhatsApp copy of the AI portrait.
+
+How strengths are set from these error rates: METHODOLOGY §3, "Strength words are tied to
+measured error rates".
 
 ## Selection protocols (pre-registered)
 
@@ -48,12 +65,16 @@ candidates on In-the-Wild (`docs/VOICE_DEEPFAKE.md`).
    features (`research/forensics/opentts_head.py`): training voices and test voices are
    disjoint, test speakers are unseen, Hindi real speech (FLEURS) is in both. Results and the
    ship/no-ship decision: `results/voice_opentts_head.json` and the section below.
-2. **Modern online face-swap services are only partly caught.** On the consented UniData
-   sample deepfakes (AI faces overlaid by aisaver.io-style services) the face timeline scores
-   0.68–0.95 against 0.09–0.63 for real phone videos: fakes rank above reals, but most stay
-   below the strict 1 % threshold, so the verdict is *suspicious*, not *synthetic*. GenD was
-   trained on FaceForensics++ face swaps; the cross-exhibit links (same face as a profile
-   photo, same scene as a seized clip) carry these cases.
+2. **Modern online face-swap services are only partly caught by the face model.** On the
+   consented UniData sample deepfakes (AI faces overlaid by aisaver.io-style services) the face
+   timeline scores 0.68–0.95 against 0.09–0.63 for real phone videos: fakes rank above reals,
+   but most stay below the strict 1 % threshold. GenD was trained on FaceForensics++ swaps. What
+   carries these cases is the comparison with other exhibits: the FACE_REPLACED inference
+   (METHODOLOGY §2) found the demo deepfake to be the seized clip's footage (pHash 0–2 bits on
+   every key frame) with a different person (SFace 0.22–0.33) whose face matches the profile
+   photo (0.80–0.83), the frame difference concentrated on the face — *strong support*, with
+   the sources named. Without a seized original, the face model alone gives only a weak or
+   moderate indication.
 3. **Splices in small, re-compressed photos are rarely caught by classical methods** at a
    false-alarm rate a court can accept (6 %). The aligned comparison against a recovered
    source (when one exists) shows the edited regions directly; a learned localiser (e.g.
@@ -62,10 +83,38 @@ candidates on In-the-Wild (`docs/VOICE_DEEPFAKE.md`).
    clip). Segments with high compression ratio, punctuation-only text, repetition loops or
    impossible word rates are now dropped, and VAD runs on loudness-normalised audio.
 5. **Generator signatures are fragile.** C2PA manifests and the SD watermark disappear when
-   an image is screenshotted, resized or re-encoded (see exhibit `IMG-20261021-WA0012.jpg`);
-   only the pixel-level classifier remains. Absence of a signature is never evidence of
-   authenticity.
+   an image is screenshotted, resized or re-encoded (see exhibit `IMG-20261021-WA0012.jpg`).
+   Even untouched, the watermark can be unreadable: on the demo portrait (a flat grey
+   background) Stability's own reference decoder returns garbage, and so does ours. Absence of
+   a signature is never evidence of authenticity, and an untrusted C2PA signer is only
+   moderate support (anyone can sign a manifest).
+6. **One edit, three breaks.** The ENF tracker first reported the demo call recording's single
+   join as three discontinuities (15.5, 16.5, 17.5 s), because a join disturbs every 4-s
+   analysis frame that overlaps it. Steps closer than a frame length are now one edit point:
+   16.5 s, −57 mHz (truth 16.54 s, −55 mHz).
+7. **A race in the lab store.** Dashboard polling read the SQLite connection while analysis
+   workers wrote to it, failing about one analysis in 25 under load (`InterfaceError`). Reads
+   now take the same lock; the parallel-analysis test reproduces the race (2 of 8 runs before,
+   0 of 8 after).
 
-## Open-TTS voice head
+## Open-TTS voice head (trained, not shipped)
 
-See `results/voice_opentts_head.json` (written by `research/forensics/opentts_head.py`).
+`research/forensics/opentts_head.py` → `results/voice_opentts_head.json`. A logistic head on
+the pooled XLS-R features, regularisation chosen by 5-fold CV grouped by voice and speaker;
+training and test voices are disjoint, test speakers unseen, Hindi real speech (FLEURS) on both
+sides, every clip also through WhatsApp-like Opus.
+
+**Rule written before testing:** ship only if, on the held-out test set, AUC ≥ 0.90 **and** at
+the strict threshold ≥ 50 % of TTS clips are flagged with ≤ 2 % of real clips flagged.
+
+| Held-out test (440 real, 280 TTS clips) | Result |
+|---|---|
+| AUC (clean / through Opus) | 0.931 (0.930 / 0.933) |
+| TTS clips flagged at the strict threshold | **49.3 %** (lenient: 61.8 %) |
+| Real clips flagged at the strict threshold | 0.9 % (English 1.3 %, Hindi 0.0 %) |
+| Per voice at the strict threshold | from 0 % (`en_US-ljspeech-high`, the demo's "daughter" voice) to 85 % (`en_GB-jenny_dioco`) |
+
+It fails the detection criterion by 0.7 points, so `config/voice_opentts_head.json` has
+`ships: false` and the head contributes nothing to any verdict. We did not change the rule after
+seeing the result. The demo's two Piper voice notes are therefore missed, and the dashboard and
+report say *no indications* (not *authentic*) for them.

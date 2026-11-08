@@ -353,7 +353,7 @@ SCENARIO = {
     "police_station": "Cyber Crime Police Station (demo)",
     "district": "South-West District, New Delhi",
     "state": "Delhi",
-    "offence_sections": "BNS 2023 §§ 308(2), 318(4), 319(2), 336(3), 61(2); IT Act 2000 §§ 66C, 66D",
+    "offence_sections": "BNS 2023 §§ 308(2), 318(4), 319(2), 204, 351, 336(3), 340(2), 61(2); IT Act 2000 §§ 66C, 66D",
     "investigating_officer": "Insp. Kavita Rao (fictional)",
     "examiner": "Scientific Officer (Cyber Forensics)",
     "lab_name": "Satyapan Multimedia Forensic Lab",
