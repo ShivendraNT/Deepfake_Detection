@@ -617,6 +617,33 @@ function TranscriptView({ d }: { d: Record<string, unknown> }) {
   );
 }
 
+function CaseCompareView({ t }: { t: TechniqueResult }) {
+  const evidential = t.findings.filter((f) => f.hypothesis !== "neutral");
+  const notes = t.findings.filter((f) => f.hypothesis === "neutral");
+  const codes = [...new Set(t.findings.map((f) => f.code))];
+  return (
+    <div className="space-y-3">
+      <Facts
+        items={[
+          ["Findings with weight", String(evidential.length)],
+          ["Context notes", String(notes.length)],
+          ["Codes", codes.length ? codes.join(", ") : null],
+          ["Rules", "same footage, same face, copy of a synthetic picture"],
+        ]}
+      />
+      {t.findings.length > 0 && (
+        <DataTable
+          rows={t.findings.map((f) => [f.code, f.title] as [string, ReactNode])}
+        />
+      )}
+      <div className="text-2xs text-slate-500">
+        These findings need more than one exhibit: an inference is recomputed whenever an exhibit finishes, and the
+        file-only analysis stays recoverable underneath it.
+      </div>
+    </div>
+  );
+}
+
 // ------------------------------------------------------------------ dispatcher
 
 export function TechniqueData({ t, timeline }: { t: TechniqueResult; timeline: boolean }) {
@@ -708,6 +735,9 @@ export function TechniqueData({ t, timeline }: { t: TechniqueResult; timeline: b
       break;
     case "video.deepfake":
       body = <VideoDeepfakeView d={d} />;
+      break;
+    case "case.compare":
+      body = <CaseCompareView t={t} />;
       break;
     default: {
       const rows = scalarRows(d);
