@@ -93,6 +93,10 @@ def run_technique(t: Technique, ctx: AnalysisContext) -> TechniqueResult:
     except Unavailable as exc:
         res = make_result(t, summary=str(exc), status=Status.UNAVAILABLE)
     except ValueError as exc:
+        if str(exc).startswith("no decodable audio stream") and ctx.media.has_audio is False:
+            res = make_result(t, summary="the file has no audio track", status=Status.SKIPPED)
+            res.duration_ms = round((time.perf_counter() - t0) * 1000, 1)
+            return res
         res = make_result(t, summary=f"could not analyse: {exc}"[:300], status=Status.ERROR)
         res.error = str(exc)[:1000]
     except Exception as exc:  # noqa: BLE001 - one technique must never stop the analysis

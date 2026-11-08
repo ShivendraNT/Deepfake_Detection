@@ -51,11 +51,17 @@ def main(argv: list[str] | None = None) -> int:
     svc = LabService(workers=2)
     case = svc.create_case(actor=args.examiner, title=args.title, fir_number=args.fir)
     print(f"case {case.id} — lab store {svc.store.root}")
+    rejected = 0
     for role, files in ((EvidenceRole.REFERENCE, collect(args.reference)),
                         (EvidenceRole.QUESTIONED, collect(args.exhibits))):  # fmt: skip
         for f in files:
-            ev, dup = svc.add_evidence(case.id, f.read_bytes(), f.name, actor=args.examiner,
-                                       role=role, received_from=str(f.parent), analyze=False)  # fmt: skip
+            try:
+                ev, dup = svc.add_evidence(case.id, f.read_bytes(), f.name, actor=args.examiner,
+                                           role=role, received_from=str(f.parent), analyze=False)  # fmt: skip
+            except (ValueError, OSError) as exc:  # empty / unreadable / too large: report, go on
+                rejected += 1
+                print(f"  skip      {f}: {exc}")
+                continue
             print(f"  {'dup ' if dup else 'in  '}{ev.exhibit:4s} {ev.sha256[:16]}…  {f}")
     failed = 0
     for ev in svc.store.case_evidence(case.id):
@@ -87,7 +93,9 @@ def main(argv: list[str] | None = None) -> int:
         Path(args.json_out).write_text(json.dumps(view, indent=1, default=str))
         print(f"export: {args.json_out}")
     svc.pool.shutdown(wait=True)
-    return 2 if failed else 0
+    if rejected:
+        print(f"{rejected} file(s) not taken in (see 'skip' lines)")
+    return 2 if failed or rejected else 0
 
 
 if __name__ == "__main__":

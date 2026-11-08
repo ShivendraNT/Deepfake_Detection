@@ -86,6 +86,9 @@ def run_aigen(ctx: AnalysisContext) -> TechniqueResult:
     img = ctx.pil()
     if min(img.size) < 64:
         return make_result(t, summary="image too small for the model", status=Status.SKIPPED)
+    if float(ctx.gray(512).std()) < 3.0:  # blank / near-uniform: outside the model's domain
+        return make_result(t, summary="image is nearly uniform (no content to judge)",
+                           status=Status.SKIPPED)  # fmt: skip
     logit, per_view = model.logit(img)
     spec = model.spec
     tau_hi, tau_lo = float(spec["tau_hi"]), float(spec["tau_lo"])

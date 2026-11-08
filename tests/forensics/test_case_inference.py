@@ -4,6 +4,7 @@ synthetic pictures, plus the service pass that re-decides verdicts and logs cust
 from __future__ import annotations
 
 import io
+import tempfile
 import threading
 import time
 from datetime import UTC, datetime
@@ -389,3 +390,27 @@ def test_narrative_keeps_proper_names_and_acronyms() -> None:
     assert lower_first("Content Credentials declare generative AI").startswith("Content")
     assert lower_first("ENF trace breaks at 16.5 s").startswith("ENF")
     assert lower_first("Cloned region: 54 keypoints") == "cloned region: 54 keypoints"
+
+
+def test_any_file_robustness() -> None:
+    """Blank images abstain the AI classifier; the CLI skips empty files instead of aborting."""
+    import subprocess
+    import sys
+
+    from satyapan.forensics.engine import analyze_bytes
+
+    with tempfile.TemporaryDirectory() as d:
+        buf = io.BytesIO()
+        Image.new("RGB", (800, 600)).save(buf, format="PNG")
+        a, _ = analyze_bytes(buf.getvalue(), "blank.png", Path(d), models=StubModels())
+        aig = next(t for t in a.techniques if t.id == "image.aigen")
+        assert aig.status in (Status.SKIPPED, Status.UNAVAILABLE)
+        folder = Path(d) / "in"
+        folder.mkdir()
+        (folder / "empty.bin").write_bytes(b"")
+        (folder / "notes.txt").write_text("hello")
+        r = subprocess.run([sys.executable, "-m", "satyapan.forensics.cli", str(folder), "--no-color"],
+                           capture_output=True, text=True, timeout=300,
+                           env={**__import__("os").environ, "SATYAPAN_LAB_DIR": str(Path(d) / "lab")})  # fmt: skip
+        assert "skip" in r.stdout and "custody chain: INTACT" in r.stdout
+        assert r.returncode == 2
