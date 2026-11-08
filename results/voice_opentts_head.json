@@ -1,0 +1,35 @@
+{
+ "rule": "C is chosen by 5-fold grouped CV on training voices/speakers;\ntau_lo / tau_hi are the 95th / 99th percentiles of held-in validation real clips. The head\nships only if, on the held-out test set, AUC >= 0.90 and at tau_hi >= 50% of TTS clips are\nflagged with <= 2% of real clips flagged (English and Hindi reported separately).",
+ "C": 0.3,
+ "cv_auc": 0.962596333026886,
+ "tau_lo": 1.2294529557228087,
+ "tau_hi": 2.2174187016487013,
+ "test_auc": 0.9309172034263611,
+ "test_tts_flagged_tau_hi": 0.4928571428571429,
+ "test_tts_flagged_tau_lo": 0.6178571428571429,
+ "test_real_flagged_tau_hi": 0.00909090909090909,
+ "test_real_flagged_tau_lo": 0.025,
+ "n": {
+  "real_train": 480,
+  "tts_train": 384,
+  "real_test": 440,
+  "tts_test": 280
+ },
+ "test_real_flagged_tau_hi_english": 0.013333333333333334,
+ "test_real_flagged_tau_lo_english": 0.03666666666666667,
+ "test_real_flagged_tau_hi_hindi": 0.0,
+ "test_real_flagged_tau_lo_hindi": 0.0,
+ "test_per_voice_flagged_tau_hi": {
+  "en_US-ljspeech-high": 0.0,
+  "en_US-lessac-high": 0.3,
+  "en_US-hfc_female-medium": 0.1,
+  "en_GB-jenny_dioco-medium": 0.85,
+  "en_US-l2arctic-medium": 0.675,
+  "en_US-arctic-medium": 0.625,
+  "hi_IN-rohan-medium": 0.25,
+  "hi_IN-priyamvada-medium": 0.2
+ },
+ "test_auc_clean": 0.9303922057151794,
+ "test_auc_opus": 0.9329972863197327,
+ "ships": false
+}

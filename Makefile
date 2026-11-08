@@ -9,13 +9,14 @@ else
 ASR_EXTRAS ?= --extra asr
 endif
 
-.PHONY: lab lab-lan lab-setup lab-ui forensics-models demo-dataset lab-benchmark examine scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
+.PHONY: lab lab-lan lab-setup lab-ui forensics-models demo-dataset demo-dataset-check lab-benchmark examine scan help sync asr video voice video-models doctor demo-audio testkit testkit-check redteam live live-personal check ci lint fmt typecheck test task run demo-data schemas status judge dry-run oob-check console-test ext-test clean
 
 help:
 	@echo "== Satyapan Forensic Lab (SUTRAM 2026, PS2) =="
 	@echo "make lab-setup     install the lab (Python deps + video/voice/speech/forensic models)"
 	@echo "make lab           start the lab on http://127.0.0.1:8000/lab (dashboard + API)"
-	@echo "make demo-dataset  rebuild the investigation dataset (data/forensics/demo)"
+	@echo "make demo-dataset  build the investigation dataset locally (data/forensics/demo)"
+	@echo "make demo-dataset-check  verify the dataset files against manifest hashes"
 	@echo "make lab-benchmark run the lab on the dataset and score it against ground truth"
 	@echo "make examine F=dir batch-examine files/folders from the terminal (+ PDF report)"
 	@echo "make lab-ui        rebuild the dashboard (needs Node; the built copy is committed)"
@@ -183,6 +184,9 @@ lab-ui:
 
 demo-dataset:
 	$(RUN) python scripts/build_demo_dataset.py
+
+demo-dataset-check:
+	$(RUN) python scripts/build_demo_dataset.py --check
 
 lab-benchmark:
 	$(RUN) python scripts/lab_benchmark.py

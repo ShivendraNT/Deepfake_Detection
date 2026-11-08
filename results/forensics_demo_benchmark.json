@@ -1,0 +1,211 @@
+{
+ "dataset": "Satyapan Forensic Lab investigation dataset v1",
+ "wall_seconds": 69.1,
+ "summary": {
+  "correct": 9,
+  "flagged": 0,
+  "cautious": 0,
+  "missed": 2,
+  "false alarm": 0
+ },
+ "rows": [
+  {
+   "exhibit": "Q1",
+   "file": "IMG-20261021-WA0011.jpg",
+   "truth": "manipulated",
+   "verdict": "MANIPULATED",
+   "risk_index": 92,
+   "grade": "correct",
+   "headline": "Manipulated image: very strong support",
+   "key": [
+    "[strong support] Cloned region: 54 matching keypoints move together",
+    "[moderate support] Compression error level differs in 2 region(s)"
+   ],
+   "seconds": 2.0
+  },
+  {
+   "exhibit": "Q2",
+   "file": "IMG-20261021-WA0012.jpg",
+   "truth": "synthetic",
+   "verdict": "SYNTHETIC",
+   "risk_index": 80,
+   "grade": "correct",
+   "headline": "Synthetic image: moderately strong support",
+   "key": [
+    "[moderate support] AI-generated image classifier: above its strict threshold",
+    "[moderate support] Copy of a synthetic picture (Q7)"
+   ],
+   "seconds": 1.4
+  },
+  {
+   "exhibit": "Q3",
+   "file": "PTT-20261021-WA0007.opus",
+   "truth": "synthetic",
+   "verdict": "NO_INDICATORS",
+   "risk_index": 10,
+   "grade": "missed",
+   "headline": "No indications of manipulation or synthesis in the recording",
+   "key": [],
+   "seconds": 10.3
+  },
+  {
+   "exhibit": "Q4",
+   "file": "PTT-20261021-WA0009.opus",
+   "truth": "synthetic",
+   "verdict": "NO_INDICATORS",
+   "risk_index": 14,
+   "grade": "missed",
+   "headline": "No indications of manipulation or synthesis in the recording",
+   "key": [
+    "[weak support] 1 possible edit point(s)",
+    "[weak support] Voice partly suspicious: 3 of 4 windows elevated"
+   ],
+   "seconds": 29.8
+  },
+  {
+   "exhibit": "Q5",
+   "file": "VID-20261021-WA0003.mp4",
+   "truth": "synthetic",
+   "verdict": "SYNTHETIC",
+   "risk_index": 88,
+   "grade": "correct",
+   "headline": "Synthetic video: strong support",
+   "key": [
+    "[strong support] Face replaced: footage of R2 with another person's face",
+    "[weak support] Face score elevated in 1 window(s)"
+   ],
+   "seconds": 8.5
+  },
+  {
+   "exhibit": "Q6",
+   "file": "call_recording_20261021_1412.wav",
+   "truth": "manipulated",
+   "verdict": "MANIPULATED",
+   "risk_index": 84,
+   "grade": "correct",
+   "headline": "Manipulated recording: strong support",
+   "key": [
+    "[strong support] Mains-frequency trace breaks at 3 point(s)"
+   ],
+   "seconds": 19.2
+  },
+  {
+   "exhibit": "Q7",
+   "file": "officer_id_photo_original.png",
+   "truth": "synthetic",
+   "verdict": "SYNTHETIC",
+   "risk_index": 80,
+   "grade": "correct",
+   "headline": "Synthetic image: moderately strong support",
+   "key": [
+    "[moderate support] Content Credentials declare generative AI",
+    "[moderate support] AI-generated image classifier: above its strict threshold"
+   ],
+   "seconds": 1.5
+  },
+  {
+   "exhibit": "R1",
+   "file": "daughter_known_voice_sample.m4a",
+   "truth": "authentic",
+   "verdict": "NO_INDICATORS",
+   "risk_index": 10,
+   "grade": "correct",
+   "headline": "No indications of manipulation or synthesis in the recording",
+   "key": [],
+   "seconds": 22.2
+  },
+  {
+   "exhibit": "R2",
+   "file": "laptop_seized_clip_0193.mp4",
+   "truth": "authentic",
+   "verdict": "NO_INDICATORS",
+   "risk_index": 3,
+   "grade": "correct",
+   "headline": "No indications of manipulation or synthesis in the video",
+   "key": [
+    "[moderate support] Mains-frequency trace is continuous"
+   ],
+   "seconds": 15.5
+  },
+  {
+   "exhibit": "R3",
+   "file": "notice_template_from_laptop.jpg",
+   "truth": "authentic",
+   "verdict": "NO_INDICATORS",
+   "risk_index": 14,
+   "grade": "correct",
+   "headline": "No indications of manipulation or synthesis in the image",
+   "key": [
+    "[weak support] JPEG grid is shifted from the file's own grid"
+   ],
+   "seconds": 4.0
+  },
+  {
+   "exhibit": "R4",
+   "file": "profile_photo_source.jpg",
+   "truth": "authentic",
+   "verdict": "NO_INDICATORS",
+   "risk_index": 10,
+   "grade": "correct",
+   "headline": "No indications of manipulation or synthesis in the image",
+   "key": [],
+   "seconds": 1.6
+  }
+ ],
+ "links": [
+  {
+   "kind": "shares_content",
+   "source": "ev_15a23cad79bf_a7e7",
+   "target": "ev_9faafdf20e03_bd3e",
+   "score": 1.0
+  },
+  {
+   "kind": "same_speaker",
+   "source": "ev_638f43f605b4_b06d",
+   "target": "ev_15a3c3eb0932_4e52",
+   "score": 0.892
+  },
+  {
+   "kind": "near_duplicate",
+   "source": "ev_4d718c8e3ff6_f1c0",
+   "target": "ev_585563deeb44_5637",
+   "score": 0.969
+  },
+  {
+   "kind": "same_face",
+   "source": "ev_4d718c8e3ff6_f1c0",
+   "target": "ev_3390396cfbc7_4e6e",
+   "score": 0.801
+  },
+  {
+   "kind": "near_duplicate",
+   "source": "ev_b45ae04df963_288e",
+   "target": "ev_b00a836ec626_8d62",
+   "score": 0.938
+  },
+  {
+   "kind": "shares_content",
+   "source": "ev_b45ae04df963_288e",
+   "target": "ev_b00a836ec626_8d62",
+   "score": 1.0
+  },
+  {
+   "kind": "same_face",
+   "source": "ev_b45ae04df963_288e",
+   "target": "ev_b00a836ec626_8d62",
+   "score": 0.985
+  },
+  {
+   "kind": "same_speaker",
+   "source": "ev_ea0f3dca7f3d_8a5f",
+   "target": "ev_15a3c3eb0932_4e52",
+   "score": 0.906
+  },
+  {
+   "kind": "same_speaker",
+   "source": "ev_ea0f3dca7f3d_8a5f",
+   "target": "ev_638f43f605b4_b06d",
+   "score": 0.946
+  }
+ ]
+}

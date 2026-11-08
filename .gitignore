@@ -67,9 +67,7 @@ lab_data/
 # Agent worktrees
 .claude/worktrees/
 
-# The forensic investigation dataset is synthetic / public domain / unmodified consented samples
-# (docs/forensics/DATASET.md), so its media are committed.
-!data/forensics/demo/*.mp4
-!data/forensics/demo/*.opus
-!data/forensics/demo/*.m4a
-!data/forensics/demo/*.wav
+# Investigation dataset: only the generated images and the manifest are committed. Media of
+# real people (UniData participants, LJSpeech, the LJSpeech-trained TTS voice) never go in git
+# (AGENTS.md data hygiene); `make demo-dataset` builds them locally.
+data/forensics/demo/profile_photo_source.jpg

@@ -1,0 +1,185 @@
+{
+ "name": "Satyapan Forensic Lab investigation dataset v1",
+ "built_at": "2026-11-08T03:19:30.713613+00:00",
+ "scenario": {
+  "id": "case_demo_pratibimb",
+  "title": "Operation Pratibimb — 'digital arrest' extortion of a retired professor",
+  "fir_number": "FIR No. 0457/2026",
+  "police_station": "Cyber Crime Police Station (demo)",
+  "district": "South-West District, New Delhi",
+  "state": "Delhi",
+  "offence_sections": "BNS 2023 §§ 308(2), 318(4), 319(2), 336(3), 61(2); IT Act 2000 §§ 66C, 66D",
+  "investigating_officer": "Insp. Kavita Rao (fictional)",
+  "examiner": "Scientific Officer (Cyber Forensics)",
+  "lab_name": "Satyapan Multimedia Forensic Lab",
+  "summary": "On 21-10-2026 the complainant, a 68-year-old retired professor (fictional), received a WhatsApp video call from a man posing as an enquiry officer, a 'notice' threatening arrest, an 'officer ID' photo, and voice notes in his daughter's voice and in Hindi pleading for money. He transferred ₹4,50,000. The exhibits below were extracted from his phone and the suspect's seized laptop and sent for authentication, deepfake detection and source attribution."
+ },
+ "items": [
+  {
+   "file": "VID-20261021-WA0003.mp4",
+   "role": "questioned",
+   "ground_truth": "synthetic",
+   "received_from": "Complainant's phone (WhatsApp)",
+   "description": "Screen recording of the WhatsApp video call with the 'enquiry officer'.",
+   "how_made": "Real phone video with an AI-generated face overlaid by an online face-swap service (UniData sample deepfake/1.mp4).",
+   "license": "UniData deepfake-videos-dataset sample, CC BY-NC-ND 4.0 (consented; copied unmodified)",
+   "sha256": "4d718c8e3ff6050132f105faaa2ebd7285bca1ce7ea465edc00f77959579e58c",
+   "bytes": 3262912
+  },
+  {
+   "file": "laptop_seized_clip_0193.mp4",
+   "role": "reference",
+   "ground_truth": "authentic",
+   "received_from": "Suspect's seized laptop",
+   "description": "Video clip recovered from the suspect's laptop.",
+   "how_made": "The genuine phone recording the deepfake was made from (UniData video/1.mp4).",
+   "license": "UniData deepfake-videos-dataset sample, CC BY-NC-ND 4.0 (consented; copied unmodified)",
+   "sha256": "585563deeb447132157369d41f72a3b2c8229f33751598bac6125148e6f4f771",
+   "bytes": 6966906
+  },
+  {
+   "file": "profile_photo_source.jpg",
+   "role": "reference",
+   "ground_truth": "authentic",
+   "received_from": "Open-source collection",
+   "description": "Profile photo found on a social-media account used by the suspects.",
+   "how_made": "The face image used for the swap (UniData image/1.jpg).",
+   "license": "UniData deepfake-videos-dataset sample, CC BY-NC-ND 4.0 (consented; copied unmodified)",
+   "sha256": "3390396cfbc7587aca903710bcd903cb10d30c8598354b03faa2a2adf3e0c1df",
+   "bytes": 82840
+  },
+  {
+   "file": "daughter_known_voice_sample.m4a",
+   "role": "reference",
+   "ground_truth": "authentic",
+   "received_from": "Collected by IO with consent",
+   "description": "Known voice sample of the complainant's daughter (control sample for speaker comparison).",
+   "how_made": "Genuine human speech: LJSpeech public-domain recordings LJ001-0001..0004.",
+   "license": "LJSpeech 1.1, public domain",
+   "sha256": "15a3c3eb0932f9649def3ad244f7e361713839ab36649dba22179bd359817ac0",
+   "bytes": 347615
+  },
+  {
+   "file": "PTT-20261021-WA0007.opus",
+   "role": "questioned",
+   "ground_truth": "synthetic",
+   "received_from": "Complainant's phone (WhatsApp)",
+   "description": "Voice note that appears to be from the complainant's daughter.",
+   "how_made": "Piper TTS voice en_US-ljspeech-high (a neural TTS trained on the same speaker as the known sample, i.e. a voice clone), encoded as a WhatsApp-style Opus voice note.",
+   "license": "Generated for this dataset (Piper MIT; LJSpeech public domain)",
+   "sha256": "638f43f605b45b01450ddcd21d3e3e4d8bbae1ab6566c47ecd302f9638f1f2ac",
+   "bytes": 57631
+  },
+  {
+   "file": "PTT-20261021-WA0009.opus",
+   "role": "questioned",
+   "ground_truth": "synthetic",
+   "received_from": "Complainant's phone (WhatsApp)",
+   "description": "Hindi voice note from the 'CBI officer' announcing a 'digital arrest'.",
+   "how_made": "Piper TTS voice hi_IN-rohan-medium (synthetic Hindi speech), WhatsApp-style Opus.",
+   "license": "Generated for this dataset (Piper MIT)",
+   "sha256": "8978e8d2f0849c36f265e51c20c365afd48d22d42c2eba954e5e5e61d23d7310",
+   "bytes": 53440
+  },
+  {
+   "file": "call_recording_20261021_1412.wav",
+   "role": "questioned",
+   "ground_truth": "manipulated",
+   "received_from": "Submitted by the accused's counsel",
+   "description": "Recording of a phone call offered as proof that the complainant agreed to 'invest'.",
+   "how_made": "Genuine human speech (LJSpeech) from two recording sessions with different mains-hum frequencies and background noise, joined at 16.54 s.",
+   "license": "Generated for this dataset (LJSpeech public domain)",
+   "sha256": "ea0f3dca7f3dadfbb6ce22af505915cd7644983ecd76ae7bba2e90721a7eb3f6",
+   "bytes": 3696436,
+   "truth_detail": {
+    "splice_at_s": 16.54,
+    "sample_rate": 44100,
+    "enf_hz": [
+     50.02,
+     49.965
+    ]
+   }
+  },
+  {
+   "file": "notice_template_from_laptop.jpg",
+   "role": "reference",
+   "ground_truth": "authentic",
+   "received_from": "Suspect's seized laptop",
+   "description": "Blank notice template recovered from the suspect's laptop.",
+   "how_made": "Rendered for this dataset (fictional agency), saved once at JPEG quality 92.",
+   "license": "Generated for this dataset",
+   "sha256": "9faafdf20e0352899934400e0186c8fd8c0c182afdf84ec2a8e1b7f572280a2b",
+   "bytes": 420934
+  },
+  {
+   "file": "IMG-20261021-WA0011.jpg",
+   "role": "questioned",
+   "ground_truth": "manipulated",
+   "received_from": "Complainant's phone (WhatsApp)",
+   "description": "'Notice of preliminary enquiry' sent to the complainant.",
+   "how_made": "The template with the addressee and amount pasted in from a separately compressed render (splice) and the round stamp lifted and cloned onto the left of the page (copy-move); resized to 1600 px and re-compressed like a WhatsApp image.",
+   "license": "Generated for this dataset",
+   "sha256": "15a23cad79bf325c12c87135c48fb89dcf8030a34744b1832ec76ae920555555",
+   "bytes": 197870,
+   "truth_detail": {
+    "spliced_regions": [
+     [
+      146,
+      374,
+      1160,
+      422
+     ],
+     [
+      497,
+      772,
+      1160,
+      824
+     ]
+    ],
+    "cloned_stamp": {
+     "from": [
+      772,
+      950,
+      1028,
+      1206
+     ],
+     "to": [
+      160,
+      940,
+      416,
+      1196
+     ]
+    }
+   }
+  },
+  {
+   "file": "officer_id_photo_original.png",
+   "role": "questioned",
+   "ground_truth": "synthetic",
+   "received_from": "Telegram (sent as file)",
+   "description": "'Officer ID card' photo, original file sent on Telegram.",
+   "how_made": "SD-Turbo text-to-image (2 steps), signed C2PA manifest declaring trainedAlgorithmicMedia (test CA, not on a trust list). Stability's reference invisible watermark was applied, but on this flat-background portrait neither the reference decoder nor Satyapan's can read it back: watermarks are fragile.",
+   "license": "Generated for this dataset",
+   "sha256": "b45ae04df9630f78164b0a780ae9d80ac12047da0fb6ea617fbf75078daa3c58",
+   "bytes": 503578,
+   "truth_detail": {
+    "generator": "SD-Turbo (stabilityai/sd-turbo), 2 steps, seed 20261021",
+    "prompt": "passport style studio portrait photograph of a stern middle-aged Indian man in a khaki police uniform, plain light grey background, sharp focus, 50mm photo",
+    "watermark": "invisible-watermark dwtDct 'SDV2'",
+    "c2pa": "c2pa.created / trainedAlgorithmicMedia, signed by a throw-away demo CA"
+   }
+  },
+  {
+   "file": "IMG-20261021-WA0012.jpg",
+   "role": "questioned",
+   "ground_truth": "synthetic",
+   "received_from": "Complainant's phone (WhatsApp)",
+   "description": "Same 'officer' photo as received on WhatsApp.",
+   "how_made": "The SD-Turbo portrait cropped, resized to 400 px and re-compressed (watermark and Content Credentials lost).",
+   "license": "Generated for this dataset",
+   "sha256": "b00a836ec626ab615bd4db31f3a6f57ebf29479f189cf51190292586fdc95020",
+   "bytes": 19021
+  }
+ ],
+ "notes": "Ground truth for every exhibit. The scenario and its people are fictional. Media of real people come only from public research datasets: UniData's consented participants (the face swap is UniData's own sample) and LJSpeech (public domain); the 'daughter' voice note uses the public Piper voice trained on LJSpeech. These media are built locally by `make demo-dataset` and are never committed (AGENTS.md data hygiene)."
+}
