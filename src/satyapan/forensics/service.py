@@ -53,6 +53,7 @@ class LabService:
         self._events: dict[str, list[ProgressEvent]] = {}
         self._ev_lock = threading.Lock()
         self._infer_lock = threading.Lock()
+        self._queue_lock = threading.Lock()
         self._pending: set[str] = set()
 
     # ------------------------------------------------------------------ events
@@ -124,9 +125,10 @@ class LabService:
 
     # ------------------------------------------------------------------ analysis
     def enqueue(self, evidence_id: str, actor: str = "examiner") -> None:
-        if evidence_id in self._pending:
-            return
-        self._pending.add(evidence_id)
+        with self._queue_lock:
+            if evidence_id in self._pending:
+                return
+            self._pending.add(evidence_id)
         ev = self.store.evidence(evidence_id)
         if ev is not None:
             ev.status = EvidenceStatus.QUEUED
@@ -145,7 +147,8 @@ class LabService:
                 self.store.put_evidence(ev)
             self.emit(evidence_id, "done", f"analysis failed: {exc}", 1.0, "error")
         finally:
-            self._pending.discard(evidence_id)
+            with self._queue_lock:
+                self._pending.discard(evidence_id)
 
     def analyze_now(self, evidence_id: str, actor: str = "examiner") -> EvidenceAnalysis:
         ev = self.store.evidence(evidence_id)
@@ -234,17 +237,21 @@ class LabService:
                 fs, arts = found.get(e.id, ([], []))
                 if inference.signature(a) == sorted((f.code, f.title, int(f.strength)) for f in fs):
                     continue
-                cur = self.store.evidence(e.id)
-                if cur is None or (cur.status != EvidenceStatus.DONE and e.id != current):
-                    continue  # re-queued meanwhile: its own analysis will redo this
-                b = inference.with_case_findings(a, fs, arts)
-                self.store.put_analysis(b, feats.get(e.id, {}))
-                v = b.verdict
-                before = cur.verdict.value if cur.verdict else None
-                cur.verdict = v.label if v else None
-                cur.risk_index = v.risk_index if v else None
-                cur.headline = v.headline if v else None
-                self.store.put_evidence(cur)
+                # Check the status and write under one lock: a re-queue that lands between
+                # the check and the write must win, or the exhibit would look DONE again
+                # while its new analysis is still in flight.
+                with self.store.lock():
+                    cur = self.store.evidence(e.id)
+                    if cur is None or (cur.status != EvidenceStatus.DONE and e.id != current):
+                        continue  # re-queued meanwhile: its own analysis will redo this
+                    b = inference.with_case_findings(a, fs, arts)
+                    self.store.put_analysis(b, feats.get(e.id, {}))
+                    v = b.verdict
+                    before = cur.verdict.value if cur.verdict else None
+                    cur.verdict = v.label if v else None
+                    cur.risk_index = v.risk_index if v else None
+                    cur.headline = v.headline if v else None
+                    self.store.put_evidence(cur)
                 digest = hashlib.sha256(
                     canonical_json(b.model_dump(mode="json")).encode()
                 ).hexdigest()

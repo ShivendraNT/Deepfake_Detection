@@ -71,8 +71,9 @@ candidates on In-the-Wild (`docs/VOICE_DEEPFAKE.md`).
    but most stay below the strict 1 % threshold. GenD was trained on FaceForensics++ swaps. What
    carries these cases is the comparison with other exhibits: the FACE_REPLACED inference
    (METHODOLOGY §2) found the demo deepfake to be the seized clip's footage (pHash 0–2 bits on
-   every key frame) with a different person (SFace 0.22–0.33) whose face matches the profile
-   photo (0.80–0.83), the frame difference concentrated on the face — *strong support*, with
+   every key frame) with a different person (median SFace 0.36, below the 0.363 same-identity
+   point) whose face matches the profile photo (median 0.80; the seized clip scores 0.19
+   against it), the frame difference concentrated on the face — *strong support*, with
    the sources named. Without a seized original, the face model alone gives only a weak or
    moderate indication.
 3. **Splices in small, re-compressed photos are rarely caught by classical methods** at a

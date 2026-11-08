@@ -5,11 +5,13 @@ small WhatsApp picture is a copy of a file that carries AI provenance; the case 
 rules are deterministic and recomputed whenever an exhibit finishes:
 
   FACE_REPLACED      two videos show the same footage (key frames match: the near-duplicate
-                     link) but not the same person (no face pair reaches the SFace match
-                     threshold). The altered one is the exhibit whose face matches a third
-                     exhibit (the face source). Strong support when, in addition, the frame
-                     difference between the two is concentrated on the face; moderate with
-                     only one of the two corroborations; otherwise both are only noted.
+                     link) but not the same person (median SFace cosine over matched frames
+                     below OpenCV's 0.363 same-identity point), or one video's face matches a
+                     third exhibit far better than the other's does (the face source). The
+                     altered one is the exhibit whose face matches that source. Strong support
+                     when, in addition, the frame difference between the two is concentrated on
+                     the face; moderate with only one of the two corroborations; otherwise both
+                     are only noted.
   COPY_OF_SYNTHETIC  an image is a near-duplicate of an exhibit whose own (file-only) analysis
                      is SYNTHETIC, with no regions changed after alignment; it inherits that
                      support, at most strong. Not applied to an item already SYNTHETIC on its
@@ -29,7 +31,7 @@ from typing import Any
 import numpy as np
 
 from satyapan.forensics.base import finding, info
-from satyapan.forensics.links import SFACE_SAME, YUNET, _cos
+from satyapan.forensics.links import SFACE_DIFFERENT, SFACE_SAME, YUNET, _cos
 from satyapan.forensics.models import (
     Artifact,
     Category,
@@ -51,9 +53,11 @@ TECH_NAME = "Cross-exhibit comparison"
 METHOD = (
     "Exhibits are compared with each other: perceptual hashes of images and video key frames, "
     "SFace face embeddings, speaker embeddings and keypoint alignment. Two rules turn these "
-    "links into findings. FACE_REPLACED: two videos with the same footage but different people; "
-    "the altered one is the video whose face matches a third exhibit, and the frame difference "
-    "between the two must be concentrated on the face for strong support. COPY_OF_SYNTHETIC: "
+    "links into findings. FACE_REPLACED: two videos with the same footage but different people "
+    "(median SFace cosine below 0.363), or one whose face matches a third exhibit far better "
+    "than the other's does; the altered one is the video whose face matches that source, and "
+    "the frame difference between the two must be concentrated on the face for strong support. "
+    "COPY_OF_SYNTHETIC: "
     "a near-duplicate of an exhibit that is SYNTHETIC on its own evidence inherits that support. "
     "Only file-only verdicts are used, so inferences never build on each other."
 )
@@ -63,6 +67,7 @@ REFERENCE = (
     "image hash functions' (2010)"
 )
 FACE_FOCUS = 2.5  # mean difference on the face ≥ 2.5 × elsewhere = "concentrated on the face"
+SOURCE_MARGIN = 0.25  # the face source must beat the other video's face by this cosine
 
 
 def matched_frames(
@@ -73,6 +78,9 @@ def matched_frames(
     copies of the footage does not show up as motion on the face)."""
     import cv2
 
+    if n <= 0:
+        return [], []
+
     def small(x: np.ndarray) -> np.ndarray:
         return cv2.resize(x, (128, 72), interpolation=cv2.INTER_AREA).astype(np.float32)
 
@@ -82,6 +90,11 @@ def matched_frames(
             int(ca.get(cv2.CAP_PROP_FRAME_COUNT) or 0),
             int(cb.get(cv2.CAP_PROP_FRAME_COUNT) or 0),
         )
+        if na <= 0 or nb <= 0:
+            return [], []
+        # The ±search window is in A frames; cover the same span of time on B when the two
+        # files have very different frame counts (e.g. a 30 fps clip and a 5 fps re-encode).
+        span = max(search, round(search * nb / na))
         out_a: list[np.ndarray] = []
         out_b: list[np.ndarray] = []
         for i in range(n):
@@ -94,7 +107,7 @@ def matched_frames(
             ta = small(fa)
             centre = round(ia * nb / max(na, 1))
             best: tuple[float, np.ndarray] | None = None
-            for ib in range(max(0, centre - search), min(nb, centre + search + 1)):
+            for ib in range(max(0, centre - span), min(nb, centre + span + 1)):
                 cb.set(cv2.CAP_PROP_POS_FRAMES, ib)
                 ok, fb = cb.read()
                 if not ok:
@@ -125,6 +138,31 @@ def _linked(links: list[EvidenceLink], a: str, b: str, kind: LinkKind) -> Eviden
         if ln.kind == kind and {ln.source, ln.target} == {a, b}:
             return ln
     return None
+
+
+def face_median(fa: list[list[float]], fb: list[list[float]]) -> float | None:
+    """Median SFace cosine between two face-embedding sets.
+
+    When both sets have one embedding per key frame (the engine stores them at the same
+    relative positions), compare frame to frame. Otherwise compare every pair and take the
+    median.
+    """
+    if not fa or not fb:
+        return None
+    try:
+        if len(fa) == len(fb):
+            cosines = [_cos(x, y) for x, y in zip(fa, fb, strict=True)]
+        else:
+            cosines = [_cos(x, y) for x in fa for y in fb]
+        return float(np.median(cosines))
+    except (TypeError, ValueError):  # a malformed embedding is a missing comparison, not a crash
+        return None
+
+
+def faces_of(features: dict[str, dict[str, Any]] | None, evidence_id: str) -> list[list[float]]:
+    """Face embeddings stored for an exhibit, tolerating absent features."""
+    f = (features or {}).get(evidence_id) or {}
+    return f.get("faces") or []
 
 
 def face_box(rgb: np.ndarray) -> tuple[int, int, int, int] | None:
@@ -220,6 +258,8 @@ def infer(
     """Case findings per evidence id (only ids that get at least one finding)."""
     from PIL import Image
 
+    features = features or {}
+    paths = paths or {}
     ev = {e.id: e for e in evidence if e.id in analyses}
     tag = {e.id: f"{e.exhibit} ({e.filename})" for e in ev.values()}
     own = {i: file_verdict(e.kind, analyses[i]) for i, e in ev.items()}
@@ -239,20 +279,44 @@ def infer(
             if not (ev[a].kind.value == ev[b].kind.value == "video"):
                 continue
             nd = _linked(links, a, b, LinkKind.NEAR_DUPLICATE)
-            fa, fb = features.get(a, {}).get("faces") or [], features.get(b, {}).get("faces") or []
+            fa, fb = faces_of(features, a), faces_of(features, b)
             if nd is None or not fa or not fb:
                 continue
-            best = max(_cos(x, y) for x in fa for y in fb)
-            if best >= SFACE_SAME:
-                continue  # the same person in the same footage: nothing to infer
-            src_a = [p for p in ids if p not in (a, b) and _linked(links, a, p, LinkKind.SAME_FACE)
-                     and not _linked(links, b, p, LinkKind.SAME_FACE)]  # fmt: skip
-            src_b = [p for p in ids if p not in (a, b) and _linked(links, b, p, LinkKind.SAME_FACE)
-                     and not _linked(links, a, p, LinkKind.SAME_FACE)]  # fmt: skip
+            s_ab = face_median(fa, fb)
+            if s_ab is None:
+                continue
+            different = s_ab < SFACE_DIFFERENT
+
+            def source_candidates(
+                side: str, other: str, own_similarity: float
+            ) -> list[tuple[str, float, float]]:
+                """Third exhibits that can be the face source of `side`: a SAME_FACE link, a
+                solid median match to `side`, no match to `other`, and a clear margin over the
+                two videos' own similarity."""
+                side_faces = faces_of(features, side)
+                other_faces = faces_of(features, other)
+                found: list[tuple[str, float, float]] = []
+                for p in ids:
+                    if p in (side, other) or not _linked(links, side, p, LinkKind.SAME_FACE):
+                        continue
+                    c_side = face_median(side_faces, faces_of(features, p))
+                    c_other = face_median(other_faces, faces_of(features, p))
+                    if c_side is None or c_other is None:
+                        continue
+                    if (c_side >= SFACE_SAME and c_other < SFACE_DIFFERENT
+                            and c_side - own_similarity >= SOURCE_MARGIN):  # fmt: skip
+                        found.append((p, c_side, c_other))
+                return found
+
+            src_a, src_b = source_candidates(a, b, s_ab), source_candidates(b, a, s_ab)
+            if not different and not (src_a or src_b):
+                continue  # no reason to call this a face replacement
             if src_a and not src_b:
                 alt, orig, src = a, b, src_a
             elif src_b and not src_a:
                 alt, orig, src = b, a, src_b
+            elif not different:
+                continue  # both sides have a source; their faces are not different
             else:
                 roles = {ev[a].role.value, ev[b].role.value}
                 if roles == {"questioned", "reference"}:
@@ -263,16 +327,19 @@ def infer(
                         add(x, info("SAME_FOOTAGE_OTHER_FACE",
                                     f"Same footage as {ev[y].exhibit}, but a different face",
                                     f"The key frames match {tag[y]} ({nd.detail.split(':')[0]}) "
-                                    f"while the faces do not (best SFace cosine {best:.2f} < "
-                                    f"{SFACE_SAME}). One of the two had its face replaced; the "
-                                    "case holds no third exhibit that shows which.",
-                                    Category.SYNTHETIC, peer=y, face_cosine=round(best, 3)))  # fmt: skip
+                                    f"while the median SFace cosine over matched frames is "
+                                    f"{s_ab:.2f} < {SFACE_DIFFERENT} (standard same-identity "
+                                    "point 0.363). One of the two had its face replaced; the case "
+                                    "holds no third exhibit that shows which.",
+                                    Category.SYNTHETIC, peer=y, face_cosine=round(s_ab, 3)))  # fmt: skip
                     continue
+            path_alt, path_orig = paths.get(alt), paths.get(orig)
             change = None
-            try:
-                change = face_change(*matched_frames(paths[alt], paths[orig], 3))
-            except Exception:  # noqa: BLE001 - localisation is a corroboration, best effort
-                change = None
+            if path_alt is not None and path_orig is not None:
+                try:
+                    change = face_change(*matched_frames(path_alt, path_orig, 3))
+                except Exception:  # noqa: BLE001 - localisation is a corroboration, best effort
+                    change = None
             focused = change is not None and change["ratio"] >= FACE_FOCUS
             n_corr = int(bool(src)) + int(focused)
             strength = (Strength.STRONG if n_corr == 2 else Strength.MODERATE if n_corr == 1
@@ -280,14 +347,41 @@ def infer(
             art = None
             if change is not None:
                 name = f"face_change_vs_{orig}.jpg"
-                fig = face_change_figure(change, ev[alt].exhibit, ev[orig].exhibit)
-                Image.fromarray(fig).save(artifact_dir(alt) / name, quality=88)
-                art = Artifact(name=name, kind="figure", title=f"Frame comparison with {ev[orig].exhibit}",
-                               caption=f"Same moment in {tag[alt]} and {tag[orig]}; the difference "
-                               f"map is {change['ratio']:.1f}× stronger on the face (box) than "
-                               "elsewhere.")  # fmt: skip
-            src_txt = (f" The face matches {', '.join(tag[p] for p in src)} (SFace ≥ "
-                       f"{SFACE_SAME}): that exhibit is the likely face source." if src else "")  # fmt: skip
+                try:
+                    fig = face_change_figure(change, ev[alt].exhibit, ev[orig].exhibit)
+                    Image.fromarray(fig).save(artifact_dir(alt) / name, quality=88)
+                    art = Artifact(name=name, kind="figure",
+                                   title=f"Frame comparison with {ev[orig].exhibit}",
+                                   caption=f"Same moment in {tag[alt]} and {tag[orig]}; the "
+                                   f"difference map is {change['ratio']:.1f}× stronger on the face "
+                                   "(box) than elsewhere.")  # fmt: skip
+                except OSError:  # a figure that cannot be written must not lose the finding
+                    art = None
+            src_txt = (
+                " The face matches "
+                + ", ".join(
+                    f"{tag[p]} (median SFace cosine {c_side:.2f}; the faces in {tag[orig]} "
+                    f"score {c_other:.2f} against it)"
+                    for p, c_side, c_other in src
+                )
+                + ": that exhibit is the likely face source."
+                if src
+                else ""
+            )
+            if different:
+                face_txt = (
+                    f"The key frames match {tag[orig]} ({nd.detail.split(':')[0]}), yet the "
+                    f"median SFace cosine over matched frames is {s_ab:.2f} < {SFACE_DIFFERENT} "
+                    "(standard same-identity point 0.363): the same recording shows two "
+                    "different people."
+                )
+            else:
+                face_txt = (
+                    f"The key frames match {tag[orig]} ({nd.detail.split(':')[0]}); the median "
+                    f"SFace cosine over matched frames is {s_ab:.2f} (standard same-identity "
+                    "point 0.363), but the face matches a third exhibit far more closely than it "
+                    "matches the other video."
+                )
             loc_txt = (f" Between the two videos the frame difference is {change['ratio']:.1f}× "
                        f"stronger on the face than on the rest of the picture ({change['share']:.0%} "
                        f"of all change falls in a box covering {change['box_area']:.0%} of the frame)."
@@ -295,12 +389,13 @@ def infer(
             add(alt, finding(
                 "FACE_REPLACED",
                 f"Face replaced: footage of {ev[orig].exhibit} with another person's face",
-                f"The key frames match {tag[orig]} ({nd.detail.split(':')[0]}), yet the faces do "
-                f"not (best SFace cosine {best:.2f} < {SFACE_SAME}): the same recording shows two "
-                f"different people.{src_txt}{loc_txt} This is the signature of a face-swap "
-                "deepfake made from that footage.",
+                f"{face_txt}{src_txt}{loc_txt} This is the signature of a face-swap deepfake "
+                "made from that footage.",
                 Hypothesis.SYNTHETIC, strength, Category.SYNTHETIC,
-                original=orig, face_sources=src, face_cosine=round(best, 3),
+                original=orig, face_sources=[p for p, _, _ in src],
+                face_cosine=round(s_ab, 3),
+                face_source_cosines={p: round(c_side, 3) for p, c_side, _ in src},
+                face_source_original_cosines={p: round(c_other, 3) for p, _, c_other in src},
                 face_focus=round(change["ratio"], 2) if change else None,
             ), art)  # fmt: skip
             add(orig, info("FOOTAGE_REUSED", f"This footage reappears in {ev[alt].exhibit} with "
@@ -308,10 +403,12 @@ def infer(
                            f"{tag[alt]} shows the same frames with a different person's face: this "
                            "exhibit is consistent with being the source footage of that deepfake.",
                            Category.PROVENANCE, altered=alt))  # fmt: skip
-            for p in src:
+            for p, c_side, c_other in src:
                 add(p, info("FACE_SOURCE", f"Its face appears in {ev[alt].exhibit}",
-                            f"The face in this exhibit matches the replaced face in {tag[alt]}: "
-                            "consistent with being the source image of the face swap.",
+                            f"The face in this exhibit matches the replaced face in {tag[alt]} "
+                            f"(median SFace cosine {c_side:.2f}), while the face in {tag[orig]} "
+                            f"does not (median {c_other:.2f}): consistent with being the source "
+                            "image of the face swap.",
                             Category.PROVENANCE, altered=alt))  # fmt: skip
     # ---------------------------------------------------------------- COPY_OF_SYNTHETIC
     for a in ids:

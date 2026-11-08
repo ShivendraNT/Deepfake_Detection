@@ -75,11 +75,13 @@ Two **cross-exhibit inferences** turn links into findings (`satyapan/forensics/i
 technique `case.compare`), recomputed whenever an exhibit finishes:
 
 * **FACE_REPLACED** — two videos show the same footage (key frames match) but not the same
-  person (no face pair reaches the SFace match threshold, 0.45). The altered one is the video
-  whose face matches a *third* exhibit (the face source). *Strong* support needs a second,
-  independent corroboration: between temporally matched frames, the difference is at least
-  2.5× stronger on the face than elsewhere (figure attached). One corroboration gives
-  *moderate* support; with none, both videos only get a neutral note.
+  person: the median SFace cosine over index-matched key frames is below OpenCV's 0.363
+  same-identity point. The altered one is the video whose face matches a *third* exhibit (the
+  face source): median cosine to the source ≥ 0.45, to the other video < 0.363, and at least
+  0.25 above the two videos' own median. *Strong* support needs a second, independent
+  corroboration: between temporally matched frames, the difference is at least 2.5× stronger
+  on the face than elsewhere (figure attached). One corroboration gives *moderate* support;
+  with none, both videos only get a neutral note.
 * **COPY_OF_SYNTHETIC** — an image that is a near-duplicate of an exhibit which is SYNTHETIC
   *on its own evidence*, with no region changed after alignment, inherits that support (at most
   *strong*). It is not applied to an item already SYNTHETIC on its own evidence.

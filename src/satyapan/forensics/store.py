@@ -16,6 +16,8 @@ import os
 import sqlite3
 import stat
 import threading
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 from typing import Any
 
@@ -65,6 +67,13 @@ class LabStore:
     def _all(self, sql: str, args: tuple[Any, ...] = ()) -> list[Any]:
         with self._lock:
             return self._db.execute(sql, args).fetchall()
+
+    @contextmanager
+    def lock(self) -> Iterator[None]:
+        """Hold the database lock across a read-check-write (e.g. an inference update that must
+        not overwrite a re-queued exhibit). Re-entrant: the methods below may take it again."""
+        with self._lock:
+            yield
 
     def log(self, **kw: Any) -> Any:
         """Append a custody row. Serialised: the chain's next sequence number and previous hash

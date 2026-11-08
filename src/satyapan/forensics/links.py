@@ -18,6 +18,7 @@ from satyapan.forensics.models import EvidenceLink, LinkKind
 
 YUNET = "face_detection_yunet_2023mar.onnx"
 SFACE_SAME = 0.45  # stricter than OpenCV's LFW operating point (0.363): links must be solid
+SFACE_DIFFERENT = 0.363  # OpenCV's published SFace same-identity point (LFW operating point)
 SPEAKER_SAME = (
     0.55  # WeSpeaker ResNet34 cosine; docs/forensics/VALIDATION.md (different speakers <= 0.45)
 )
