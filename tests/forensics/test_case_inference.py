@@ -181,3 +181,11 @@ def test_service_reevaluates_a_reshared_copy_and_logs_custody(tmp_path: Path) ->
         assert any("re-shared copy" in s for s in view["findings"]["sentences"])
     finally:
         svc.pool.shutdown(wait=True)
+
+
+def test_narrative_keeps_proper_names_and_acronyms() -> None:
+    from satyapan.forensics.narrative import lower_first
+
+    assert lower_first("Content Credentials declare generative AI").startswith("Content")
+    assert lower_first("ENF trace breaks at 16.5 s").startswith("ENF")
+    assert lower_first("Cloned region: 54 keypoints") == "cloned region: 54 keypoints"

@@ -462,9 +462,11 @@ def build(args: argparse.Namespace) -> None:
     print("4/7 call recording joined from two sessions (ENF + noise-floor discontinuity)")
     meta = call_recording(OUT / "call_recording_20261021_1412.wav", rng)
     add("call_recording_20261021_1412.wav", "questioned", "manipulated", "Submitted by the accused's counsel",
-        "Recording of a phone call offered as proof that the complainant agreed to 'invest'.",
-        f"Genuine human speech (LJSpeech) from two recording sessions with different mains-hum "
-        f"frequencies and background noise, joined at {meta['splice_at_s']} s.",
+        "Recording of a phone call produced by the accused, in which the daughter appears to "
+        "ask her father to transfer the money (to argue the payment was a family matter).",
+        f"Genuine speech of the same speaker as the known sample (LJSpeech) from two recording "
+        f"sessions with different mains-hum frequencies and background noise, joined at "
+        f"{meta['splice_at_s']} s.",
         "Generated for this dataset (LJSpeech public domain)", truth_detail=meta)  # fmt: skip
 
     print("5/7 notice: genuine template and the forged copy")

@@ -68,12 +68,14 @@ why it is not "very strong":
 Then `IMG-20261021-WA0012.jpg` (the WhatsApp copy): metadata and credentials are gone; the
 classifier still fires and the case comparison identifies it as a copy of Q7 → **SYNTHETIC**.
 
-## 6. The defence's call recording (45 s)
+## 6. The accused's "call recording" (45 s)
 
-Open `call_recording_20261021_1412.wav` → **MANIPULATED, strong support**. The **ENF chart**:
-the 50 Hz grid hum drifts smoothly, then breaks once at **16.5 s** by **−57 mHz** — the two
-sessions were joined at 16.54 s with a 55 mHz difference in mains frequency. *"The classic FSL
-technique, automated, and within a tenth of a second."*
+The accused produce a call in which the daughter seems to ask her father for the money. Open
+`call_recording_20261021_1412.wav` → **MANIPULATED, strong support**. The voice is genuinely
+hers (same speaker as the known sample, cosine 0.91) — but the **ENF chart** shows the 50 Hz grid
+hum drifting smoothly, then breaking once at **16.5 s** by **−57 mHz**: two recordings made at
+different times were joined (truth: 16.54 s, 55 mHz apart). *"A real voice, a fake
+conversation. The classic FSL technique, automated, and within a tenth of a second."*
 
 ## 7. The voices — where we draw the line (60 s)
 

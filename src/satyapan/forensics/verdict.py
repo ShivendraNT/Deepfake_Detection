@@ -173,7 +173,7 @@ def provenance(results: list[TechniqueResult]) -> Provenance:
             if f.code == "CAMERA_IDENTIFIED":
                 p.device = (f"{o.get('make', '')} {o.get('model', '')}").strip() or p.device
                 chain.insert(0, f"Captured by {p.device} (EXIF)")
-            elif f.code == "DEVICE_METADATA":
+            elif f.code == "DEVICE_METADATA" and ": " in f.title:
                 p.device = p.device or f.title.split(": ", 1)[-1]
                 chain.insert(0, f"Recorded on {p.device} (container tags)")
             elif f.code in ("GENERATOR_SIGNATURE", "SD_WATERMARK", "C2PA_AI_GENERATED",

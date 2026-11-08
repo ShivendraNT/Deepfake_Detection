@@ -58,6 +58,9 @@ def has_audio(ctx: AnalysisContext) -> bool:
 # Container metadata
 # ---------------------------------------------------------------------------------------------
 
+VOICE_WORDS = {"likely_synthetic": "likely synthetic", "inconclusive": "inconclusive",
+               "no_signs": "no signs of synthesis"}  # fmt: skip
+
 TTS_HINTS = [
     (r"elevenlabs", "ElevenLabs"), (r"\bplay\.ht\b|playht", "PlayHT"), (r"resemble", "Resemble AI"),
     (r"murf", "Murf"), (r"speechify", "Speechify"), (r"coqui|xtts", "Coqui XTTS"),
@@ -356,7 +359,7 @@ def run_voice(ctx: AnalysisContext) -> TechniqueResult:
                 )  # fmt: skip
             )
     summary = (f"max synthetic score {max(scores):.2f} over {len(scores)} windows "
-               f"({verdict.label})")  # fmt: skip
+               f"({VOICE_WORDS.get(str(verdict.label), str(verdict.label))})")  # fmt: skip
     return make_result(t, summary=summary, findings=findings, data=data)
 
 

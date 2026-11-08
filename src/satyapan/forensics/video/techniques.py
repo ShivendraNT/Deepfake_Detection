@@ -89,10 +89,13 @@ def run_video_container(ctx: AnalysisContext) -> TechniqueResult:
     if dev:
         name = " ".join(dict.fromkeys(v for k, v in dev.items()
                                       if "make" in k or "model" in k or "manufacturer" in k))  # fmt: skip
+        android = next((v for k, v in dev.items() if k.endswith("android.version")), None)
+        if not name and android:
+            name = f"Android {android} phone (model not recorded)"
         findings.append(
             info(
                 "DEVICE_METADATA",
-                f"Recording device metadata: {name or 'present'}",
+                f"Recording device: {name}" if name else "Recording device tags present",
                 "The container carries the capturing device's own tags ("
                 + ", ".join(f"{k.split(':')[-1]}={v}" for k, v in list(dev.items())[:5])
                 + "). Phones write these at capture; editors and messaging apps usually drop "
@@ -474,7 +477,7 @@ def run_video_deepfake(ctx: AnalysisContext) -> TechniqueResult:
         return make_result(t, summary="no usable face in the video (too small, absent or dark)",
                            status=Status.SKIPPED, data=data, artifacts=arts)  # fmt: skip
     summary = (f"{verdict.usable_windows}/{len(windows)} windows with a face; max score "
-               f"{verdict.max_score:.3f} ({verdict.label})")  # fmt: skip
+               f"{verdict.max_score:.3f} ({str(verdict.label).replace('_', ' ')})")  # fmt: skip
     return make_result(t, summary=summary, findings=findings, data=data, artifacts=arts)
 
 

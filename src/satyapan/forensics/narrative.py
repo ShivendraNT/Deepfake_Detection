@@ -17,9 +17,13 @@ LABEL_WORDS = {
 }
 
 
+PROPER = ("Content Credentials", "Stable Diffusion", "Whisper", "SFace", "GenD", "Piper")
+
+
 def lower_first(text: str) -> str:
-    """Lower-case the first letter unless it starts an acronym (AI, ELA, ENF, C2PA...)."""
-    if len(text) > 1 and text[:2].isupper():
+    """Lower-case the first letter unless it starts an acronym (AI, ELA, ENF, C2PA...) or a
+    proper name (Content Credentials, Stable Diffusion...)."""
+    if (len(text) > 1 and text[:2].isupper()) or text.startswith(PROPER):
         return text
     return text[:1].lower() + text[1:]
 
@@ -74,7 +78,8 @@ def case_findings(evidence: list[LabEvidence], analyses: dict[str, EvidenceAnaly
                     orig = str(o["original"])
                     sentences.append(f"{tag[e.id]} is a re-shared copy of {tag[orig]}, which is "
                                      "synthetic on its own evidence.")  # fmt: skip
-                    seen.add((*sorted((e.id, orig)), LinkKind.NEAR_DUPLICATE.value))  # type: ignore[arg-type]
+                    for k in (LinkKind.NEAR_DUPLICATE, LinkKind.SHARES_CONTENT, LinkKind.SAME_FACE):
+                        seen.add((*sorted((e.id, orig)), k.value))  # type: ignore[arg-type]
     for ln in sorted(links, key=lambda ln: (ln.kind.value, -ln.score)):
         a_id, b_id = ln.source, ln.target
         key = (*sorted((a_id, b_id)), ln.kind.value)
