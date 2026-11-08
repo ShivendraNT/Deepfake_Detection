@@ -71,3 +71,6 @@ lab_data/
 # real people (UniData participants, LJSpeech, the LJSpeech-trained TTS voice) never go in git
 # (AGENTS.md data hygiene); `make demo-dataset` builds them locally.
 data/forensics/demo/profile_photo_source.jpg
+
+# Dashboard screenshots may show exhibit media (real people in research samples): local only.
+lab/screenshots/
