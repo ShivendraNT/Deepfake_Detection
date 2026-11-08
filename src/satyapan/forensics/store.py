@@ -57,11 +57,28 @@ class LabStore:
         self._custody_lock = threading.Lock()
         self.custody = CustodyLog(self.root / "custody.db")
 
+    def _one(self, sql: str, args: tuple[Any, ...] = ()) -> Any:
+        """Reads share the connection with the analysis workers, so they take the lock too."""
+        with self._lock:
+            return self._db.execute(sql, args).fetchone()
+
+    def _all(self, sql: str, args: tuple[Any, ...] = ()) -> list[Any]:
+        with self._lock:
+            return self._db.execute(sql, args).fetchall()
+
     def log(self, **kw: Any) -> Any:
         """Append a custody row. Serialised: the chain's next sequence number and previous hash
         are read and written as one step even when two analyses finish together."""
         with self._custody_lock:
             return self.custody.append(**kw)
+
+    def custody_rows(self, case_id: str | None = None) -> list[Any]:
+        with self._custody_lock:
+            return self.custody.rows(case_id)
+
+    def verify_chain(self) -> Any:
+        with self._custody_lock:
+            return self.custody.verify_chain()
 
     # ------------------------------------------------------------------ paths
     def evidence_path(self, case_id: str, sha256: str) -> Path:
@@ -91,11 +108,11 @@ class LabStore:
             self._db.commit()
 
     def case(self, case_id: str) -> LabCase | None:
-        row = self._db.execute("SELECT body FROM cases WHERE id=?", (case_id,)).fetchone()
+        row = self._one("SELECT body FROM cases WHERE id=?", (case_id,))
         return LabCase.model_validate_json(row[0]) if row else None
 
     def cases(self) -> list[LabCase]:
-        rows = self._db.execute("SELECT body FROM cases ORDER BY created_at DESC").fetchall()
+        rows = self._all("SELECT body FROM cases ORDER BY created_at DESC")
         return [LabCase.model_validate_json(r[0]) for r in rows]
 
     def delete_case(self, case_id: str) -> None:
@@ -129,18 +146,17 @@ class LabStore:
             self._db.commit()
 
     def evidence(self, evidence_id: str) -> LabEvidence | None:
-        row = self._db.execute("SELECT body FROM evidence WHERE id=?", (evidence_id,)).fetchone()
+        row = self._one("SELECT body FROM evidence WHERE id=?", (evidence_id,))
         return LabEvidence.model_validate_json(row[0]) if row else None
 
     def case_evidence(self, case_id: str) -> list[LabEvidence]:
-        rows = self._db.execute(
+        rows = self._all(
             "SELECT body FROM evidence WHERE case_id=? ORDER BY created_at", (case_id,)
-        ).fetchall()
+        )
         return [LabEvidence.model_validate_json(r[0]) for r in rows]
 
     def find_sha(self, case_id: str, sha256: str) -> LabEvidence | None:
-        row = self._db.execute("SELECT body FROM evidence WHERE case_id=? AND sha256=?",
-                               (case_id, sha256)).fetchone()  # fmt: skip
+        row = self._one("SELECT body FROM evidence WHERE case_id=? AND sha256=?", (case_id, sha256))
         return LabEvidence.model_validate_json(row[0]) if row else None
 
     # ------------------------------------------------------------------ analyses
@@ -152,13 +168,11 @@ class LabStore:
             self._db.commit()
 
     def analysis(self, evidence_id: str) -> EvidenceAnalysis | None:
-        row = self._db.execute("SELECT body FROM analyses WHERE evidence_id=?",
-                               (evidence_id,)).fetchone()  # fmt: skip
+        row = self._one("SELECT body FROM analyses WHERE evidence_id=?", (evidence_id,))
         return EvidenceAnalysis.model_validate_json(row[0]) if row else None
 
     def features(self, evidence_id: str) -> dict[str, Any]:
-        row = self._db.execute("SELECT features FROM analyses WHERE evidence_id=?",
-                               (evidence_id,)).fetchone()  # fmt: skip
+        row = self._one("SELECT features FROM analyses WHERE evidence_id=?", (evidence_id,))
         return json.loads(row[0]) if row else {}
 
     # ------------------------------------------------------------------ links
@@ -172,7 +186,7 @@ class LabStore:
             self._db.commit()
 
     def links(self, case_id: str) -> list[EvidenceLink]:
-        rows = self._db.execute("SELECT body FROM links WHERE case_id=?", (case_id,)).fetchall()
+        rows = self._all("SELECT body FROM links WHERE case_id=?", (case_id,))
         return [EvidenceLink.model_validate_json(r[0]) for r in rows]
 
     # ------------------------------------------------------------------ reports
@@ -183,10 +197,10 @@ class LabStore:
             self._db.commit()
 
     def reports(self, case_id: str) -> list[dict[str, Any]]:
-        rows = self._db.execute("SELECT body FROM reports WHERE case_id=? ORDER BY created_at DESC",
-                                (case_id,)).fetchall()  # fmt: skip
+        rows = self._all("SELECT body FROM reports WHERE case_id=? ORDER BY created_at DESC",
+                         (case_id,))  # fmt: skip
         return [json.loads(r[0]) for r in rows]
 
     def report(self, report_id: str) -> dict[str, Any] | None:
-        row = self._db.execute("SELECT body FROM reports WHERE id=?", (report_id,)).fetchone()
+        row = self._one("SELECT body FROM reports WHERE id=?", (report_id,))
         return json.loads(row[0]) if row else None

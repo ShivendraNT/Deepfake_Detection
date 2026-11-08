@@ -247,13 +247,13 @@ class LabService:
             "counts": counts,
             "reports": self.store.reports(case_id),
             "findings": case_findings(
-                evs, analyses, links, self.store.custody.verify_chain().ok
+                evs, analyses, links, self.store.verify_chain().ok
             ),  # fmt: skip
         }
 
     def custody_view(self, case_id: str) -> dict[str, Any]:
-        rows = self.store.custody.rows(case_id)
-        chain = self.store.custody.verify_chain()
+        rows = self.store.custody_rows(case_id)
+        chain = self.store.verify_chain()
         return {"rows": [r.model_dump(mode="json") for r in rows],
                 "chain": chain.model_dump(mode="json"), "head": self.store.custody.head()}  # fmt: skip
 

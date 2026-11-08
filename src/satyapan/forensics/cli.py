@@ -73,7 +73,7 @@ def main(argv: list[str] | None = None) -> int:
             print(f"{ev.exhibit:4s} FAILED        {ev.filename}: {exc}")
     for ln in svc.store.links(case.id):
         print(f"link  {ln.kind.value:15s} {ln.source[-6:]} ↔ {ln.target[-6:]}  {ln.detail[:90]}")
-    chain = svc.store.custody.verify_chain()
+    chain = svc.store.verify_chain()
     print(f"custody chain: {'INTACT' if chain.ok else 'BROKEN'} ({chain.rows_checked} rows)")
     if args.report:
         from satyapan.forensics.report.builder import generate_report
